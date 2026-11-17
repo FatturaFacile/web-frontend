@@ -19,6 +19,7 @@ import {
 } from '@core';
 import { BaseTableComponent, IconActionDirective, PageHeaderComponent, TableColumnDef, TranslatePipe } from '@shared';
 import { TranslateService } from '@core';
+import { FiscalSettingsComponent } from './components/fiscal-settings.component';
 
 @Component({
   selector: 'app-settings',
@@ -37,6 +38,7 @@ import { TranslateService } from '@core';
     BaseTableComponent,
     PageHeaderComponent,
     TranslatePipe,
+    FiscalSettingsComponent,
   ],
   templateUrl: './settings.component.html',
 })

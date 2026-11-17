@@ -148,6 +148,13 @@
       </div>
       <app-base-table [grid]="auditGrid" [columns]="auditColumns()" [scroll]="{ x: '1000px' }" [exportFileName]="'audit-log'" />
     </nz-tab>
+
+    <!-- TAB 6: FISCALE (issue #286), loaded when first opened -->
+    <nz-tab [nzTitle]="'SETTINGS.FISCAL.TAB' | translate">
+      <ng-template nz-tab>
+        <app-fiscal-settings />
+      </ng-template>
+    </nz-tab>
   </nz-tabs>
 </nz-card>
 

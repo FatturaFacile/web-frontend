@@ -1,0 +1,31 @@
+.steps {
+  margin-bottom: 24px;
+}
+.form-error,
+.hint {
+  margin-bottom: 16px;
+}
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.summary {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 8px 16px;
+  margin: 0;
+  text-align: left;
+}
+.summary dt {
+  font-weight: 600;
+}
+.summary dd {
+  margin: 0;
+}

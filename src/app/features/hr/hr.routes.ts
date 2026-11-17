@@ -89,6 +89,8 @@ export const HR_ROUTES: Routes = [
     loadComponent: () => import('./analytics/hr-analytics.component').then((m) => m.HrAnalyticsComponent),
   },
   {
+  },
+  {
     path: 'recruiting',
     data: { breadcrumb: 'NAV.HR_RECRUITING', title: 'NAV.HR_RECRUITING' },
     loadComponent: () => import('./recruiting/recruiting.component').then((m) => m.RecruitingComponent),
@@ -113,5 +115,11 @@ export const HR_ROUTES: Routes = [
     data: { breadcrumb: 'NAV.HR_SELF_SERVICE', title: 'NAV.HR_SELF_SERVICE' },
     loadComponent: () =>
       import('./self-service/self-service.component').then((m) => m.SelfServiceComponent),
+  },
+  {
+    path: 'recruiting',
+    data: { breadcrumb: 'NAV.RECRUITING' },
+    loadChildren: () =>
+      import('./recruiting/recruiting.routes').then((m) => m.RECRUITING_ROUTES),
   },
 ];

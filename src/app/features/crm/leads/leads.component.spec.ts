@@ -1,17 +1,21 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
-import { signal } from '@angular/core';
-import { of } from 'rxjs';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { NzMessageService } from 'ng-zorro-antd/message';
+import { TestBed } from '@angular/core/testing';
+import { ActivatedRoute, provideRouter, Router } from '@angular/router';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
+import { BehaviorSubject, of } from 'rxjs';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { Lead, LeadApiService, SettingsApiService } from '@core';
 import { icons } from '../../../icons-provider';
-import { I18nService, LeadApiService, LeadResource } from '@core';
 import { LeadsComponent } from './leads.component';
+import { i18nStub } from './lead-test.utils';
+
+const ROWS: Partial<Lead>[] = [
+  { id: 'l1', first_name: 'Anna', last_name: 'Rossi', score: 82, rating: 'hot', status: 'new' },
+  { id: 'l2', company_name: 'Bianchi SA', score: 45, rating: 'warm', status: 'new' },
+];
 
 describe('LeadsComponent', () => {
-  let fixture: ComponentFixture<LeadsComponent>;
-  let component: LeadsComponent;
+  let api: { listLeads: ReturnType<typeof vi.fn>; listSources: ReturnType<typeof vi.fn> };
+  const queryParams = new BehaviorSubject<Record<string, string>>({ rating: 'hot', min_score: '50' });
 
   const mockLeads: LeadResource[] = [
     {
@@ -96,95 +100,59 @@ describe('LeadsComponent', () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
+    vi.useFakeTimers();
+    api = {
+      listLeads: vi.fn().mockReturnValue(
+        of({ success: true, message: '', data: ROWS, meta: { total: 2, current_page: 1, per_page: 10 } }),
+      ),
+      listSources: vi.fn().mockReturnValue(of([{ id: 's1', name: 'Website', type: 'web_form' }])),
+    };
 
     await TestBed.configureTestingModule({
       imports: [LeadsComponent],
       providers: [
         provideRouter([]),
         provideNzIcons(icons),
-        { provide: LeadApiService, useValue: mockLeadApi },
-        { provide: I18nService, useValue: mockI18n },
-        { provide: NzMessageService, useValue: mockMessage },
+        i18nStub(),
+        { provide: ActivatedRoute, useValue: { queryParams, snapshot: {} } },
+        { provide: LeadApiService, useValue: api },
+        { provide: SettingsApiService, useValue: { getTenantUsers: () => of({ data: [] }) } },
       ],
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(LeadsComponent);
-    component = fixture.componentInstance;
+    });
   });
 
-  it('loads leads on initialization', () => {
+  afterEach(() => vi.useRealTimers());
+
+  async function render() {
+    const fixture = TestBed.createComponent(LeadsComponent);
     fixture.detectChanges();
-    expect(component).toBeTruthy();
-    expect(mockLeadApi.list).toHaveBeenCalled();
-    expect(component['leads']()).toEqual(mockLeads);
-    expect(component['loading']()).toBe(false);
+    await vi.advanceTimersByTimeAsync(500);
+    fixture.detectChanges();
+    return fixture;
+  }
+
+  it('requests rating/min_score from the URL and shows badge and text tag per row', async () => {
+    const fixture = await render();
+    expect(api.listLeads).toHaveBeenLastCalledWith(expect.objectContaining({ rating: 'hot', min_score: 50 }));
+
+    const el = fixture.nativeElement as HTMLElement;
+    const badges = Array.from(el.querySelectorAll('app-lead-score-badge')).map((b) => b.textContent?.trim());
+    const tags = Array.from(el.querySelectorAll('app-lead-rating-tag')).map((t) => t.textContent?.trim());
+    expect(badges).toEqual(['82', '45']);
+    expect(tags).toEqual(['Hot', 'Warm']);
   });
 
-  it('filters leads by rating and status', () => {
-    fixture.detectChanges();
-    component['setRating']('hot');
-    expect(mockLeadApi.list).toHaveBeenCalledWith({ rating: 'hot', status: undefined });
-
-    component['setStatus']('qualified');
-    expect(mockLeadApi.list).toHaveBeenCalledWith({ rating: 'hot', status: 'qualified' });
-  });
-
-  it('opens create modal and saves new lead', () => {
-    fixture.detectChanges();
-    component['openCreate']();
-    expect(component['modalOpen']()).toBe(true);
-
-    component['patchForm']({ company_name: 'Gamma GmbH', email: 'gamma@example.com' });
-    component['save']();
-
-    expect(mockLeadApi.create).toHaveBeenCalledWith(
-      expect.objectContaining({ company_name: 'Gamma GmbH', email: 'gamma@example.com' }),
+  it('writes filter changes to the URL query params', async () => {
+    const fixture = await render();
+    const router = TestBed.inject(Router);
+    const nav = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    fixture.componentInstance['setFilter']({ rating: 'cold' });
+    expect(nav).toHaveBeenCalledWith(
+      [],
+      expect.objectContaining({
+        queryParams: expect.objectContaining({ rating: 'cold', min_score: 50 }),
+        queryParamsHandling: 'merge',
+      }),
     );
-    expect(mockMessage.success).toHaveBeenCalled();
-    expect(component['modalOpen']()).toBe(false);
-  });
-
-  it('qualifies a lead', () => {
-    fixture.detectChanges();
-    component['qualify'](mockLeads[0]);
-
-    expect(mockLeadApi.qualify).toHaveBeenCalledWith('lead-1');
-    expect(mockMessage.success).toHaveBeenCalled();
-  });
-
-  it('converts a lead', () => {
-    fixture.detectChanges();
-    component['convert'](mockLeads[0]);
-
-    expect(mockLeadApi.convert).toHaveBeenCalledWith('lead-1');
-    expect(mockMessage.success).toHaveBeenCalled();
-  });
-
-  it('disqualifies a lead with reason', () => {
-    fixture.detectChanges();
-    component['disqualifying'].set(mockLeads[0]);
-    component['disqualifyReason'].set('Not interested in ERP');
-    component['confirmDisqualify']();
-
-    expect(mockLeadApi.disqualify).toHaveBeenCalledWith('lead-1', 'Not interested in ERP');
-    expect(mockMessage.success).toHaveBeenCalled();
-    expect(component['disqualifying']()).toBeNull();
-  });
-
-  it('opens detail and detects duplicates', () => {
-    fixture.detectChanges();
-    component['openDetail'](mockLeads[0]);
-
-    expect(mockLeadApi.get).toHaveBeenCalledWith('lead-1');
-    expect(mockLeadApi.detectDuplicates).toHaveBeenCalled();
-    expect(component['detail']()).toEqual(mockLeads[0]);
-  });
-
-  it('deletes a lead', () => {
-    fixture.detectChanges();
-    component['remove'](mockLeads[0]);
-
-    expect(mockLeadApi.remove).toHaveBeenCalledWith('lead-1');
-    expect(mockMessage.success).toHaveBeenCalled();
   });
 });

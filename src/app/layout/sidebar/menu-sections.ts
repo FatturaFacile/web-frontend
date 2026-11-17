@@ -48,6 +48,24 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             module: 'crm',
           },
           {
+            key: 'NAV.LEAD_SOURCES',
+            route: '/crm/lead-sources',
+            icon: 'fa-solid fa-plug',
+            module: 'crm',
+          },
+          {
+            key: 'NAV.LEAD_SCORING',
+            route: '/crm/lead-scoring',
+            icon: 'fa-solid fa-ranking-star',
+            module: 'crm',
+          },
+          {
+            key: 'NAV.LEAD_ROUTING',
+            route: '/crm/lead-routing',
+            icon: 'fa-solid fa-route',
+            module: 'crm',
+          },
+          {
             key: 'NAV.SUPPLIERS',
             route: '/crm/suppliers',
             icon: 'fa-solid fa-truck-field',
@@ -523,6 +541,30 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             key: 'NAV.DDT',
             route: '/inventory/ddt',
             icon: 'fa-solid fa-truck-ramp-box',
+            module: 'inventory',
+          },
+          {
+            key: 'NAV.VALUATION',
+            route: '/inventory/valuation',
+            icon: 'fa-solid fa-scale-balanced',
+            module: 'inventory',
+          },
+          {
+            key: 'NAV.COST_LAYERS',
+            route: '/inventory/cost-layers',
+            icon: 'fa-solid fa-layer-group',
+            module: 'inventory',
+          },
+          {
+            key: 'NAV.LANDED_COSTS',
+            route: '/inventory/landed-costs',
+            icon: 'fa-solid fa-truck-fast',
+            module: 'inventory',
+          },
+          {
+            key: 'NAV.INVENTORY_BOOK',
+            route: '/inventory/book',
+            icon: 'fa-solid fa-book',
             module: 'inventory',
           },
           {

@@ -1,287 +1,162 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, signal, TemplateRef, viewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzIconModule } from 'ng-zorro-antd/icon';
-import { NzInputModule } from 'ng-zorro-antd/input';
-import { NzMessageService } from 'ng-zorro-antd/message';
-import { NzModalModule } from 'ng-zorro-antd/modal';
-import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
+import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzSelectModule } from 'ng-zorro-antd/select';
-import { NzTableModule } from 'ng-zorro-antd/table';
-import { NzTagModule } from 'ng-zorro-antd/tag';
-import { I18nService, LeadApiService } from '@core';
+import { DatePipe } from '@angular/common';
 import {
-  CreateLeadPayload,
-  DuplicateStrategy,
-  LeadBehaviorEvent,
-  LeadRating,
-  LeadResource,
-  LeadStatus,
-  UpdateLeadPayload,
-} from '@core/models/lead.model';
-import { PageHeaderComponent, TranslatePipe } from '@shared';
+  I18nService,
+  Lead,
+  LeadApiService,
+  LeadFilterParams,
+  LeadSource,
+  leadDisplayName,
+} from '@core';
+import { BaseTableComponent, PageHeaderComponent, TableColumnDef, TableQueryParams } from '@shared';
+import { LeadAssigneeDirectory } from './lead-assignee-directory';
+import { LeadAssigneeSelectComponent } from './lead-assignee-select.component';
+import { leadFiltersFromQueryParams, leadFiltersToQueryParams } from './lead-filters';
+import { humanize, translateOr, TranslateOrPipe } from './lead-i18n';
+import { LeadRatingTagComponent } from './lead-rating-tag.component';
+import { LeadScoreBadgeComponent } from './lead-score-badge.component';
+import { LeadFacade } from './lead.facade';
 
-// Hex colours (not antd presets) so the tags keep their colour in the dark theme.
-const RATING_COLORS: Record<LeadRating, string> = { cold: '#2563eb', warm: '#d97706', hot: '#dc2626' };
-const STATUS_COLORS: Record<string, string> = {
-  new: '#475569',
-  contacting: '#0891b2',
-  engaged: '#0891b2',
-  qualified: '#16a34a',
-  disqualified: '#64748b',
-  converted: '#7c3aed',
-  archived: '#64748b',
-};
+type CellTpl = TemplateRef<{ $implicit: Lead; value: unknown }>;
 
 @Component({
   selector: 'app-crm-leads',
   imports: [
     FormsModule,
     RouterLink,
+    DatePipe,
+    NzAlertModule,
     NzButtonModule,
     NzCardModule,
     NzIconModule,
-    NzInputModule,
-    NzModalModule,
-    NzPopconfirmModule,
+    NzInputNumberModule,
     NzSelectModule,
-    NzTableModule,
-    NzTagModule,
+    BaseTableComponent,
     PageHeaderComponent,
-    TranslatePipe,
+    TranslateOrPipe,
+    LeadAssigneeSelectComponent,
+    LeadRatingTagComponent,
+    LeadScoreBadgeComponent,
   ],
+  providers: [LeadFacade],
   templateUrl: './leads.component.html',
   styleUrl: './leads.component.scss',
 })
-export class LeadsComponent implements OnInit {
+export class LeadsComponent {
+  protected readonly facade = inject(LeadFacade);
+  protected readonly assignees = inject(LeadAssigneeDirectory);
   private readonly api = inject(LeadApiService);
-  private readonly message = inject(NzMessageService);
   private readonly i18n = inject(I18nService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
-  protected readonly leads = signal<LeadResource[]>([]);
-  protected readonly loading = signal(false);
-  protected readonly ratingFilter = signal<LeadRating | null>(null);
-  protected readonly statusFilter = signal<LeadStatus | null>(null);
-  protected readonly modalOpen = signal(false);
-  protected readonly saving = signal(false);
-  protected readonly form = signal<CreateLeadPayload>({ country: 'IT', duplicate_strategy: 'notify' });
+  protected readonly sources = signal<LeadSource[]>([]);
+
+  private readonly nameTpl = viewChild<CellTpl>('nameTpl');
+  private readonly scoreTpl = viewChild<CellTpl>('scoreTpl');
+  private readonly ratingTpl = viewChild<CellTpl>('ratingTpl');
+  private readonly sourceTpl = viewChild<CellTpl>('sourceTpl');
+  private readonly assigneeTpl = viewChild<CellTpl>('assigneeTpl');
+  private readonly statusTpl = viewChild<CellTpl>('statusTpl');
+  private readonly createdTpl = viewChild<CellTpl>('createdTpl');
+
+  readonly columns = computed<TableColumnDef<Lead>[]>(() => {
+    this.i18n.currentLanguage();
+    const t = (key: string, fb: string) => translateOr(this.i18n, key, fb);
+    return [
+      { key: 'name', header: t('CRM.LEADS.COLUMNS.NAME', 'Lead'), width: '240px', customCellTemplate: this.nameTpl() },
+      { key: 'score', header: t('CRM.LEADS.COLUMNS.SCORE', 'Score'), width: '100px', customCellTemplate: this.scoreTpl() },
+      { key: 'rating', header: t('CRM.LEADS.COLUMNS.RATING', 'Rating'), width: '120px', customCellTemplate: this.ratingTpl() },
+      { key: 'lead_source', header: t('CRM.LEADS.COLUMNS.SOURCE', 'Source'), width: '160px', customCellTemplate: this.sourceTpl() },
+      {
+        key: 'assigned_user_id',
+        header: t('CRM.LEADS.COLUMNS.ASSIGNEE', 'Assignee'),
+        width: '180px',
+        customCellTemplate: this.assigneeTpl(),
+      },
+      { key: 'status', header: t('CRM.LEADS.COLUMNS.STATUS', 'Status'), width: '120px', customCellTemplate: this.statusTpl() },
+      { key: 'created_at', header: t('CRM.LEADS.COLUMNS.CREATED_AT', 'Created'), width: '140px', customCellTemplate: this.createdTpl() },
+    ];
+  });
 
   protected readonly ratingOptions = computed(() => {
     this.i18n.currentLanguage();
-    return (['hot', 'warm', 'cold'] as LeadRating[]).map((value) => ({
-      value,
-      label: this.i18n.translate(`CRM.LEADS.RATING.${value.toUpperCase()}`),
+    return (['cold', 'warm', 'hot'] as const).map((r) => ({
+      value: r,
+      label: translateOr(this.i18n, `CRM.LEADS.RATING.${r.toUpperCase()}`, humanize(r)),
     }));
   });
 
-  protected readonly statusOptions = computed(() => {
+  protected readonly sortOptions = computed(() => {
     this.i18n.currentLanguage();
-    return (['new', 'qualified', 'disqualified', 'converted'] as LeadStatus[]).map((value) => ({
-      value,
-      label: this.i18n.translate(`CRM.LEADS.STATUS.${value.toUpperCase()}`),
-    }));
+    return [
+      { value: '-score', label: translateOr(this.i18n, 'CRM.LEADS.SORT.SCORE_DESC', 'Score: high to low') },
+      { value: 'score', label: translateOr(this.i18n, 'CRM.LEADS.SORT.SCORE_ASC', 'Score: low to high') },
+      { value: 'created_at', label: translateOr(this.i18n, 'CRM.LEADS.SORT.CREATED_AT', 'Creation date') },
+    ];
   });
 
-  protected readonly strategyOptions = computed(() => {
-    this.i18n.currentLanguage();
-    return (['notify', 'merge', 'create'] as DuplicateStrategy[]).map((value) => ({
-      value,
-      label: this.i18n.translate(`CRM.LEADS.STRATEGY.${value.toUpperCase()}`),
-    }));
-  });
-
-  ngOnInit(): void {
-    this.load();
-  }
-
-  protected load(): void {
-    this.loading.set(true);
-    this.api
-      .list({
-        rating: this.ratingFilter() ?? undefined,
-        status: this.statusFilter() ?? undefined,
-      })
-      .subscribe({
-        next: (res) => {
-          this.leads.set(res.data);
-          this.loading.set(false);
-        },
-        error: () => this.loading.set(false),
-      });
-  }
-
-  protected setRating(value: LeadRating | null): void {
-    this.ratingFilter.set(value);
-    this.load();
-  }
-
-  protected setStatus(value: LeadStatus | null): void {
-    this.statusFilter.set(value);
-    this.load();
-  }
-
-  protected ratingColor(rating: LeadRating): string {
-    return RATING_COLORS[rating] ?? '#2563eb';
-  }
-
-  protected statusColor(status: string): string {
-    return STATUS_COLORS[status] ?? '#475569';
-  }
-
-  protected statusLabel(status: string): string {
-    return this.i18n.translate(`CRM.LEADS.STATUS.${status.toUpperCase()}`);
-  }
-
-  protected canConvert(lead: LeadResource): boolean {
-    return lead.status !== 'converted' && lead.status !== 'disqualified';
-  }
-
-  protected openCreate(): void {
-    this.form.set({ country: 'IT', duplicate_strategy: 'notify' });
-    this.modalOpen.set(true);
-  }
-
-  protected patchForm(patch: Partial<CreateLeadPayload>): void {
-    this.form.update((f) => ({ ...f, ...patch }));
-  }
-
-  protected save(): void {
-    const payload = Object.fromEntries(
-      Object.entries(this.form()).filter(([, v]) => v !== '' && v !== undefined && v !== null),
-    ) as CreateLeadPayload;
-
-    this.saving.set(true);
-    this.api.create(payload).subscribe({
-      next: (res) => {
-        this.saving.set(false);
-        this.modalOpen.set(false);
-        const key = res.merged
-          ? 'CRM.LEADS.MESSAGES.MERGED'
-          : res.duplicate_ids.length > 0
-            ? 'CRM.LEADS.MESSAGES.CREATED_DUPLICATE'
-            : 'CRM.LEADS.MESSAGES.CREATED';
-        this.message.success(this.i18n.translate(key));
-        this.load();
-      },
-      error: () => this.saving.set(false),
-    });
-  }
-
-  protected qualify(lead: LeadResource): void {
-    this.api.qualify(lead.id).subscribe(() => {
-      this.message.success(this.i18n.translate('CRM.LEADS.MESSAGES.QUALIFIED'));
-      this.load();
-    });
-  }
-
-  /** 1-click conversion into Contact, Company (Account) and Opportunity. */
-  protected convert(lead: LeadResource): void {
-    this.api.convert(lead.id).subscribe((res) => {
-      this.message.success(
-        this.i18n.translate('CRM.LEADS.MESSAGES.CONVERTED', { account: res.account.name }),
-      );
-      this.load();
-    });
-  }
-
-  // --- Detail: edit, score breakdown, engagement events, duplicates / merge -----
-  protected readonly detail = signal<LeadResource | null>(null);
-  protected readonly detailForm = signal<UpdateLeadPayload>({});
-  protected readonly duplicates = signal<LeadResource[]>([]);
-  protected readonly breakdown = computed(() =>
-    Object.entries(this.detail()?.score_breakdown ?? {}).map(([key, points]) => ({ key, points })),
+  protected readonly sourceOptions = computed(() =>
+    this.sources().map((s) => ({ value: s.id, label: s.name })),
   );
 
-  protected openDetail(lead: LeadResource): void {
-    this.api.get(lead.id).subscribe((fresh) => this.showDetail(fresh));
-  }
-
-  private showDetail(lead: LeadResource): void {
-    this.detail.set(lead);
-    this.detailForm.set({
-      first_name: lead.first_name ?? '',
-      last_name: lead.last_name ?? '',
-      company_name: lead.company_name ?? '',
-      title: lead.title ?? '',
-      email: lead.email ?? '',
-      phone: lead.phone ?? '',
-      vat_number: lead.vat_number ?? '',
-      industry: lead.industry ?? '',
-      region: lead.region ?? '',
+  constructor() {
+    this.route.queryParams
+      .pipe(takeUntilDestroyed())
+      .subscribe((q) => this.facade.replaceFilters(leadFiltersFromQueryParams(q)));
+    this.api.listSources().subscribe({
+      next: (list) => this.sources.set(list),
+      error: () => this.sources.set([]),
     });
-    this.api
-      .detectDuplicates({
-        email: lead.email,
-        phone: lead.phone,
-        company_name: lead.company_name,
-        vat_number: lead.vat_number,
-      })
-      .subscribe((list) => this.duplicates.set(list.filter((d) => d.id !== lead.id)));
   }
 
-  protected patchDetail(patch: Partial<UpdateLeadPayload>): void {
-    this.detailForm.update((f) => ({ ...f, ...patch }));
+  protected name(lead: Lead): string {
+    return leadDisplayName(lead);
   }
 
-  protected saveDetail(): void {
-    const lead = this.detail();
-    if (!lead) {
-      return;
+  protected statusLabel(status: string | null): string {
+    return status ? translateOr(this.i18n, `CRM.LEADS.STATUS.${status.toUpperCase()}`, humanize(status)) : '-';
+  }
+
+  protected setFilter(patch: Partial<LeadFilterParams>): void {
+    const next = { ...this.facade.filterParams(), ...patch };
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: leadFiltersToQueryParams(next),
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+  }
+
+  protected clearFilters(): void {
+    this.setFilter({
+      rating: undefined,
+      assigned_user_id: undefined,
+      source: undefined,
+      min_score: undefined,
+      sort: undefined,
+    });
+  }
+
+  protected onParamsChange(params: TableQueryParams): void {
+    if (params.pageIndex !== this.facade.pageIndex()) {
+      this.facade.setPage(params.pageIndex);
     }
-    this.api.update(lead.id, this.detailForm()).subscribe((updated) => {
-      this.message.success(this.i18n.translate('CRM.LEADS.MESSAGES.UPDATED'));
-      this.showDetail(updated);
-      this.load();
-    });
-  }
-
-  protected track(event: LeadBehaviorEvent): void {
-    const lead = this.detail();
-    if (!lead) {
-      return;
+    if (params.pageSize !== this.facade.pageSize()) {
+      this.facade.setPageSize(params.pageSize);
     }
-    this.api.recordBehavior(lead.id, event).subscribe((updated) => {
-      this.detail.set(updated);
-      this.load();
-    });
   }
 
-  /** Merges the chosen duplicate into the lead currently open. */
-  protected mergeDuplicate(duplicate: LeadResource): void {
-    const lead = this.detail();
-    if (!lead) {
-      return;
-    }
-    this.api.merge(lead.id, duplicate.id).subscribe((merged) => {
-      this.message.success(this.i18n.translate('CRM.LEADS.MESSAGES.MERGED_MANUAL'));
-      this.showDetail(merged);
-      this.load();
-    });
-  }
-
-  // --- Disqualify --------------------------------------------------------------
-  protected readonly disqualifying = signal<LeadResource | null>(null);
-  protected readonly disqualifyReason = signal('');
-
-  protected confirmDisqualify(): void {
-    const lead = this.disqualifying();
-    if (!lead || !this.disqualifyReason().trim()) {
-      return;
-    }
-    this.api.disqualify(lead.id, this.disqualifyReason().trim()).subscribe(() => {
-      this.disqualifying.set(null);
-      this.disqualifyReason.set('');
-      this.message.success(this.i18n.translate('CRM.LEADS.MESSAGES.DISQUALIFIED'));
-      this.load();
-    });
-  }
-
-  protected remove(lead: LeadResource): void {
-    this.api.remove(lead.id).subscribe(() => {
-      this.message.success(this.i18n.translate('CRM.LEADS.MESSAGES.DELETED'));
-      this.load();
-    });
+  protected open(lead: Lead): void {
+    void this.router.navigate([lead.id], { relativeTo: this.route });
   }
 }

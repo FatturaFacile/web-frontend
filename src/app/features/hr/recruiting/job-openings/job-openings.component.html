@@ -1,0 +1,180 @@
+<app-page-header
+  [title]="'hr.recruiting.openings.title' | translate"
+  [subtitle]="'hr.recruiting.openings.subtitle' | translate"
+/>
+
+<nz-card>
+  <div class="toolbar">
+    <input
+      nz-input
+      type="search"
+      class="toolbar__search"
+      [value]="search()"
+      [attr.aria-label]="'hr.recruiting.openings.search' | translate"
+      [placeholder]="'hr.recruiting.openings.search' | translate"
+      (input)="onSearchInput($event)"
+    />
+    <nz-select
+      class="toolbar__filter"
+      nzAllowClear
+      [nzPlaceHolder]="'hr.recruiting.openings.filterStatus' | translate"
+      [attr.aria-label]="'hr.recruiting.openings.filterStatus' | translate"
+      [ngModel]="status()"
+      (ngModelChange)="onStatusChange($event)"
+    >
+      @for (s of statuses; track s) {
+        <nz-option [nzValue]="s" [nzLabel]="'hr.recruiting.openingStatus.' + s | translate" />
+      }
+    </nz-select>
+    <nz-select
+      class="toolbar__filter"
+      nzAllowClear
+      [nzPlaceHolder]="'hr.recruiting.openings.filterDepartment' | translate"
+      [attr.aria-label]="'hr.recruiting.openings.filterDepartment' | translate"
+      [ngModel]="departmentId()"
+      (ngModelChange)="onDepartmentChange($event)"
+    >
+      @for (d of departments(); track d.id) {
+        <nz-option [nzValue]="d.id" [nzLabel]="d.name" />
+      }
+    </nz-select>
+    <span class="spacer"></span>
+    <a nz-button routerLink="/hr/recruiting/settings">
+      <i class="fa-solid fa-gear" aria-hidden="true"></i>
+      {{ 'hr.recruiting.settings.title' | translate }}
+    </a>
+    <button nz-button nzType="primary" type="button" (click)="create()">
+      <i class="fa-solid fa-plus" aria-hidden="true"></i>
+      {{ 'hr.recruiting.openings.new' | translate }}
+    </button>
+  </div>
+
+  @if (loadError()) {
+    <p class="load-error" role="alert">
+      {{ 'hr.recruiting.errors.loadOpenings' | translate }}
+      <button nz-button nzType="link" type="button" (click)="load()">
+        {{ 'hr.recruiting.actions.retry' | translate }}
+      </button>
+    </p>
+  }
+
+  <nz-table
+    #table
+    [nzData]="openings()"
+    [nzLoading]="loading()"
+    [nzFrontPagination]="false"
+    [nzTotal]="total()"
+    [nzPageIndex]="pageIndex()"
+    [nzPageSize]="pageSize()"
+    [nzNoResult]="'hr.recruiting.openings.empty' | translate"
+    nzShowSizeChanger
+    nzSize="middle"
+    (nzQueryParams)="onQueryParams($event)"
+  >
+    <thead>
+      <tr>
+        <th scope="col">{{ 'hr.recruiting.openings.colReference' | translate }}</th>
+        <th scope="col">{{ 'hr.recruiting.openings.colTitle' | translate }}</th>
+        <th scope="col">{{ 'hr.recruiting.openings.colDepartment' | translate }}</th>
+        <th scope="col">{{ 'hr.recruiting.openings.colLocation' | translate }}</th>
+        <th scope="col">{{ 'hr.recruiting.openings.colStatus' | translate }}</th>
+        <th scope="col">{{ 'hr.recruiting.openings.colApplications' | translate }}</th>
+        <th scope="col">{{ 'hr.recruiting.openings.colHires' | translate }}</th>
+        <th scope="col">{{ 'hr.recruiting.openings.colClosesAt' | translate }}</th>
+        <th scope="col">{{ 'hr.recruiting.openings.colActions' | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (o of table.data; track o.id) {
+        <tr>
+          <td>{{ o.reference }}</td>
+          <td>
+            <a [routerLink]="['/hr/recruiting/openings', o.id, 'board']">{{ titleOf(o) }}</a>
+          </td>
+          <td>{{ o.department_name ?? '-' }}</td>
+          <td>{{ o.location_site }}</td>
+          <td>
+            <nz-tag [nzColor]="statusColors[o.status]">{{
+              'hr.recruiting.openingStatus.' + o.status | translate
+            }}</nz-tag>
+          </td>
+          <td>{{ o.applications_count }}</td>
+          <td>{{ o.hires_count }} / {{ o.openings_count }}</td>
+          <td>{{ o.closes_at ? (o.closes_at | date: 'dd.MM.yyyy') : '-' }}</td>
+          <td class="actions">
+            <a nz-button nzSize="small" [routerLink]="['/hr/recruiting/openings', o.id, 'board']">
+              {{ 'hr.recruiting.openings.board' | translate }}
+            </a>
+            @if (canEdit(o)) {
+              <button
+                nz-button
+                nzSize="small"
+                type="button"
+                [disabled]="busyId() === o.id"
+                [cdkMenuTriggerFor]="actionsMenu"
+                [attr.aria-label]="
+                  'hr.recruiting.openings.actionsFor' | translate: { title: titleOf(o) }
+                "
+              >
+                {{ 'hr.recruiting.openings.colActions' | translate }}
+                <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+              </button>
+              <ng-template #actionsMenu>
+                <div class="menu" cdkMenu>
+                  <button
+                    type="button"
+                    class="menu__item"
+                    cdkMenuItem
+                    (cdkMenuItemTriggered)="edit(o)"
+                  >
+                    {{ 'common.actions.edit' | translate }}
+                  </button>
+                  @if (canPublish(o)) {
+                    @if (o.status !== 'published') {
+                      <button
+                        type="button"
+                        class="menu__item"
+                        cdkMenuItem
+                        (cdkMenuItemTriggered)="publish(o, false)"
+                      >
+                        {{ 'hr.recruiting.openings.publishPublic' | translate }}
+                      </button>
+                    }
+                    @if (o.status !== 'internal_only') {
+                      <button
+                        type="button"
+                        class="menu__item"
+                        cdkMenuItem
+                        (cdkMenuItemTriggered)="publish(o, true)"
+                      >
+                        {{ 'hr.recruiting.openings.publishInternal' | translate }}
+                      </button>
+                    }
+                  }
+                  <button
+                    type="button"
+                    class="menu__item"
+                    cdkMenuItem
+                    (cdkMenuItemTriggered)="close(o, 'filled')"
+                  >
+                    {{ 'hr.recruiting.openings.closeFilled' | translate }}
+                  </button>
+                  <button
+                    type="button"
+                    class="menu__item menu__item--danger"
+                    cdkMenuItem
+                    (cdkMenuItemTriggered)="close(o, 'cancelled')"
+                  >
+                    {{ 'hr.recruiting.openings.closeCancelled' | translate }}
+                  </button>
+                </div>
+              </ng-template>
+            }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </nz-table>
+</nz-card>
+
+<app-job-opening-form-drawer [(open)]="drawerOpen" [opening]="editing()" (saved)="onSaved()" />

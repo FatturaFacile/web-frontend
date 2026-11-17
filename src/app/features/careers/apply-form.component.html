@@ -1,0 +1,189 @@
+@if (result(); as r) {
+  <section #successPanel class="apply" tabindex="-1" role="status" aria-live="polite">
+    <nz-result
+      nzStatus="success"
+      [nzTitle]="'careers.apply.successTitle' | translate"
+      [nzSubTitle]="'careers.apply.successReference' | translate: { reference: r.reference }"
+    >
+      <div nz-result-content>
+        <p>{{ r.message }}</p>
+      </div>
+    </nz-result>
+  </section>
+} @else {
+  <section class="apply" aria-labelledby="apply-title">
+    <h2 class="apply__title" id="apply-title">{{ 'careers.apply.title' | translate }}</h2>
+
+    @if (submitError(); as e) {
+      <nz-alert
+        class="apply__alert"
+        role="alert"
+        [nzType]="e === 'throttled' ? 'warning' : 'error'"
+        nzShowIcon
+        [nzMessage]="'careers.apply.errors.' + e | translate"
+      />
+    }
+
+    <form nz-form nzLayout="vertical" novalidate (submit)="$event.preventDefault(); submit()">
+      <div class="apply__grid">
+        <nz-form-item>
+          <nz-form-label nzFor="apply-first-name" nzRequired>{{
+            'careers.apply.firstName' | translate
+          }}</nz-form-label>
+          <nz-form-control
+            [nzValidateStatus]="
+              showError('first_name', applyForm.first_name().invalid()) ? 'error' : ''
+            "
+            [nzErrorTip]="serverErrors()['first_name'] ?? ('careers.apply.required' | translate)"
+          >
+            <input
+              id="apply-first-name"
+              nz-input
+              autocomplete="given-name"
+              [formField]="applyForm.first_name"
+            />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="apply-last-name" nzRequired>{{
+            'careers.apply.lastName' | translate
+          }}</nz-form-label>
+          <nz-form-control
+            [nzValidateStatus]="
+              showError('last_name', applyForm.last_name().invalid()) ? 'error' : ''
+            "
+            [nzErrorTip]="serverErrors()['last_name'] ?? ('careers.apply.required' | translate)"
+          >
+            <input
+              id="apply-last-name"
+              nz-input
+              autocomplete="family-name"
+              [formField]="applyForm.last_name"
+            />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="apply-email" nzRequired>{{
+            'careers.apply.email' | translate
+          }}</nz-form-label>
+          <nz-form-control
+            [nzValidateStatus]="showError('email', applyForm.email().invalid()) ? 'error' : ''"
+            [nzErrorTip]="serverErrors()['email'] ?? ('careers.apply.invalidEmail' | translate)"
+          >
+            <input
+              id="apply-email"
+              nz-input
+              type="email"
+              autocomplete="email"
+              [formField]="applyForm.email"
+            />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="apply-phone">{{ 'careers.apply.phone' | translate }}</nz-form-label>
+          <nz-form-control
+            [nzValidateStatus]="serverErrors()['phone'] ? 'error' : ''"
+            [nzErrorTip]="serverErrors()['phone'] ?? ''"
+          >
+            <input
+              id="apply-phone"
+              nz-input
+              type="tel"
+              autocomplete="tel"
+              [formField]="applyForm.phone"
+            />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <nz-form-item>
+        <nz-form-label nzFor="apply-cover">{{
+          'careers.apply.coverLetter' | translate
+        }}</nz-form-label>
+        <nz-form-control
+          [nzValidateStatus]="serverErrors()['cover_letter'] ? 'error' : ''"
+          [nzErrorTip]="serverErrors()['cover_letter'] ?? ''"
+        >
+          <textarea
+            id="apply-cover"
+            nz-input
+            rows="5"
+            [formField]="applyForm.cover_letter"
+          ></textarea>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzFor="apply-cv" nzRequired>{{
+          'careers.apply.cv' | translate
+        }}</nz-form-label>
+        <nz-form-control>
+          <input
+            id="apply-cv"
+            class="apply__file"
+            type="file"
+            [accept]="cvAccept"
+            aria-describedby="apply-cv-hint"
+            [attr.aria-invalid]="!!cvError() && submitted()"
+            (change)="onFileChange($event)"
+          />
+          <p class="apply__hint" id="apply-cv-hint">{{ 'careers.apply.cvHint' | translate }}</p>
+          @if ((submitted() || cvError() === 'type' || cvError() === 'size') && cvError(); as e) {
+            <p class="apply__error" role="alert">{{ 'careers.apply.cvErrors.' + e | translate }}</p>
+          }
+          @if (serverErrors()['cv']; as cvServer) {
+            <p class="apply__error" role="alert">{{ cvServer }}</p>
+          }
+        </nz-form-control>
+      </nz-form-item>
+
+      <div class="hp" aria-hidden="true">
+        <label for="apply-website">{{ 'careers.apply.honeypot' | translate }}</label>
+        <input
+          id="apply-website"
+          type="text"
+          tabindex="-1"
+          autocomplete="off"
+          [formField]="applyForm.website"
+        />
+      </div>
+
+      <h3 class="apply__title">{{ 'careers.apply.privacyTitle' | translate }}</h3>
+      @if (page().privacy_notice) {
+        <div
+          class="apply__privacy"
+          tabindex="0"
+          [attr.aria-label]="'careers.apply.privacyTitle' | translate"
+        >
+          {{ page().privacy_notice }}
+        </div>
+      }
+      <p class="apply__hint">
+        {{ 'careers.apply.retention' | translate: { months: page().retention_months } }}
+        @if (page().privacy_policy_url) {
+          <a [href]="page().privacy_policy_url" target="_blank" rel="noopener">{{
+            'careers.privacyPolicy' | translate
+          }}</a>
+        }
+      </p>
+      <nz-form-item>
+        <nz-form-control
+          [nzValidateStatus]="showError('consent', applyForm.consent().invalid()) ? 'error' : ''"
+          [nzErrorTip]="'careers.apply.consentRequired' | translate"
+        >
+          <label
+            nz-checkbox
+            nzId="apply-consent"
+            for="apply-consent"
+            [formField]="applyForm.consent"
+            >{{ 'careers.apply.consent' | translate }}</label
+          >
+        </nz-form-control>
+      </nz-form-item>
+
+      <button nz-button nzType="primary" nzSize="large" type="submit" [nzLoading]="submitting()">
+        {{ 'careers.apply.submit' | translate }}
+      </button>
+    </form>
+  </section>
+}
