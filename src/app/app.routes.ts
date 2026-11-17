@@ -69,6 +69,13 @@ export const routes: Routes = [
       import('./features/field-service/field-service.routes').then((m) => m.FIELD_SERVICE_ROUTES),
   },
   {
+    path: 'warranty-rma',
+    canActivate: [authGuard],
+    data: { breadcrumb: 'Garanzie & RMA', title: 'Garanzie & RMA' },
+    loadChildren: () =>
+      import('./features/warranty-rma/warranty-rma.routes').then((m) => m.WARRANTY_RMA_ROUTES),
+  },
+  {
     path: 'automotive',
     canActivate: [authGuard],
     data: { breadcrumb: 'Automotive & Gomme', title: 'Automotive' },
@@ -165,6 +172,19 @@ export const routes: Routes = [
     data: { breadcrumb: 'Benvenuto', title: 'Benvenuto' },
     loadChildren: () =>
       import('./features/welcome').then((m) => m.WELCOME_ROUTES),
+  },
+  // Customer-facing RMA pages: no guard, rendered without the application shell (`data.publicPage`).
+  {
+    path: 'rma-estimate/:token',
+    data: { publicPage: true, title: 'Preventivo riparazione' },
+    loadComponent: () =>
+      import('./features/warranty-rma/public/rma-estimate.component').then((m) => m.RmaEstimateComponent),
+  },
+  {
+    path: 'rma-tracking',
+    data: { publicPage: true, title: 'Stato riparazione' },
+    loadComponent: () =>
+      import('./features/warranty-rma/public/rma-tracking.component').then((m) => m.RmaTrackingComponent),
   },
   {
     path: '**',
