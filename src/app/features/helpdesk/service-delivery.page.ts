@@ -1,8 +1,21 @@
 import { act, col, cols, progressCol, ResourcePageConfig, rf, req, tagCol } from '@shared';
 
-const WORK_TYPES = ['corrective', 'preventive', 'inspection', 'installation', 'emergency', 'commissioning'] as const;
+const WORK_TYPES = [
+  'corrective',
+  'preventive',
+  'inspection',
+  'installation',
+  'emergency',
+  'commissioning',
+] as const;
 const PRIORITIES = ['low', 'medium', 'high', 'critical'] as const;
-const BILLING_TYPES = ['contract_included', 'time_and_materials', 'fixed_fee', 'non_billable', 'internal_cost'] as const;
+const BILLING_TYPES = [
+  'contract_included',
+  'time_and_materials',
+  'fixed_fee',
+  'non_billable',
+  'internal_cost',
+] as const;
 
 const WORK_ORDER_FIELDS = [
   req(rf.text('title', { maxLength: 255 })),
@@ -40,7 +53,7 @@ const CONTRACT_FIELDS = [
   rf.decimal('included_hours', { min: 0 }),
   rf.integer('low_balance_threshold_percent', { min: 0, max: 100 }),
   rf.text('report_email', { maxLength: 255 }),
-  rf.tags('asset_ids'),
+  rf.multiLookup('asset_ids', 'equipmentPassports'),
 ];
 
 /** Top-up (positive hours) or signed adjustment of a contract hour bank; every entry lands in the ledger. */
@@ -67,14 +80,20 @@ export const SERVICE_WORK_ORDERS_PAGE: ResourcePageConfig = {
         ],
       },
       detailPath: '/esm/work-orders/{id}',
-      create: act('POST', 'RES.A.new_work_order', '/esm/work-orders', { fields: WORK_ORDER_FIELDS }),
+      create: act('POST', 'RES.A.new_work_order', '/esm/work-orders', {
+        fields: WORK_ORDER_FIELDS,
+      }),
       rowActions: [
-        act('POST', 'RES.A.dispatch', '/esm/work-orders/{id}/dispatch', { fields: [rf.uuid('technician_id')] }),
+        act('POST', 'RES.A.dispatch', '/esm/work-orders/{id}/dispatch', {
+          fields: [rf.uuid('technician_id')],
+        }),
         act('POST', 'RES.A.schedule', '/esm/work-orders/{id}/schedule', {
           fields: [
             req(rf.uuid('technician_id')),
             req(rf.datetime('scheduled_start')),
-            req(rf.datetime('scheduled_end', { notBefore: 'scheduled_start', strictlyAfter: true })),
+            req(
+              rf.datetime('scheduled_end', { notBefore: 'scheduled_start', strictlyAfter: true }),
+            ),
             rf.textarea('notes'),
           ],
         }),
@@ -133,16 +152,24 @@ export const SERVICE_WORK_ORDERS_PAGE: ResourcePageConfig = {
         ],
       },
       detailPath: '/esm/service-contracts/{id}',
-      create: act('POST', 'RES.A.new_maintenance_contract', '/esm/service-contracts', { fields: CONTRACT_FIELDS }),
+      create: act('POST', 'RES.A.new_maintenance_contract', '/esm/service-contracts', {
+        fields: CONTRACT_FIELDS,
+      }),
       rowActions: [
         act('PUT', 'RES.ACTION.EDIT', '/esm/service-contracts/{id}', {
           prefill: true,
           fields: CONTRACT_FIELDS.filter((field) => field.key !== 'included_hours'),
         }),
-        act('POST', 'RES.A.top_up_hours', '/esm/service-contracts/{id}/hours/top-up', { fields: HOUR_FIELDS }),
-        act('POST', 'RES.A.adjust_hours', '/esm/service-contracts/{id}/hours/adjust', { fields: HOUR_FIELDS }),
+        act('POST', 'RES.A.top_up_hours', '/esm/service-contracts/{id}/hours/top-up', {
+          fields: HOUR_FIELDS,
+        }),
+        act('POST', 'RES.A.adjust_hours', '/esm/service-contracts/{id}/hours/adjust', {
+          fields: HOUR_FIELDS,
+        }),
         act('GET', 'RES.A.hour_ledger', '/esm/service-contracts/{id}/ledger', { showResult: true }),
-        act('POST', 'RES.A.send_residual_report', '/esm/service-contracts/{id}/residual-report', { confirm: true }),
+        act('POST', 'RES.A.send_residual_report', '/esm/service-contracts/{id}/residual-report', {
+          confirm: true,
+        }),
       ],
     },
     {
@@ -151,7 +178,11 @@ export const SERVICE_WORK_ORDERS_PAGE: ResourcePageConfig = {
       module: 'service',
       list: {
         path: '/esm/equipment-passports',
-        filters: [rf.text('serial_number'), rf.select('asset_status', ASSET_STATUSES), rf.select('warranty', ['in', 'out'])],
+        filters: [
+          rf.text('serial_number'),
+          rf.select('asset_status', ASSET_STATUSES),
+          rf.select('warranty', ['in', 'out']),
+        ],
         columns: [
           ...cols('serial_number', 'installation_site'),
           tagCol('asset_status'),
@@ -162,7 +193,9 @@ export const SERVICE_WORK_ORDERS_PAGE: ResourcePageConfig = {
       },
       detailPath: '/esm/equipment-passports/{id}',
       rowActions: [
-        act('GET', 'RES.A.asset_history', '/esm/equipment-passports/{id}/history', { showResult: true }),
+        act('GET', 'RES.A.asset_history', '/esm/equipment-passports/{id}/history', {
+          showResult: true,
+        }),
         act('PUT', 'RES.ACTION.EDIT', '/esm/equipment-passports/{id}', {
           prefill: true,
           fields: [

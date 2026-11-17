@@ -26,7 +26,13 @@
     />
 
     <span class="spacer"></span>
-    <button nz-button nzType="primary" type="button" appIconAction="create" (click)="create()"></button>
+    <button
+      nz-button
+      nzType="primary"
+      type="button"
+      appIconAction="create"
+      (click)="create()"
+    ></button>
   </div>
 
   <app-base-table
@@ -49,7 +55,7 @@
   </ng-template>
 
   <ng-template #taxTpl let-c>
-    {{ c.vat_number || c.fiscal_code || c.uid_number || "-" }}
+    {{ c.vat_number || c.fiscal_code || c.uid_number || '-' }}
   </ng-template>
 
   <ng-template #countryTpl let-c>
@@ -69,6 +75,15 @@
       >
         <nz-icon nzType="bar-chart" />
       </button>
+      <a
+        nz-button
+        nzType="text"
+        nzSize="small"
+        [routerLink]="['/crm/clients', c.id]"
+        title="Customer 360"
+      >
+        <nz-icon nzType="solution" />
+      </a>
       <button
         nz-button
         nzType="text"

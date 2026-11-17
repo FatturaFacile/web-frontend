@@ -19,15 +19,36 @@ interface LookupDefinition {
 const LOOKUPS: Record<ResourceLookupName, LookupDefinition> = {
   warehouses: { path: '/inventory/warehouses', labelKeys: ['code', 'name'] },
   stockItems: { path: '/inventory/items', labelKeys: ['sku', 'name'], filters: { per_page: 200 } },
-  suppliers: { path: '/procurement/suppliers', labelKeys: ['supplier_code', 'company_name'], filters: { per_page: 200 } },
-  mfgItems: { path: '/manufacturing/items', labelKeys: ['item_code', 'name'], filters: { per_page: 200 } },
+  suppliers: {
+    path: '/procurement/suppliers',
+    labelKeys: ['supplier_code', 'company_name'],
+    filters: { per_page: 200 },
+  },
+  mfgItems: {
+    path: '/manufacturing/items',
+    labelKeys: ['item_code', 'name'],
+    filters: { per_page: 200 },
+  },
   bins: { path: '/inventory/warehouses/{dep}/bins', labelKeys: ['zone_code', 'code'] },
   zones: { path: '/inventory/warehouses/{dep}/zones', labelKeys: ['code', 'name'] },
-  contacts: { path: '/crm/contacts', labelKeys: ['company_name', 'first_name', 'last_name'], filters: { per_page: 200 } },
+  contacts: {
+    path: '/crm/contacts',
+    labelKeys: ['company_name', 'first_name', 'last_name'],
+    filters: { per_page: 200 },
+  },
   kbCategories: { path: '/esm/kb/categories', labelKeys: ['name'] },
   businessHours: { path: '/esm/helpdesk/business-hours', labelKeys: ['code', 'name'] },
-  constructionSites: { path: '/construction/sites', labelKeys: ['code', 'name'], filters: { per_page: 200 } },
+  constructionSites: {
+    path: '/construction/sites',
+    labelKeys: ['code', 'name'],
+    filters: { per_page: 200 },
+  },
   hospitalityRooms: { path: '/hospitality/rooms', labelKeys: ['name'] },
+  equipmentPassports: {
+    path: '/esm/equipment-passports',
+    labelKeys: ['serial_number', 'installation_site'],
+    filters: { per_page: 200 },
+  },
 };
 
 /** Cached remote option lists for the select fields of the resource forms. */

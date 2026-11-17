@@ -37,7 +37,8 @@ export type ResourceLookupName =
   | 'kbCategories'
   | 'businessHours'
   | 'constructionSites'
-  | 'hospitalityRooms';
+  | 'hospitalityRooms'
+  | 'equipmentPassports';
 
 export interface ResourceField {
   key: string;
@@ -87,7 +88,8 @@ export interface ResourceField {
   requiredIf?: { field: string; value: string };
 }
 
-export type ResourceColumnType = 'text' | 'decimal' | 'date' | 'datetime' | 'tag' | 'bool' | 'progress';
+export type ResourceColumnType =
+  'text' | 'decimal' | 'date' | 'datetime' | 'tag' | 'bool' | 'progress';
 
 export interface ResourceColumn {
   /** Dotted path into the row. */
