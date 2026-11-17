@@ -1,0 +1,21 @@
+# Ignore list shared across AI tools
+node_modules/
+dist/
+.angular/
+coverage/
+test-results/
+playwright-report/
+blob-report/
+storybook-static/
+.idea/
+.vscode/
+*.log
+.env
+.env.*
+!.env.example
+certs/
+*.pem
+*.key
+*.pfx
+*.zip
+*.pdf
