@@ -352,4 +352,12 @@ describe('PortalApiService', () => {
     expect(req.request.responseType).toBe('blob');
     req.flush(new Blob(['pdf']));
   });
+
+  it('lists the customs shipment requests of the portal token', () => {
+    service.getCustomsShipmentRequests('tok-1', { per_page: 10 }).subscribe();
+    const req = httpMock.expectOne((r) => r.url === '/api/v1/portal/customs/tok-1/shipment-requests');
+    expect(req.request.method).toBe('GET');
+    expect(req.request.params.get('per_page')).toBe('10');
+    req.flush({ success: true, message: '', data: [], meta: {} });
+  });
 });

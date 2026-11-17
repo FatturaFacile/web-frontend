@@ -113,4 +113,23 @@ describe('AssociationAreaApiService', () => {
     expect(attendance.request.body).toEqual(payload);
     attendance.flush({ data: [] });
   });
+
+  it('lists the open ballots and casts a proxy vote', () => {
+    service.token.set('tok');
+    service.ballots().subscribe();
+    const list = http.expectOne(`${base}/ballots`);
+    expect(list.request.headers.get('X-Area-Token')).toBe('tok');
+    list.flush({ data: [] });
+
+    service.voteBallot('b-1', 'yes', 'p-2').subscribe();
+    const vote = http.expectOne(`${base}/ballots/b-1/vote`);
+    expect(vote.request.method).toBe('POST');
+    expect(vote.request.body).toEqual({ choice: 'yes', on_behalf_of: 'p-2' });
+    vote.flush({ data: { recorded: true } });
+
+    service.voteBallot('b-1', 'no').subscribe();
+    const own = http.expectOne(`${base}/ballots/b-1/vote`);
+    expect(own.request.body).toEqual({ choice: 'no' });
+    own.flush({ data: { recorded: true } });
+  });
 });

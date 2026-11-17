@@ -82,4 +82,32 @@ describe('CrmExtensionApiService', () => {
     expect(enroll.request.body).toEqual({ lead_id: 'lead-1' });
     enroll.flush({ data: {} });
   });
+
+  it('covers the single-record endpoints of the extension module', () => {
+    service.getPartner('p1').subscribe();
+    httpMock.expectOne((req) => req.url.endsWith('/crm/partners/p1')).flush({ data: {} });
+
+    service.updatePartnerTier('t1', { name: 'Gold' }).subscribe();
+    const put = httpMock.expectOne((req) => req.url.endsWith('/crm/partner-tiers/t1'));
+    expect(put.request.method).toBe('PUT');
+    put.flush({ data: {} });
+
+    service.evaluatePartnerTier('p1').subscribe();
+    const evaluate = httpMock.expectOne((req) => req.url.endsWith('/crm/partners/p1/evaluate-tier'));
+    expect(evaluate.request.method).toBe('POST');
+    evaluate.flush({ data: {} });
+
+    service.getTerritoryAccounts('x').subscribe();
+    httpMock.expectOne((req) => req.url.endsWith('/crm/territories/x/accounts')).flush({ data: [] });
+
+    service.assignAccountToTerritory('a1', 't1').subscribe();
+    const assign = httpMock.expectOne((req) => req.url.endsWith('/crm/accounts/a1/territory'));
+    expect(assign.request.body).toEqual({ territory_id: 't1' });
+    assign.flush({ data: {} });
+
+    service.deleteMdfFund('f1').subscribe();
+    const del = httpMock.expectOne((req) => req.url.endsWith('/crm/mdf-funds/f1'));
+    expect(del.request.method).toBe('DELETE');
+    del.flush(null);
+  });
 });

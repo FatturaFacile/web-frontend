@@ -49,6 +49,18 @@ export class ConstructionApiService {
     return this.listPage<ConstructionSite>(`${this.base}/sites`, params);
   }
 
+  getSite(id: string): Observable<ApiResponse<ConstructionSite>> {
+    return this.http.get<ApiResponse<ConstructionSite>>(`${this.base}/sites/${id}`);
+  }
+
+  updateSite(id: string, payload: Partial<ConstructionSiteRequest>): Observable<ApiResponse<ConstructionSite>> {
+    return this.http.put<ApiResponse<ConstructionSite>>(`${this.base}/sites/${id}`, payload);
+  }
+
+  deleteSite(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/sites/${id}`);
+  }
+
   createSite(payload: ConstructionSiteRequest): Observable<ApiResponse<ConstructionSite>> {
     return this.http.post<ApiResponse<ConstructionSite>>(`${this.base}/sites`, payload);
   }

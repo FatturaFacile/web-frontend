@@ -130,4 +130,22 @@ describe('ContractRegisterApiService', () => {
     expect(req.request.method).toBe('POST');
     req.flush({ success: true, data: { success: true } });
   });
+
+  it('lists, attaches and detaches linked contract documents', () => {
+    service.getContractDocuments('customer', 'c-1').subscribe((res) => expect(res.data.length).toBe(1));
+    const list = httpTesting.expectOne(`${base}/contract-register/customer/c-1/documents`);
+    expect(list.request.method).toBe('GET');
+    list.flush({ data: [{ id: 'doc-1' }] });
+
+    service.attachContractDocument('customer', 'c-1', 'doc-1').subscribe();
+    const attach = httpTesting.expectOne(`${base}/contract-register/customer/c-1/documents`);
+    expect(attach.request.method).toBe('POST');
+    expect(attach.request.body).toEqual({ document_id: 'doc-1' });
+    attach.flush({ data: { id: 'doc-1' } });
+
+    service.detachContractDocument('customer', 'c-1', 'doc-1').subscribe();
+    const detach = httpTesting.expectOne(`${base}/contract-register/customer/c-1/documents/doc-1`);
+    expect(detach.request.method).toBe('DELETE');
+    detach.flush(null);
+  });
 });

@@ -111,6 +111,19 @@ export class ReturnsApiService {
     return this.http.post<ReturnsResponse<ReturnsRma>>(`${this.base}/rmas/${id}/close`, {});
   }
 
+  // Single-record reads
+  getWarranty(id: string): Observable<ReturnsResponse<ReturnsWarranty>> {
+    return this.http.get<ReturnsResponse<ReturnsWarranty>>(`${this.base}/warranties/${id}`);
+  }
+
+  getClaim(id: string): Observable<ReturnsResponse<ReturnsWarrantyClaim>> {
+    return this.http.get<ReturnsResponse<ReturnsWarrantyClaim>>(`${this.base}/claims/${id}`);
+  }
+
+  getSupplierReturn(id: string): Observable<ReturnsResponse<ReturnsSupplierReturn>> {
+    return this.http.get<ReturnsResponse<ReturnsSupplierReturn>>(`${this.base}/supplier-returns/${id}`);
+  }
+
   // Warranties and claims
   getWarranties(filters?: ReturnsWarrantyFilters): Observable<ReturnsResponse<ReturnsWarranty[]>> {
     return this.http.get<ReturnsResponse<ReturnsWarranty[]>>(`${this.base}/warranties`, { params: this.params(filters) });

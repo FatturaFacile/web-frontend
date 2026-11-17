@@ -21,6 +21,16 @@ import {
  * Member area of an association. It is not behind the session login: the personal token of the emailed
  * link travels in the `X-Area-Token` header and selects the person and the tenant.
  */
+export interface AssociationAreaBallot {
+  id: string;
+  meeting_id: string;
+  question: string;
+  options: string[];
+  is_secret: boolean;
+  can_vote_self: boolean;
+  can_vote_for: string[];
+}
+
 @Service()
 export class AssociationAreaApiService {
   private readonly http = inject(HttpClient);
@@ -118,5 +128,19 @@ export class AssociationAreaApiService {
     return this.http.post<ApiResponse<AssociationAreaRecord[]>>(`${this.base}/instructor/courses/${courseId}/attendance`, payload, {
       headers: this.headers,
     });
+  }
+
+  /** Open ballots the person (or the people she represents by proxy) can vote on. */
+  ballots(): Observable<ApiResponse<AssociationAreaBallot[]>> {
+    return this.http.get<ApiResponse<AssociationAreaBallot[]>>(`${this.base}/ballots`, { headers: this.headers });
+  }
+
+  /** Casts a vote; `onBehalfOf` is the id of a represented participant (proxy), omitted for the own vote. */
+  voteBallot(ballotId: string, choice: string, onBehalfOf?: string): Observable<ApiResponse<{ recorded: boolean }>> {
+    return this.http.post<ApiResponse<{ recorded: boolean }>>(
+      `${this.base}/ballots/${ballotId}/vote`,
+      { choice, ...(onBehalfOf ? { on_behalf_of: onBehalfOf } : {}) },
+      { headers: this.headers },
+    );
   }
 }

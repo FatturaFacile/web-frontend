@@ -164,4 +164,11 @@ describe('InvoiceApiService', () => {
       ],
     });
   });
+
+  it('lists the payments recorded on an invoice', () => {
+    service.getPayments('inv-1').subscribe();
+    const req = httpTesting.expectOne(`${baseUrl}/sales/invoices/inv-1/payments`);
+    expect(req.request.method).toBe('GET');
+    req.flush({ success: true, message: '', data: [] });
+  });
 });

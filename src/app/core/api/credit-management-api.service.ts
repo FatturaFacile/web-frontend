@@ -103,6 +103,11 @@ export class CreditManagementApiService {
     return this.http.get<CreditResponse<CreditScore[]>>(`${this.base}/scores`, { params: this.params({ customer_id: customerId, per_page: 100 }) });
   }
 
+  /** A single credit score. */
+  getScore(id: string): Observable<CreditResponse<CreditScore>> {
+    return this.http.get<CreditResponse<CreditScore>>(`${this.base}/scores/${id}`);
+  }
+
   createScore(payload: CreditScoreRequest): Observable<CreditResponse<CreditScore>> {
     return this.http.post<CreditResponse<CreditScore>>(`${this.base}/scores`, payload);
   }
@@ -125,6 +130,10 @@ export class CreditManagementApiService {
     return this.http.get<CreditResponse<CreditLimitRequest[]>>(`${this.base}/limit-requests`, { params: this.params({ status, per_page: 100 }) });
   }
 
+  getLimitRequest(id: string): Observable<CreditResponse<CreditLimitRequest>> {
+    return this.http.get<CreditResponse<CreditLimitRequest>>(`${this.base}/limit-requests/${id}`);
+  }
+
   createLimitRequest(payload: CreditLimitRequestPayload): Observable<CreditResponse<CreditLimitRequest>> {
     return this.http.post<CreditResponse<CreditLimitRequest>>(`${this.base}/limit-requests`, payload);
   }
@@ -144,6 +153,10 @@ export class CreditManagementApiService {
   // Insurance
   getInsurancePolicies(): Observable<CreditResponse<CreditInsurancePolicy[]>> {
     return this.http.get<CreditResponse<CreditInsurancePolicy[]>>(`${this.base}/insurance-policies`, { params: this.params({ per_page: 100 }) });
+  }
+
+  getInsurancePolicy(id: string): Observable<CreditResponse<CreditInsurancePolicy>> {
+    return this.http.get<CreditResponse<CreditInsurancePolicy>>(`${this.base}/insurance-policies/${id}`);
   }
 
   createInsurancePolicy(payload: CreditInsurancePolicyRequest): Observable<CreditResponse<CreditInsurancePolicy>> {
@@ -253,6 +266,10 @@ export class CreditManagementApiService {
   // Disputes
   getDisputes(filters?: CreditDisputeFilters): Observable<CreditResponse<CreditDispute[]>> {
     return this.http.get<CreditResponse<CreditDispute[]>>(`${this.base}/disputes`, { params: this.params(filters) });
+  }
+
+  getDispute(id: string): Observable<CreditResponse<CreditDispute>> {
+    return this.http.get<CreditResponse<CreditDispute>>(`${this.base}/disputes/${id}`);
   }
 
   createDispute(payload: CreditDisputeRequest): Observable<CreditResponse<CreditDispute>> {

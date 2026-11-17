@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, switchMap } from 'rxjs';
 import { getSanctumBaseUrl } from '@core/auth/csrf.utils';
+import { environment } from '@env';
 
 export interface LoginCredentials {
   email: string;
@@ -14,7 +15,7 @@ export interface LoginCredentials {
  *
  * Enforces pure cookie-based SPA authentication:
  * - Handshakes with `/sanctum/csrf-cookie` to establish the CSRF token and session cookies.
- * - Authenticates via `/login` using `withCredentials: true`.
+ * - Authenticates via `/auth/login` using `withCredentials: true`.
  * - Tokens are NEVER stored in localStorage, sessionStorage, or IndexedDB.
  */
 @Injectable({
@@ -23,22 +24,23 @@ export interface LoginCredentials {
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = getSanctumBaseUrl();
+  private readonly apiUrl = environment.apiBaseUrl;
 
   login(credentials: LoginCredentials): Observable<unknown> {
     return this.http
       .get(`${this.baseUrl}/sanctum/csrf-cookie`, { withCredentials: true })
       .pipe(
         switchMap(() =>
-          this.http.post(`${this.baseUrl}/login`, credentials, { withCredentials: true }),
+          this.http.post(`${this.apiUrl}/auth/login`, credentials, { withCredentials: true }),
         ),
       );
   }
 
   logout(): Observable<unknown> {
-    return this.http.post(`${this.baseUrl}/logout`, {}, { withCredentials: true });
+    return this.http.post(`${this.apiUrl}/auth/logout`, {}, { withCredentials: true });
   }
 
   getUser(): Observable<unknown> {
-    return this.http.get(`${this.baseUrl}/api/user`, { withCredentials: true });
+    return this.http.get(`${this.apiUrl}/auth/profile`, { withCredentials: true });
   }
 }

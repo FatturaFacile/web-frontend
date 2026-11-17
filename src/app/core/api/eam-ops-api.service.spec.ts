@@ -17,6 +17,9 @@ interface Case {
 }
 
 const CASES: Case[] = [
+  { name: 'createCategory', call: (s) => s.createCategory({ code: 'C1', name: 'Cat' }), method: 'POST', path: '/categories', body: { code: 'C1', name: 'Cat' } },
+  { name: 'getDepreciationRuns', call: (s) => s.getDepreciationRuns({ page: 2 }), method: 'GET', path: '/depreciation/runs', params: { page: '2' } },
+  { name: 'createMaintenanceWorkOrder', call: (s) => s.createMaintenanceWorkOrder({ asset_id: 'a1' }), method: 'POST', path: '/maintenance/work-orders', body: { asset_id: 'a1' } },
   { name: 'getMaintenancePlans', call: (s) => s.getMaintenancePlans({ page: 2 }), method: 'GET', path: '/maintenance/plans', params: { page: '2' } },
   { name: 'getMaintenancePlan', call: (s) => s.getMaintenancePlan('p1'), method: 'GET', path: '/maintenance/plans/p1' },
   { name: 'getDueMaintenancePlans', call: (s) => s.getDueMaintenancePlans('2026-11-01'), method: 'GET', path: '/maintenance/plans/due', params: { as_of: '2026-11-01' } },

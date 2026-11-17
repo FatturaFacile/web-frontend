@@ -239,6 +239,10 @@ export class PracticeApiService {
     return this.http.get<PaginatedResponse<PracticeFeeProposal>>(`${this.base}/fee-proposals`, { params: params ? toHttpParams(params) : undefined });
   }
 
+  getFeeProposal(id: string): Observable<ApiResponse<PracticeFeeProposal>> {
+    return this.http.get<ApiResponse<PracticeFeeProposal>>(`${this.base}/fee-proposals/${id}`);
+  }
+
   createFeeProposal(payload: PracticeFeeProposalRequest): Observable<ApiResponse<PracticeFeeProposal>> {
     return this.http.post<ApiResponse<PracticeFeeProposal>>(`${this.base}/fee-proposals`, payload);
   }

@@ -328,3 +328,15 @@ export interface ExpiringAsset {
 }
 
 export type AssetCategoryPayload = { code: string; name: string } & Record<string, string | number | boolean | null | undefined>;
+
+/** `POST /eam/maintenance/work-orders`: ad-hoc (not plan-generated) maintenance work order. */
+export interface CreateMaintenanceWorkOrderPayload {
+  asset_id: string;
+  plan_id?: string | null;
+  maintenance_type?: 'preventive' | 'corrective' | 'condition_based' | 'emergency' | 'upgrade' | null;
+  priority?: 'low' | 'medium' | 'high' | 'critical' | null;
+  scheduled_date?: string | null;
+  assigned_technician_id?: string | null;
+  problem_description?: string | null;
+  estimated_cost?: number | null;
+}

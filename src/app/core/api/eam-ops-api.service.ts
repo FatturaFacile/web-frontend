@@ -26,6 +26,7 @@ import {
   AssetValuation,
   AssetValuationPayload,
   CompleteWorkOrderPayload,
+  CreateMaintenanceWorkOrderPayload,
   DepreciationPreviewRow,
   DepreciationRunResource,
   ExpiringAsset,
@@ -128,6 +129,10 @@ export class EamOpsApiService {
     return this.http.post<ApiResponse<AssetClass>>(`${this.base}/classes`, payload);
   }
 
+  createCategory(payload: AssetCategoryPayload): Observable<ApiResponse<AssetCategoryResource>> {
+    return this.http.post<ApiResponse<AssetCategoryResource>>(`${this.base}/categories`, payload);
+  }
+
   getCategory(id: string): Observable<ApiResponse<AssetCategoryResource>> {
     return this.http.get<ApiResponse<AssetCategoryResource>>(`${this.base}/categories/${id}`);
   }
@@ -228,6 +233,14 @@ export class EamOpsApiService {
     return this.http.get<ApiResponse<DepreciationPreviewRow[]>>(`${this.base}/assets/${assetId}/depreciation-preview`, {
       params: params ? toHttpParams(params) : undefined,
     });
+  }
+
+  getDepreciationRuns(params: QueryFilterParams = {}): Observable<PaginatedResponse<DepreciationRunResource>> {
+    return this.http.get<PaginatedResponse<DepreciationRunResource>>(`${this.base}/depreciation/runs`, { params: toHttpParams(params) });
+  }
+
+  createMaintenanceWorkOrder(payload: CreateMaintenanceWorkOrderPayload): Observable<ApiResponse<WorkOrder>> {
+    return this.http.post<ApiResponse<WorkOrder>>(`${this.base}/maintenance/work-orders`, payload);
   }
 
   getDepreciationRun(id: string): Observable<ApiResponse<DepreciationRunResource>> {

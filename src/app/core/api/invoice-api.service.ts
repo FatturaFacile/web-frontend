@@ -107,6 +107,10 @@ export class InvoiceApiService {
     return this.http.post<ApiResponse<InvoiceResource>>(`${this.url}/${id}/convert-proforma`, {});
   }
 
+  getPayments(id: string): Observable<ApiResponse<unknown[]>> {
+    return this.http.get<ApiResponse<unknown[]>>(`${this.url}/${id}/payments`);
+  }
+
   recordPayment(id: string, payload: RecordPaymentPayload): Observable<ApiResponse<unknown>> {
     return this.http.post<ApiResponse<unknown>>(`${this.url}/${id}/payments`, payload);
   }

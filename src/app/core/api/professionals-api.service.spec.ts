@@ -104,4 +104,14 @@ describe('ProfessionalsApiService', () => {
     expect(postReq.request.body).toEqual(payload);
     postReq.flush({ data: { id: 'tl-new', ...payload } });
   });
+
+  it('creates a fee note', () => {
+    service
+      .createFeeNote({ client_id: 'c-1', note_number: 'N-1', date: '2026-02-01', taxable_fees: 1000, cpa_rate: 4 })
+      .subscribe();
+    const req = httpMock.expectOne(`${base}/fee-notes`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body.taxable_fees).toBe(1000);
+    req.flush({ data: { id: 'fn-1' } });
+  });
 });

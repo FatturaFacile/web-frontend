@@ -96,6 +96,10 @@ export class EventsApiService {
   }
 
   // Registrations
+  getRegistration(id: string): Observable<EventsResponse<EventRegistration>> {
+    return this.http.get<EventsResponse<EventRegistration>>(`${this.base}/registrations/${id}`);
+  }
+
   getRegistrations(filters?: EventRegistrationFilters): Observable<EventsResponse<EventRegistration[]>> {
     return this.http.get<EventsResponse<EventRegistration[]>>(`${this.base}/registrations`, { params: this.params(filters) });
   }

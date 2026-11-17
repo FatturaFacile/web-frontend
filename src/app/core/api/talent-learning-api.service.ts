@@ -106,6 +106,10 @@ export class TalentLearningApiService {
     return this.http.post<TalentResponse<TalentCompCycle>>(`${this.base}/compensation/cycles`, payload);
   }
 
+  updateCycle(id: string, payload: Partial<TalentCompCycleRequest>): Wrapped<TalentCompCycle> {
+    return this.http.put<TalentResponse<TalentCompCycle>>(`${this.base}/compensation/cycles/${id}`, payload);
+  }
+
   deleteCycle(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/compensation/cycles/${id}`);
   }
@@ -134,6 +138,10 @@ export class TalentLearningApiService {
     return this.http.post<TalentResponse<TalentBudgetPool>>(`${this.base}/compensation/pools`, payload);
   }
 
+  updateBudgetPool(id: string, payload: Partial<TalentBudgetPoolRequest>): Wrapped<TalentBudgetPool> {
+    return this.http.put<TalentResponse<TalentBudgetPool>>(`${this.base}/compensation/pools/${id}`, payload);
+  }
+
   deleteBudgetPool(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/compensation/pools/${id}`);
   }
@@ -144,6 +152,10 @@ export class TalentLearningApiService {
 
   createMeritProposal(payload: TalentMeritProposalRequest): Wrapped<TalentMeritProposal> {
     return this.http.post<TalentResponse<TalentMeritProposal>>(`${this.base}/compensation/proposals`, payload);
+  }
+
+  updateMeritProposal(id: string, payload: Partial<TalentMeritProposalRequest>): Wrapped<TalentMeritProposal> {
+    return this.http.put<TalentResponse<TalentMeritProposal>>(`${this.base}/compensation/proposals/${id}`, payload);
   }
 
   submitMeritProposal(id: string): Wrapped<TalentMeritProposal> {

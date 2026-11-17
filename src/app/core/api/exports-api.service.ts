@@ -105,6 +105,11 @@ export class ExportsApiService {
     });
   }
 
+  /** A single export job (status polling). */
+  getJob(id: string): Observable<ApiResponse<ExportJob>> {
+    return this.http.get<ApiResponse<ExportJob>>(`${this.base}/jobs/${id}`);
+  }
+
   /** Queues an export; the answer is the job in `queued` status. */
   createJob(payload: ExportJobPayload): Observable<ApiResponse<ExportJob>> {
     return this.http.post<ApiResponse<ExportJob>>(`${this.base}/jobs`, payload);
