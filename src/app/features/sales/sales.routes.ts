@@ -61,4 +61,15 @@ export const SALES_ROUTES: Routes = [
         (m) => m.SwissQrBillComponent
       ),
   },
+  {
+    path: 'recurring-contracts',
+    data: {
+      breadcrumb: 'NAV.RECURRING_CONTRACTS',
+      title: 'Contratti Ricorrenti & Abbonamenti',
+    },
+    loadComponent: () =>
+      import('./recurring-contracts/recurring-contracts-list.component').then(
+        (m) => m.RecurringContractsListComponent
+      ),
+  },
 ];

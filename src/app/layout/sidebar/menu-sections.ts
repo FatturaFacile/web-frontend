@@ -175,6 +175,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             module: 'invoicing',
           },
           {
+            key: 'NAV.RECURRING_CONTRACTS',
+            route: '/sales/recurring-contracts',
+            icon: 'fa-solid fa-arrows-spin',
+            module: 'invoicing',
+          },
+          {
             key: 'NAV.SC_OVERVIEW',
             route: '/sales/cycle/overview',
             icon: 'fa-solid fa-chart-line',
