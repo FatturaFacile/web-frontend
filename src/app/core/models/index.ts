@@ -113,3 +113,4 @@ export * from './tax.model';
 export * from './tax.constants';
 export * from './warranty-rma.model';
 export * from './logistics.model';
+export * from './swiss-qr-bill.model';
