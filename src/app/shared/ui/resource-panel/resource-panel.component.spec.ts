@@ -6,7 +6,7 @@ import { environment } from '@env';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { icons } from '../../../icons-provider';
-import { act, col, cols, rf, req } from './resource-config.helpers';
+import { act, col, cols, progressCol, rf, req } from './resource-config.helpers';
 import { ResourcePanelComponent } from './resource-panel.component';
 import { ResourcePanelConfig } from './resource-panel.types';
 
@@ -119,5 +119,50 @@ describe('ResourcePanelComponent', () => {
     expect(panel.formFields().map((f) => f.key)).toEqual(['code']);
     panel.scopeValue.set('statistical-keys');
     expect(panel.formFields().map((f) => f.key)).toEqual(['code', 'tariff_code']);
+  });
+});
+
+describe('ResourcePanelComponent progress column', () => {
+  it('renders the hour-bank usage as a progress bar and caps it at 100%', () => {
+    TestBed.configureTestingModule({
+      imports: [ResourcePanelComponent],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideNzIcons(icons),
+        { provide: I18nService, useValue: { translate: (key: string) => key } },
+        { provide: PermissionsService, useValue: { canWrite: () => false } },
+      ],
+    });
+    const http = TestBed.inject(HttpTestingController);
+    const fixture = TestBed.createComponent(ResourcePanelComponent);
+    fixture.componentRef.setInput('config', {
+      id: 'contracts',
+      titleKey: 'RES.P.contracts',
+      module: 'service',
+      list: { path: '/esm/service-contracts', columns: [progressCol('consumed_hours', 'included_hours')] },
+    } satisfies ResourcePanelConfig);
+    fixture.detectChanges();
+    http
+      .expectOne((r) => r.url === `${environment.apiBaseUrl}/esm/service-contracts`)
+      .flush({
+        data: [
+          { id: 'c1', consumed_hours: '2.50', included_hours: '10.00' },
+          { id: 'c2', consumed_hours: '12.00', included_hours: '10.00' },
+          { id: 'c3', consumed_hours: '1.00', included_hours: '0.00' },
+        ],
+        meta: { total: 3 },
+      });
+    fixture.detectChanges();
+
+    const panel = fixture.componentInstance as unknown as {
+      progressPercent: (row: Record<string, unknown>, column: { key: string; totalKey: string }) => number;
+    };
+    const column = { key: 'consumed_hours', totalKey: 'included_hours' };
+    expect(panel.progressPercent({ consumed_hours: '2.50', included_hours: '10.00' }, column)).toBe(25);
+    expect(panel.progressPercent({ consumed_hours: '12.00', included_hours: '10.00' }, column)).toBe(100);
+    expect(panel.progressPercent({ consumed_hours: '1.00', included_hours: '0.00' }, column)).toBe(0);
+    expect(fixture.nativeElement.querySelectorAll('nz-progress').length).toBe(3);
+    http.verify();
   });
 });
