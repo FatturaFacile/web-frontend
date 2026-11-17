@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 # Autonomous Agent & Script Sandboxed Execution Container
-FROM node:22-bookworm-slim
+FROM node:26-bookworm-slim
 
 # Install system dependencies needed for pnpm and build tooling
 RUN apt-get update && \
