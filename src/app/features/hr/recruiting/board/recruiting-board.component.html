@@ -1,0 +1,108 @@
+<app-page-header
+  [title]="opening()?.position_title ?? ('hr.recruiting.board.title' | translate)"
+  [subtitle]="'hr.recruiting.board.subtitle' | translate"
+/>
+
+<div class="board-toolbar">
+  <a nz-button routerLink="/hr/recruiting/openings">
+    <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+    {{ 'hr.recruiting.board.backToOpenings' | translate }}
+  </a>
+  @if (opening(); as o) {
+    <span class="board-toolbar__meta">
+      <nz-tag>{{ o.reference }}</nz-tag>
+      <nz-tag [nzColor]="'blue'">{{
+        'hr.recruiting.openingStatus.' + o.status | translate
+      }}</nz-tag>
+      {{
+        'hr.recruiting.board.hiresOf'
+          | translate: { hires: o.hires_count, openings: o.openings_count }
+      }}
+    </span>
+  }
+  <span class="spacer"></span>
+  <input
+    nz-input
+    type="search"
+    class="board-toolbar__search"
+    [value]="search()"
+    [attr.aria-label]="'hr.recruiting.board.search' | translate"
+    [placeholder]="'hr.recruiting.board.search' | translate"
+    (input)="onSearchInput($event)"
+  />
+</div>
+
+@if (loadError()) {
+  <nz-alert
+    nzType="error"
+    nzShowIcon
+    [nzMessage]="'hr.recruiting.errors.loadBoard' | translate"
+    [nzAction]="retryTpl"
+  />
+  <ng-template #retryTpl>
+    <button nz-button nzSize="small" type="button" (click)="load()">
+      {{ 'hr.recruiting.actions.retry' | translate }}
+    </button>
+  </ng-template>
+}
+
+<p class="board-hint">{{ 'hr.recruiting.board.keyboardHint' | translate }}</p>
+
+<nz-spin [nzSpinning]="loading()">
+  <div class="board" cdkDropListGroup>
+    @for (col of visibleColumns(); track col.stage) {
+      <section class="board-column" [attr.aria-labelledby]="col.listId + '-title'">
+        <header class="board-column__header">
+          <h3 class="board-column__title" [id]="col.listId + '-title'">
+            {{ col.label || (stageLabel(col.stage) | translate) }}
+          </h3>
+          <span
+            class="board-column__count"
+            [attr.aria-label]="'hr.recruiting.board.count' | translate: { count: col.count }"
+            >{{ col.count }}</span
+          >
+        </header>
+        @if (col.stage === 'hired') {
+          <p class="board-column__hint">{{ 'hr.recruiting.board.hiredHint' | translate }}</p>
+        }
+        <ul
+          class="board-column__list"
+          cdkDropList
+          [id]="col.listId"
+          [cdkDropListData]="col.stage"
+          [cdkDropListEnterPredicate]="canEnter(col.stage)"
+          (cdkDropListDropped)="onDrop($event)"
+          [attr.aria-labelledby]="col.listId + '-title'"
+        >
+          @for (card of col.cards; track card.id) {
+            <li
+              class="board-column__item"
+              cdkDrag
+              [cdkDragData]="card"
+              [cdkDragDisabled]="card.is_anonymized || isPending(card.id)"
+              [attr.data-card-id]="card.id"
+              [attr.aria-busy]="isPending(card.id)"
+            >
+              <app-board-card
+                [card]="card"
+                [targets]="targetsFor(card)"
+                [busy]="isPending(card.id)"
+                [now]="now"
+                (moveRequested)="onMoveRequested(card, $event)"
+              />
+            </li>
+          } @empty {
+            <li class="board-column__empty">{{ 'hr.recruiting.board.emptyColumn' | translate }}</li>
+          }
+        </ul>
+      </section>
+    }
+  </div>
+</nz-spin>
+
+<app-reject-dialog
+  [(open)]="rejectOpen"
+  [candidateName]="rejectTarget()?.card?.full_name ?? ''"
+  (confirmed)="onRejectConfirmed($event)"
+  (cancelled)="onRejectCancelled()"
+/>

@@ -1,0 +1,264 @@
+@if (hireResult(); as result) {
+  <nz-alert
+    nzType="success"
+    nzShowIcon
+    class="hire-result"
+    [nzMessage]="'hr.recruiting.hire.resultTitle' | translate"
+    [nzDescription]="hireResultTpl"
+  />
+  <ng-template #hireResultTpl>
+    <p>
+      {{
+        'hr.recruiting.hire.resultBody'
+          | translate: { name: result.employee.full_name, number: result.employee.employee_number }
+      }}
+    </p>
+    <p>
+      {{ 'hr.recruiting.hire.hireDate' | translate }}:
+      {{ result.employee.hire_date | date: 'dd.MM.yyyy' }}
+    </p>
+    @if (result.onboarding.status === 'not_available') {
+      <p>{{ 'hr.recruiting.hire.onboardingNotAvailable' | translate }}</p>
+    } @else {
+      <p>{{ 'hr.recruiting.hire.onboardingStarted' | translate }}</p>
+    }
+    <a routerLink="/hr/employees">{{ 'hr.recruiting.hire.goToEmployees' | translate }}</a>
+  </ng-template>
+}
+
+@if (offer(); as o) {
+  <section class="offer" [attr.aria-label]="'hr.recruiting.offer.current' | translate">
+    <div class="offer__status">
+      <nz-tag [nzColor]="statusColors[o.status]">{{
+        'hr.recruiting.offerStatus.' + o.status | translate
+      }}</nz-tag>
+      <nz-tag>{{ 'hr.recruiting.signatureStatus.' + o.signature_status | translate }}</nz-tag>
+    </div>
+    <nz-descriptions
+      nzBordered
+      nzSize="small"
+      [nzColumn]="{ xxl: 2, xl: 2, lg: 2, md: 1, sm: 1, xs: 1 }"
+    >
+      <nz-descriptions-item [nzTitle]="'hr.recruiting.offer.salary' | translate">
+        {{ o.proposed_salary | number: '1.2-2' }} {{ o.currency }}
+      </nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="'hr.recruiting.offer.startDate' | translate">
+        {{ o.start_date | date: 'dd.MM.yyyy' }}
+      </nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="'hr.recruiting.offer.employmentType' | translate">
+        {{ 'hr.recruiting.employmentTypes.' + o.employment_type | translate }}
+      </nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="'hr.recruiting.offer.contractType' | translate">
+        {{ 'hr.recruiting.contractTypes.' + o.contract_type | translate }}
+      </nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="'hr.recruiting.offer.weeklyHours' | translate">
+        {{ o.weekly_hours }}
+      </nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="'hr.recruiting.offer.probationMonths' | translate">
+        {{ o.probation_months }}
+      </nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="'hr.recruiting.offer.validUntil' | translate">
+        {{ o.valid_until ? (o.valid_until | date: 'dd.MM.yyyy') : '-' }}
+      </nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="'hr.recruiting.offer.sentAt' | translate">
+        {{ o.sent_at ? (o.sent_at | date: 'dd.MM.yyyy HH:mm') : '-' }}
+      </nz-descriptions-item>
+    </nz-descriptions>
+
+    @if (needsSignature()) {
+      <nz-alert
+        nzType="warning"
+        nzShowIcon
+        class="offer__alert"
+        [nzMessage]="'hr.recruiting.hire.needsSignature' | translate"
+      />
+    }
+
+    <div class="offer__actions">
+      @if (canSign()) {
+        <button
+          nz-button
+          nzType="primary"
+          type="button"
+          [nzLoading]="busy()"
+          (click)="markSigned()"
+        >
+          {{ 'hr.recruiting.offer.recordSignature' | translate }}
+        </button>
+        <button nz-button nzDanger type="button" [disabled]="busy()" (click)="decline()">
+          {{ 'hr.recruiting.offer.candidateDeclined' | translate }}
+        </button>
+      }
+      @if (canHire()) {
+        <button
+          nz-button
+          nzType="primary"
+          type="button"
+          class="hire-button"
+          [nzLoading]="hiring()"
+          (click)="openHireConfirm()"
+        >
+          <i class="fa-solid fa-user-check" aria-hidden="true"></i>
+          {{ 'hr.recruiting.hire.button' | translate }}
+        </button>
+      }
+    </div>
+
+    <details class="offer__body">
+      <summary>{{ 'hr.recruiting.offer.renderedBody' | translate }}</summary>
+      <div class="offer__letter" [innerHTML]="o.rendered_body"></div>
+    </details>
+  </section>
+} @else {
+  <p class="offer__none">{{ 'hr.recruiting.offer.none' | translate }}</p>
+}
+
+@if (canCreate()) {
+  <form
+    nz-form
+    nzLayout="vertical"
+    class="offer-form"
+    [attr.aria-label]="'hr.recruiting.offer.create' | translate"
+    (submit)="$event.preventDefault(); createOffer()"
+  >
+    <h3 class="offer-form__title">{{ 'hr.recruiting.offer.create' | translate }}</h3>
+    <div class="grid">
+      <nz-form-item>
+        <nz-form-label nzFor="offer-salary" nzRequired>{{
+          'hr.recruiting.offer.salary' | translate
+        }}</nz-form-label>
+        <nz-form-control
+          [nzValidateStatus]="fieldStatus('proposed_salary', offerForm.proposed_salary().invalid())"
+          [nzErrorTip]="fieldTip('proposed_salary')"
+        >
+          <nz-input-number
+            nzId="offer-salary"
+            [nzMin]="0"
+            [formField]="offerForm.proposed_salary"
+          />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="offer-currency">{{
+          'hr.recruiting.openings.currency' | translate
+        }}</nz-form-label>
+        <nz-form-control>
+          <nz-select nzId="offer-currency" [formField]="offerForm.currency">
+            @for (c of currencies; track c) {
+              <nz-option [nzValue]="c" [nzLabel]="c" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="offer-start" nzRequired>{{
+          'hr.recruiting.offer.startDate' | translate
+        }}</nz-form-label>
+        <nz-form-control
+          [nzValidateStatus]="fieldStatus('start_date', offerForm.start_date().invalid())"
+          [nzErrorTip]="fieldTip('start_date')"
+        >
+          <input id="offer-start" nz-input type="date" [formField]="offerForm.start_date" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="offer-valid">{{
+          'hr.recruiting.offer.validUntil' | translate
+        }}</nz-form-label>
+        <nz-form-control>
+          <input id="offer-valid" nz-input type="date" [formField]="offerForm.valid_until" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="offer-employment">{{
+          'hr.recruiting.offer.employmentType' | translate
+        }}</nz-form-label>
+        <nz-form-control>
+          <nz-select nzId="offer-employment" [formField]="offerForm.employment_type">
+            @for (t of employmentTypes; track t) {
+              <nz-option
+                [nzValue]="t"
+                [nzLabel]="'hr.recruiting.employmentTypes.' + t | translate"
+              />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="offer-contract">{{
+          'hr.recruiting.offer.contractType' | translate
+        }}</nz-form-label>
+        <nz-form-control>
+          <nz-select nzId="offer-contract" [formField]="offerForm.contract_type">
+            @for (t of contractTypes; track t) {
+              <nz-option [nzValue]="t" [nzLabel]="'hr.recruiting.contractTypes.' + t | translate" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="offer-hours">{{
+          'hr.recruiting.offer.weeklyHours' | translate
+        }}</nz-form-label>
+        <nz-form-control>
+          <nz-input-number
+            nzId="offer-hours"
+            [nzMin]="1"
+            [nzMax]="60"
+            [formField]="offerForm.weekly_hours"
+          />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="offer-probation">{{
+          'hr.recruiting.offer.probationMonths' | translate
+        }}</nz-form-label>
+        <nz-form-control>
+          <nz-input-number
+            nzId="offer-probation"
+            [nzMin]="0"
+            [nzMax]="12"
+            [formField]="offerForm.probation_months"
+          />
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+    <label nz-checkbox nzId="offer-send" for="offer-send" [formField]="offerForm.send">{{
+      'hr.recruiting.offer.sendNow' | translate
+    }}</label>
+    <div class="offer-form__actions">
+      <button nz-button nzType="primary" type="submit" [nzLoading]="busy()">
+        {{
+          (model().send ? 'hr.recruiting.offer.createAndSend' : 'hr.recruiting.offer.saveDraft')
+            | translate
+        }}
+      </button>
+    </div>
+  </form>
+}
+
+<nz-modal
+  [nzVisible]="hireConfirmOpen()"
+  [nzTitle]="'hr.recruiting.hire.confirmTitle' | translate"
+  [nzFooter]="hireFooter"
+  (nzOnCancel)="hireConfirmOpen.set(false)"
+>
+  <ng-container *nzModalContent>
+    <p>{{ 'hr.recruiting.hire.confirmBody' | translate: { name: application().full_name } }}</p>
+  </ng-container>
+  <ng-template #hireFooter>
+    <button nz-button type="button" [disabled]="hiring()" (click)="hireConfirmOpen.set(false)">
+      {{ 'common.actions.cancel' | translate }}
+    </button>
+    <button
+      nz-button
+      nzType="primary"
+      type="button"
+      class="hire-confirm"
+      [nzLoading]="hiring()"
+      (click)="confirmHire()"
+    >
+      {{ 'hr.recruiting.hire.button' | translate }}
+    </button>
+  </ng-template>
+</nz-modal>

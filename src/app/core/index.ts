@@ -45,3 +45,6 @@ export * from './lookups/lookup-label.pipe';
 export * from './lookups/lookup-label.directive';
 export * from './lookups/lookup-select.component';
 export * from './state/list-facade';
+export * from './http/error-handling.context';
+export * from './api/recruiting-api.service';
+export * from './api/public-careers-api.service';

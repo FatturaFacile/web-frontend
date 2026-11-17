@@ -5,6 +5,7 @@ import { catchError, throwError } from 'rxjs';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { AuthStore } from '../auth/auth.store';
 import { getXsrfCookie, isBackendApiRequest } from '../auth/csrf.utils';
+import { isLocallyHandled } from '../http/error-handling.context';
 
 const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 
@@ -25,6 +26,9 @@ export const tenantAuthInterceptor: HttpInterceptorFn = (req, next) => {
   }
 
   const injector = inject(Injector);
+  // Public careers portal endpoints are anonymous and slug-scoped: never leak the
+  // session token or a stale tenant id of a logged-in visitor to them.
+  const isPublicPortal = req.url.includes('/public/careers/');
 
   const headersToSet: Record<string, string> = {
     'Accept': 'application/json',
@@ -41,7 +45,7 @@ export const tenantAuthInterceptor: HttpInterceptorFn = (req, next) => {
       window.localStorage.getItem('token') ||
       window.localStorage.getItem('auth_token');
   }
-  if (token && !req.headers.has('Authorization')) {
+  if (token && !isPublicPortal && !req.headers.has('Authorization')) {
     headersToSet['Authorization'] = `Bearer ${token}`;
   }
 
@@ -53,7 +57,7 @@ export const tenantAuthInterceptor: HttpInterceptorFn = (req, next) => {
       window.localStorage.getItem('tenant_id') ||
       window.localStorage.getItem('ff_tenant_id');
   }
-  if (tenantId && !req.headers.has('X-Tenant-Id')) {
+  if (tenantId && !isPublicPortal && !req.headers.has('X-Tenant-Id')) {
     headersToSet['X-Tenant-Id'] = tenantId;
   }
 
@@ -81,7 +85,7 @@ export const tenantAuthInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(configuredReq).pipe(
     catchError((err: unknown) => {
-      if (err instanceof HttpErrorResponse) {
+      if (err instanceof HttpErrorResponse && !isLocallyHandled(req.context, err.status)) {
         const isAuthEndpoint =
           req.url.endsWith('/auth/login') ||
           req.url.endsWith('/auth/profile') ||
