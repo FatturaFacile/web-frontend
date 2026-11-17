@@ -5,7 +5,7 @@ import { provideRouter, Router } from '@angular/router';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { en_US, provideNzI18n } from 'ng-zorro-antd/i18n';
 import { provideNzDateFnsAdapter } from 'ng-zorro-antd/core/time';
-import { of } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { LogisticsApiService } from '@core';
 import { icons } from '../../../../icons-provider';
@@ -16,7 +16,7 @@ describe('DeliveryNoteEditorComponent', () => {
     partners: vi.fn(() => of({ success: true, message: '', data: [] })),
     products: vi.fn(() => of({ success: true, message: '', data: [] })),
     warehouses: vi.fn(() => of({ success: true, message: '', data: [] })),
-    openOrders: vi.fn(() => of({ success: true, message: '', data: [] })),
+    openOrders: vi.fn((): Observable<unknown> => of({ success: true, message: '', data: [] })),
     createDeliveryNote: vi.fn(() => of({ success: true, message: '', data: {} })),
     createDeliveryNoteFromOrders: vi.fn(() => of({ success: true, message: '', data: {} })),
   };

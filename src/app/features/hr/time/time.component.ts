@@ -6,6 +6,7 @@ import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { CrudTableComponent } from '../shared/crud/crud-table.component';
 import { CrudConfig, CrudOption, crudPage } from '../shared/crud/crud.types';
+import { TimeComplianceComponent } from './time-compliance.component';
 import { TimeClosingsComponent } from './time-closings.component';
 import { TimeMealsComponent } from './time-meals.component';
 import { TimePayrollViewComponent } from './time-payroll-view.component';
@@ -31,6 +32,7 @@ const SOURCES = ['badge', 'terminal', 'web', 'mobile', 'spreadsheet', 'paper', '
     TranslatePipe,
     CrudTableComponent,
     TimeClosingsComponent,
+    TimeComplianceComponent,
     TimeMealsComponent,
     TimePayrollViewComponent,
     TimePresenceComponent,
@@ -69,6 +71,9 @@ const SOURCES = ['badge', 'terminal', 'web', 'mobile', 'spreadsheet', 'paper', '
         </nz-tab>
         <nz-tab [nzTitle]="'hrmTimeX.mealsTab' | translate">
           <app-time-meals [canWrite]="canWrite()" [employees]="employeeOptions()" />
+        </nz-tab>
+        <nz-tab [nzTitle]="'hrmTimeLegal.tab' | translate">
+          <app-time-compliance [employees]="employees()" />
         </nz-tab>
         <nz-tab [nzTitle]="'hrmTime.audit' | translate">
           <app-crud-table [config]="auditConfig()" />

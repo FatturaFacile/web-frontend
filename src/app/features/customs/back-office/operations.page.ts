@@ -2,6 +2,15 @@ import { act, col, cols, ResourcePageConfig, rf, req, tagCol } from '@shared';
 
 const CHARGE_CATEGORIES = ['freight', 'handling', 'duty', 'import_vat', 'insurance', 'other'] as const;
 
+const TARIFF_GRID_FIELDS = [
+  req(rf.text('name', { maxLength: 120 })),
+  req(rf.text('service_type', { maxLength: 40 })),
+  req(rf.text('currency', { maxLength: 3 })),
+  rf.date('valid_from'),
+  rf.date('valid_to', { notBefore: 'valid_from' }),
+  rf.bool('is_active', { defaultValue: true }),
+];
+
 /** Dossier work (charges, documents, deliveries, quotes), consolidations, tariff grids, discounts and tariff history. */
 export const CUSTOMS_OPERATIONS_PAGE: ResourcePageConfig = {
   titleKey: 'RES.PAGE.CUSTOMS_OPERATIONS',
@@ -90,8 +99,11 @@ export const CUSTOMS_OPERATIONS_PAGE: ResourcePageConfig = {
       titleKey: 'RES.P.tariff_grids',
       module: 'customs',
       detailPath: '/customs/tariff-grids/{id}',
-      list: { path: '/customs/tariff-grids', columns: cols('name', 'currency') },
+      list: { path: '/customs/tariff-grids', columns: [...cols('name', 'service_type', 'currency'), col('valid_from', 'date'), col('valid_to', 'date'), col('is_active', 'bool')] },
+      create: act('POST', 'RES.A.new_tariff_grid', '/customs/tariff-grids', { fields: TARIFF_GRID_FIELDS }),
       rowActions: [
+        act('PUT', 'RES.A.edit_tariff_grid', '/customs/tariff-grids/{id}', { fields: TARIFF_GRID_FIELDS, prefill: true }),
+        act('DELETE', 'RES.A.delete_tariff_grid', '/customs/tariff-grids/{id}', { confirm: true, danger: true }),
         act('POST', 'RES.A.add_rate', '/customs/tariff-grids/{id}/rates', {
           fields: [
             rf.text('destination_country', { maxLength: 2 }),

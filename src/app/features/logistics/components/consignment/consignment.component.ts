@@ -23,6 +23,7 @@ import {
 import { PageHeaderComponent, TranslatePipe } from '@shared';
 import { directionForWarehouseType, toIsoDate } from '../../logistics.rules';
 import { warehouseTypeKey } from '../../logistics.ui';
+import { ConsignmentDeclarationsComponent } from './consignment-declarations.component';
 import { ConsignmentAgreementsComponent } from './consignment-agreements.component';
 import { ConsumptionDeclarationWizardComponent } from './consumption-declaration-wizard.component';
 import { ValuationSummaryComponent } from './valuation-summary.component';
@@ -48,6 +49,7 @@ import { ValuationSummaryComponent } from './valuation-summary.component';
     PageHeaderComponent,
     TranslatePipe,
     ConsignmentAgreementsComponent,
+    ConsignmentDeclarationsComponent,
     ConsumptionDeclarationWizardComponent,
     ValuationSummaryComponent,
   ],

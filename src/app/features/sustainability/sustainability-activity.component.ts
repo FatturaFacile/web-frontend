@@ -104,6 +104,7 @@ import { apiErrorText, todayIso } from './sustainability.util';
               </td>
               <td>{{ row.site }}</td>
               <td>
+                <button nz-button nzType="text" appIconAction="edit" (click)="openEdit(row)"></button>
                 <button nz-button nzType="text" nzDanger appIconAction="delete" nz-popconfirm [nzPopconfirmTitle]="'SUSTAINABILITY.DELETE_CONFIRM' | translate" (nzOnConfirm)="remove(row)"></button>
               </td>
             </tr>
@@ -117,7 +118,7 @@ import { apiErrorText, todayIso } from './sustainability.util';
 
     <nz-modal
       [(nzVisible)]="modalVisible"
-      [nzTitle]="'SUSTAINABILITY.NEW_ACTIVITY' | translate"
+      [nzTitle]="(editingId() ? 'SUSTAINABILITY.EDIT_ACTIVITY' : 'SUSTAINABILITY.NEW_ACTIVITY') | translate"
       (nzOnCancel)="modalVisible.set(false)"
       (nzOnOk)="save()"
       okAction="save"
@@ -222,6 +223,7 @@ export class SustainabilityActivityComponent implements OnInit {
   readonly to = signal('');
   readonly scope = signal<EsgScope | null>(null);
   readonly quality = signal<EsgDataQuality | null>(null);
+  readonly editingId = signal<string | null>(null);
   readonly selectedType = signal<EsgActivityType>('electricity_grid');
 
   readonly unitsOfType = computed<readonly EsgUnit[]>(() => ESG_ACTIVITY_UNITS[this.selectedType()]);
@@ -274,8 +276,29 @@ export class SustainabilityActivityComponent implements OnInit {
   }
 
   openModal(): void {
+    this.editingId.set(null);
     this.form.reset({ activity_type: 'electricity_grid', activity_date: todayIso(), quantity: '', unit: 'kWh', region: 'IT', data_quality: 'measured', emission_factor_id: '', site: '', reference: '' });
     this.selectedType.set('electricity_grid');
+    this.modalVisible.set(true);
+  }
+
+  openEdit(record: EsgActivityRecord): void {
+    this.editingId.set(record.id);
+    this.selectedType.set(record.activity_type);
+    this.form.reset(
+      {
+        activity_type: record.activity_type,
+        activity_date: record.activity_date.slice(0, 10),
+        quantity: record.quantity,
+        unit: record.unit,
+        region: 'IT',
+        data_quality: record.data_quality,
+        emission_factor_id: record.emission_factor_id,
+        site: record.site ?? '',
+        reference: record.reference ?? '',
+      },
+      { emitEvent: false },
+    );
     this.modalVisible.set(true);
   }
 
@@ -298,7 +321,9 @@ export class SustainabilityActivityComponent implements OnInit {
       reference: value.reference || null,
     };
 
-    this.api.createActivityRecord(payload).subscribe({
+    const id = this.editingId();
+    const request = id === null ? this.api.createActivityRecord(payload) : this.api.updateActivityRecord(id, payload);
+    request.subscribe({
       next: () => {
         this.message.success(this.translate.instant('SUSTAINABILITY.ACTIVITY_SAVED'));
         this.modalVisible.set(false);

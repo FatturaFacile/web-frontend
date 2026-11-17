@@ -203,6 +203,9 @@
               <button nz-button nzSize="small" type="button" (click)="downloadPdf(note)">
                 <nz-icon nzType="file-pdf" /> {{ 'LOGISTICS.DDT.ACTIONS.PDF' | translate }}
               </button>
+              <button nz-button nzSize="small" type="button" (click)="emailTarget.set(note.id)">
+                <nz-icon nzType="mail" /> {{ 'LOGISTICS.DDT.ACTIONS.EMAIL' | translate }}
+              </button>
             }
           </td>
         </tr>
@@ -255,3 +258,5 @@
     }
   </ng-container>
 </nz-modal>
+
+<app-document-emails-dialog type="delivery_note" [documentId]="emailTarget()" (closed)="emailTarget.set(null)" />

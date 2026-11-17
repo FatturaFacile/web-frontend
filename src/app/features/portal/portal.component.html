@@ -558,6 +558,37 @@
           </tbody>
         </nz-table>
       </nz-card>
+
+      <nz-card nzTitle="Richieste di spedizione inviate" class="mt-3">
+        <nz-table #requestsTable [nzData]="customsRequests()" [nzFrontPagination]="false" [nzShowPagination]="false">
+          <thead>
+            <tr>
+              <th>Servizio</th>
+              <th>Direzione</th>
+              <th>Origine</th>
+              <th>Destinazione</th>
+              <th>Colli</th>
+              <th>Peso lordo</th>
+              <th>Ritiro</th>
+              <th>Stato</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of requestsTable.data; track r.id ?? $index) {
+              <tr>
+                <td>{{ r.service_type }}</td>
+                <td>{{ r.direction | uppercase }}</td>
+                <td>{{ r.origin_country }}</td>
+                <td>{{ r.destination_country }}</td>
+                <td>{{ r.packages }}</td>
+                <td>{{ r.gross_weight_kg }} kg</td>
+                <td>{{ r.pickup_on }}</td>
+                <td><nz-tag>{{ r.status | uppercase }}</nz-tag></td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </nz-card>
     </nz-tab>
   </nz-tabs>
 

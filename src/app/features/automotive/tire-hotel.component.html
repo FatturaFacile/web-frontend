@@ -1,7 +1,10 @@
 <app-page-header
   [title]="'TIRE_HOTEL.TITLE' | translate"
   [subtitle]="'TIRE_HOTEL.SUBTITLE' | translate"
-/>
+>
+  <button nz-button nzType="primary" type="button" (click)="checkInOpen.set(true)">{{ 'TIRE_HOTEL.CHECK_IN' | translate }}</button>
+</app-page-header>
+<app-tire-check-in [(open)]="checkInOpen" (checkedIn)="loadTireRecords()" />
 
 <div nz-row [nzGutter]="16" class="kpi-row">
   <div nz-col [nzXs]="24" [nzSm]="8">

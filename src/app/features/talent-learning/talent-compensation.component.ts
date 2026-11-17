@@ -68,6 +68,7 @@ import { blankToNull, keyOf, mutationObserver, tagColor, todayIso } from './tale
                 <div class="row-actions">
                   <button nz-button nzType="text" (click)="select(row)">{{ 'TALENT_LEARNING.PROPOSALS' | translate }}</button>
                   @if (row.status === 'draft') {
+                    <button nz-button nzType="text" appIconAction="edit" (click)="openCycleModal(row)"></button>
                     <button nz-button nzType="text" (click)="openGuidelines(row)">{{ 'TALENT_LEARNING.GUIDELINES' | translate }}</button>
                     <button nz-button nzType="text" (click)="transition(row, 'open')">{{ 'TALENT_LEARNING.OPEN_ACTION' | translate }}</button>
                     <button nz-button nzType="text" nzDanger appIconAction="delete" nz-popconfirm [nzPopconfirmTitle]="'TALENT_LEARNING.DELETE_CONFIRM' | translate" (nzOnConfirm)="removeCycle(row)"></button>
@@ -117,6 +118,7 @@ import { blankToNull, keyOf, mutationObserver, tagColor, todayIso } from './tale
                   <td class="num">{{ pool.utilization_percent | number: '1.0-1' }} %</td>
                   <td>
                     @if (cycle.status === 'draft') {
+                      <button nz-button nzType="text" appIconAction="edit" (click)="openPoolModal(pool)"></button>
                       <button nz-button nzType="text" nzDanger appIconAction="delete" nz-popconfirm [nzPopconfirmTitle]="'TALENT_LEARNING.DELETE_CONFIRM' | translate" (nzOnConfirm)="removePool(pool.pool_id)"></button>
                     }
                   </td>
@@ -160,6 +162,7 @@ import { blankToNull, keyOf, mutationObserver, tagColor, todayIso } from './tale
                 <td>
                   <div class="row-actions">
                     @if (proposal.status === 'draft') {
+                      <button nz-button nzType="text" appIconAction="edit" (click)="openProposalModal(proposal)"></button>
                       <button nz-button nzType="text" (click)="submitProposal(proposal)">{{ 'TALENT_LEARNING.SUBMIT' | translate }}</button>
                       <button nz-button nzType="text" nzDanger appIconAction="delete" nz-popconfirm [nzPopconfirmTitle]="'TALENT_LEARNING.DELETE_CONFIRM' | translate" (nzOnConfirm)="removeProposal(proposal)"></button>
                     }
@@ -179,7 +182,7 @@ import { blankToNull, keyOf, mutationObserver, tagColor, todayIso } from './tale
       </nz-card>
     }
 
-    <nz-modal [(nzVisible)]="cycleModalVisible" [nzTitle]="'TALENT_LEARNING.NEW_CYCLE' | translate" (nzOnCancel)="cycleModalVisible.set(false)" (nzOnOk)="saveCycle()" okAction="save" [nzOkDisabled]="cycleForm.invalid">
+    <nz-modal [(nzVisible)]="cycleModalVisible" [nzTitle]="(editingCycle() ? 'TALENT_LEARNING.EDIT_CYCLE' : 'TALENT_LEARNING.NEW_CYCLE') | translate" (nzOnCancel)="cycleModalVisible.set(false)" (nzOnOk)="saveCycle()" okAction="save" [nzOkDisabled]="cycleForm.invalid">
       <ng-container *nzModalContent>
         <form nz-form [formGroup]="cycleForm" nzLayout="vertical">
           <nz-form-item>
@@ -235,7 +238,7 @@ import { blankToNull, keyOf, mutationObserver, tagColor, todayIso } from './tale
       </ng-container>
     </nz-modal>
 
-    <nz-modal [(nzVisible)]="poolModalVisible" [nzTitle]="'TALENT_LEARNING.NEW_POOL' | translate" (nzOnCancel)="poolModalVisible.set(false)" (nzOnOk)="savePool()" okAction="save" [nzOkDisabled]="poolForm.invalid">
+    <nz-modal [(nzVisible)]="poolModalVisible" [nzTitle]="(editingPool() ? 'TALENT_LEARNING.EDIT_POOL' : 'TALENT_LEARNING.NEW_POOL') | translate" (nzOnCancel)="poolModalVisible.set(false)" (nzOnOk)="savePool()" okAction="save" [nzOkDisabled]="poolForm.invalid">
       <ng-container *nzModalContent>
         <form nz-form [formGroup]="poolForm" nzLayout="vertical">
           <nz-form-item>
@@ -250,13 +253,13 @@ import { blankToNull, keyOf, mutationObserver, tagColor, todayIso } from './tale
       </ng-container>
     </nz-modal>
 
-    <nz-modal [(nzVisible)]="proposalModalVisible" [nzTitle]="'TALENT_LEARNING.NEW_PROPOSAL' | translate" (nzOnCancel)="proposalModalVisible.set(false)" (nzOnOk)="saveProposal()" okAction="save" [nzOkDisabled]="proposalForm.invalid">
+    <nz-modal [(nzVisible)]="proposalModalVisible" [nzTitle]="(editingProposal() ? 'TALENT_LEARNING.EDIT_PROPOSAL' : 'TALENT_LEARNING.NEW_PROPOSAL') | translate" (nzOnCancel)="proposalModalVisible.set(false)" (nzOnOk)="saveProposal()" okAction="save" [nzOkDisabled]="proposalForm.invalid">
       <ng-container *nzModalContent>
         <form nz-form [formGroup]="proposalForm" nzLayout="vertical">
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'TALENT_LEARNING.EMPLOYEE' | translate }}</nz-form-label>
             <nz-form-control>
-              <nz-select formControlName="employee_id" nzShowSearch>
+              <nz-select formControlName="employee_id" nzShowSearch [nzDisabled]="editingProposal() !== null">
                 @for (employee of employees(); track employee.id) {
                   <nz-option [nzValue]="employee.id" [nzLabel]="employee.full_name"></nz-option>
                 }
@@ -317,6 +320,9 @@ export class TalentCompensationComponent implements OnInit {
   readonly selected = signal<TalentCompCycle | null>(null);
   readonly loading = signal(false);
   readonly cycleModalVisible = signal(false);
+  readonly editingCycle = signal<TalentCompCycle | null>(null);
+  readonly editingPool = signal<{ pool_id: string; name: string; budget_amount: string | number } | null>(null);
+  readonly editingProposal = signal<TalentMeritProposal | null>(null);
   readonly guidelineModalVisible = signal(false);
   readonly poolModalVisible = signal(false);
   readonly proposalModalVisible = signal(false);
@@ -392,15 +398,27 @@ export class TalentCompensationComponent implements OnInit {
     this.api.getMeritProposals({ cycle_id: cycle.id, per_page: 100 }).subscribe((response) => this.proposals.set(response.data));
   }
 
-  openCycleModal(): void {
-    this.cycleForm.reset({ name: '', fiscal_year: new Date().getFullYear(), currency: 'EUR', starts_on: todayIso(), ends_on: '', effective_on: '', notes: '' });
+  openCycleModal(cycle: TalentCompCycle | null = null): void {
+    this.editingCycle.set(cycle);
+    this.cycleForm.reset(
+      cycle
+        ? { name: cycle.name, fiscal_year: cycle.fiscal_year, currency: cycle.currency, starts_on: cycle.starts_on, ends_on: cycle.ends_on, effective_on: cycle.effective_on, notes: cycle.notes ?? '' }
+        : { name: '', fiscal_year: new Date().getFullYear(), currency: 'EUR', starts_on: todayIso(), ends_on: '', effective_on: '', notes: '' },
+    );
     this.cycleModalVisible.set(true);
   }
 
   saveCycle(): void {
     const value = this.cycleForm.getRawValue();
-    this.api
-      .createCycle({
+    const current = this.editingCycle();
+    (current
+      ? this.api.updateCycle(current.id, this.cyclePayload(value))
+      : this.api.createCycle(this.cyclePayload(value))
+    ).subscribe(this.observer(() => this.cycleModalVisible.set(false)));
+  }
+
+  private cyclePayload(value: ReturnType<typeof this.cycleForm.getRawValue>) {
+    return {
         name: value.name.trim(),
         fiscal_year: value.fiscal_year,
         currency: value.currency.toUpperCase(),
@@ -408,8 +426,7 @@ export class TalentCompensationComponent implements OnInit {
         ends_on: value.ends_on,
         effective_on: value.effective_on,
         notes: blankToNull(value.notes),
-      })
-      .subscribe(this.observer(() => this.cycleModalVisible.set(false)));
+    };
   }
 
   transition(cycle: TalentCompCycle, action: 'open' | 'close'): void {
@@ -447,8 +464,9 @@ export class TalentCompensationComponent implements OnInit {
     this.api.replaceGuidelines(cycle.id, guidelines).subscribe(this.observer(() => this.guidelineModalVisible.set(false)));
   }
 
-  openPoolModal(): void {
-    this.poolForm.reset({ name: '', budget_amount: null });
+  openPoolModal(pool: { pool_id: string; name: string; budget_amount: string | number } | null = null): void {
+    this.editingPool.set(pool);
+    this.poolForm.reset({ name: pool?.name ?? '', budget_amount: pool ? Number(pool.budget_amount) : null });
     this.poolModalVisible.set(true);
   }
 
@@ -458,15 +476,24 @@ export class TalentCompensationComponent implements OnInit {
       return;
     }
     const value = this.poolForm.getRawValue();
-    this.api.createBudgetPool({ cycle_id: cycle.id, name: value.name.trim(), budget_amount: String(value.budget_amount) }).subscribe(this.observer(() => this.poolModalVisible.set(false)));
+    const current = this.editingPool();
+    const request = current
+      ? this.api.updateBudgetPool(current.pool_id, { name: value.name.trim(), budget_amount: String(value.budget_amount) })
+      : this.api.createBudgetPool({ cycle_id: cycle.id, name: value.name.trim(), budget_amount: String(value.budget_amount) });
+    request.subscribe(this.observer(() => this.poolModalVisible.set(false)));
   }
 
   removePool(id: string): void {
     this.api.deleteBudgetPool(id).subscribe(this.observer());
   }
 
-  openProposalModal(): void {
-    this.proposalForm.reset({ employee_id: '', budget_pool_id: '', performance_rating: 3, increase_percent: null, justification: '' });
+  openProposalModal(proposal: TalentMeritProposal | null = null): void {
+    this.editingProposal.set(proposal);
+    this.proposalForm.reset(
+      proposal
+        ? { employee_id: proposal.employee_id, budget_pool_id: proposal.budget_pool_id, performance_rating: proposal.performance_rating, increase_percent: Number(proposal.increase_percent), justification: proposal.justification ?? '' }
+        : { employee_id: '', budget_pool_id: '', performance_rating: 3, increase_percent: null, justification: '' },
+    );
     this.proposalModalVisible.set(true);
   }
 
@@ -476,6 +503,18 @@ export class TalentCompensationComponent implements OnInit {
       return;
     }
     const value = this.proposalForm.getRawValue();
+    const current = this.editingProposal();
+    if (current) {
+      this.api
+        .updateMeritProposal(current.id, {
+          budget_pool_id: value.budget_pool_id,
+          performance_rating: value.performance_rating,
+          increase_percent: String(value.increase_percent),
+          justification: blankToNull(value.justification),
+        })
+        .subscribe(this.observer(() => this.proposalModalVisible.set(false)));
+      return;
+    }
     this.api
       .createMeritProposal({
         cycle_id: cycle.id,

@@ -49,6 +49,7 @@ describe('PortalComponent', () => {
     downloadHelpdeskAttachment: ReturnType<typeof vi.fn>;
     createMovementRequest: ReturnType<typeof vi.fn>;
     getCustomsDossiers: ReturnType<typeof vi.fn>;
+    getCustomsShipmentRequests: ReturnType<typeof vi.fn>;
     createCustomsShipmentRequest: ReturnType<typeof vi.fn>;
   };
   let msgMock: {
@@ -180,6 +181,7 @@ describe('PortalComponent', () => {
       downloadHelpdeskAttachment: vi.fn().mockReturnValue(of(new Blob(['x']))),
       createMovementRequest: vi.fn().mockReturnValue(of({ data: {} })),
       getCustomsDossiers: vi.fn().mockReturnValue(of({ data: [] })),
+      getCustomsShipmentRequests: vi.fn().mockReturnValue(of({ data: [] })),
       createCustomsShipmentRequest: vi.fn().mockReturnValue(of({ data: {} })),
     };
 

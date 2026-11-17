@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { SUPPLIER_SELF_SERVICE_PAGE } from './self-service.page';
+import { SUPPLIER_BACK_OFFICE_PAGE } from './supplier-back-office.page';
 
 export const SUPPLIER_PORTAL_ROUTES: Routes = [
   {
@@ -32,6 +33,11 @@ export const SUPPLIER_PORTAL_ROUTES: Routes = [
     path: 'rfq-responses',
     data: { breadcrumb: 'SUPPLIER_PORTAL.PAGE_RFQ_RESPONSES', title: 'SUPPLIER_PORTAL.PAGE_RFQ_RESPONSES' },
     loadComponent: () => import('./supplier-rfq-responses.component').then((m) => m.SupplierRfqResponsesComponent),
+  },
+  {
+    path: 'back-office',
+    data: { breadcrumb: 'RES.PAGE.SUPPLIER_BACK_OFFICE', title: 'RES.PAGE.SUPPLIER_BACK_OFFICE', page: SUPPLIER_BACK_OFFICE_PAGE },
+    loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
   },
   {
     path: 'self-service',

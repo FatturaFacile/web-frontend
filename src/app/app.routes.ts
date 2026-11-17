@@ -501,6 +501,12 @@ export const routes: Routes = [
       import('./features/hospitality/hospitality.routes').then((m) => m.HOSPITALITY_ROUTES),
   },
   {
+    path: 'mobile',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'RES.PAGE.MOBILE_ADMIN', title: 'RES.PAGE.MOBILE_ADMIN' },
+    loadChildren: () => import('./features/mobile/mobile.routes').then((m) => m.MOBILE_ROUTES),
+  },
+  {
     path: 'retail',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'BREADCRUMB.VENDITA_AL_BANCO_AND_POS', title: 'POS' },
@@ -594,6 +600,12 @@ export const routes: Routes = [
     data: { publicPage: true, title: 'Preventivo riparazione' },
     loadComponent: () =>
       import('./features/warranty-rma/public/rma-estimate.component').then((m) => m.RmaEstimateComponent),
+  },
+  // Public careers page of a company (no session, no application shell).
+  {
+    path: 'careers/:slug',
+    data: { publicPage: true, title: 'Lavora con noi' },
+    loadComponent: () => import('./features/careers/careers.component').then((m) => m.CareersComponent),
   },
   {
     path: 'rma-tracking',
