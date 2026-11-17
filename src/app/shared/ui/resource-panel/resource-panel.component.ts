@@ -8,6 +8,7 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
+import { NzProgressModule } from 'ng-zorro-antd/progress';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzTableModule, NzTableQueryParams } from 'ng-zorro-antd/table';
@@ -46,6 +47,7 @@ interface ActiveForm {
     NzIconModule,
     NzInputModule,
     NzModalModule,
+    NzProgressModule,
     NzSelectModule,
     NzSpinModule,
     NzTableModule,
@@ -273,6 +275,18 @@ export class ResourcePanelComponent implements OnInit {
 
   protected cellValue(row: ResourceRow, column: ResourceColumn): unknown {
     return getByPath(row, column.key);
+  }
+
+  protected readonly progressFormat = (percent: number): string => `${percent}%`;
+
+  /** Share (0-100) of the column value over its `totalKey` value; 0 when the total is missing or zero. */
+  protected progressPercent(row: ResourceRow, column: ResourceColumn): number {
+    const part = Number(getByPath(row, column.key));
+    const total = Number(column.totalKey ? getByPath(row, column.totalKey) : 0);
+    if (!Number.isFinite(part) || !Number.isFinite(total) || total <= 0) {
+      return 0;
+    }
+    return Math.min(100, Math.max(0, Math.round((part / total) * 100)));
   }
 
   protected linkOf(row: ResourceRow): string {

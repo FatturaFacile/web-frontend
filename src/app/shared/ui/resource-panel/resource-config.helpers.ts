@@ -68,6 +68,14 @@ export const cols = (...keys: string[]): ResourceColumn[] => keys.map((key) => c
 
 export const tagCol = (key: string): ResourceColumn => col(key, 'tag');
 
+/** Progress bar of `key` (the consumed part) over `totalKey` (the whole). */
+export const progressCol = (key: string, totalKey: string, labelKey?: string): ResourceColumn => ({
+  key,
+  type: 'progress',
+  totalKey,
+  labelKey,
+});
+
 interface ActionOptions {
   fields?: readonly ResourceField[];
   prefill?: boolean;
