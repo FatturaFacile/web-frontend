@@ -6,6 +6,7 @@ import { environment } from '@env';
 import { InvoiceApiService } from './invoice-api.service';
 import { I18nService } from '../i18n/i18n.service';
 import { LookupService } from '../lookups/lookup.service';
+import { TaxApiService } from './tax-api.service';
 
 /**
  * Every call must go through `environment.apiBaseUrl`: in production the API lives on another origin
@@ -47,6 +48,17 @@ describe('API endpoints', () => {
     expect(req.request.method).toBe('GET');
     expect(req.request.responseType).toBe('blob');
     req.flush(new Blob());
+  });
+
+  it('sends the fiscal preview and tax reports to the versioned API', () => {
+    const tax = TestBed.inject(TaxApiService);
+    tax.preview({ items: [] }).subscribe();
+    tax.downloadStampDutyQuarterlyCsv(2026, 1).subscribe();
+
+    httpTesting.expectOne(`${base}/tax/preview`).flush({ data: null });
+    const csv = httpTesting.expectOne((r) => r.url === `${base}/tax/stamp-duty/quarterly`);
+    expect(csv.request.params.get('format')).toBe('csv');
+    csv.flush(new Blob());
   });
 
   it('loads translations from the versioned API', async () => {
