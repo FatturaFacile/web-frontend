@@ -92,6 +92,7 @@ const STATUS_COLORS: Readonly<Record<EsgTargetStatus, string>> = {
         }
         <div class="toolbar" style="margin-top: 12px; margin-bottom: 0">
           @if (target.status === 'draft') {
+            <button nz-button (click)="openEdit(target)">{{ 'SUSTAINABILITY.EDIT_TARGET' | translate }}</button>
             <button nz-button nzType="primary" (click)="activate(target)">{{ 'SUSTAINABILITY.ACTIVATE' | translate }}</button>
           }
           @if (target.status === 'active') {
@@ -112,7 +113,7 @@ const STATUS_COLORS: Readonly<Record<EsgTargetStatus, string>> = {
 
     <nz-modal
       [(nzVisible)]="modalVisible"
-      [nzTitle]="'SUSTAINABILITY.NEW_TARGET' | translate"
+      [nzTitle]="(editingId() ? 'SUSTAINABILITY.EDIT_TARGET' : 'SUSTAINABILITY.NEW_TARGET') | translate"
       (nzOnCancel)="modalVisible.set(false)"
       (nzOnOk)="save()"
       okAction="save"
@@ -163,6 +164,7 @@ export class SustainabilityTargetsComponent implements OnInit {
   readonly targets = signal<EsgReductionTarget[]>([]);
   readonly loading = signal(false);
   readonly modalVisible = signal(false);
+  readonly editingId = signal<string | null>(null);
 
   readonly form = this.fb.group({
     name: ['', [Validators.required, Validators.maxLength(190)]],
@@ -199,7 +201,20 @@ export class SustainabilityTargetsComponent implements OnInit {
   }
 
   openModal(): void {
+    this.editingId.set(null);
     this.form.reset({ name: '', scope: 'total', baseline_year: new Date().getFullYear() - 1, target_year: 2030, reduction_percent: '42' });
+    this.modalVisible.set(true);
+  }
+
+  openEdit(target: EsgReductionTarget): void {
+    this.editingId.set(target.id);
+    this.form.reset({
+      name: target.name,
+      scope: target.scope,
+      baseline_year: target.baseline_year,
+      target_year: target.target_year,
+      reduction_percent: target.reduction_percent,
+    });
     this.modalVisible.set(true);
   }
 
@@ -207,7 +222,9 @@ export class SustainabilityTargetsComponent implements OnInit {
     const value = this.form.getRawValue();
     const payload: EsgReductionTargetRequest = { ...value, reduction_percent: String(value.reduction_percent) };
 
-    this.api.createTarget(payload).subscribe({
+    const id = this.editingId();
+    const request = id === null ? this.api.createTarget(payload) : this.api.updateTarget(id, payload);
+    request.subscribe({
       next: () => {
         this.message.success(this.translate.instant('SUSTAINABILITY.TARGET_SAVED'));
         this.modalVisible.set(false);

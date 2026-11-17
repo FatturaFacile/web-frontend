@@ -14,10 +14,11 @@ import {
   I18nService,
   PermissionsService,
   ServiceReportListParams,
+  ServiceReportsApiService,
   ServiceReportPhotoStage,
   ServiceReportSummary,
 } from '@core';
-import { BaseTableComponent, downloadBlob, IconActionDirective, ModalActionsDirective, MoneyPipe, PageHeaderComponent, TableColumnDef, TranslatePipe } from '@shared';
+import { BaseTableComponent, downloadBlob, RecordAttachmentsComponent, IconActionDirective, ModalActionsDirective, MoneyPipe, PageHeaderComponent, TableColumnDef, TranslatePipe } from '@shared';
 import { SignatureDialogComponent, SignatureResult } from '../components/signature-dialog/signature-dialog.component';
 
 const PHOTO_STAGES: readonly ServiceReportPhotoStage[] = ['before', 'after', 'general', 'receipt'];
@@ -40,11 +41,13 @@ const PHOTO_STAGES: readonly ServiceReportPhotoStage[] = ['before', 'after', 'ge
     PageHeaderComponent,
     TranslatePipe,
     SignatureDialogComponent,
+    RecordAttachmentsComponent,
   ],
   templateUrl: './service-reports.component.html',
 })
 export class ServiceReportsComponent {
   private readonly api = inject(FieldServiceApiService);
+  private readonly crudApi = inject(ServiceReportsApiService);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);
   private readonly i18n = inject(I18nService);
@@ -70,6 +73,11 @@ export class ServiceReportsComponent {
   protected readonly photoStage = signal<ServiceReportPhotoStage>('general');
   protected readonly photoCaption = signal('');
   protected readonly stages = PHOTO_STAGES;
+  protected readonly attachmentsTarget = signal<ServiceReportSummary | null>(null);
+  protected readonly notesTarget = signal<ServiceReportSummary | null>(null);
+  protected readonly customerNotes = signal("");
+  protected readonly internalNotes = signal("");
+  protected readonly portalVisible = signal(false);
 
   protected readonly canConsolidate = computed(() => this.selectedIds().size >= 2);
 
@@ -212,6 +220,53 @@ export class ServiceReportsComponent {
         this.message.success(this.i18n.translate('SERVICE_REPORTS.PHOTO_UPLOADED'));
       },
       error: (err: unknown) => this.fail(err),
+    });
+  }
+
+  protected openNotes(report: ServiceReportSummary): void {
+    const r = report as unknown as Record<string, unknown>;
+    this.customerNotes.set(String(r["customer_notes"] ?? ""));
+    this.internalNotes.set(String(r["internal_notes"] ?? ""));
+    this.portalVisible.set(Boolean(r["is_portal_visible"]));
+    this.notesTarget.set(report);
+  }
+
+  protected saveNotes(): void {
+    const report = this.notesTarget();
+    if (!report) {
+      return;
+    }
+    this.saving.set(true);
+    this.crudApi
+      .patchServiceReport(report.id, {
+        customer_notes: this.customerNotes() || null,
+        internal_notes: this.internalNotes() || null,
+        is_portal_visible: this.portalVisible(),
+      })
+      .subscribe({
+        next: () => {
+          this.saving.set(false);
+          this.notesTarget.set(null);
+          this.message.success("Rapportino aggiornato");
+          this.grid.reload();
+        },
+        error: (err: unknown) => this.fail(err),
+      });
+  }
+
+  protected remove(report: ServiceReportSummary): void {
+    this.modal.confirm({
+      nzTitle: `Eliminare il rapportino ${report.report_number}?`,
+      nzOkText: this.i18n.translate("RES.ACTION.CONFIRM"),
+      nzCancelText: this.i18n.translate("COMMON.CANCEL"),
+      nzOnOk: () =>
+        this.crudApi.deleteServiceReport(report.id).subscribe({
+          next: () => {
+            this.message.success("Rapportino eliminato");
+            this.grid.reload();
+          },
+          error: (err: unknown) => this.fail(err),
+        }),
     });
   }
 

@@ -84,6 +84,8 @@ const CHANNELS: readonly CommunicationChannelType[] = ['email', 'whatsapp', 'tel
               <td class="actions">
                 <button nz-button nzSize="small" (click)="openSendLog(row)">{{ 'COMMUNICATION.SEND_LOG' | translate }}</button>
                 @if (isOpen(row)) {
+                  <button nz-button nzSize="small" data-test="edit-campaign" (click)="openEdit(row)">{{ 'COMMUNICATION.EDIT_CAMPAIGN' | translate }}</button>
+                  <button nz-button nzSize="small" nzDanger data-test="delete-campaign" nz-popconfirm [nzPopconfirmTitle]="'COMMUNICATION.CONFIRM_DELETE' | translate" (nzOnConfirm)="remove(row)">{{ 'COMMUNICATION.DELETE_CAMPAIGN' | translate }}</button>
                   <button nz-button nzSize="small" (click)="showPreview(row)">{{ 'COMMUNICATION.PREVIEW_AUDIENCE' | translate }}</button>
                   <button nz-button nzSize="small" (click)="openSchedule(row)">{{ 'COMMUNICATION.SCHEDULE' | translate }}</button>
                   <button
@@ -111,7 +113,7 @@ const CHANNELS: readonly CommunicationChannelType[] = ['email', 'whatsapp', 'tel
       </nz-table>
     </nz-card>
 
-    <nz-modal [nzVisible]="createVisible()" [nzTitle]="'COMMUNICATION.NEW_CAMPAIGN' | translate" [nzFooter]="createFooter" (nzOnCancel)="createVisible.set(false)">
+    <nz-modal [nzVisible]="createVisible()" [nzTitle]="(editTarget() ? 'COMMUNICATION.EDIT_CAMPAIGN' : 'COMMUNICATION.NEW_CAMPAIGN') | translate" [nzFooter]="createFooter" (nzOnCancel)="createVisible.set(false)">
       <ng-container *nzModalContent>
         <form nz-form nzLayout="vertical" [formGroup]="form">
           <nz-form-item>
@@ -226,6 +228,7 @@ export class CommunicationCampaignsComponent implements OnInit {
   readonly segments = signal<CrmSegment[]>([]);
   readonly loading = signal(false);
   readonly createVisible = signal(false);
+  readonly editTarget = signal<CommunicationCampaign | null>(null);
   readonly scheduleTarget = signal<CommunicationCampaign | null>(null);
   readonly scheduleAt = signal('');
   readonly preview = signal<CommunicationCampaignPreview | null>(null);
@@ -257,6 +260,7 @@ export class CommunicationCampaignsComponent implements OnInit {
   }
 
   openCreate(): void {
+    this.editTarget.set(null);
     this.form.reset({ name: '', channel: 'email', segment_id: null, subject: '', body: '' });
     this.createVisible.set(true);
   }
@@ -266,7 +270,10 @@ export class CommunicationCampaignsComponent implements OnInit {
       return;
     }
     const value = this.form.getRawValue();
-    this.api.createCampaign({ name: value.name.trim(), channel: value.channel, segment_id: value.segment_id, subject: value.subject.trim() || null, body: value.body }).subscribe({
+    const payload = { name: value.name.trim(), channel: value.channel, segment_id: value.segment_id, subject: value.subject.trim() || null, body: value.body };
+    const target = this.editTarget();
+    const request = target ? this.api.updateCampaign(target.id, payload) : this.api.createCampaign(payload);
+    request.subscribe({
       next: () => {
         this.createVisible.set(false);
         this.message.success(this.translate.instant('COMMUNICATION.CAMPAIGN_SAVED'));
@@ -274,6 +281,22 @@ export class CommunicationCampaignsComponent implements OnInit {
       },
       error: (error: unknown) => this.fail(error),
     });
+  }
+
+  openEdit(campaign: CommunicationCampaign): void {
+    this.editTarget.set(campaign);
+    this.form.reset({
+      name: campaign.name,
+      channel: campaign.channel,
+      segment_id: campaign.segment_id ?? null,
+      subject: campaign.subject ?? '',
+      body: campaign.body ?? '',
+    });
+    this.createVisible.set(true);
+  }
+
+  remove(campaign: CommunicationCampaign): void {
+    this.api.deleteCampaign(campaign.id).subscribe({ next: () => this.load(), error: (error: unknown) => this.fail(error) });
   }
 
   showPreview(campaign: CommunicationCampaign): void {

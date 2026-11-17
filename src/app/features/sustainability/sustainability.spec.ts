@@ -148,6 +148,7 @@ describe('SustainabilityActivityComponent', () => {
     getActivityRecords: vi.fn(),
     getFactors: vi.fn(),
     createActivityRecord: vi.fn(),
+    updateActivityRecord: vi.fn(),
     deleteActivityRecord: vi.fn(),
   };
 
@@ -156,6 +157,7 @@ describe('SustainabilityActivityComponent', () => {
     api.getActivityRecords.mockReturnValue(of({ data: [] }));
     api.getFactors.mockReturnValue(of({ data: [] }));
     api.createActivityRecord.mockReturnValue(of({ data: {} }));
+    api.updateActivityRecord.mockReturnValue(of({ data: {} }));
     configure(api, SustainabilityActivityComponent);
   });
 
@@ -188,10 +190,39 @@ describe('SustainabilityActivityComponent', () => {
   });
 });
 
+describe('SustainabilityActivityComponent editing', () => {
+  const api = { getActivityRecords: vi.fn(), getFactors: vi.fn(), createActivityRecord: vi.fn(), updateActivityRecord: vi.fn(), deleteActivityRecord: vi.fn() };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    api.getActivityRecords.mockReturnValue(of({ data: [] }));
+    api.getFactors.mockReturnValue(of({ data: [] }));
+    api.updateActivityRecord.mockReturnValue(of({ data: {} }));
+    configure(api, SustainabilityActivityComponent);
+  });
+
+  it('updates an existing record through PUT', () => {
+    const fixture = TestBed.createComponent(SustainabilityActivityComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+
+    component.openEdit({
+      id: 'rec-1', emission_factor_id: 'f1', activity_date: '2027-01-05', quantity: '10', unit: 'kWh', activity_type: 'electricity_grid', scope: 2,
+      category: 'c', factor_code: 'X', factor_version: 1, factor_kg_co2e_per_unit: '0.2', factor_source: 's', co2e_kg: '2', data_quality: 'measured',
+    } as never);
+    component.form.patchValue({ quantity: '12' });
+    component.save();
+
+    expect(api.updateActivityRecord).toHaveBeenCalledWith('rec-1', expect.objectContaining({ quantity: '12', emission_factor_id: 'f1' }));
+    expect(api.createActivityRecord).not.toHaveBeenCalled();
+  });
+});
+
 describe('SustainabilityTargetsComponent', () => {
   const api = {
     getTargets: vi.fn(),
     createTarget: vi.fn(),
+    updateTarget: vi.fn(),
     activateTarget: vi.fn(),
     evaluateTarget: vi.fn(),
     cancelTarget: vi.fn(),
@@ -201,6 +232,7 @@ describe('SustainabilityTargetsComponent', () => {
     vi.clearAllMocks();
     api.getTargets.mockReturnValue(of({ data: [target] }));
     api.createTarget.mockReturnValue(of({ data: target }));
+    api.updateTarget.mockReturnValue(of({ data: target }));
     api.evaluateTarget.mockReturnValue(of({ data: { ...target, status: 'achieved' } }));
     configure(api, SustainabilityTargetsComponent);
   });
@@ -230,6 +262,30 @@ describe('SustainabilityTargetsComponent', () => {
     component.save();
 
     expect(api.createTarget).toHaveBeenCalledWith({ name: 'Net zero path', scope: 'total', baseline_year: 2025, target_year: 2030, reduction_percent: '42' });
+  });
+});
+
+describe('SustainabilityTargetsComponent editing', () => {
+  const api = { getTargets: vi.fn(), updateTarget: vi.fn(), createTarget: vi.fn() };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    api.getTargets.mockReturnValue(of({ data: [target] }));
+    api.updateTarget.mockReturnValue(of({ data: target }));
+    configure(api, SustainabilityTargetsComponent);
+  });
+
+  it('updates a draft target through PUT instead of creating a new one', () => {
+    const fixture = TestBed.createComponent(SustainabilityTargetsComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+
+    component.openEdit(target);
+    component.form.patchValue({ name: 'Renamed' });
+    component.save();
+
+    expect(api.updateTarget).toHaveBeenCalledWith('tgt-1', expect.objectContaining({ name: 'Renamed' }));
+    expect(api.createTarget).not.toHaveBeenCalled();
   });
 });
 

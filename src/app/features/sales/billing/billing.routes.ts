@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { INVOICE_COLLECTIONS_PAGE, SALES_COMMISSIONS_PAGE, SALES_TAX_DATA_PAGE } from './billing-extras.page';
 
 /** Order billing, billing plans, debit notes, reports and invoice approvals, mounted under `/sales/billing`. */
 export const BILLING_ROUTES: Routes = [
@@ -27,5 +28,20 @@ export const BILLING_ROUTES: Routes = [
     path: 'approvals',
     data: { breadcrumb: 'BREADCRUMB.APPROVAZIONE_FATTURE', title: 'PAGE_TITLE.APPROVAZIONE_FATTURE' },
     loadComponent: () => import('./approvals/invoice-approvals.component').then((m) => m.InvoiceApprovalsComponent),
+  },
+  {
+    path: 'collections',
+    data: { breadcrumb: 'BREADCRUMB.INCASSI_E_SOLLECITI', title: 'PAGE_TITLE.INCASSI_E_SOLLECITI', page: INVOICE_COLLECTIONS_PAGE },
+    loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
+  },
+  {
+    path: 'tax-data',
+    data: { breadcrumb: 'BREADCRUMB.DICHIARAZIONI_D_INTENTO_E_CONTRIBUTI', title: 'PAGE_TITLE.DICHIARAZIONI_D_INTENTO_E_CONTRIBUTI', page: SALES_TAX_DATA_PAGE },
+    loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
+  },
+  {
+    path: 'commissions',
+    data: { breadcrumb: 'BREADCRUMB.PROVVIGIONI_E_OBIETTIVI', title: 'PAGE_TITLE.PROVVIGIONI_E_OBIETTIVI', page: SALES_COMMISSIONS_PAGE },
+    loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
   },
 ];

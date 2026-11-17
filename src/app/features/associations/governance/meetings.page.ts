@@ -40,6 +40,8 @@ const meetingsTab = (id: string, extra: TabExtras): ResourcePanelConfig => ({
 });
 
 const BALLOT_ID = [req(rf.uuid('id', { labelKey: 'RES.F.ballot_id' }))];
+const AGENDA_ITEM_ID = [req(rf.uuid('id', { labelKey: 'RES.F.agenda_item_id' }))];
+const PARTICIPANT_ID = [req(rf.uuid('id', { labelKey: 'RES.F.participant_id' }))];
 const MINUTES_ID = [req(rf.uuid('id', { labelKey: 'RES.F.minutes_id' }))];
 
 /** General meetings and boards: convocation, attendance, ballots and minutes. */
@@ -103,6 +105,18 @@ export const ASSOCIATIONS_MEETINGS_PAGE: ResourcePageConfig = {
         act('GET', 'RES.A.assoc_deliveries', '/associations/meetings/{id}/deliveries', { showResult: true }),
         act('GET', 'RES.A.assoc_letter', '/associations/meetings/{id}/letter', { download: true }),
       ],
+      toolbar: [
+        act('POST', 'RES.A.assoc_decide_agenda_item', '/associations/agenda-items/{id}/decision', {
+          fields: [...AGENDA_ITEM_ID, rf.bool('approved', { defaultValue: true }), rf.textarea('notes', { maxLength: 2000 })],
+          showResult: true,
+        }),
+        act('DELETE', 'RES.A.assoc_delete_agenda_item', '/associations/agenda-items/{id}', { fields: AGENDA_ITEM_ID, confirm: true, danger: true }),
+        act('GET', 'RES.A.assoc_download_meeting_attachment', '/associations/meeting-attachments/{id}/download', {
+          fields: [req(rf.uuid('id', { labelKey: 'RES.F.attachment_id' }))],
+          download: true,
+        }),
+        act('DELETE', 'RES.A.assoc_remove_participant', '/associations/meeting-participants/{id}', { fields: PARTICIPANT_ID, confirm: true, danger: true }),
+      ],
     }),
     meetingsTab('attendance', {
       detailPath: '/associations/meetings/{id}',
@@ -118,6 +132,9 @@ export const ASSOCIATIONS_MEETINGS_PAGE: ResourcePageConfig = {
           showResult: true,
         }),
         act('GET', 'RES.A.assoc_quorum', '/associations/meetings/{id}/quorum', { showResult: true }),
+      ],
+      toolbar: [
+        act('DELETE', 'RES.A.assoc_revoke_proxy', '/associations/meeting-participants/{id}/proxy', { fields: PARTICIPANT_ID, confirm: true, danger: true }),
       ],
     }),
     meetingsTab('ballots', {

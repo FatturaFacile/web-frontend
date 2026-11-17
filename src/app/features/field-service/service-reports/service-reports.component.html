@@ -68,7 +68,14 @@
     <button nz-button nzType="link" nzSize="small" type="button" (click)="downloadPdf(report)">
       {{ 'SERVICE_REPORTS.PDF' | translate }}
     </button>
+    <button nz-button nzType="link" nzSize="small" type="button" (click)="attachmentsTarget.set(report)">Allegati</button>
     @if (canWrite()) {
+      @if (!report.is_invoiced) {
+        <button nz-button nzType="link" nzSize="small" type="button" (click)="openNotes(report)">Note</button>
+      }
+      @if (!report.is_signed && !report.is_invoiced) {
+        <button nz-button nzType="link" nzSize="small" nzDanger type="button" (click)="remove(report)">Elimina</button>
+      }
       @if (!report.is_signed) {
         <button nz-button nzType="link" nzSize="small" type="button" (click)="openSign(report)">
           {{ 'SERVICE_REPORTS.SIGN' | translate }}
@@ -119,5 +126,40 @@
     <button nz-button nzType="primary" type="button" [nzLoading]="saving()" [disabled]="!photoFile()" (click)="uploadPhoto()">
       {{ 'SERVICE_REPORTS.UPLOAD' | translate }}
     </button>
+  </ng-template>
+</nz-modal>
+
+<nz-modal
+  [nzVisible]="attachmentsTarget() !== null"
+  nzTitle="Allegati"
+  [nzFooter]="null"
+  (nzOnCancel)="attachmentsTarget.set(null)"
+>
+  <ng-container *nzModalContent>
+    @if (attachmentsTarget(); as target) {
+      <app-record-attachments attachableType="service_report" [attachableId]="target.id" [canWrite]="canWrite()" />
+    }
+  </ng-container>
+</nz-modal>
+
+<nz-modal
+  [nzVisible]="notesTarget() !== null"
+  nzTitle="Note del rapportino"
+  [nzFooter]="notesFooter"
+  (nzOnCancel)="notesTarget.set(null)"
+>
+  <ng-container *nzModalContent>
+    <label class="sr-label" for="sr-cnotes">Note per il cliente</label>
+    <textarea id="sr-cnotes" nz-input rows="3" [ngModel]="customerNotes()" (ngModelChange)="customerNotes.set($event)"></textarea>
+    <label class="sr-label" for="sr-inotes">Note interne</label>
+    <textarea id="sr-inotes" nz-input rows="3" [ngModel]="internalNotes()" (ngModelChange)="internalNotes.set($event)"></textarea>
+    <label class="sr-label">
+      <input type="checkbox" [checked]="portalVisible()" (change)="portalVisible.set($any($event.target).checked)" />
+      Visibile nel portale cliente
+    </label>
+  </ng-container>
+  <ng-template #notesFooter>
+    <button nz-button type="button" appIconAction="cancel" (click)="notesTarget.set(null)"></button>
+    <button nz-button nzType="primary" type="button" [nzLoading]="saving()" (click)="saveNotes()">Salva</button>
   </ng-template>
 </nz-modal>

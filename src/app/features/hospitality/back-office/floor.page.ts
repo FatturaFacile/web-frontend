@@ -1,4 +1,4 @@
-import { act, ResourcePageConfig, rf, req } from '@shared';
+import { act, col, cols, ResourcePageConfig, rf, req, tagCol } from '@shared';
 
 /** Table changes (position, size, service) and the tables free for a party and interval. */
 export const HOSPITALITY_FLOOR_PAGE: ResourcePageConfig = {
@@ -42,6 +42,34 @@ export const HOSPITALITY_FLOOR_PAGE: ResourcePageConfig = {
         filters: [req(rf.datetime('starts_at')), req(rf.integer('duration_minutes', { min: 15 })), req(rf.integer('party_size', { min: 1 }))],
         columns: [],
       },
+    },
+    {
+      id: 'reservations',
+      titleKey: 'RES.P.table_reservations',
+      module: 'hospitality',
+      list: {
+        path: '/hospitality/reservations',
+        filters: [req(rf.date('date'))],
+        columns: [...cols('guest_name', 'table_name', 'party_size'), col('starts_at', 'datetime'), col('duration_minutes'), tagCol('status')],
+      },
+      detailPath: '/hospitality/reservations/{id}',
+      rowActions: [
+        act('PUT', 'RES.ACTION.EDIT', '/hospitality/reservations/{id}', {
+          prefill: true,
+          fields: [
+            rf.uuid('table_id'),
+            rf.uuid('contact_id'),
+            req(rf.text('guest_name', { maxLength: 150 })),
+            rf.text('guest_phone', { maxLength: 40 }),
+            rf.text('guest_email', { maxLength: 190 }),
+            req(rf.integer('party_size', { min: 1 })),
+            req(rf.datetime('starts_at')),
+            req(rf.integer('duration_minutes', { min: 15 })),
+            rf.textarea('notes', { maxLength: 1000 }),
+          ],
+          visible: (row) => ['booked', 'seated'].includes(String(row['status'])),
+        }),
+      ],
     },
   ],
 };

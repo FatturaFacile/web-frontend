@@ -1,6 +1,17 @@
 /** Statuses accepted by the API (`in:draft,submitted,approved,rejected`). */
 export type ExpenseStatus = 'draft' | 'submitted' | 'approved' | 'rejected';
 
+/** Receipt or supporting file of an expense (`ExpenseAttachmentResource`). */
+export interface ExpenseAttachment {
+  id: string;
+  expense_id: string;
+  original_name: string;
+  mime_type: string;
+  size: number;
+  is_receipt?: boolean;
+  created_at?: string;
+}
+
 export interface ExpenseResource {
   id: string;
   expense_number?: string;
@@ -19,6 +30,7 @@ export interface ExpenseResource {
   user_id?: string;
   user?: { id: string; name: string; email: string } | null;
   project_id?: string | null;
+  attachments?: ExpenseAttachment[];
   attachments_count?: number;
   created_at?: string;
 }

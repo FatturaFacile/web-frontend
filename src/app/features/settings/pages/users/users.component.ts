@@ -67,6 +67,9 @@ import { MemberAccessFormComponent } from './member-access-form.component';
           <a nz-button routerLink="/settings/admin/user-tenants" data-test="manage-tenants">
             {{ 'memberAccess.manageTenants' | translate }}
           </a>
+          <a nz-button routerLink="/settings/admin/tenant-plan" data-test="manage-tenant-plan">
+            {{ 'tenantPlan.title' | translate }}
+          </a>
         }
       </div>
       <nz-table #table [nzData]="members()" [nzLoading]="loading()" [nzShowPagination]="false">

@@ -201,6 +201,7 @@ describe('TalentSuccessionComponent', () => {
     updateSuccessionPosition: vi.fn(),
     deleteSuccessionPosition: vi.fn(),
     createCandidate: vi.fn(),
+    updateCandidate: vi.fn(),
     deleteCandidate: vi.fn(),
   };
 
@@ -212,6 +213,7 @@ describe('TalentSuccessionComponent', () => {
     api.getSuccessionPosition.mockReturnValue(of({ data: position }));
     api.createSuccessionPosition.mockReturnValue(of({ data: position }));
     api.createCandidate.mockReturnValue(of({ data: {} }));
+    api.updateCandidate.mockReturnValue(of({ data: {} }));
     configure(api);
   });
 
@@ -256,6 +258,21 @@ describe('TalentSuccessionComponent', () => {
     });
   });
 
+  it('edits a successor through the update endpoint without resending the employee', () => {
+    const fixture = TestBed.createComponent(TalentSuccessionComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+
+    component.openCandidates(position);
+    component.editCandidate({ id: 'ca-1', succession_position_id: 'pos-1', employee_id: 'emp-1', readiness: 'ready_now', risk_of_loss: 'low', potential: 'high', ranking: 2, development_plan: 'Mentoring' });
+    component.candidateForm.patchValue({ ranking: 1 });
+    component.addCandidate();
+
+    expect(api.updateCandidate).toHaveBeenCalledWith('ca-1', { readiness: 'ready_now', risk_of_loss: 'low', potential: 'high', ranking: 1, development_plan: 'Mentoring' });
+    expect(api.createCandidate).not.toHaveBeenCalled();
+    expect(component.editingCandidate()).toBeNull();
+  });
+
   it('shows the API reason when the candidate is refused', () => {
     api.createCandidate.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 422, error: { errors: { employee_id: ['The candidate is the incumbent'] } } })));
     const fixture = TestBed.createComponent(TalentSuccessionComponent);
@@ -274,6 +291,9 @@ describe('TalentCompensationComponent', () => {
     getCycles: vi.fn(),
     getCycle: vi.fn(),
     createCycle: vi.fn(),
+    updateCycle: vi.fn(),
+    updateBudgetPool: vi.fn(),
+    updateMeritProposal: vi.fn(),
     openCycle: vi.fn(),
     closeCycle: vi.fn(),
     deleteCycle: vi.fn(),
@@ -298,6 +318,9 @@ describe('TalentCompensationComponent', () => {
     api.getBudgetPools.mockReturnValue(of({ data: [] }));
     api.getMeritProposals.mockReturnValue(of({ data: [] }));
     api.createCycle.mockReturnValue(of({ data: cycle }));
+    api.updateCycle.mockReturnValue(of({ data: cycle }));
+    api.updateBudgetPool.mockReturnValue(of({ data: {} }));
+    api.updateMeritProposal.mockReturnValue(of({ data: {} }));
     api.openCycle.mockReturnValue(of({ data: { ...cycle, status: 'open' } }));
     api.replaceGuidelines.mockReturnValue(of({ data: [] }));
     api.createMeritProposal.mockReturnValue(of({ data: {} }));
@@ -323,6 +346,29 @@ describe('TalentCompensationComponent', () => {
       effective_on: '2027-04-01',
       notes: null,
     });
+  });
+
+  it('edits a draft cycle, a budget pool and a proposal through the update endpoints', () => {
+    const fixture = TestBed.createComponent(TalentCompensationComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+    component.select(cycle);
+
+    component.openCycleModal(cycle);
+    component.cycleForm.patchValue({ name: 'Merit renamed' });
+    component.saveCycle();
+    component.openPoolModal({ pool_id: 'pool-1', name: 'Sales', budget_amount: '1000.00' });
+    component.poolForm.patchValue({ budget_amount: 2000 });
+    component.savePool();
+    component.openProposalModal(proposal);
+    component.proposalForm.patchValue({ increase_percent: 5 });
+    component.saveProposal();
+
+    expect(api.updateCycle).toHaveBeenCalledWith('cy-1', expect.objectContaining({ name: 'Merit renamed' }));
+    expect(api.updateBudgetPool).toHaveBeenCalledWith('pool-1', { name: 'Sales', budget_amount: '2000' });
+    expect(api.updateMeritProposal).toHaveBeenCalledWith('pr-1', expect.objectContaining({ increase_percent: '5' }));
+    expect(api.createCycle).not.toHaveBeenCalled();
+    expect(api.createMeritProposal).not.toHaveBeenCalled();
   });
 
   it('loads the saved guidelines and replaces them with the five rating rows', () => {

@@ -1,5 +1,5 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -8,6 +8,7 @@ import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalModule } from 'ng-zorro-antd/modal';
+import { NzSwitchModule } from 'ng-zorro-antd/switch';
 import { NzProgressModule } from 'ng-zorro-antd/progress';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableModule } from 'ng-zorro-antd/table';
@@ -15,6 +16,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   ESG_ESRS_STANDARDS,
   EsgEsrsCompleteness,
+  EsgEsrsDatapointInput,
   EsgEsrsPackage,
   EsgEsrsPackageRow,
   EsgEsrsValueLine,
@@ -32,6 +34,16 @@ const STATUS_COLORS: Readonly<Record<EsgEsrsValueStatus, string>> = {
   approved: 'green',
   not_applicable: 'orange',
 };
+
+const DATA_TYPES = ['number', 'text', 'boolean'] as const;
+const AUTO_SOURCES = [
+  'inventory.scope_1_tco2e',
+  'inventory.scope_2_tco2e',
+  'inventory.scope_3_tco2e',
+  'inventory.total_tco2e',
+  'inventory.intensity_revenue',
+  'period.employees_fte',
+] as const;
 
 const STATUSES: readonly EsgEsrsValueStatus[] = ['draft', 'reviewed', 'approved', 'not_applicable'];
 
@@ -54,6 +66,7 @@ const STATUSES: readonly EsgEsrsValueStatus[] = ['draft', 'reviewed', 'approved'
     NzModalModule,
     NzProgressModule,
     NzSelectModule,
+    NzSwitchModule,
     NzTableModule,
     NzTagModule,
   ],
@@ -64,6 +77,7 @@ const STATUSES: readonly EsgEsrsValueStatus[] = ['draft', 'reviewed', 'approved'
           <nz-option [nzValue]="period.id" [nzLabel]="period.name"></nz-option>
         }
       </nz-select>
+      <button nz-button (click)="newDatapoint()">{{ 'SUSTAINABILITY.ESRS_NEW_DATAPOINT' | translate }}</button>
       <button nz-button (click)="installCatalog()">{{ 'SUSTAINABILITY.ESRS_INSTALL_CATALOG' | translate }}</button>
       <button nz-button nzType="primary" [disabled]="!periodId()" (click)="syncInventory()">{{ 'SUSTAINABILITY.ESRS_SYNC_INVENTORY' | translate }}</button>
     </app-page-header>
@@ -136,7 +150,10 @@ const STATUSES: readonly EsgEsrsValueStatus[] = ['draft', 'reviewed', 'approved'
                   <nz-tag [nzColor]="statusColor(value.status)">{{ ('SUSTAINABILITY.ESRS_STATUS_' + value.status.toUpperCase()) | translate }}</nz-tag>
                 }
               </td>
-              <td><button nz-button nzSize="small" (click)="edit(row)">{{ 'SUSTAINABILITY.ESRS_EDIT_VALUE' | translate }}</button></td>
+              <td>
+                <button nz-button nzSize="small" (click)="edit(row)">{{ 'SUSTAINABILITY.ESRS_EDIT_VALUE' | translate }}</button>
+                <button nz-button nzSize="small" nzType="link" (click)="editDatapoint(row)">{{ 'SUSTAINABILITY.ESRS_EDIT_DATAPOINT' | translate }}</button>
+              </td>
             </tr>
           }
         </tbody>
@@ -195,6 +212,77 @@ const STATUSES: readonly EsgEsrsValueStatus[] = ['draft', 'reviewed', 'approved'
         </form>
       </ng-container>
     </nz-modal>
+
+    <nz-modal
+      [nzVisible]="datapointOpen()"
+      [nzTitle]="'SUSTAINABILITY.ESRS_DATAPOINT' | translate"
+      (nzOnCancel)="datapointOpen.set(false)"
+      (nzOnOk)="saveDatapoint()"
+      okAction="save"
+    >
+      <ng-container *nzModalContent>
+        <form nz-form [formGroup]="datapointForm" nzLayout="vertical">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'SUSTAINABILITY.ESRS_CODE' | translate }}</nz-form-label>
+            <nz-form-control><input nz-input formControlName="code" maxlength="40" /></nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'SUSTAINABILITY.ESRS_STANDARD' | translate }}</nz-form-label>
+            <nz-form-control>
+              <nz-select formControlName="standard">
+                @for (code of standards; track code) {
+                  <nz-option [nzValue]="code" [nzLabel]="code"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'SUSTAINABILITY.ESRS_DISCLOSURE' | translate }}</nz-form-label>
+            <nz-form-control><input nz-input formControlName="disclosure" maxlength="20" /></nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'SUSTAINABILITY.NAME' | translate }}</nz-form-label>
+            <nz-form-control><input nz-input formControlName="name" maxlength="255" /></nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label>{{ 'SUSTAINABILITY.ESRS_DATA_TYPE' | translate }}</nz-form-label>
+            <nz-form-control>
+              <nz-select formControlName="data_type">
+                @for (type of dataTypes; track type) {
+                  <nz-option [nzValue]="type" [nzLabel]="type"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label>{{ 'SUSTAINABILITY.ESRS_UNIT' | translate }}</nz-form-label>
+            <nz-form-control><input nz-input formControlName="unit" maxlength="20" /></nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label>{{ 'SUSTAINABILITY.ESRS_AUTO_SOURCE' | translate }}</nz-form-label>
+            <nz-form-control>
+              <nz-select formControlName="auto_source" nzAllowClear>
+                @for (source of autoSources; track source) {
+                  <nz-option [nzValue]="source" [nzLabel]="source"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label>{{ 'SUSTAINABILITY.ESRS_DESCRIPTION' | translate }}</nz-form-label>
+            <nz-form-control><textarea nz-input rows="3" formControlName="description"></textarea></nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label>{{ 'SUSTAINABILITY.ESRS_MANDATORY' | translate }}</nz-form-label>
+            <nz-form-control><nz-switch formControlName="is_mandatory"></nz-switch></nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label>{{ 'SUSTAINABILITY.ESRS_ACTIVE' | translate }}</nz-form-label>
+            <nz-form-control><nz-switch formControlName="is_active"></nz-switch></nz-form-control>
+          </nz-form-item>
+        </form>
+      </ng-container>
+    </nz-modal>
   `,
 })
 export class SustainabilityEsrsComponent implements OnInit {
@@ -205,6 +293,22 @@ export class SustainabilityEsrsComponent implements OnInit {
 
   readonly standards = ESG_ESRS_STANDARDS;
   readonly statuses = STATUSES;
+  readonly dataTypes = DATA_TYPES;
+  readonly autoSources = AUTO_SOURCES;
+  readonly datapointOpen = signal(false);
+  readonly datapointId = signal<string | null>(null);
+  readonly datapointForm = this.fb.group({
+    code: ['', [Validators.required, Validators.maxLength(40), Validators.pattern(/^[A-Za-z0-9._-]+$/)]],
+    standard: ['E1' as EsgEsrsDatapointInput['standard'], Validators.required],
+    disclosure: ['', [Validators.required, Validators.maxLength(20)]],
+    name: ['', [Validators.required, Validators.maxLength(255)]],
+    description: [''],
+    data_type: ['number' as NonNullable<EsgEsrsDatapointInput['data_type']>],
+    unit: [''],
+    auto_source: [null as string | null],
+    is_mandatory: [false],
+    is_active: [true],
+  });
   readonly periods = signal<EsgReportingPeriod[]>([]);
   readonly periodId = signal('');
   readonly standard = signal('');
@@ -302,6 +406,54 @@ export class SustainabilityEsrsComponent implements OnInit {
     this.api.syncEsrsFromInventory(this.periodId()).subscribe({
       next: (response) => {
         this.message.success(this.translate.instant('SUSTAINABILITY.ESRS_SYNCED', { count: response.updated }));
+        this.reload();
+      },
+      error: (error: unknown) => this.message.error(apiErrorText(error) ?? this.translate.instant('SUSTAINABILITY.ACTION_ERROR')),
+    });
+  }
+
+  newDatapoint(): void {
+    this.datapointForm.reset();
+    this.datapointForm.controls.code.enable();
+    this.datapointId.set(null);
+    this.datapointOpen.set(true);
+  }
+
+  editDatapoint(row: EsgEsrsPackageRow): void {
+    this.datapointForm.reset({
+      code: row.code,
+      standard: row.standard,
+      disclosure: row.disclosure,
+      name: row.name,
+      description: row.description ?? '',
+      data_type: row.data_type,
+      unit: row.unit ?? '',
+      auto_source: row.auto_source,
+      is_mandatory: row.is_mandatory,
+      is_active: row.is_active,
+    });
+    this.datapointForm.controls.code.disable();
+    this.datapointId.set(row.id);
+    this.datapointOpen.set(true);
+  }
+
+  saveDatapoint(): void {
+    if (this.datapointForm.invalid) {
+      this.datapointForm.markAllAsTouched();
+      return;
+    }
+    const { code, ...rest } = this.datapointForm.getRawValue();
+    const body = {
+      ...rest,
+      description: rest.description === '' ? null : rest.description,
+      unit: rest.unit === '' ? null : rest.unit,
+    };
+    const id = this.datapointId();
+    const request = id === null ? this.api.createEsrsDatapoint({ code, ...body }) : this.api.updateEsrsDatapoint(id, body);
+    request.subscribe({
+      next: () => {
+        this.message.success(this.translate.instant('SUSTAINABILITY.ESRS_DATAPOINT_SAVED'));
+        this.datapointOpen.set(false);
         this.reload();
       },
       error: (error: unknown) => this.message.error(apiErrorText(error) ?? this.translate.instant('SUSTAINABILITY.ACTION_ERROR')),

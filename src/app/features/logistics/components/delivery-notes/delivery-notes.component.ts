@@ -28,6 +28,7 @@ import {
   UnbilledGroup,
 } from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { DocumentEmailsDialogComponent } from './document-emails-dialog.component';
 import { DeliveryNoteFacade } from '../../services/delivery-note.facade';
 import {
   DDT_STATUS_COLOR,
@@ -43,6 +44,7 @@ import {
   imports: [
     FormsModule,
     DatePipe,
+    DocumentEmailsDialogComponent,
     RouterLink,
     NzButtonModule,
     NzCardModule,
@@ -178,6 +180,8 @@ export class DeliveryNotesComponent {
       'LOGISTICS.DDT.MESSAGES.DELIVERED',
     );
   }
+
+  protected readonly emailTarget = signal<string | null>(null);
 
   protected downloadPdf(note: LogisticsDeliveryNote): void {
     this.api

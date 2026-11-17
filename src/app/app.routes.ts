@@ -501,6 +501,12 @@ export const routes: Routes = [
       import('./features/hospitality/hospitality.routes').then((m) => m.HOSPITALITY_ROUTES),
   },
   {
+    path: 'mobile',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'RES.PAGE.MOBILE_ADMIN', title: 'RES.PAGE.MOBILE_ADMIN' },
+    loadChildren: () => import('./features/mobile/mobile.routes').then((m) => m.MOBILE_ROUTES),
+  },
+  {
     path: 'retail',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'BREADCRUMB.VENDITA_AL_BANCO_AND_POS', title: 'POS' },
@@ -656,6 +662,7 @@ export const routes: Routes = [
   {
     // Public careers portal (Recruiting & ATS): no auth guard, embeddable.
     path: 'careers',
+    data: { publicPage: true, title: 'Lavora con noi' },
     loadChildren: () =>
       import('./features/careers/careers.routes').then((m) => m.CAREERS_ROUTES),
   },

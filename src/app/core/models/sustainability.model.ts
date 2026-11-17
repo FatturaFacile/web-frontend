@@ -340,6 +340,21 @@ export interface EsgEsrsDatapoint {
   is_active: boolean;
 }
 
+/** Body of POST/PUT /sustainability/esrs/datapoints (`EsrsDatapointRequest`). */
+export interface EsgEsrsDatapointInput {
+  code: string;
+  standard: EsgEsrsStandard;
+  disclosure: string;
+  name: string;
+  description?: string | null;
+  data_type?: EsgEsrsDataType;
+  unit?: string | null;
+  is_mandatory?: boolean;
+  auto_source?: string | null;
+  sort_order?: number;
+  is_active?: boolean;
+}
+
 export interface EsgEsrsPackageRow extends EsgEsrsDatapoint {
   is_required: boolean;
   value: EsgEsrsValue | null;

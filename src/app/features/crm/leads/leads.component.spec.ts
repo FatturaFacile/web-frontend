@@ -17,7 +17,8 @@ describe('LeadsComponent', () => {
   let api: { listLeads: ReturnType<typeof vi.fn>; listSources: ReturnType<typeof vi.fn> };
   const queryParams = new BehaviorSubject<Record<string, string>>({ rating: 'hot', min_score: '50' });
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    vi.clearAllMocks();
     vi.useFakeTimers();
     api = {
       listLeads: vi.fn().mockReturnValue(
@@ -25,7 +26,9 @@ describe('LeadsComponent', () => {
       ),
       listSources: vi.fn().mockReturnValue(of([{ id: 's1', name: 'Website', type: 'web_form' }])),
     };
-    TestBed.configureTestingModule({
+
+    await TestBed.configureTestingModule({
+      imports: [LeadsComponent],
       providers: [
         provideRouter([]),
         provideNzIcons(icons),

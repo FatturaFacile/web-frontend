@@ -110,6 +110,8 @@ describe('SustainabilityEsrsComponent', () => {
     recordEsrsValues: vi.fn(),
     syncEsrsFromInventory: vi.fn(),
     installEsrsCatalog: vi.fn(),
+    createEsrsDatapoint: vi.fn(),
+    updateEsrsDatapoint: vi.fn(),
   };
 
   beforeEach(() => {
@@ -173,6 +175,29 @@ describe('SustainabilityEsrsComponent', () => {
     component.syncInventory();
     expect(api.syncEsrsFromInventory).toHaveBeenCalledWith('per-1');
     expect(messageSpy.success).toHaveBeenCalled();
+  });
+
+  it('creates a custom data point and edits it without sending the code', () => {
+    api.createEsrsDatapoint.mockReturnValue(of({ data: pack.datapoints[0] }));
+    api.updateEsrsDatapoint.mockReturnValue(of({ data: pack.datapoints[0] }));
+    const fixture = TestBed.createComponent(SustainabilityEsrsComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+
+    component.newDatapoint();
+    component.saveDatapoint();
+    expect(api.createEsrsDatapoint).not.toHaveBeenCalled();
+
+    component.datapointForm.patchValue({ code: 'X-1', standard: 'E1', disclosure: 'E1-1', name: 'Custom' });
+    component.saveDatapoint();
+    expect(api.createEsrsDatapoint).toHaveBeenCalledWith(expect.objectContaining({ code: 'X-1', name: 'Custom', unit: null, description: null }));
+    expect(component.datapointOpen()).toBe(false);
+
+    component.editDatapoint(pack.datapoints[0]);
+    component.saveDatapoint();
+    const [id, body] = api.updateEsrsDatapoint.mock.calls[0];
+    expect(id).toBe('dp-1');
+    expect(body).not.toHaveProperty('code');
   });
 
   it('turns a blocking issue with an argument into its text', () => {

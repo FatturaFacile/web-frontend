@@ -295,7 +295,7 @@
                 [nzPlaceHolder]="'INVENTORY.VALUATION.ACCOUNT_DEFAULT' | translate"
               >
                 @for (a of accounts(); track a.id) {
-                  <nz-option [nzValue]="a.id" [nzLabel]="a.code + ' - ' + a.name" />
+                  <nz-option [nzValue]="a.id" [nzLabel]="a.account_code + ' - ' + a.name" />
                 }
               </nz-select>
             } @else {

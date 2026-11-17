@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { TREASURY_ADVANCED_PAGE } from './treasury-advanced.page';
 
 export const TREASURY_OPERATIONS_ROUTES: Routes = [
   {
@@ -37,6 +38,11 @@ export const TREASURY_OPERATIONS_ROUTES: Routes = [
       {
         path: 'collections',
         loadComponent: () => import('./collections/tr-collections.component').then((m) => m.TrCollectionsComponent),
+      },
+      {
+        path: 'advanced',
+        data: { page: TREASURY_ADVANCED_PAGE },
+        loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
       },
       {
         path: 'pagopa-notices',

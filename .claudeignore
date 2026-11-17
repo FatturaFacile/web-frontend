@@ -1,18 +1,33 @@
-# Ignore list shared across AI tools
-node_modules/
-dist/
-.angular/
-coverage/
-test-results/
-playwright-report/
-blob-report/
-storybook-static/
-.idea/
-.vscode/
+# Universal VCS & Environment
+.git/
 *.log
+*.sqlite
+*.sqlite3
 .env
 .env.*
 !.env.example
+coverage/
+build/
+dist/
+tmp/
+out-tsc/
+.idea/
+.vs/
+.vscode/
+
+# Node & Angular
+node_modules/
+.angular/
+.nx/
+storybook-static/
+test-results/
+playwright-report/
+blob-report/
+.sandbox/scratch/
+.sandbox/output/
+.sandbox/cache/
+
+# Certificates & Binary Assets
 certs/
 *.pem
 *.key

@@ -638,6 +638,10 @@
                 <code class="hash-code">{{ v.sha256?.slice(0, 12) }}...</code>
               </td>
               <td nzAlign="right">
+                <button nz-button nzType="default" nzSize="small" data-test="download-version" (click)="downloadVersion(v)">
+                  <span nz-icon nzType="download"></span>
+                  {{ 'DMS.LBL_DOWNLOAD' | translate }}
+                </button>
                 <button nz-button nzType="default" nzSize="small" (click)="verifySha256(v)">
                   <span nz-icon nzType="audit"></span>
                   {{ 'DMS.LBL_VERIFICA' | translate }}

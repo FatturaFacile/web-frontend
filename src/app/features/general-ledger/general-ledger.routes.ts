@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { GL_CONTROLS_PAGE, GL_STATEMENTS_PAGE, GL_TAX_PAGE } from './fiscal/gl-fiscal.pages';
 
 export const GENERAL_LEDGER_ROUTES: Routes = [
   {
@@ -6,6 +7,21 @@ export const GENERAL_LEDGER_ROUTES: Routes = [
     loadComponent: () => import('./general-ledger-shell.component').then((m) => m.GeneralLedgerShellComponent),
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'journals' },
+      {
+        path: 'fiscal',
+        data: { page: GL_TAX_PAGE },
+        loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
+      },
+      {
+        path: 'statements-extra',
+        data: { page: GL_STATEMENTS_PAGE },
+        loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
+      },
+      {
+        path: 'controls',
+        data: { page: GL_CONTROLS_PAGE },
+        loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
+      },
       {
         path: 'settings',
         loadComponent: () => import('./settings/gl-settings.component').then((m) => m.GlSettingsComponent),
