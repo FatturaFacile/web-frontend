@@ -8,6 +8,7 @@ import {
   CARRIAGE_TERMS,
   TRANSPORT_BY,
 } from '@core';
+import { hasSeededDictionaries, seededDictionaries } from '../../../testing/seeded-dictionaries';
 import { MOVEMENT_TYPE_FILTERS, STATUS_FILTERS, TRACKER_STEPS } from './logistics.rules';
 import {
   carriageKey,
@@ -25,13 +26,10 @@ import {
 type Locale = 'en' | 'it' | 'de' | 'fr';
 const LOCALES: Locale[] = ['en', 'it', 'de', 'fr'];
 
-/**
- * The UI strings live in the API seeders. The keys this feature adds are delivered in
- * docs/i18n/logistics-wms.translations.json (and a paste-ready PHP fragment next to it) until they are merged there.
- */
-const delivered = JSON.parse(
-  readFileSync(resolve(process.cwd(), 'docs/i18n/logistics-wms.translations.json'), 'utf8'),
-) as Record<Locale, Record<string, string>>;
+/** The UI strings live only in the API seeders; they are read from the sibling `web-api` project (skipped without it). */
+const delivered = seededDictionaries as Record<Locale, Record<string, string>>;
+const logisticsKeys = (locale: Locale): string[] =>
+  Object.keys(delivered[locale] ?? {}).filter((key) => key.startsWith('LOGISTICS.'));
 
 const placeholders = (text: string): string =>
   [...text.matchAll(/\{\w+}/g)]
@@ -39,17 +37,17 @@ const placeholders = (text: string): string =>
     .sort()
     .join();
 
-describe('logistics WMS translations', () => {
-  it('delivers every key in English, Italian, German and French', () => {
-    const reference = Object.keys(delivered.en).sort();
+describe.skipIf(!hasSeededDictionaries)('logistics WMS translations', () => {
+  it('seeds every key in English, Italian, German and French', () => {
+    const reference = logisticsKeys('en').sort();
     for (const locale of LOCALES) {
-      expect(Object.keys(delivered[locale]).sort()).toEqual(reference);
+      expect(logisticsKeys(locale).sort()).toEqual(reference);
     }
   });
 
   it('has no empty text and keeps the placeholders of the English text', () => {
     for (const locale of LOCALES) {
-      for (const [key, text] of Object.entries(delivered[locale])) {
+      for (const [key, text] of Object.entries(delivered[locale]).filter(([k]) => k.startsWith('LOGISTICS.'))) {
         expect(text.trim(), `${locale} ${key}`).not.toBe('');
         expect(placeholders(text), `${locale} ${key}`).toBe(placeholders(delivered.en[key]));
       }
@@ -59,7 +57,7 @@ describe('logistics WMS translations', () => {
   it('translates long German and French texts instead of copying the English ones', () => {
     for (const locale of ['de', 'fr'] as const) {
       const copied = Object.entries(delivered[locale]).filter(
-        ([key, text]) => text === delivered.en[key] && text.length > 25,
+        ([key, text]) => key.startsWith('LOGISTICS.') && text === delivered.en[key] && text.length > 25,
       );
       expect(copied).toEqual([]);
     }
@@ -77,16 +75,7 @@ describe('logistics WMS translations', () => {
       ...VALUATION_BUCKETS.flatMap((b) => [valuationBucketKey(b), valuationBucketHintKey(b)]),
       ...(['approved', 'partially_received', 'closed'] as const).map(transferStatusKey),
     ];
-    // Keys that already existed before this feature are served by the seeder, the rest must be delivered here.
-    const preExisting = new Set([
-      ...TRANSFER_PURPOSES.filter((p) =>
-        ['inter_warehouse', 'technician_van', 'customer_consignment', 'subcontracting'].includes(p),
-      ).map(transferPurposeKey),
-      ...DISCREPANCY_RESOLUTIONS.map(discrepancyKey),
-      ...CARRIAGE_TERMS.map(carriageKey),
-      ...TRANSPORT_BY.map(transportByKey),
-    ]);
-    const missing = derived.filter((key) => !preExisting.has(key) && !(key in delivered.en));
+    const missing = derived.filter((key) => !(key in delivered.en));
     expect(missing).toEqual([]);
   });
 });
