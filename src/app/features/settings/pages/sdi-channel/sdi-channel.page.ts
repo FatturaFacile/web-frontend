@@ -1,7 +1,7 @@
 import { act, col, cols, ResourcePageConfig, rf, req, tagCol } from '@shared';
 
 const CHANNEL_FIELDS = [
-  req(rf.select('channel', ['pec', 'openapi', 'acube', 'invoicetronic', 'local'])),
+  req(rf.select('channel', ['pec', 'openapi', 'acube', 'invoicetronic', 'manual', 'local'])),
   rf.select('environment', ['production', 'sandbox']),
   rf.text('pec_email'),
   rf.text('pec_smtp_host'),
