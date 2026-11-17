@@ -1,0 +1,143 @@
+<app-page-header
+  [title]="'CRM.LEADS.TITLE' | translateOr: 'Leads'"
+  [subtitle]="'CRM.LEADS.SUBTITLE' | translateOr: 'Score, qualify and convert incoming leads'"
+/>
+
+<nz-card>
+  <div class="toolbar" role="search">
+    <nz-select
+      class="filter"
+      nzAllowClear
+      [nzPlaceHolder]="'CRM.LEADS.FILTERS.RATING' | translateOr: 'Rating'"
+      [attr.aria-label]="'CRM.LEADS.FILTERS.RATING' | translateOr: 'Rating'"
+      [nzOptions]="ratingOptions()"
+      [ngModel]="facade.filterParams().rating"
+      (ngModelChange)="setFilter({ rating: $event ?? undefined })"
+    />
+
+    <app-lead-assignee-select
+      class="filter wide"
+      [label]="'CRM.LEADS.FILTERS.ASSIGNEE' | translateOr: 'Assignee'"
+      [placeholder]="'CRM.LEADS.FILTERS.ASSIGNEE' | translateOr: 'Assignee'"
+      [value]="facade.filterParams().assigned_user_id ?? null"
+      (valueChange)="setFilter({ assigned_user_id: $event ?? undefined })"
+    />
+
+    <nz-select
+      class="filter wide"
+      nzAllowClear
+      nzShowSearch
+      [nzPlaceHolder]="'CRM.LEADS.FILTERS.SOURCE' | translateOr: 'Source'"
+      [attr.aria-label]="'CRM.LEADS.FILTERS.SOURCE' | translateOr: 'Source'"
+      [nzOptions]="sourceOptions()"
+      [ngModel]="facade.filterParams().source"
+      (ngModelChange)="setFilter({ source: $event ?? undefined })"
+    />
+
+    <span class="min-score">
+      <label for="lead_min_score">{{ 'CRM.LEADS.FILTERS.MIN_SCORE' | translateOr: 'Min score' }}</label>
+      <nz-input-number
+        nzId="lead_min_score"
+        [nzMin]="0"
+        [nzMax]="100"
+        [nzStep]="5"
+        [ngModel]="facade.filterParams().min_score ?? null"
+        (ngModelChange)="setFilter({ min_score: $event ?? undefined })"
+      />
+    </span>
+
+    <nz-select
+      class="filter wide"
+      nzAllowClear
+      [nzPlaceHolder]="'CRM.LEADS.FILTERS.SORT' | translateOr: 'Sort by'"
+      [attr.aria-label]="'CRM.LEADS.FILTERS.SORT' | translateOr: 'Sort by'"
+      [nzOptions]="sortOptions()"
+      [ngModel]="facade.filterParams().sort"
+      (ngModelChange)="setFilter({ sort: $event ?? undefined })"
+    />
+
+    <button nz-button type="button" (click)="clearFilters()">
+      {{ 'CRM.LEADS.FILTERS.CLEAR' | translateOr: 'Clear filters' }}
+    </button>
+
+    <span class="spacer"></span>
+    <a nz-button routerLink="duplicates">
+      <nz-icon nzType="swap" /> {{ 'CRM.LEADS.DUPLICATES.TITLE' | translateOr: 'Duplicates' }}
+    </a>
+  </div>
+
+  @if (facade.error()) {
+    <nz-alert
+      class="error"
+      nzType="error"
+      nzShowIcon
+      [nzMessage]="'CRM.LEADS.ERRORS.LOAD' | translateOr: 'Leads could not be loaded.'"
+      [nzAction]="retryTpl"
+    />
+    <ng-template #retryTpl>
+      <button nz-button nzSize="small" type="button" (click)="facade.reload()">
+        <nz-icon nzType="reload" /> {{ 'COMMON.RETRY' | translateOr: 'Retry' }}
+      </button>
+    </ng-template>
+  }
+
+  <app-base-table
+    [data]="facade.items()"
+    [columns]="columns()"
+    [loading]="facade.loading()"
+    [total]="facade.totalCount()"
+    [pageIndex]="facade.pageIndex()"
+    [pageSize]="facade.pageSize()"
+    [emptyText]="'CRM.LEADS.EMPTY' | translateOr: 'No leads match the current filters'"
+    [actionsTemplate]="actionsTpl"
+    (paramsChange)="onParamsChange($event)"
+  />
+
+  <ng-template #nameTpl let-l>
+    <a [routerLink]="[l.id]">
+      <strong>{{ name(l) }}</strong>
+    </a>
+    @if (l.company_name && (l.first_name || l.last_name || l.full_name)) {
+      <div class="sub-text">{{ l.company_name }}</div>
+    }
+    @if (l.email) {
+      <div class="sub-text">{{ l.email }}</div>
+    }
+  </ng-template>
+
+  <ng-template #scoreTpl let-l>
+    <app-lead-score-badge [score]="l.score" [rating]="l.rating" />
+  </ng-template>
+
+  <ng-template #ratingTpl let-l>
+    <app-lead-rating-tag [rating]="l.rating" />
+  </ng-template>
+
+  <ng-template #sourceTpl let-l>{{ l.lead_source?.name || '-' }}</ng-template>
+
+  <ng-template #assigneeTpl let-l>
+    @if (l.assigned_user_id) {
+      {{ assignees.nameOf(l.assigned_user_id) }}
+    } @else {
+      <span class="sub-text">{{ 'CRM.LEADS.UNASSIGNED' | translateOr: 'Unassigned' }}</span>
+    }
+  </ng-template>
+
+  <ng-template #statusTpl let-l>{{ statusLabel(l.status) }}</ng-template>
+
+  <ng-template #createdTpl let-l>{{ l.created_at ? (l.created_at | date: 'short') : '-' }}</ng-template>
+
+  <ng-template #actionsTpl let-l>
+    <button
+      nz-button
+      nzType="text"
+      nzSize="small"
+      type="button"
+      (click)="open(l)"
+      [attr.aria-label]="('CRM.LEADS.ACTIONS.OPEN' | translateOr: 'Open lead') + ' ' + name(l)"
+      [title]="'CRM.LEADS.ACTIONS.OPEN' | translateOr: 'Open lead'"
+    >
+      <nz-icon nzType="eye" />
+    </button>
+  </ng-template>
+</nz-card>
