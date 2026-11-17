@@ -170,7 +170,7 @@ export type CrmSegmentUpdatePayload = Omit<CrmSegmentPayload, 'entity'>;
 
 export type LeadScoringRuleType = 'field' | 'activity';
 
-export interface LeadScoringRule {
+export interface EngagementScoringRule {
   id: string;
   name: string;
   rule_type: LeadScoringRuleType;
@@ -185,7 +185,7 @@ export interface LeadScoringRule {
   is_active?: boolean | null;
 }
 
-export type LeadScoringRulePayload = Omit<LeadScoringRule, 'id'>;
+export type EngagementScoringRulePayload = Omit<EngagementScoringRule, 'id'>;
 
 export type CrmCampaignStatus = 'planned' | 'active' | 'completed' | 'cancelled';
 

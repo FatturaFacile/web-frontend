@@ -177,14 +177,30 @@
                 />
               </nz-form-control>
             </nz-form-item>
-            <div class="calc">
-              <span class="calc-label">{{ "SALES.INVOICES.ITEM.TAX_AMOUNT" | translate }}</span>
-              <span>{{ lines()[i].tax | currency: currency() : "symbol" : "1.2-2" }}</span>
-            </div>
-            <div class="calc">
-              <span class="calc-label">{{ "SALES.INVOICES.ITEM.SUBTOTAL" | translate }}</span>
-              <span>{{ lines()[i].sub | currency: currency() : "symbol" : "1.2-2" }}</span>
-            </div>
+            @if (isItalian()) {
+              <!-- IT: line figures come from the backend preview, never computed here. -->
+              <div class="calc">
+                <span class="calc-label">{{ "SALES.INVOICES.FISCAL.NATURA" | translate }}</span>
+                <span>{{ preview()?.lines?.[i]?.natura ?? "—" }}</span>
+              </div>
+              <div class="calc">
+                <span class="calc-label">{{ "SALES.INVOICES.ITEM.SUBTOTAL" | translate }}</span>
+                <span>{{
+                  preview()?.lines?.[i]?.net
+                    ? (preview()!.lines[i].net | currency: currency() : "symbol" : "1.2-2")
+                    : "—"
+                }}</span>
+              </div>
+            } @else {
+              <div class="calc">
+                <span class="calc-label">{{ "SALES.INVOICES.ITEM.TAX_AMOUNT" | translate }}</span>
+                <span>{{ lines()[i].tax | currency: currency() : "symbol" : "1.2-2" }}</span>
+              </div>
+              <div class="calc">
+                <span class="calc-label">{{ "SALES.INVOICES.ITEM.SUBTOTAL" | translate }}</span>
+                <span>{{ lines()[i].sub | currency: currency() : "symbol" : "1.2-2" }}</span>
+              </div>
+            }
             <button
               nz-button appIconAction="delete"
               nzType="text"
@@ -195,6 +211,42 @@
               (click)="removeItem(i)"
             ></button>
           </div>
+          @if (isItalian()) {
+            <div class="line-fiscal" [formGroupName]="i">
+              <nz-form-item>
+                <nz-form-label [nzFor]="'natura' + i">{{
+                  "SALES.INVOICES.FISCAL.NATURA" | translate
+                }}</nz-form-label>
+                <nz-form-control
+                  [nzErrorTip]="errorTip('items.' + i + '.natura')"
+                  [nzValidateStatus]="item.controls.natura"
+                >
+                  <nz-select
+                    [nzId]="'natura' + i"
+                    formControlName="natura"
+                    nzAllowClear
+                    [nzPlaceHolder]="'SALES.INVOICES.FISCAL.NATURA_NONE' | translate"
+                  >
+                    @for (o of naturaCodes; track o.code) {
+                      <nz-option [nzValue]="o.code" [nzLabel]="o.code + ' – ' + o.description" />
+                    }
+                  </nz-select>
+                </nz-form-control>
+              </nz-form-item>
+              @if (form.controls.fund_enabled.value) {
+                <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+                <label nz-checkbox formControlName="fund_applies">
+                  {{ "SALES.INVOICES.FISCAL.LINE_FUND_APPLIES" | translate }}
+                </label>
+              }
+              @if (form.controls.withholding_enabled.value || form.controls.enasarco.value) {
+                <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+                <label nz-checkbox formControlName="withholding_applies">
+                  {{ "SALES.INVOICES.FISCAL.LINE_WITHHOLDING_APPLIES" | translate }}
+                </label>
+              }
+            </div>
+          }
         }
       </div>
       <button nz-button appIconAction="add" nzType="dashed" type="button" (click)="addItem()"></button>
@@ -206,6 +258,15 @@
         </nz-form-control>
       </nz-form-item>
 
+      @if (isItalian()) {
+        <app-invoice-fiscal-section [form]="form" [forfettario]="forfettario()" />
+        <app-invoice-totals-breakdown
+          [result]="preview()"
+          [currency]="currency()"
+          [loading]="previewLoading()"
+          [error]="previewError()"
+        />
+      } @else {
       <dl class="totals">
         <dt>{{ "SALES.INVOICES.TOTALS.NET" | translate }}</dt>
         <dd>{{ totals().net | currency: currency() : "symbol" : "1.2-2" }}</dd>
@@ -216,6 +277,7 @@
           <strong>{{ totals().gross | currency: currency() : "symbol" : "1.2-2" }}</strong>
         </dd>
       </dl>
+      }
 
       <p class="hint">{{ "SALES.INVOICES.FORM.SERVER_ASSIGNED_HINT" | translate }}</p>
 

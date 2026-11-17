@@ -1,0 +1,137 @@
+<app-page-header
+  [title]="'CRM.LEAD_ROUTING.TITLE' | translateOr: 'Lead routing'"
+  [subtitle]="'CRM.LEAD_ROUTING.SUBTITLE' | translateOr: 'Rules are evaluated top to bottom; the first match assigns the lead'"
+/>
+
+<div class="sr-only" aria-live="polite">{{ announcement() }}</div>
+
+@if (forbidden()) {
+  <nz-alert
+    nzType="info"
+    nzShowIcon
+    [nzMessage]="'CRM.LEADS.FORBIDDEN' | translateOr: 'You do not have permission to manage this section.'"
+  />
+} @else {
+  <nz-card>
+    <div class="toolbar">
+      <span class="hint">{{
+        'CRM.LEAD_ROUTING.REORDER_HINT' | translateOr: 'Drag rules or use the arrow buttons to change their priority.'
+      }}</span>
+      <span class="spacer"></span>
+      <button nz-button nzType="primary" type="button" (click)="openCreate()">
+        <nz-icon nzType="plus" /> {{ 'CRM.LEAD_ROUTING.NEW' | translateOr: 'New routing rule' }}
+      </button>
+    </div>
+
+    @if (reorderError()) {
+      <nz-alert class="block" nzType="error" nzShowIcon nzCloseable [nzMessage]="reorderError()!" />
+    }
+    @if (loadError()) {
+      <nz-alert
+        class="block"
+        nzType="error"
+        nzShowIcon
+        [nzMessage]="'CRM.LEAD_ROUTING.LOAD_ERROR' | translateOr: 'Routing rules could not be loaded.'"
+        [nzAction]="retryTpl"
+      />
+      <ng-template #retryTpl>
+        <button nz-button nzSize="small" type="button" (click)="load()">{{ 'COMMON.RETRY' | translateOr: 'Retry' }}</button>
+      </ng-template>
+    }
+
+    @if (loading()) {
+      <nz-skeleton [nzActive]="true" />
+    } @else if (!rules().length) {
+      <nz-empty [nzNotFoundContent]="'CRM.LEAD_ROUTING.EMPTY' | translateOr: 'No routing rules: new leads stay unassigned.'" />
+    } @else {
+      <ol
+        class="rules"
+        cdkDropList
+        [cdkDropListData]="rules()"
+        [cdkDropListDisabled]="reordering()"
+        (cdkDropListDropped)="onDrop($event)"
+        [attr.aria-busy]="reordering()"
+      >
+        @for (r of rules(); track r.id; let i = $index, first = $first, last = $last) {
+          <li class="rule" cdkDrag [cdkDragData]="r">
+            <span class="handle" cdkDragHandle aria-hidden="true"><i class="fa-solid fa-grip-vertical"></i></span>
+            <span class="pos" aria-hidden="true">{{ i + 1 }}</span>
+            <div class="body">
+              <div class="title">
+                <strong>{{ r.name }}</strong>
+                <nz-tag>{{ strategyLabel(r.strategy) }}</nz-tag>
+                @if (r.is_default) {
+                  <nz-tag nzColor="blue">{{ 'CRM.LEAD_ROUTING.DEFAULT' | translateOr: 'Default' }}</nz-tag>
+                }
+                @if (!r.is_active) {
+                  <nz-tag>{{ 'COMMON.INACTIVE' | translateOr: 'Inactive' }}</nz-tag>
+                }
+              </div>
+              <div class="sub-text">{{ conditionsSummary(r) }}</div>
+              <div class="sub-text">
+                {{ 'CRM.LEAD_ROUTING.ASSIGNEES' | translateOr: 'Assignees' }}: {{ assigneeNames(r) }}
+              </div>
+            </div>
+            <div class="row-actions">
+              <button
+                nz-button
+                nzType="text"
+                nzSize="small"
+                type="button"
+                [disabled]="first || reordering()"
+                [attr.aria-label]="('CRM.LEAD_ROUTING.MOVE_UP' | translateOr: 'Move up') + ' ' + r.name"
+                (click)="move(i, -1)"
+              >
+                <i class="fa-solid fa-arrow-up" aria-hidden="true"></i>
+              </button>
+              <button
+                nz-button
+                nzType="text"
+                nzSize="small"
+                type="button"
+                [disabled]="last || reordering()"
+                [attr.aria-label]="('CRM.LEAD_ROUTING.MOVE_DOWN' | translateOr: 'Move down') + ' ' + r.name"
+                (click)="move(i, 1)"
+              >
+                <i class="fa-solid fa-arrow-down" aria-hidden="true"></i>
+              </button>
+              <button
+                nz-button
+                nzType="text"
+                nzSize="small"
+                type="button"
+                [attr.aria-label]="('COMMON.EDIT' | translateOr: 'Edit') + ' ' + r.name"
+                (click)="openEdit(r)"
+              >
+                <nz-icon nzType="edit" />
+              </button>
+              <button
+                nz-button
+                nzType="text"
+                nzDanger
+                nzSize="small"
+                type="button"
+                nz-popconfirm
+                [disabled]="busyId() === r.id"
+                [nzPopconfirmTitle]="'CRM.LEAD_ROUTING.CONFIRM_DELETE' | translateOr: 'Delete this rule?'"
+                [nzOkText]="'COMMON.DELETE' | translateOr: 'Delete'"
+                [nzCancelText]="'COMMON.CANCEL' | translateOr: 'Cancel'"
+                [attr.aria-label]="('COMMON.DELETE' | translateOr: 'Delete') + ' ' + r.name"
+                (nzOnConfirm)="remove(r)"
+              >
+                <nz-icon nzType="delete" />
+              </button>
+            </div>
+          </li>
+        }
+      </ol>
+    }
+  </nz-card>
+}
+
+<app-lead-routing-rule-modal
+  [(open)]="modalOpen"
+  [rule]="editing()"
+  [nextPriority]="nextPriority()"
+  (saved)="onSaved($event)"
+/>

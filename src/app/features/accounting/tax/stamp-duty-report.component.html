@@ -1,0 +1,109 @@
+<app-page-header
+  [title]="'ACCOUNTING.TAX.STAMP.TITLE' | translate"
+  [subtitle]="'ACCOUNTING.TAX.STAMP.SUBTITLE' | translate"
+/>
+<app-tax-nav />
+
+<nz-card>
+  <div class="filters">
+    <nz-form-item>
+      <nz-form-label nzFor="stamp_year">{{ 'ACCOUNTING.TAX.YEAR' | translate }}</nz-form-label>
+      <nz-select nzId="stamp_year" [ngModel]="year()" (ngModelChange)="setYear($event)">
+        @for (y of years; track y) {
+          <nz-option [nzValue]="y" [nzLabel]="'' + y" />
+        }
+      </nz-select>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label nzFor="stamp_quarter">{{
+        'ACCOUNTING.TAX.QUARTER' | translate
+      }}</nz-form-label>
+      <nz-select nzId="stamp_quarter" [ngModel]="quarter()" (ngModelChange)="setQuarter($event)">
+        @for (q of quarters; track q) {
+          <nz-option [nzValue]="q" [nzLabel]="'Q' + q" />
+        }
+      </nz-select>
+    </nz-form-item>
+    <span class="spacer"></span>
+    <button
+      nz-button
+      type="button"
+      data-testid="csv"
+      [disabled]="isEmpty() || loading()"
+      [nzLoading]="exporting()"
+      (click)="exportCsv()"
+    >
+      <nz-icon nzType="download" /> {{ 'ACCOUNTING.TAX.EXPORT_CSV' | translate }}
+    </button>
+  </div>
+
+  @if (report(); as r) {
+    <dl class="summary">
+      <div>
+        <dt>{{ 'ACCOUNTING.TAX.STAMP.COUNT' | translate }}</dt>
+        <dd data-testid="count">{{ r.count }}</dd>
+      </div>
+      <div>
+        <dt>{{ 'ACCOUNTING.TAX.STAMP.TOTAL' | translate }}</dt>
+        <dd data-testid="total">{{ r.total_amount | currency: 'EUR' : 'symbol' : '1.2-2' }}</dd>
+      </div>
+    </dl>
+
+    <section class="f24" [attr.aria-label]="'ACCOUNTING.TAX.STAMP.F24_TITLE' | translate">
+      <h4>{{ 'ACCOUNTING.TAX.STAMP.F24_TITLE' | translate }}</h4>
+      <dl class="summary">
+        <div>
+          <dt>{{ 'ACCOUNTING.TAX.STAMP.TRIBUTO' | translate }}</dt>
+          <dd data-testid="tributo">{{ r.f24.tributo }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'ACCOUNTING.TAX.STAMP.DUE_DATE' | translate }}</dt>
+          <dd data-testid="due-date">{{ r.f24.due_date | date: 'dd.MM.yyyy' }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'ACCOUNTING.TAX.STAMP.DEFERRABLE' | translate }}</dt>
+          <dd>
+            <nz-tag [nzColor]="r.f24.deferrable ? 'blue' : 'default'">
+              {{ (r.f24.deferrable ? 'ACCOUNTING.TAX.YES' : 'ACCOUNTING.TAX.NO') | translate }}
+            </nz-tag>
+          </dd>
+        </div>
+      </dl>
+      @if (r.f24.deferrable) {
+        <p class="hint">{{ 'ACCOUNTING.TAX.STAMP.DEFERRABLE_HINT' | translate }}</p>
+      }
+    </section>
+  }
+
+  @if (isEmpty()) {
+    <nz-empty data-testid="empty" [nzNotFoundContent]="'ACCOUNTING.TAX.EMPTY' | translate" />
+  } @else {
+    <nz-table
+      #table
+      [nzData]="report()!.invoices"
+      [nzLoading]="loading()"
+      [nzShowPagination]="report()!.invoices.length > 50"
+      [nzPageSize]="50"
+      nzSize="middle"
+    >
+      <thead>
+        <tr>
+          <th scope="col">{{ 'ACCOUNTING.TAX.COLUMNS.NUMBER' | translate }}</th>
+          <th scope="col">{{ 'ACCOUNTING.TAX.COLUMNS.DATE' | translate }}</th>
+          <th scope="col">{{ 'ACCOUNTING.TAX.COLUMNS.CUSTOMER' | translate }}</th>
+          <th scope="col" nzAlign="right">{{ 'ACCOUNTING.TAX.COLUMNS.AMOUNT' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (inv of table.data; track inv.id) {
+          <tr>
+            <td>{{ inv.number }}</td>
+            <td>{{ inv.date | date: 'dd.MM.yyyy' }}</td>
+            <td>{{ inv.customer ?? '—' }}</td>
+            <td nzAlign="right">{{ inv.amount | currency: 'EUR' : 'symbol' : '1.2-2' }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  }
+</nz-card>

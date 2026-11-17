@@ -1,0 +1,117 @@
+<app-page-header
+  [title]="'ACCOUNTING.TAX.WITHHOLDING.TITLE' | translate"
+  [subtitle]="'ACCOUNTING.TAX.WITHHOLDING.SUBTITLE' | translate"
+/>
+<app-tax-nav />
+
+<nz-card>
+  <div class="filters">
+    <nz-form-item>
+      <nz-form-label nzFor="wh_year">{{ 'ACCOUNTING.TAX.YEAR' | translate }}</nz-form-label>
+      <nz-select nzId="wh_year" [ngModel]="year()" (ngModelChange)="setYear($event)">
+        @for (y of years; track y) {
+          <nz-option [nzValue]="y" [nzLabel]="'' + y" />
+        }
+      </nz-select>
+    </nz-form-item>
+    <span class="spacer"></span>
+    <button
+      nz-button
+      type="button"
+      data-testid="csv"
+      [disabled]="isEmpty() || loading()"
+      [nzLoading]="exporting()"
+      (click)="exportCsv()"
+    >
+      <nz-icon nzType="download" /> {{ 'ACCOUNTING.TAX.EXPORT_CSV' | translate }}
+    </button>
+  </div>
+
+  @if (isEmpty()) {
+    <nz-empty data-testid="empty" [nzNotFoundContent]="'ACCOUNTING.TAX.EMPTY' | translate" />
+  } @else {
+    <nz-table
+      #suppliers
+      [nzData]="report()!.suppliers"
+      [nzLoading]="loading()"
+      [nzShowPagination]="report()!.suppliers.length > 50"
+      [nzPageSize]="50"
+      [nzScroll]="{ x: '900px' }"
+      nzSize="middle"
+    >
+      <thead>
+        <tr>
+          <th scope="col">{{ 'ACCOUNTING.TAX.COLUMNS.SUPPLIER' | translate }}</th>
+          <th scope="col">{{ 'ACCOUNTING.TAX.COLUMNS.FISCAL_ID' | translate }}</th>
+          <th scope="col">{{ 'ACCOUNTING.TAX.COLUMNS.REASON' | translate }}</th>
+          <th scope="col" nzAlign="right">{{ 'ACCOUNTING.TAX.COLUMNS.INVOICES' | translate }}</th>
+          <th scope="col" nzAlign="right">{{ 'ACCOUNTING.TAX.COLUMNS.GROSS_PAID' | translate }}</th>
+          <th scope="col" nzAlign="right">{{ 'ACCOUNTING.TAX.COLUMNS.TAXABLE' | translate }}</th>
+          <th scope="col" nzAlign="right">{{ 'ACCOUNTING.TAX.COLUMNS.WITHHELD' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (s of suppliers.data; track $index) {
+          <tr>
+            <td>{{ s.name ?? '—' }}</td>
+            <td>{{ s.fiscal_code ?? s.vat_number ?? '—' }}</td>
+            <td>{{ s.reason ?? '—' }}</td>
+            <td nzAlign="right">{{ s.invoices }}</td>
+            <td nzAlign="right">{{ s.gross_paid | currency: 'EUR' : 'symbol' : '1.2-2' }}</td>
+            <td nzAlign="right">{{ s.taxable | currency: 'EUR' : 'symbol' : '1.2-2' }}</td>
+            <td nzAlign="right">{{ s.withheld | currency: 'EUR' : 'symbol' : '1.2-2' }}</td>
+          </tr>
+        }
+        <tr class="totals-row">
+          <th scope="row" colspan="4">{{ 'COMMON.TOTAL' | translate }}</th>
+          <td nzAlign="right" data-testid="total-gross">
+            <strong>{{
+              report()!.totals.gross_paid | currency: 'EUR' : 'symbol' : '1.2-2'
+            }}</strong>
+          </td>
+          <td nzAlign="right">
+            <strong>{{ report()!.totals.taxable | currency: 'EUR' : 'symbol' : '1.2-2' }}</strong>
+          </td>
+          <td nzAlign="right" data-testid="total-withheld">
+            <strong>{{ report()!.totals.withheld | currency: 'EUR' : 'symbol' : '1.2-2' }}</strong>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  }
+
+  @if (unpaid().length) {
+    <h4 class="section-title">{{ 'ACCOUNTING.TAX.WITHHOLDING.UNPAID_TITLE' | translate }}</h4>
+    <p class="hint">{{ 'ACCOUNTING.TAX.WITHHOLDING.UNPAID_HINT' | translate }}</p>
+    <nz-table
+      #unpaidTable
+      [nzData]="unpaid()"
+      [nzShowPagination]="false"
+      nzSize="small"
+      data-testid="unpaid"
+    >
+      <thead>
+        <tr>
+          <th scope="col">{{ 'ACCOUNTING.TAX.COLUMNS.NUMBER' | translate }}</th>
+          <th scope="col">{{ 'ACCOUNTING.TAX.COLUMNS.DATE' | translate }}</th>
+          <th scope="col">{{ 'ACCOUNTING.TAX.COLUMNS.SUPPLIER' | translate }}</th>
+          <th scope="col">{{ 'ACCOUNTING.TAX.COLUMNS.REASON' | translate }}</th>
+          <th scope="col" nzAlign="right">{{ 'ACCOUNTING.TAX.COLUMNS.TAXABLE' | translate }}</th>
+          <th scope="col" nzAlign="right">{{ 'ACCOUNTING.TAX.COLUMNS.WITHHELD' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (u of unpaidTable.data; track u.passive_invoice_id) {
+          <tr>
+            <td>{{ u.invoice_number ?? '—' }}</td>
+            <td>{{ u.date | date: 'dd.MM.yyyy' }}</td>
+            <td>{{ u.name ?? '—' }}</td>
+            <td>{{ u.reason ?? '—' }}</td>
+            <td nzAlign="right">{{ u.taxable | currency: 'EUR' : 'symbol' : '1.2-2' }}</td>
+            <td nzAlign="right">{{ u.withheld | currency: 'EUR' : 'symbol' : '1.2-2' }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  }
+</nz-card>

@@ -68,6 +68,7 @@ import {
 import { notInFuture } from '@shared/utils/date-validators';
 import { validationTipKey } from '@shared/utils/validation-tip';
 import { LedgerEntryFormDrawerComponent } from './components/ledger-entry-form-drawer.component';
+import { TaxNavComponent } from './tax/tax-nav.component';
 
 /** Assets and expenses grow on the debit side, everything else on the credit side. */
 function defaultNormalBalance(type: AccountType): NormalBalance {
@@ -110,6 +111,7 @@ const INTRASTAT_FIRST_YEAR = 2022;
     BaseTableComponent,
     PageHeaderComponent,
     LedgerEntryFormDrawerComponent,
+    TaxNavComponent,
     TranslatePipe,
   ],
   providers: [TableStateService],

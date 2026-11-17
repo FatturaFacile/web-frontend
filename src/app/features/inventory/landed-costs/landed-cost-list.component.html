@@ -1,0 +1,91 @@
+<app-page-header
+  [title]="'INVENTORY.LANDED_COSTS.TITLE' | translate"
+  [subtitle]="'INVENTORY.LANDED_COSTS.SUBTITLE' | translate"
+/>
+
+<nz-card class="iv-card" [nzTitle]="'INVENTORY.LANDED_COSTS.LIST_TITLE' | translate" [nzExtra]="newTpl">
+  <ng-template #newTpl>
+    <a nz-button nzType="primary" routerLink="/inventory/landed-costs/new">
+      <nz-icon nzType="plus" /> {{ 'INVENTORY.LANDED_COSTS.NEW' | translate }}
+    </a>
+  </ng-template>
+
+  <div class="iv-toolbar" role="search">
+    <nz-select
+      class="iv-filter"
+      nzAllowClear
+      [nzPlaceHolder]="'COMMON.STATUS' | translate"
+      [attr.aria-label]="'COMMON.STATUS' | translate"
+      [ngModel]="facade.filterParams().status ?? null"
+      (ngModelChange)="setStatus($event)"
+    >
+      @for (s of statuses; track s) {
+        <nz-option [nzValue]="s" [nzLabel]="statusLabels[s].key | translate" />
+      }
+    </nz-select>
+    <nz-select
+      class="iv-filter"
+      nzAllowClear
+      nzShowSearch
+      [nzPlaceHolder]="'INVENTORY.LANDED_COSTS.RECEIPT' | translate"
+      [attr.aria-label]="'INVENTORY.LANDED_COSTS.RECEIPT' | translate"
+      [ngModel]="facade.filterParams().receipt_id ?? null"
+      (ngModelChange)="setReceipt($event)"
+    >
+      @for (r of receipts(); track r.id) {
+        <nz-option [nzValue]="r.id" [nzLabel]="r.receipt_number" />
+      }
+    </nz-select>
+    <nz-range-picker
+      [ngModel]="dateRange()"
+      (ngModelChange)="setDateRange($event)"
+      [attr.aria-label]="'INVENTORY.FILTERS.DATE_RANGE' | translate"
+    />
+  </div>
+
+  <nz-table
+    #docsTable
+    [nzData]="facade.items()"
+    [nzFrontPagination]="false"
+    [nzShowPagination]="facade.totalCount() > facade.items().length"
+    [nzLoading]="facade.loading()"
+    [nzTotal]="facade.totalCount()"
+    [nzPageIndex]="facade.pageIndex()"
+    [nzPageSize]="facade.pageSize()"
+    (nzQueryParams)="facade.onQueryParamsChange($event)"
+    nzSize="middle"
+  >
+    <thead>
+      <tr>
+        <th scope="col">{{ 'INVENTORY.LANDED_COSTS.NUMBER' | translate }}</th>
+        <th scope="col">{{ 'COMMON.DATE' | translate }}</th>
+        <th scope="col">{{ 'INVENTORY.LANDED_COSTS.COST_TYPE' | translate }}</th>
+        <th scope="col">{{ 'INVENTORY.LANDED_COSTS.ALLOCATION_KEY' | translate }}</th>
+        <th scope="col" class="iv-num">{{ 'COMMON.AMOUNT' | translate }}</th>
+        <th scope="col">{{ 'COMMON.STATUS' | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (doc of docsTable.data; track doc.id) {
+        <tr>
+          <td>
+            <a [routerLink]="['/inventory/landed-costs', doc.id]">{{ doc.number }}</a>
+          </td>
+          <td>{{ doc.document_date | date: 'mediumDate' }}</td>
+          <td>{{ typeLabels[doc.cost_type] | translate }}</td>
+          <td>{{ keyLabels[doc.allocation_key] | translate }}</td>
+          <td class="iv-num">{{ doc.total_amount | currency: doc.currency : 'symbol' : '1.2-2' }}</td>
+          <td>
+            <nz-tag [nzColor]="statusLabels[doc.status].color">{{ statusLabels[doc.status].key | translate }}</nz-tag>
+          </td>
+        </tr>
+      } @empty {
+        @if (facade.loaded() && !facade.loading()) {
+          <tr>
+            <td colspan="6" class="iv-muted">{{ 'INVENTORY.LANDED_COSTS.EMPTY' | translate }}</td>
+          </tr>
+        }
+      }
+    </tbody>
+  </nz-table>
+</nz-card>

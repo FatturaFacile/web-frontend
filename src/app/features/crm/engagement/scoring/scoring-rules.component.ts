@@ -16,8 +16,8 @@ import {
   CrmActivityType,
   CrmApiService,
   I18nService,
-  LeadScoringRule,
-  LeadScoringRulePayload,
+  EngagementScoringRule,
+  EngagementScoringRulePayload,
   LeadScoringRuleType,
   PermissionsService,
 } from '@core';
@@ -92,11 +92,11 @@ export class ScoringRulesComponent {
   protected readonly operators = OPERATORS;
   protected readonly activityTypes = ACTIVITY_TYPES;
   protected readonly activityStatuses = ACTIVITY_STATUSES;
-  protected readonly rules = signal<LeadScoringRule[]>([]);
+  protected readonly rules = signal<EngagementScoringRule[]>([]);
   protected readonly loading = signal(false);
   protected readonly saving = signal(false);
   protected readonly modalOpen = signal(false);
-  protected readonly editing = signal<LeadScoringRule | null>(null);
+  protected readonly editing = signal<EngagementScoringRule | null>(null);
   protected draft: RuleDraft = emptyDraft();
 
   constructor() {
@@ -114,7 +114,7 @@ export class ScoringRulesComponent {
     });
   }
 
-  protected open(rule: LeadScoringRule | null): void {
+  protected open(rule: EngagementScoringRule | null): void {
     this.editing.set(rule);
     this.draft = rule
       ? {
@@ -147,7 +147,7 @@ export class ScoringRulesComponent {
 
   protected save(): void {
     const d = this.draft;
-    const payload: LeadScoringRulePayload = {
+    const payload: EngagementScoringRulePayload = {
       name: d.name.trim(),
       rule_type: d.rule_type,
       field: d.rule_type === 'field' ? d.field : null,
@@ -174,7 +174,7 @@ export class ScoringRulesComponent {
     });
   }
 
-  protected remove(rule: LeadScoringRule): void {
+  protected remove(rule: EngagementScoringRule): void {
     this.api.deleteLeadScoringRule(rule.id).subscribe({
       next: () => {
         this.message.success(this.i18n.translate('CRMX.COMMON.DELETED'));
