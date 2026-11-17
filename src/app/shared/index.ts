@@ -23,6 +23,7 @@ export * from './pipes/grid-sort.pipe';
 export * from './pipes/grid-filter.pipes';
 export * from './components/base-table';
 export * from './components/signature-pad/signature-pad.component';
+export * from './components/vies-verify/vies-verify.component';
 export * from './utils/download-blob';
 export * from './utils/export-xlsx';
 export * from './ui/resource-panel/resource-panel.component';
