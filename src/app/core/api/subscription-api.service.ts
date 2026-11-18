@@ -95,7 +95,16 @@ export class SubscriptionApiService {
     return this.http.post<ApiResponse<SubscriptionContractResource>>(`${this.contractsUrl}/${id}/reactivate`, {});
   }
 
-  cancelContract(id: string, payload?: { reason?: string; cancel_at_period_end?: boolean }): Observable<ApiResponse<SubscriptionContractResource>> {
+  cancelContract(
+    id: string,
+    payload?: {
+      reason?: string;
+      reason_code?: string;
+      cancellation_type?: 'immediate' | 'end_of_term';
+      cancel_at_period_end?: boolean;
+      refund?: boolean;
+    },
+  ): Observable<ApiResponse<SubscriptionContractResource>> {
     return this.http.post<ApiResponse<SubscriptionContractResource>>(`${this.contractsUrl}/${id}/cancel`, payload ?? {});
   }
 

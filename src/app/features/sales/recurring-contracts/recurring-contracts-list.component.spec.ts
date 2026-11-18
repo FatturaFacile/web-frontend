@@ -5,6 +5,7 @@ import { en_US, provideNzI18n } from 'ng-zorro-antd/i18n';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { of } from 'rxjs';
 import { RecurringContractsApiService } from '@core/api/recurring-contracts-api.service';
+import { I18nService } from '@core/i18n/i18n.service';
 import { RecurringContractsListComponent } from './recurring-contracts-list.component';
 
 describe('RecurringContractsListComponent', () => {
@@ -34,6 +35,19 @@ describe('RecurringContractsListComponent', () => {
         provideHttpClientTesting(),
         provideNzI18n(en_US),
         { provide: RecurringContractsApiService, useValue: mockApi },
+        {
+          provide: I18nService,
+          useValue: {
+            currentLanguage: () => 'it',
+            translate: (key: string) =>
+              ({
+                'RC.TYPE.MAINTENANCE': 'Manutenzione',
+                'RC.TYPE.RENTAL': 'Noleggio / Locazione',
+                'RC.TYPE.SOFTWARE_LICENSE': 'Licenza SaaS',
+                'RC.TYPE.SERVICE_SUBSCRIPTION': 'Abbonamento',
+              })[key] ?? key,
+          },
+        },
         { provide: NzMessageService, useValue: { success: vi.fn(), error: vi.fn(), warning: vi.fn() } },
       ],
     }).compileComponents();

@@ -22,13 +22,16 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
+import { I18nService } from '@core';
+import { TranslatePipe } from '@shared';
 import { RecurringContractsApiService } from '@core/api/recurring-contracts-api.service';
 import {
-  ContractIndexationLog,
+  PriceIndexRate,
   RecurringContract,
 } from '@core/models/recurring-contracts.model';
 
@@ -51,16 +54,18 @@ import {
     NzPopconfirmModule,
     NzModalModule,
     NzInputModule,
+    NzSelectModule,
     NzEmptyModule,
     NzBadgeModule,
     NzGridModule,
     NzIconModule,
+    TranslatePipe,
   ],
   template: `
     <nz-drawer
       [nzVisible]="visible()"
       [nzWidth]="850"
-      [nzTitle]="contract() ? 'Dettaglio Contratto ' + contract()?.contract_number : 'Dettaglio Contratto'"
+      [nzTitle]="(contract() ? ('RC.DETAIL.TITLE' | translate) + ' ' + contract()?.contract_number : ('RC.DETAIL.TITLE' | translate))"
       (nzOnClose)="close()"
     >
       <ng-container *nzDrawerContent>
@@ -75,7 +80,7 @@ import {
                 (click)="activateContract()"
                 [nzLoading]="actionLoading()"
               >
-                <i class="fa-solid fa-play me-1"></i> Attiva Contratto
+                <i class="fa-solid fa-play me-1"></i> {{ 'RC.DETAIL.ACTIVATE' | translate }}
               </button>
 
               <button
@@ -85,7 +90,7 @@ import {
                 (click)="suspendContract()"
                 [nzLoading]="actionLoading()"
               >
-                <i class="fa-solid fa-pause me-1"></i> Sospendi
+                <i class="fa-solid fa-pause me-1"></i> {{ 'RC.DETAIL.SUSPEND' | translate }}
               </button>
 
               <button
@@ -94,7 +99,7 @@ import {
                 nzType="default"
                 (click)="showBillNowModal()"
               >
-                <i class="fa-solid fa-bolt me-1"></i> Fattura Subito
+                <i class="fa-solid fa-bolt me-1"></i> {{ 'RC.DETAIL.BILL_NOW' | translate }}
               </button>
 
               <button
@@ -103,7 +108,7 @@ import {
                 nzType="default"
                 (click)="showIndexationModal()"
               >
-                <i class="fa-solid fa-arrow-trend-up me-1"></i> Applica Indice
+                <i class="fa-solid fa-arrow-trend-up me-1"></i> {{ 'RC.DETAIL.APPLY_INDEX' | translate }}
               </button>
 
               <button
@@ -112,7 +117,7 @@ import {
                 nzType="dashed"
                 (click)="renewContract()"
               >
-                <i class="fa-solid fa-arrows-rotate me-1"></i> Rinnova Periodo
+                <i class="fa-solid fa-arrows-rotate me-1"></i> {{ 'RC.DETAIL.RENEW' | translate }}
               </button>
 
               <button
@@ -121,54 +126,54 @@ import {
                 nzDanger
                 (click)="showCancelModal()"
               >
-                <i class="fa-solid fa-ban me-1"></i> Disdici / Cancella
+                <i class="fa-solid fa-ban me-1"></i> {{ 'RC.DETAIL.CANCEL' | translate }}
               </button>
             </div>
 
             <nz-tabs>
               <!-- TAB 1: Overview -->
-              <nz-tab nzTitle="Informazioni Generali">
+              <nz-tab [nzTitle]="'RC.DETAIL.TAB_OVERVIEW' | translate">
                 <nz-descriptions nzBordered [nzColumn]="2" nzSize="small">
-                  <nz-descriptions-item nzTitle="Numero Contratto">
+                  <nz-descriptions-item [nzTitle]="'RC.DETAIL.CONTRACT_NUMBER' | translate">
                     <strong>{{ c.contract_number }}</strong>
                   </nz-descriptions-item>
-                  <nz-descriptions-item nzTitle="Stato">
+                  <nz-descriptions-item [nzTitle]="'RC.DETAIL.STATUS' | translate">
                     <nz-tag [nzColor]="statusColor(c.status)">{{ c.status.toUpperCase() }}</nz-tag>
                   </nz-descriptions-item>
-                  <nz-descriptions-item nzTitle="Titolo">
+                  <nz-descriptions-item [nzTitle]="'RC.DETAIL.TITLE_FIELD' | translate">
                     {{ c.title }}
                   </nz-descriptions-item>
-                  <nz-descriptions-item nzTitle="Tipologia">
+                  <nz-descriptions-item [nzTitle]="'RC.DETAIL.TYPE' | translate">
                     {{ formatContractType(c.contract_type) }}
                   </nz-descriptions-item>
-                  <nz-descriptions-item nzTitle="Cliente">
+                  <nz-descriptions-item [nzTitle]="'RC.DETAIL.CUSTOMER' | translate">
                     {{ c.customer?.company_name || 'N/A' }}
                   </nz-descriptions-item>
-                  <nz-descriptions-item nzTitle="Valuta">
+                  <nz-descriptions-item [nzTitle]="'RC.DETAIL.CURRENCY' | translate">
                     {{ c.currency }}
                   </nz-descriptions-item>
-                  <nz-descriptions-item nzTitle="Frequenza Fatturazione">
+                  <nz-descriptions-item [nzTitle]="'RC.DETAIL.FREQUENCY' | translate">
                     {{ c.billing_frequency }} ({{ c.billing_timing }})
                   </nz-descriptions-item>
-                  <nz-descriptions-item nzTitle="Prossima Fattura">
+                  <nz-descriptions-item [nzTitle]="'RC.DETAIL.NEXT_BILLING' | translate">
                     <strong>{{ c.next_billing_date }}</strong>
                   </nz-descriptions-item>
-                  <nz-descriptions-item nzTitle="Data Inizio">
+                  <nz-descriptions-item [nzTitle]="'RC.DETAIL.START_DATE' | translate">
                     {{ c.start_date }}
                   </nz-descriptions-item>
-                  <nz-descriptions-item nzTitle="Data Fine">
-                    {{ c.end_date || 'A tempo indeterminato' }}
+                  <nz-descriptions-item [nzTitle]="'RC.DETAIL.END_DATE' | translate">
+                    {{ c.end_date || ('RC.DETAIL.OPEN_ENDED' | translate) }}
                   </nz-descriptions-item>
-                  <nz-descriptions-item nzTitle="Rinnovo Automatico">
-                    {{ c.auto_renew ? 'Sì (' + (c.renewal_period_months || 12) + ' mesi)' : 'No' }}
+                  <nz-descriptions-item [nzTitle]="'RC.DETAIL.AUTO_RENEW' | translate">
+                    {{ c.auto_renew ? (('COMMON.YES' | translate) + ' (' + (c.renewal_period_months || 12) + 'm)') : ('COMMON.NO' | translate) }}
                   </nz-descriptions-item>
-                  <nz-descriptions-item nzTitle="Ultima Fatturazione">
-                    {{ c.last_billed_date || 'Nessuna' }}
+                  <nz-descriptions-item [nzTitle]="'RC.DETAIL.LAST_BILLED' | translate">
+                    {{ c.last_billed_date || ('COMMON.NONE' | translate) }}
                   </nz-descriptions-item>
-                  <nz-descriptions-item nzTitle="Subtotale Ciclo">
+                  <nz-descriptions-item [nzTitle]="'RC.DETAIL.SUBTOTAL' | translate">
                     {{ c.subtotal }} {{ c.currency }}
                   </nz-descriptions-item>
-                  <nz-descriptions-item nzTitle="Totale Ciclo (IVA incl.)">
+                  <nz-descriptions-item [nzTitle]="'RC.DETAIL.TOTAL' | translate">
                     <strong>{{ c.total }} {{ c.currency }}</strong>
                   </nz-descriptions-item>
                 </nz-descriptions>
@@ -177,14 +182,14 @@ import {
                   <nz-alert
                     nzType="error"
                     nzShowIcon
-                    [nzMessage]="'Contratto Disdetto il ' + (c.cancelled_at || '')"
-                    [nzDescription]="'Motivo: ' + c.cancellation_reason"
+                    [nzMessage]="('RC.DETAIL.CANCELLED_ON' | translate) + ' ' + (c.cancelled_at || '')"
+                    [nzDescription]="('RC.DETAIL.REASON' | translate) + ': ' + c.cancellation_reason"
                   ></nz-alert>
                 </div>
               </nz-tab>
 
               <!-- TAB 2: Lines -->
-              <nz-tab nzTitle="Voci del Canone">
+              <nz-tab [nzTitle]="'RC.DETAIL.TAB_LINES' | translate">
                 <nz-table
                   #linesTable
                   [nzData]="c.lines || []"
@@ -194,12 +199,12 @@ import {
                 >
                   <thead>
                     <tr>
-                      <th>Descrizione</th>
-                      <th>Quantità</th>
-                      <th>Prezzo Unitario</th>
-                      <th>Sconto %</th>
-                      <th>IVA %</th>
-                      <th>Prorata</th>
+                      <th>{{ 'RC.LINES.DESCRIPTION' | translate }}</th>
+                      <th>{{ 'RC.LINES.QUANTITY' | translate }}</th>
+                      <th>{{ 'RC.LINES.UNIT_PRICE' | translate }}</th>
+                      <th>{{ 'RC.LINES.DISCOUNT' | translate }}</th>
+                      <th>{{ 'RC.LINES.TAX_RATE' | translate }}</th>
+                      <th>{{ 'RC.LINES.PRORATION' | translate }}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -218,34 +223,34 @@ import {
               </nz-tab>
 
               <!-- TAB 3: Indexation Clause & History -->
-              <nz-tab nzTitle="Rivalutazione ISTAT / IPC">
+              <nz-tab [nzTitle]="'RC.DETAIL.TAB_INDEXATION' | translate">
                 <div *ngIf="c.indexation_clause as clause; else noClause">
-                  <nz-card nzTitle="Clausola Attiva" nzType="inner" class="mb-4">
+                  <nz-card [nzTitle]="'RC.INDEXATION.ACTIVE_CLAUSE' | translate" nzType="inner" class="mb-4">
                     <nz-descriptions nzBordered [nzColumn]="2" nzSize="small">
-                      <nz-descriptions-item nzTitle="Indice Scelto">
+                      <nz-descriptions-item [nzTitle]="'RC.INDEXATION.INDEX_TYPE' | translate">
                         <nz-tag [nzColor]="clause.index_type === 'swiss_ipc' ? 'red' : 'blue'">
                           {{ clause.index_type === 'swiss_ipc' ? 'Swiss IPC' : 'ISTAT FOI' }}
                         </nz-tag>
                       </nz-descriptions-item>
-                      <nz-descriptions-item nzTitle="Periodo Base">
+                      <nz-descriptions-item [nzTitle]="'RC.INDEXATION.BASE_PERIOD' | translate">
                         {{ clause.base_index_period }}
                       </nz-descriptions-item>
-                      <nz-descriptions-item nzTitle="Valore Base">
+                      <nz-descriptions-item [nzTitle]="'RC.INDEXATION.BASE_VALUE' | translate">
                         {{ clause.base_index_value }}
                       </nz-descriptions-item>
-                      <nz-descriptions-item nzTitle="Pass-Through %">
+                      <nz-descriptions-item [nzTitle]="'RC.INDEXATION.PASS_THROUGH' | translate">
                         {{ clause.pass_through_percent }}%
                       </nz-descriptions-item>
-                      <nz-descriptions-item nzTitle="Floor % / Cap %">
+                      <nz-descriptions-item [nzTitle]="'RC.INDEXATION.FLOOR_CAP' | translate">
                         {{ clause.floor_percent || '—' }}% / {{ clause.cap_percent || '—' }}%
                       </nz-descriptions-item>
-                      <nz-descriptions-item nzTitle="Prossimo Adeguamento">
+                      <nz-descriptions-item [nzTitle]="'RC.INDEXATION.NEXT_ADJUSTMENT' | translate">
                         {{ clause.next_adjustment_date || '—' }}
                       </nz-descriptions-item>
                     </nz-descriptions>
                   </nz-card>
 
-                  <h6>Storico Adeguamenti di Prezzo</h6>
+                  <h6>{{ 'RC.INDEXATION.HISTORY' | translate }}</h6>
                   <nz-table
                     #logsTable
                     [nzData]="c.indexation_logs || []"
@@ -255,11 +260,11 @@ import {
                   >
                     <thead>
                       <tr>
-                        <th>Data Applicazione</th>
-                        <th>Periodo Dal / Al</th>
-                        <th>Indice Vecchio &rarr; Nuovo</th>
-                        <th>Variazione Applicata</th>
-                        <th>Canone Aggiornato</th>
+                        <th>{{ 'RC.INDEXATION.APPLIED_AT' | translate }}</th>
+                        <th>{{ 'RC.INDEXATION.PERIOD' | translate }}</th>
+                        <th>{{ 'RC.INDEXATION.OLD_NEW_INDEX' | translate }}</th>
+                        <th>{{ 'RC.INDEXATION.DELTA' | translate }}</th>
+                        <th>{{ 'RC.INDEXATION.UPDATED_FEE' | translate }}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -269,7 +274,7 @@ import {
                         <td>{{ log.old_index_value }} &rarr; {{ log.new_index_value }}</td>
                         <td>
                           <strong>+{{ log.applied_delta_percent }}%</strong>
-                          <span class="text-muted ms-1">(grezza: {{ log.raw_delta_percent }}%)</span>
+                          <span class="text-muted ms-1">({{ log.raw_delta_percent }}%)</span>
                         </td>
                         <td>
                           {{ log.old_recurring_total }} &rarr;
@@ -280,7 +285,7 @@ import {
                   </nz-table>
                 </div>
                 <ng-template #noClause>
-                  <nz-empty nzNotFoundContent="Nessuna clausola di indicizzazione attiva su questo contratto."></nz-empty>
+                  <nz-empty [nzNotFoundContent]="'RC.INDEXATION.NO_CLAUSE' | translate"></nz-empty>
                 </ng-template>
               </nz-tab>
             </nz-tabs>
@@ -290,17 +295,17 @@ import {
         <!-- Modals for specific actions -->
         <nz-modal
           [nzVisible]="cancelModalVisible()"
-          nzTitle="Conferma Disdetta Contratto"
+          [nzTitle]="'RC.MODAL.CANCEL_TITLE' | translate"
           (nzOnCancel)="cancelModalVisible.set(false)"
           (nzOnOk)="confirmCancellation()"
           [nzOkLoading]="actionLoading()"
         >
           <ng-container *nzModalContent>
-            <p>Sei sicuro di voler disdire questo contratto? Le future fatturazioni periodiche cesseranno.</p>
+            <p>{{ 'RC.MODAL.CANCEL_PROMPT' | translate }}</p>
             <textarea
               nz-input
               rows="3"
-              placeholder="Inserisci il motivo della disdetta..."
+              [placeholder]="'RC.MODAL.CANCEL_REASON_PLACEHOLDER' | translate"
               [(ngModel)]="cancellationReason"
             ></textarea>
           </ng-container>
@@ -308,18 +313,32 @@ import {
 
         <nz-modal
           [nzVisible]="indexationModalVisible()"
-          nzTitle="Applica Adeguamento ISTAT / Swiss IPC"
+          [nzTitle]="'RC.MODAL.INDEXATION_TITLE' | translate"
           (nzOnCancel)="indexationModalVisible.set(false)"
           (nzOnOk)="confirmIndexation()"
           [nzOkLoading]="actionLoading()"
         >
           <ng-container *nzModalContent>
-            <p>Specifica il periodo dell'indice target da applicare al contratto (es. <code>2026-01</code>):</p>
-            <input
-              nz-input
-              placeholder="YYYY-MM (es. 2026-01)"
-              [(ngModel)]="targetIndexPeriod"
-            />
+            <p>{{ 'RC.MODAL.INDEXATION_PROMPT' | translate }}</p>
+            <nz-select
+              *ngIf="availableIndexRates().length > 0; else manualIndexInput"
+              [(ngModel)]="selectedPriceIndexRateId"
+              [nzPlaceHolder]="'RC.MODAL.INDEXATION_SELECT_PLACEHOLDER' | translate"
+              style="width: 100%"
+            >
+              <nz-option
+                *ngFor="let r of availableIndexRates()"
+                [nzValue]="r.id"
+                [nzLabel]="r.index_type.toUpperCase() + ' — ' + r.period + ' (' + r.index_value + ')'"
+              ></nz-option>
+            </nz-select>
+            <ng-template #manualIndexInput>
+              <input
+                nz-input
+                [placeholder]="'RC.MODAL.INDEXATION_SELECT_PLACEHOLDER' | translate"
+                [(ngModel)]="selectedPriceIndexRateId"
+              />
+            </ng-template>
           </ng-container>
         </nz-modal>
       </ng-container>
@@ -354,6 +373,7 @@ import {
 export class RecurringContractDetailDrawerComponent {
   private readonly api = inject(RecurringContractsApiService);
   private readonly message = inject(NzMessageService);
+  private readonly i18n = inject(I18nService);
 
   @Output() readonly changed = new EventEmitter<void>();
 
@@ -361,12 +381,13 @@ export class RecurringContractDetailDrawerComponent {
   readonly loading = signal(false);
   readonly actionLoading = signal(false);
   readonly contract = signal<RecurringContract | null>(null);
+  readonly availableIndexRates = signal<PriceIndexRate[]>([]);
 
   readonly cancelModalVisible = signal(false);
   readonly indexationModalVisible = signal(false);
 
   cancellationReason = '';
-  targetIndexPeriod = '';
+  selectedPriceIndexRateId = '';
 
   open(contractId: string): void {
     this.visible.set(true);
@@ -385,7 +406,7 @@ export class RecurringContractDetailDrawerComponent {
         this.loading.set(false);
       },
       error: () => {
-        this.message.error('Errore durante il caricamento del contratto.');
+        this.message.error(this.i18n.translate('RC.MESSAGES.LOAD_ERROR'));
         this.loading.set(false);
       },
     });
@@ -397,13 +418,13 @@ export class RecurringContractDetailDrawerComponent {
     this.actionLoading.set(true);
     this.api.activateContract(c.id).subscribe({
       next: (res) => {
-        this.message.success('Contratto attivato con successo.');
+        this.message.success(this.i18n.translate('RC.MESSAGES.ACTIVATED'));
         this.contract.set(res.data);
         this.actionLoading.set(false);
         this.changed.emit();
       },
       error: () => {
-        this.message.error("Impossibile attivare il contratto.");
+        this.message.error(this.i18n.translate('RC.MESSAGES.ACTIVATE_ERROR'));
         this.actionLoading.set(false);
       },
     });
@@ -415,13 +436,13 @@ export class RecurringContractDetailDrawerComponent {
     this.actionLoading.set(true);
     this.api.suspendContract(c.id).subscribe({
       next: (res) => {
-        this.message.success('Contratto sospeso.');
+        this.message.success(this.i18n.translate('RC.MESSAGES.SUSPENDED'));
         this.contract.set(res.data);
         this.actionLoading.set(false);
         this.changed.emit();
       },
       error: () => {
-        this.message.error('Impossibile sospendere il contratto.');
+        this.message.error(this.i18n.translate('RC.MESSAGES.SUSPEND_ERROR'));
         this.actionLoading.set(false);
       },
     });
@@ -431,15 +452,15 @@ export class RecurringContractDetailDrawerComponent {
     const c = this.contract();
     if (!c) return;
     this.actionLoading.set(true);
-    this.api.renewContract(c.id).subscribe({
+    this.api.renewContract(c.id, c.renewal_period_months ?? 12).subscribe({
       next: (res) => {
-        this.message.success('Contratto rinnovato con successo.');
+        this.message.success(this.i18n.translate('RC.MESSAGES.RENEWED'));
         this.contract.set(res.data);
         this.actionLoading.set(false);
         this.changed.emit();
       },
       error: () => {
-        this.message.error('Impossibile rinnovare il contratto.');
+        this.message.error(this.i18n.translate('RC.MESSAGES.RENEW_ERROR'));
         this.actionLoading.set(false);
       },
     });
@@ -450,12 +471,12 @@ export class RecurringContractDetailDrawerComponent {
     if (!c) return;
     this.api.billNow(c.id).subscribe({
       next: () => {
-        this.message.success('Fattura creata con successo per il ciclo corrente.');
+        this.message.success(this.i18n.translate('RC.MESSAGES.BILLED_NOW'));
         this.loadContract(c.id);
         this.changed.emit();
       },
       error: () => {
-        this.message.error('Errore durante la fatturazione immediata del contratto.');
+        this.message.error(this.i18n.translate('RC.MESSAGES.BILL_NOW_ERROR'));
       },
     });
   }
@@ -468,45 +489,61 @@ export class RecurringContractDetailDrawerComponent {
   confirmCancellation(): void {
     const c = this.contract();
     if (!c || !this.cancellationReason) {
-      this.message.warning('Inserisci il motivo della cancellazione.');
+      this.message.warning(this.i18n.translate('RC.MESSAGES.REASON_REQUIRED'));
       return;
     }
     this.actionLoading.set(true);
     this.api.cancelContract(c.id, this.cancellationReason).subscribe({
       next: (res) => {
-        this.message.success('Contratto disdetto.');
+        this.message.success(this.i18n.translate('RC.MESSAGES.CANCELLED'));
         this.contract.set(res.data);
         this.actionLoading.set(false);
         this.cancelModalVisible.set(false);
         this.changed.emit();
       },
       error: () => {
-        this.message.error('Errore durante la disdetta del contratto.');
+        this.message.error(this.i18n.translate('RC.MESSAGES.CANCEL_ERROR'));
         this.actionLoading.set(false);
       },
     });
   }
 
   showIndexationModal(): void {
-    this.targetIndexPeriod = new Date().toISOString().substring(0, 7);
+    const c = this.contract();
+    const indexType = c?.indexation_clause?.index_type;
+    this.selectedPriceIndexRateId = '';
     this.indexationModalVisible.set(true);
+    this.api
+      .getPriceIndices(indexType && indexType !== 'none' ? { index_type: indexType } : undefined)
+      .subscribe({
+        next: (res) => {
+          const list = res.data ?? [];
+          this.availableIndexRates.set(list);
+          if (list.length > 0 && list[0].id) {
+            this.selectedPriceIndexRateId = list[0].id;
+          }
+        },
+        error: () => {
+          this.availableIndexRates.set([]);
+        },
+      });
   }
 
   confirmIndexation(): void {
     const c = this.contract();
-    if (!c || !this.targetIndexPeriod) return;
+    if (!c || !this.selectedPriceIndexRateId) return;
 
     this.actionLoading.set(true);
-    this.api.applyIndexation(c.id, this.targetIndexPeriod).subscribe({
-      next: (res) => {
-        this.message.success('Adeguamento indice applicato con successo alle linee di canone.');
-        this.contract.set(res.data);
+    this.api.applyIndexation(c.id, this.selectedPriceIndexRateId).subscribe({
+      next: () => {
+        this.message.success(this.i18n.translate('RC.MESSAGES.INDEXATION_APPLIED'));
         this.actionLoading.set(false);
         this.indexationModalVisible.set(false);
+        this.loadContract(c.id);
         this.changed.emit();
       },
       error: () => {
-        this.message.error('Errore durante l\'applicazione della rivalutazione.');
+        this.message.error(this.i18n.translate('RC.MESSAGES.INDEXATION_ERROR'));
         this.actionLoading.set(false);
       },
     });
@@ -532,13 +569,13 @@ export class RecurringContractDetailDrawerComponent {
   formatContractType(type: string): string {
     switch (type) {
       case 'maintenance':
-        return 'Manutenzione';
+        return this.i18n.translate('RC.TYPES.MAINTENANCE');
       case 'rental':
-        return 'Noleggio / Locazione';
+        return this.i18n.translate('RC.TYPES.RENTAL');
       case 'software_license':
-        return 'Licenza Software / SaaS';
+        return this.i18n.translate('RC.TYPES.SOFTWARE_LICENSE');
       case 'service_subscription':
-        return 'Abbonamento Servizi';
+        return this.i18n.translate('RC.TYPES.SERVICE_SUBSCRIPTION');
       default:
         return type;
     }

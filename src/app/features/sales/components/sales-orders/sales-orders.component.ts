@@ -26,6 +26,7 @@ import {
   FetchGridModel,
   I18nService,
   InventoryApiService,
+  PricingApiService,
   QueryFilterParams,
   ProductItem,
   SalesApiService,
@@ -100,6 +101,7 @@ export class SalesOrdersComponent implements OnInit {
   private readonly salesApi = inject(SalesApiService);
   private readonly clientApi = inject(ClientApiService);
   private readonly inventoryApi = inject(InventoryApiService);
+  private readonly pricingApi = inject(PricingApiService, { optional: true });
   private readonly message = inject(NzMessageService);
   private readonly translate = inject(TranslateService);
   private readonly i18n = inject(I18nService);
@@ -307,6 +309,46 @@ export class SalesOrdersComponent implements OnInit {
     if (this.orderItems.length > 1) {
       this.orderItems.removeAt(index);
     }
+  }
+
+  onProductSelected(target: 'quote' | 'order', index: number, productId: string | null): void {
+    const items = target === 'quote' ? this.quoteItems : this.orderItems;
+    const group = items.at(index);
+    if (!group || !productId) {
+      return;
+    }
+    const product = this.products().find((p) => p.id === productId);
+    if (product) {
+      group.patchValue({
+        description: product.name,
+        unit_price: Number(product.sale_price ?? 0),
+      });
+    }
+    if (!this.pricingApi) {
+      return;
+    }
+    const parentForm = target === 'quote' ? this.quoteForm : this.orderForm;
+    const customerId = parentForm.controls.contact_id.value || null;
+    const currency = parentForm.controls.currency.value || this.authStore.activeCurrency();
+    const quantity = Number(group.get('quantity')?.value || 1);
+    this.pricingApi
+      .resolve({
+        customer_id: customerId,
+        currency,
+        lines: [{ product_id: productId, quantity }],
+      })
+      .subscribe({
+        next: (res) => {
+          const resolved = res.data?.lines?.[0];
+          if (resolved) {
+            group.patchValue({
+              unit_price: Number(resolved.base_price ?? resolved.net_unit_price ?? 0),
+              discount_percentage: Number(resolved.discount_percentage ?? 0),
+            });
+          }
+        },
+        error: () => undefined,
+      });
   }
 
   loadLookups(): void {

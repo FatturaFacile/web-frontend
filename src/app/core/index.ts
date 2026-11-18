@@ -149,6 +149,7 @@ export type { ExtraListResponse, ExtraObject, ExtraParams, ExtraPayload, ExtraRe
 export * from './api/attachments-api.service';
 export * from './api/service-reports-api.service';
 export * from './api/logistics-api.service';
+export * from './api/corporate-group-api.service';
 export * from './realtime/notification-realtime.service';
 export * from './http/error-handling.context';
 export * from './api/recruiting-api.service';

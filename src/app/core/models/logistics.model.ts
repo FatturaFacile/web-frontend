@@ -26,6 +26,8 @@ export type TransportReason =
 
 export type CarriageTerms = 'free' | 'collect' | 'free_with_charge';
 export type LogisticsTransportBy = 'sender' | 'recipient' | 'carrier';
+export type ShipmentFlow = 'direct' | 'triangular' | 'dropshipping';
+export type SenderDisplay = 'company' | 'blank' | 'custom';
 
 export const DELIVERY_NOTE_TYPES: readonly DeliveryNoteType[] = [
   'outbound_sale',
@@ -112,6 +114,12 @@ export interface LogisticsDeliveryNote {
   volume_m3: number | string | null;
   incoterms: string | null;
   tracking_number: string | null;
+  awb_number?: string | null;
+  shipment_flow?: ShipmentFlow | null;
+  sender_display?: SenderDisplay | null;
+  sender_name?: string | null;
+  sender_address?: string | null;
+  final_recipient_name?: string | null;
   carrier_tracking_url: string | null;
   recipient_signature_name: string | null;
   currency: string;
@@ -159,6 +167,12 @@ export interface DeliveryNotePayload {
   volume_m3?: number | null;
   incoterms?: string | null;
   tracking_number?: string | null;
+  awb_number?: string | null;
+  shipment_flow?: ShipmentFlow | null;
+  sender_display?: SenderDisplay | null;
+  sender_name?: string | null;
+  sender_address?: string | null;
+  final_recipient_name?: string | null;
   carrier_tracking_url?: string | null;
   currency?: string;
   notes?: string | null;

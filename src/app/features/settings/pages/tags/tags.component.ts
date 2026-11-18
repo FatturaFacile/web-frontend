@@ -8,7 +8,7 @@ import { map } from 'rxjs';
 @Component({
   selector: 'app-collaboration-tags',
   imports: [HubPageComponent],
-  template: `<app-hub-page title="Tag condivisi" subtitle="Etichette applicabili a clienti, fatture, progetti e altri record" [tabs]="tabs()" />`,
+  template: `<app-hub-page title="COLLABORATION.TAGS.TITLE" subtitle="COLLABORATION.TAGS.SUBTITLE" [tabs]="tabs()" />`,
 })
 export class CollaborationTagsComponent {
   private readonly api = inject(CollaborationApiService);
@@ -19,25 +19,25 @@ export class CollaborationTagsComponent {
     return [
       {
         kind: 'crud',
-        title: 'Tag',
+        title: 'COLLABORATION.TAGS.TAB_TAGS',
         config: {
-          titleKey: 'Tag',
+          titleKey: 'COLLABORATION.TAGS.TAB_TAGS',
           canWrite,
           list: () => this.api.getTags().pipe(map((r) => r.data as never)),
           create: (p) => this.api.createTag(p as never),
           update: (id, p) => this.api.updateTag(id, p as never),
           remove: (id) => this.api.deleteTag(id),
           fields: [
-            f.text('name', 'Nome', { required: true, maxLength: 60 }),
-            f.text('color', 'Colore (#RRGGBB)', { nullable: true, pattern: '^#[0-9A-Fa-f]{6}$', maxLength: 7 }),
-            f.col('usage_count', 'Utilizzi'),
+            f.text('name', 'COMMON.NAME', { required: true, maxLength: 60 }),
+            f.text('color', 'COLLABORATION.TAGS.COLOR', { nullable: true, pattern: '^#[0-9A-Fa-f]{6}$', maxLength: 7 }),
+            f.col('usage_count', 'COLLABORATION.TAGS.USAGE_COUNT'),
           ],
         },
       },
       {
         kind: 'report',
-        title: 'Record con un tag',
-        filters: [f.id('tag_id', 'ID tag', { required: true }), f.text('type', 'Tipo di record (es. contact)', { column: false })],
+        title: 'COLLABORATION.TAGS.TAB_RECORDS',
+        filters: [f.id('tag_id', 'COLLABORATION.TAGS.TAG_ID', { required: true }), f.text('type', 'COLLABORATION.TAGS.RECORD_TYPE', { column: false })],
         load: (p) => this.api.getTagRecords(String(p['tag_id']), p['type'] as CollaborationRecordTypeKey | undefined),
       },
     ];

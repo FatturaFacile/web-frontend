@@ -12,6 +12,8 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
+import { I18nService } from '@core';
+import { TranslatePipe } from '@shared';
 import { RecurringContractsApiService } from '@core/api/recurring-contracts-api.service';
 import { BillingPreviewItem } from '@core/models/recurring-contracts.model';
 
@@ -31,19 +33,20 @@ import { BillingPreviewItem } from '@core/models/recurring-contracts.model';
     NzAlertModule,
     NzCheckboxModule,
     NzEmptyModule,
+    TranslatePipe,
   ],
   template: `
     <nz-drawer
       [nzVisible]="visible()"
       [nzWidth]="850"
-      nzTitle="Elaborazione Massiva Fatturazione Periodica (Billing Engine)"
+      [nzTitle]="'RC.BATCH.TITLE' | translate"
       (nzOnClose)="close()"
     >
       <ng-container *nzDrawerContent>
         <div class="batch-controls mb-4">
           <form nz-form nzLayout="inline" (ngSubmit)="fetchPreview()">
             <nz-form-item>
-              <nz-form-label>Data Limite (Cutoff)</nz-form-label>
+              <nz-form-label>{{ 'RC.BATCH.CUTOFF_DATE' | translate }}</nz-form-label>
               <nz-form-control>
                 <input
                   nz-input
@@ -56,7 +59,7 @@ import { BillingPreviewItem } from '@core/models/recurring-contracts.model';
             <nz-form-item>
               <nz-form-control>
                 <button nz-button nzType="primary" (click)="fetchPreview()" [nzLoading]="loading()">
-                  <i class="fa-solid fa-magnifying-glass me-1"></i> Calcola Anteprima
+                  <i class="fa-solid fa-magnifying-glass me-1"></i> {{ 'RC.BATCH.CALCULATE_PREVIEW' | translate }}
                 </button>
               </nz-form-control>
             </nz-form-item>
@@ -67,8 +70,8 @@ import { BillingPreviewItem } from '@core/models/recurring-contracts.model';
           *ngIf="previewItems().length > 0"
           nzType="info"
           nzShowIcon
-          [nzMessage]="'Trovati ' + previewItems().length + ' contratti pronti per la fatturazione.'"
-          nzDescription="Seleziona i contratti da fatturare. Il motore genererà le fatture garantendo l'idempotenza e aggiornando le scadenze."
+          [nzMessage]="('RC.BATCH.FOUND_PREFIX' | translate) + ' ' + previewItems().length + ' ' + ('RC.BATCH.FOUND_SUFFIX' | translate)"
+          [nzDescription]="'RC.BATCH.ALERT_DESC' | translate"
           class="mb-4"
         ></nz-alert>
 
@@ -88,13 +91,13 @@ import { BillingPreviewItem } from '@core/models/recurring-contracts.model';
                 (nzCheckedChange)="toggleSelectAll($event)"
                 nzWidth="40px"
               ></th>
-              <th>Contratto</th>
-              <th>Cliente</th>
-              <th>Periodo di Competenza</th>
-              <th>Prossima Fatt.</th>
-              <th>Subtotale</th>
-              <th>Totale</th>
-              <th>Stato</th>
+              <th>{{ 'RC.BATCH.COL_CONTRACT' | translate }}</th>
+              <th>{{ 'RC.BATCH.COL_CUSTOMER' | translate }}</th>
+              <th>{{ 'RC.BATCH.COL_PERIOD' | translate }}</th>
+              <th>{{ 'RC.BATCH.COL_NEXT_BILLING' | translate }}</th>
+              <th>{{ 'RC.BATCH.COL_SUBTOTAL' | translate }}</th>
+              <th>{{ 'RC.BATCH.COL_TOTAL' | translate }}</th>
+              <th>{{ 'RC.BATCH.COL_STATUS' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -116,7 +119,7 @@ import { BillingPreviewItem } from '@core/models/recurring-contracts.model';
               <td><strong>{{ item.total }} {{ item.currency }}</strong></td>
               <td>
                 <nz-tag [nzColor]="item.is_already_billed ? 'orange' : 'green'">
-                  {{ item.is_already_billed ? 'Già Emessa' : 'Da Emettere' }}
+                  {{ (item.is_already_billed ? 'RC.BATCH.ALREADY_BILLED' : 'RC.BATCH.TO_ISSUE') | translate }}
                 </nz-tag>
               </td>
             </tr>
@@ -125,7 +128,7 @@ import { BillingPreviewItem } from '@core/models/recurring-contracts.model';
 
         <div class="drawer-footer mt-4">
           <button nz-button nzType="default" (click)="close()" class="me-2">
-            Annulla
+            {{ 'COMMON.CANCEL' | translate }}
           </button>
           <button
             nz-button
@@ -135,7 +138,7 @@ import { BillingPreviewItem } from '@core/models/recurring-contracts.model';
             [disabled]="selectedContractIds.size === 0"
           >
             <i class="fa-solid fa-bolt me-1"></i>
-            Esegui Fatturazione ({{ selectedContractIds.size }} contratti)
+            {{ 'RC.BATCH.EXECUTE_RUN' | translate }} ({{ selectedContractIds.size }})
           </button>
         </div>
       </ng-container>
@@ -176,6 +179,7 @@ import { BillingPreviewItem } from '@core/models/recurring-contracts.model';
 export class RecurringBillingBatchDrawerComponent {
   private readonly api = inject(RecurringContractsApiService);
   private readonly message = inject(NzMessageService);
+  private readonly i18n = inject(I18nService);
 
   @Output() readonly runCompleted = new EventEmitter<void>();
 
@@ -203,9 +207,9 @@ export class RecurringBillingBatchDrawerComponent {
 
     this.api.getBillingPreview(this.cutoffDate).subscribe({
       next: (res) => {
-        this.previewItems.set(res.preview || []);
-        // Automatically preselect all not already billed
-        res.preview.forEach((item) => {
+        const items = res.items ?? res.preview ?? [];
+        this.previewItems.set(items);
+        items.forEach((item) => {
           if (!item.is_already_billed) {
             this.selectedContractIds.add(item.contract_id);
           }
@@ -213,7 +217,7 @@ export class RecurringBillingBatchDrawerComponent {
         this.loading.set(false);
       },
       error: () => {
-        this.message.error("Errore durante il calcolo dell'anteprima di fatturazione.");
+        this.message.error(this.i18n.translate('RC.BATCH.PREVIEW_ERROR'));
         this.loading.set(false);
       },
     });
@@ -249,7 +253,7 @@ export class RecurringBillingBatchDrawerComponent {
 
   executeRun(): void {
     if (this.selectedContractIds.size === 0) {
-      this.message.warning('Nessun contratto selezionato per la fatturazione.');
+      this.message.warning(this.i18n.translate('RC.BATCH.NONE_SELECTED'));
       return;
     }
 
@@ -262,15 +266,16 @@ export class RecurringBillingBatchDrawerComponent {
       })
       .subscribe({
         next: (res) => {
+          const generated = res.data?.invoices_generated ?? res.run?.invoices_generated ?? 0;
           this.message.success(
-            `Elaborazione completata: ${res.run.invoices_generated} fatture generate con successo.`
+            `${this.i18n.translate('RC.BATCH.RUN_SUCCESS')}: ${generated}`
           );
           this.executing.set(false);
           this.close();
           this.runCompleted.emit();
         },
         error: () => {
-          this.message.error("Errore durante l'esecuzione del batch di fatturazione.");
+          this.message.error(this.i18n.translate('RC.BATCH.RUN_ERROR'));
           this.executing.set(false);
         },
       });

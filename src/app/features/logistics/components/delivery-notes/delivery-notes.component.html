@@ -181,6 +181,15 @@
               >
                 {{ 'LOGISTICS.DDT.ACTIONS.DELIVER' | translate }}
               </button>
+              <button
+                nz-button
+                nzSize="small"
+                type="button"
+                [disabled]="busy()"
+                (click)="openAwb(note)"
+              >
+                AWB
+              </button>
             }
             @if (
               ['draft', 'issued', 'in_transit'].includes(note.status) &&
@@ -260,3 +269,23 @@
 </nz-modal>
 
 <app-document-emails-dialog type="delivery_note" [documentId]="emailTarget()" (closed)="emailTarget.set(null)" />
+
+<nz-modal
+  [nzVisible]="awbTarget() !== null"
+  nzTitle="AWB"
+  nzOkText="AWB"
+  [nzCancelText]="'LOGISTICS.CANCEL' | translate"
+  (nzOnOk)="confirmAwb()"
+  (nzOnCancel)="awbTarget.set(null)"
+>
+  <ng-container *nzModalContent>
+    <label for="awb-number">AWB</label>
+    <input
+      id="awb-number"
+      nz-input
+      [ngModel]="awbNumber()"
+      (ngModelChange)="awbNumber.set($event)"
+      maxlength="60"
+    />
+  </ng-container>
+</nz-modal>

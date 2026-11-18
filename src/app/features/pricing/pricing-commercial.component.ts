@@ -109,6 +109,12 @@ import { parseDiscountCascade, previewCascade } from './pricing.util';
                     <button
                       nz-button
                       nzType="text"
+                      appIconAction="edit"
+                      (click)="openSpecial(row)"
+                    ></button>
+                    <button
+                      nz-button
+                      nzType="text"
                       nzDanger
                       appIconAction="delete"
                       nz-popconfirm
@@ -162,6 +168,12 @@ import { parseDiscountCascade, previewCascade } from './pricing.util';
                     <button
                       nz-button
                       nzType="text"
+                      appIconAction="edit"
+                      (click)="openPromotion(row)"
+                    ></button>
+                    <button
+                      nz-button
+                      nzType="text"
                       nzDanger
                       appIconAction="delete"
                       nz-popconfirm
@@ -209,6 +221,12 @@ import { parseDiscountCascade, previewCascade } from './pricing.util';
                   </td>
                   <td>{{ row.requires_approval_role ?? '' }}</td>
                   <td>
+                    <button
+                      nz-button
+                      nzType="text"
+                      appIconAction="edit"
+                      (click)="openPolicy(row)"
+                    ></button>
                     <button
                       nz-button
                       nzType="text"
@@ -661,6 +679,9 @@ export class PricingCommercialComponent implements OnInit {
   readonly specialVisible = signal(false);
   readonly promotionVisible = signal(false);
   readonly policyVisible = signal(false);
+  readonly editingSpecial = signal<CustomerSpecialPrice | null>(null);
+  readonly editingPromotion = signal<PricingPromotion | null>(null);
+  readonly editingPolicy = signal<MarginPolicy | null>(null);
 
   readonly specialForm = this.fb.group({
     customer_id: ['', [Validators.required]],
@@ -760,42 +781,61 @@ export class PricingCommercialComponent implements OnInit {
     this.api.getMarginPolicies().subscribe((response) => this.policies.set(response.data));
   }
 
-  openSpecial(): void {
+  openSpecial(row: CustomerSpecialPrice | null = null): void {
+    this.editingSpecial.set(row);
     this.specialForm.reset({
-      customer_id: '',
-      product_id: '',
-      currency: 'CHF',
-      fixed_price: null,
-      discount_cascade: '',
-      discount_mode: 'MULTIPLICATIVE',
-      valid_from: '',
-      valid_to: '',
+      customer_id: row?.customer_id ?? '',
+      product_id: row?.product_id ?? '',
+      currency: row?.currency ?? 'CHF',
+      fixed_price: row?.fixed_price ? Number(row.fixed_price) : null,
+      discount_cascade: row?.discount_cascade ?? '',
+      discount_mode: (row?.discount_mode as DiscountMode | undefined) ?? 'MULTIPLICATIVE',
+      valid_from: row?.valid_from ?? '',
+      valid_to: row?.valid_to ?? '',
     });
     this.specialVisible.set(true);
   }
 
   saveSpecial(): void {
     const value = this.specialForm.getRawValue();
-    this.api
-      .createSpecialPrice({
-        customer_id: value.customer_id,
-        product_id: value.product_id,
-        currency: value.currency.toUpperCase(),
-        fixed_price: decimalOrNull(value.fixed_price),
-        discount_cascade: blankToNull(value.discount_cascade),
-        discount_mode: value.discount_mode,
-        valid_from: blankToNull(value.valid_from),
-        valid_to: blankToNull(value.valid_to),
-      })
-      .subscribe(this.done(this.specialVisible));
+    const payload = {
+      customer_id: value.customer_id,
+      product_id: value.product_id,
+      currency: value.currency.toUpperCase(),
+      fixed_price: decimalOrNull(value.fixed_price),
+      discount_cascade: blankToNull(value.discount_cascade),
+      discount_mode: value.discount_mode,
+      valid_from: blankToNull(value.valid_from),
+      valid_to: blankToNull(value.valid_to),
+    };
+    const editing = this.editingSpecial();
+    const req$ = editing
+      ? this.api.updateSpecialPrice(editing.id, payload)
+      : this.api.createSpecialPrice(payload);
+    req$.subscribe(this.done(this.specialVisible));
   }
 
   removeSpecial(row: CustomerSpecialPrice): void {
     this.api.deleteSpecialPrice(row.id).subscribe(this.done());
   }
 
-  openPromotion(): void {
-    this.promotionForm.reset();
+  openPromotion(row: PricingPromotion | null = null): void {
+    this.editingPromotion.set(row);
+    this.promotionForm.reset({
+      code: row?.code ?? '',
+      name: row?.name ?? '',
+      type: row?.type ?? 'BUY_X_GET_Y',
+      buy_qty: row?.rules?.buy_qty ?? 3,
+      pay_qty: row?.rules?.pay_qty ?? 2,
+      gift_product_id: row?.rules?.gift_product_id ?? '',
+      trigger_min_amount: row?.rules?.trigger_min_amount ?? null,
+      vat_treatment: (row?.rules?.vat_treatment as VatTreatment | undefined) ?? 'WITHOUT_VAT_RECOURSE',
+      product_ids: row?.rules?.product_ids ?? [],
+      discount_percent: row?.rules?.discount_percent ?? null,
+      valid_from: row?.valid_from ?? '',
+      valid_to: row?.valid_to ?? '',
+      is_stackable: row?.is_stackable ?? false,
+    });
     this.promotionVisible.set(true);
   }
 
@@ -811,30 +851,45 @@ export class PricingCommercialComponent implements OnInit {
       valid_to: blankToNull(value.valid_to),
       is_stackable: value.is_stackable,
     };
-    this.api.createPromotion(payload).subscribe(this.done(this.promotionVisible));
+    const editing = this.editingPromotion();
+    const req$ = editing
+      ? this.api.updatePromotion(editing.id, payload)
+      : this.api.createPromotion(payload);
+    req$.subscribe(this.done(this.promotionVisible));
   }
 
   removePromotion(row: PricingPromotion): void {
     this.api.deletePromotion(row.id).subscribe(this.done());
   }
 
-  openPolicy(): void {
-    this.policyForm.reset();
+  openPolicy(row: MarginPolicy | null = null): void {
+    this.editingPolicy.set(row);
+    this.policyForm.reset({
+      scope: row?.scope ?? 'GLOBAL',
+      scope_id: row?.scope_id ?? '',
+      min_margin_percent: row ? Number(row.min_margin_percent) : 15,
+      cost_basis: row?.cost_basis ?? 'LAST_PURCHASE_COST',
+      block_on_violation: row?.block_on_violation ?? true,
+      requires_approval_role: row?.requires_approval_role ?? '',
+    });
     this.policyVisible.set(true);
   }
 
   savePolicy(): void {
     const value = this.policyForm.getRawValue();
-    this.api
-      .createMarginPolicy({
-        scope: value.scope,
-        scope_id: value.scope === 'GLOBAL' ? null : blankToNull(value.scope_id),
-        min_margin_percent: String(value.min_margin_percent),
-        cost_basis: value.cost_basis,
-        block_on_violation: value.block_on_violation,
-        requires_approval_role: blankToNull(value.requires_approval_role),
-      })
-      .subscribe(this.done(this.policyVisible));
+    const payload = {
+      scope: value.scope,
+      scope_id: value.scope === 'GLOBAL' ? null : blankToNull(value.scope_id),
+      min_margin_percent: String(value.min_margin_percent),
+      cost_basis: value.cost_basis,
+      block_on_violation: value.block_on_violation,
+      requires_approval_role: blankToNull(value.requires_approval_role),
+    };
+    const editing = this.editingPolicy();
+    const req$ = editing
+      ? this.api.updateMarginPolicy(editing.id, payload)
+      : this.api.createMarginPolicy(payload);
+    req$.subscribe(this.done(this.policyVisible));
   }
 
   removePolicy(row: MarginPolicy): void {

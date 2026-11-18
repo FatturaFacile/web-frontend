@@ -165,9 +165,11 @@ export interface BillingPreviewItem {
 }
 
 export interface RecurringContractsMetrics {
-  active_contracts_count: number;
-  mrr: string;
-  arr: string;
-  expiring_within_30_days_count: number;
+  active_contracts_count?: number;
+  active_count?: number;
+  mrr: string | Record<string, string | number>;
+  arr: string | Record<string, string | number>;
+  expiring_within_30_days_count?: number;
+  expiring_in_30_days_count?: number;
   due_for_billing_count: number;
 }

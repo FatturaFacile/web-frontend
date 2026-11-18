@@ -272,6 +272,7 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/settings/access/teams',
   '/settings/admin/tenant-plan',
   '/settings/admin/user-tenants',
+  '/settings/corporate-group',
   '/settings/document-templates',
   '/settings/lookups',
   '/settings/notifications',

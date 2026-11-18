@@ -14,6 +14,8 @@ import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { RecurringContractsApiService } from '@core/api/recurring-contracts-api.service';
+import { I18nService } from '@core/i18n/i18n.service';
+import { TranslatePipe } from '@shared';
 import { PriceIndexRate } from '@core/models/recurring-contracts.model';
 
 @Component({
@@ -33,21 +35,22 @@ import { PriceIndexRate } from '@core/models/recurring-contracts.model';
     NzTagModule,
     NzModalModule,
     NzEmptyModule,
+    TranslatePipe,
   ],
   template: `
     <nz-drawer
       [nzVisible]="visible()"
       [nzWidth]="640"
-      nzTitle="Registro Indici di Rivalutazione (ISTAT FOI & Swiss IPC)"
+      [nzTitle]="'RC.INDEX_REGISTRY.TITLE' | translate"
       (nzOnClose)="close()"
     >
       <ng-container *nzDrawerContent>
         <div class="drawer-header-actions mb-4">
           <button nz-button nzType="primary" (click)="showCreateModal()">
-            <i class="fa-solid fa-plus me-1"></i> Nuovo Valore Indice
+            <i class="fa-solid fa-plus me-1"></i> {{ 'RC.INDEX_REGISTRY.NEW_RATE' | translate }}
           </button>
           <button nz-button nzType="default" (click)="loadIndices()" [nzLoading]="loading()">
-            <i class="fa-solid fa-arrows-rotate me-1"></i> Ricarica
+            <i class="fa-solid fa-arrows-rotate me-1"></i> {{ 'RC.INDEX_REGISTRY.RELOAD' | translate }}
           </button>
         </div>
 
@@ -61,11 +64,11 @@ import { PriceIndexRate } from '@core/models/recurring-contracts.model';
         >
           <thead>
             <tr>
-              <th>Indice</th>
-              <th>Periodo (YYYY-MM)</th>
-              <th>Valore</th>
-              <th>Data Pubblicazione</th>
-              <th>Fonte / Note</th>
+              <th>{{ 'RC.INDEX_REGISTRY.COL_INDEX' | translate }}</th>
+              <th>{{ 'RC.INDEX_REGISTRY.COL_PERIOD' | translate }}</th>
+              <th>{{ 'RC.INDEX_REGISTRY.COL_VALUE' | translate }}</th>
+              <th>{{ 'RC.INDEX_REGISTRY.COL_PUBLISHED_AT' | translate }}</th>
+              <th>{{ 'RC.INDEX_REGISTRY.COL_SOURCE' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -85,7 +88,7 @@ import { PriceIndexRate } from '@core/models/recurring-contracts.model';
 
         <nz-modal
           [nzVisible]="createModalVisible()"
-          nzTitle="Registra Tasso Indice dei Prezzi"
+          [nzTitle]="'RC.INDEX_REGISTRY.MODAL_TITLE' | translate"
           (nzOnCancel)="createModalVisible.set(false)"
           (nzOnOk)="saveNewRate()"
           [nzOkLoading]="saving()"
@@ -93,21 +96,21 @@ import { PriceIndexRate } from '@core/models/recurring-contracts.model';
           <ng-container *nzModalContent>
             <form nz-form nzLayout="vertical">
               <nz-form-item>
-                <nz-form-label nzRequired>Tipo Indice</nz-form-label>
+                <nz-form-label nzRequired>{{ 'RC.INDEX_REGISTRY.INDEX_TYPE_LABEL' | translate }}</nz-form-label>
                 <nz-form-control>
                   <nz-select [(ngModel)]="newRate.index_type" name="index_type">
-                    <nz-option nzValue="istat_foi" nzLabel="ISTAT FOI (Italia)"></nz-option>
-                    <nz-option nzValue="swiss_ipc" nzLabel="Swiss IPC (Svizzera)"></nz-option>
+                    <nz-option nzValue="istat_foi" nzLabel="ISTAT FOI"></nz-option>
+                    <nz-option nzValue="swiss_ipc" nzLabel="Swiss IPC"></nz-option>
                   </nz-select>
                 </nz-form-control>
               </nz-form-item>
 
               <nz-form-item>
-                <nz-form-label nzRequired>Periodo di Riferimento (YYYY-MM)</nz-form-label>
+                <nz-form-label nzRequired>{{ 'RC.INDEX_REGISTRY.PERIOD_LABEL' | translate }}</nz-form-label>
                 <nz-form-control>
                   <input
                     nz-input
-                    placeholder="es. 2026-01"
+                    placeholder="2026-01"
                     [(ngModel)]="newRate.period"
                     name="period"
                   />
@@ -115,13 +118,13 @@ import { PriceIndexRate } from '@core/models/recurring-contracts.model';
               </nz-form-item>
 
               <nz-form-item>
-                <nz-form-label nzRequired>Valore Indice (Base / Quota)</nz-form-label>
+                <nz-form-label nzRequired>{{ 'RC.INDEX_REGISTRY.VALUE_LABEL' | translate }}</nz-form-label>
                 <nz-form-control>
                   <input
                     nz-input
                     type="number"
                     step="0.0001"
-                    placeholder="es. 104.2500"
+                    placeholder="104.2500"
                     [(ngModel)]="newRate.index_value"
                     name="index_value"
                   />
@@ -129,7 +132,7 @@ import { PriceIndexRate } from '@core/models/recurring-contracts.model';
               </nz-form-item>
 
               <nz-form-item>
-                <nz-form-label>Data Pubblicazione Gazzetta / UST</nz-form-label>
+                <nz-form-label>{{ 'RC.INDEX_REGISTRY.PUBLISHED_AT_LABEL' | translate }}</nz-form-label>
                 <nz-form-control>
                   <input
                     nz-input
@@ -141,11 +144,10 @@ import { PriceIndexRate } from '@core/models/recurring-contracts.model';
               </nz-form-item>
 
               <nz-form-item>
-                <nz-form-label>Riferimento Bollettino / Fonte Ufficiale</nz-form-label>
+                <nz-form-label>{{ 'RC.INDEX_REGISTRY.SOURCE_LABEL' | translate }}</nz-form-label>
                 <nz-form-control>
                   <input
                     nz-input
-                    placeholder="es. GU n. 15 / UST Statistiche"
                     [(ngModel)]="newRate.source_reference"
                     name="source_reference"
                   />
@@ -176,6 +178,7 @@ import { PriceIndexRate } from '@core/models/recurring-contracts.model';
 export class PriceIndexRegistryDrawerComponent implements OnInit {
   private readonly api = inject(RecurringContractsApiService);
   private readonly message = inject(NzMessageService);
+  private readonly i18n = inject(I18nService);
 
   readonly visible = signal(false);
   readonly loading = signal(false);
@@ -212,7 +215,7 @@ export class PriceIndexRegistryDrawerComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.message.error('Errore durante il caricamento del registro indici.');
+        this.message.error(this.i18n.translate('RC.INDEX_REGISTRY.LOAD_ERROR'));
         this.loading.set(false);
       },
     });
@@ -231,20 +234,20 @@ export class PriceIndexRegistryDrawerComponent implements OnInit {
 
   saveNewRate(): void {
     if (!this.newRate.period || !this.newRate.index_value) {
-      this.message.warning('Compila periodo e valore indice prima di salvare.');
+      this.message.warning(this.i18n.translate('RC.INDEX_REGISTRY.VALIDATION_WARNING'));
       return;
     }
 
     this.saving.set(true);
     this.api.storePriceIndexRate(this.newRate).subscribe({
       next: () => {
-        this.message.success('Valore indice registrato con successo.');
+        this.message.success(this.i18n.translate('RC.INDEX_REGISTRY.SAVE_SUCCESS'));
         this.saving.set(false);
         this.createModalVisible.set(false);
         this.loadIndices();
       },
       error: () => {
-        this.message.error('Errore durante il salvataggio del tasso indice.');
+        this.message.error(this.i18n.translate('RC.INDEX_REGISTRY.SAVE_ERROR'));
         this.saving.set(false);
       },
     });

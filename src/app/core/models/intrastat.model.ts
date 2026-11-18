@@ -180,18 +180,35 @@ export interface IntrastatValidationProblem {
 }
 
 export interface IntrastatValidationResponse {
-  is_valid: boolean;
+  is_valid?: boolean;
+  status?: IntrastatStatus;
   problems?: IntrastatValidationProblem[];
+}
+
+export interface IntrastatCategoryPeriodicity {
+  model?: string;
+  quarterly_totals?: Record<string, string | number>;
+  periodicity?: IntrastatPeriodicity;
+  quarterly_ceiling?: number;
+  monthly_list_required?: boolean;
+  monthly_threshold?: number;
+  statistical_data_required?: boolean;
+  statistical_data_threshold?: number;
+  statistical_only?: boolean;
 }
 
 export interface IntrastatPeriodicityThresholds {
   year: number;
   quarter?: number;
-  advised_periodicity: IntrastatPeriodicity;
-  sales_goods_amount: number;
-  sales_services_amount: number;
-  purchases_goods_amount: number;
-  purchases_services_amount: number;
+  advised_periodicity?: IntrastatPeriodicity;
+  sales_goods_amount?: number;
+  sales_services_amount?: number;
+  purchases_goods_amount?: number;
+  purchases_services_amount?: number;
+  sales_goods?: IntrastatCategoryPeriodicity;
+  sales_services?: IntrastatCategoryPeriodicity;
+  purchases_goods?: IntrastatCategoryPeriodicity;
+  purchases_services?: IntrastatCategoryPeriodicity;
   notes?: string[];
 }
 

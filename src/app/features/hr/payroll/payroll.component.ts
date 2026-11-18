@@ -72,19 +72,19 @@ const CANTONS = ['AG', 'AI', 'AR', 'BE', 'BL', 'BS', 'FR', 'GE', 'GL', 'GR', 'JU
         <nz-tab [nzTitle]="'hrmPayroll.settingsItalian' | translate">
           <app-payroll-settings [country]="'italian'" [canWrite]="canWrite()" />
         </nz-tab>
-        <nz-tab nzTitle="Permessi Svizzero (B / G / L / C)">
+        <nz-tab [nzTitle]="'hrmPayroll.swissPermits' | translate">
           <div class="mb-3">
-            <button nz-button type="button" (click)="loadPermitAlerts()">Aggiorna Scadenze Permessi</button>
+            <button nz-button type="button" (click)="loadPermitAlerts()">{{ 'hrmPayroll.refreshPermitExpiries' | translate }}</button>
           </div>
           <nz-table #permTable [nzData]="permitAlerts()" nzSize="small">
             <thead>
               <tr>
-                <th [nzSortFn]="'employee_name' | gridSort" [nzFilters]="'employee_name' | gridFilterList: permTable.nzData" [nzFilterFn]="'employee_name' | gridFilterFn">Dipendente</th>
-                <th [nzSortFn]="'permit_type' | gridSort" [nzFilters]="'permit_type' | gridFilterList: permTable.nzData" [nzFilterFn]="'permit_type' | gridFilterFn">Permesso</th>
-                <th [nzSortFn]="'valid_until' | gridSort" [nzFilters]="'valid_until' | gridFilterList: permTable.nzData" [nzFilterFn]="'valid_until' | gridFilterFn">Scadenza</th>
-                <th>Giorni Residui</th>
-                <th [nzSortFn]="'severity' | gridSort" [nzFilters]="'severity' | gridFilterList: permTable.nzData" [nzFilterFn]="'severity' | gridFilterFn">Stato</th>
-                <th [nzSortFn]="'message' | gridSort" [nzFilters]="'message' | gridFilterList: permTable.nzData" [nzFilterFn]="'message' | gridFilterFn">Messaggio</th>
+                <th [nzSortFn]="'employee_name' | gridSort" [nzFilters]="'employee_name' | gridFilterList: permTable.nzData" [nzFilterFn]="'employee_name' | gridFilterFn">{{ 'hrmCommon.employee' | translate }}</th>
+                <th [nzSortFn]="'permit_type' | gridSort" [nzFilters]="'permit_type' | gridFilterList: permTable.nzData" [nzFilterFn]="'permit_type' | gridFilterFn">{{ 'hrmPayroll.permitType' | translate }}</th>
+                <th [nzSortFn]="'valid_until' | gridSort" [nzFilters]="'valid_until' | gridFilterList: permTable.nzData" [nzFilterFn]="'valid_until' | gridFilterFn">{{ 'hrmPayroll.validUntil' | translate }}</th>
+                <th>{{ 'hrmPayroll.daysRemaining' | translate }}</th>
+                <th [nzSortFn]="'severity' | gridSort" [nzFilters]="'severity' | gridFilterList: permTable.nzData" [nzFilterFn]="'severity' | gridFilterFn">{{ 'hrmCommon.status' | translate }}</th>
+                <th [nzSortFn]="'message' | gridSort" [nzFilters]="'message' | gridFilterList: permTable.nzData" [nzFilterFn]="'message' | gridFilterFn">{{ 'hrmPayroll.message' | translate }}</th>
               </tr>
             </thead>
             <tbody>

@@ -335,7 +335,7 @@ export class IntrastatComponent {
   validateDeclaration(d: IntrastatDeclaration): void {
     this.api.validateDeclaration(d.id).subscribe({
       next: (res) => {
-        if (res.data?.is_valid) {
+        if (res.data?.is_valid || res.data?.status === 'validated') {
           this.message.success(this.translate.instant('INTRASTAT.VALIDATION_SUCCESS'));
         } else {
           this.message.warning(this.translate.instant('INTRASTAT.VALIDATION_WARNINGS'));
@@ -553,6 +553,47 @@ export class IntrastatComponent {
         this.periodicityLoading.set(false);
       },
     });
+  }
+
+  advisedPeriodicity(p: IntrastatPeriodicityThresholds): IntrastatPeriodicity {
+    if (p.advised_periodicity) {
+      return p.advised_periodicity;
+    }
+    if (
+      p.sales_goods?.periodicity === 'M' ||
+      p.sales_services?.periodicity === 'M' ||
+      p.purchases_goods?.monthly_list_required ||
+      p.purchases_services?.monthly_list_required
+    ) {
+      return 'M';
+    }
+    return 'T';
+  }
+
+  categoryAmount(
+    p: IntrastatPeriodicityThresholds,
+    key: 'sales_goods' | 'sales_services' | 'purchases_goods' | 'purchases_services',
+  ): number {
+    const flatKey = `${key}_amount` as const;
+    const flatVal = p[flatKey];
+    if (typeof flatVal === 'number') {
+      return flatVal;
+    }
+    const totals = p[key]?.quarterly_totals;
+    if (!totals) {
+      return 0;
+    }
+    const nums = Object.values(totals).map((v) => Number(v) || 0);
+    return nums.length > 0 ? Math.max(...nums) : 0;
+  }
+
+  categoryThreshold(
+    p: IntrastatPeriodicityThresholds,
+    key: 'sales_goods' | 'sales_services' | 'purchases_goods' | 'purchases_services',
+    fallback: number,
+  ): number {
+    const cat = p[key];
+    return cat?.quarterly_ceiling ?? cat?.monthly_threshold ?? fallback;
   }
 
   // --- TAB 3: PRODUCT PROFILES ---

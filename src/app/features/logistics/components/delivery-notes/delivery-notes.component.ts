@@ -85,6 +85,8 @@ export class DeliveryNotesComponent {
 
   protected readonly deliverTarget = signal<LogisticsDeliveryNote | null>(null);
   protected readonly signatureName = signal('');
+  protected readonly awbTarget = signal<LogisticsDeliveryNote | null>(null);
+  protected readonly awbNumber = signal('');
 
   protected readonly groupsVisible = signal(false);
   protected readonly groups = signal<UnbilledGroup[]>([]);
@@ -179,6 +181,19 @@ export class DeliveryNotesComponent {
       this.api.deliver(note.id, this.signatureName() || undefined),
       'LOGISTICS.DDT.MESSAGES.DELIVERED',
     );
+  }
+
+  protected openAwb(note: LogisticsDeliveryNote): void {
+    this.awbNumber.set(note.awb_number ?? '');
+    this.awbTarget.set(note);
+  }
+
+  protected confirmAwb(): void {
+    const note = this.awbTarget();
+    const awb = this.awbNumber().trim();
+    if (!note || !awb) return;
+    this.awbTarget.set(null);
+    this.run(this.api.assignAwb(note.id, awb), 'LOGISTICS.DDT.MESSAGES.SAVED');
   }
 
   protected readonly emailTarget = signal<string | null>(null);

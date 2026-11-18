@@ -69,4 +69,52 @@ export class ClientApiService {
   delete(id: string): Observable<ApiResponse<null>> {
     return this.http.delete<ApiResponse<null>>(`${this.url}/${id}`);
   }
+
+  lookupFiscal(payload: {
+    country: string;
+    vat_number?: string;
+    uid_number?: string;
+  }): Observable<
+    ApiResponse<{
+      valid_format: boolean;
+      registry_verified: boolean;
+      source: string;
+      data: {
+        country?: string;
+        vat_number?: string;
+        uid_number?: string;
+        company_name?: string;
+        address?: {
+          street?: string;
+          postal_code?: string;
+          city?: string;
+          state_canton?: string;
+          country?: string;
+        };
+      };
+      warnings: string[];
+    }>
+  > {
+    return this.http.post<
+      ApiResponse<{
+        valid_format: boolean;
+        registry_verified: boolean;
+        source: string;
+        data: {
+          country?: string;
+          vat_number?: string;
+          uid_number?: string;
+          company_name?: string;
+          address?: {
+            street?: string;
+            postal_code?: string;
+            city?: string;
+            state_canton?: string;
+            country?: string;
+          };
+        };
+        warnings: string[];
+      }>
+    >(`${environment.apiBaseUrl}/crm/fiscal/lookup`, payload);
+  }
 }

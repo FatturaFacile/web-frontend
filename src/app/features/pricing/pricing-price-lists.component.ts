@@ -373,6 +373,12 @@ import { parseDiscountCascade, previewCascade } from './pricing.util';
                   <button
                     nz-button
                     nzType="text"
+                    appIconAction="edit"
+                    (click)="editItem(item)"
+                  ></button>
+                  <button
+                    nz-button
+                    nzType="text"
                     nzDanger
                     appIconAction="delete"
                     nz-popconfirm
@@ -454,6 +460,7 @@ export class PricingPriceListsComponent implements OnInit {
   readonly itemsVisible = signal(false);
   readonly itemsLoading = signal(false);
   readonly items = signal<PricingPriceListItem[]>([]);
+  readonly editingItem = signal<PricingPriceListItem | null>(null);
   readonly historyVisible = signal(false);
   readonly historyLoading = signal(false);
   readonly history = signal<PricingPriceHistory[]>([]);
@@ -603,37 +610,54 @@ export class PricingPriceListsComponent implements OnInit {
     });
   }
 
+  editItem(item: PricingPriceListItem): void {
+    this.editingItem.set(item);
+    this.itemForm.patchValue({
+      product_id: item.product_id,
+      price: Number(item.price),
+      min_quantity: item.min_quantity ? Number(item.min_quantity) : null,
+      max_quantity: item.max_quantity ? Number(item.max_quantity) : null,
+      discount_cascade: item.discount_cascade ?? '',
+      discount_mode: (item.discount_mode as DiscountMode | undefined) ?? 'MULTIPLICATIVE',
+    });
+  }
+
   saveItem(): void {
     const list = this.currentList();
     if (!list || this.itemForm.invalid || !this.cascadeValid()) {
       return;
     }
     const value = this.itemForm.getRawValue();
-    this.api
-      .createItem(list.id, {
-        product_id: value.product_id,
-        price: String(value.price),
-        min_quantity: decimalOrNull(value.min_quantity),
-        max_quantity: decimalOrNull(value.max_quantity),
-        discount_cascade: blankToNull(value.discount_cascade),
-        discount_mode: value.discount_mode,
-      })
-      .subscribe({
-        next: () => {
-          this.message.success(this.translate.instant('PRICING.SAVED'));
-          this.itemForm.reset({
-            product_id: '',
-            price: null,
-            min_quantity: null,
-            max_quantity: null,
-            discount_cascade: '',
-            discount_mode: 'MULTIPLICATIVE',
-          });
-          this.loadItems();
-        },
-        error: (error: unknown) =>
-          this.message.error(apiErrorText(error) ?? this.translate.instant('PRICING.ACTION_ERROR')),
-      });
+    const payload = {
+      product_id: value.product_id,
+      price: String(value.price),
+      min_quantity: decimalOrNull(value.min_quantity),
+      max_quantity: decimalOrNull(value.max_quantity),
+      discount_cascade: blankToNull(value.discount_cascade),
+      discount_mode: value.discount_mode,
+    };
+    const editing = this.editingItem();
+    const request$ = editing
+      ? this.api.updateItem(list.id, editing.id, payload)
+      : this.api.createItem(list.id, payload);
+
+    request$.subscribe({
+      next: () => {
+        this.message.success(this.translate.instant('PRICING.SAVED'));
+        this.editingItem.set(null);
+        this.itemForm.reset({
+          product_id: '',
+          price: null,
+          min_quantity: null,
+          max_quantity: null,
+          discount_cascade: '',
+          discount_mode: 'MULTIPLICATIVE',
+        });
+        this.loadItems();
+      },
+      error: (error: unknown) =>
+        this.message.error(apiErrorText(error) ?? this.translate.instant('PRICING.ACTION_ERROR')),
+    });
   }
 
   removeItem(item: PricingPriceListItem): void {
