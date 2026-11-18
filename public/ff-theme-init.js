@@ -33,9 +33,16 @@
     if (dark) {
       root.classList.add('dark');
     }
+    var storedDensity = ui.density || store.getItem('ff-density');
     root.setAttribute(
       'data-density',
-      densities.indexOf(ui.density) >= 0 ? ui.density : 'comfortable',
+      densities.indexOf(storedDensity) >= 0 ? storedDensity : 'comfortable',
+    );
+    var brandAccents = ['teal', 'indigo', 'purple', 'amber'];
+    var storedBrandAccent = store.getItem('ff-brand');
+    root.setAttribute(
+      'data-brand',
+      brandAccents.indexOf(storedBrandAccent) >= 0 ? storedBrandAccent : 'teal',
     );
 
     var reduced =

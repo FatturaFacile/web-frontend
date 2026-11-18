@@ -1,5 +1,73 @@
 import { type Page, type Locator } from '@playwright/test';
 
+export async function seedAuthenticatedSession(page: Page): Promise<void> {
+  const mockUser = {
+    id: 'usr-001',
+    name: 'Marco Rossi',
+    email: 'm.rossi@rossiimpianti.it',
+    role: 'owner',
+    roles: ['owner', 'admin'],
+    permissions: ['*'],
+    is_platform_admin: true,
+    two_factor_enabled: true,
+    active_tenant: {
+      id: 't-it-01',
+      name: 'Rossi Impianti S.r.l.',
+      country: 'IT',
+      role: 'owner',
+    },
+    tenants: [
+      {
+        id: 't-it-01',
+        name: 'Rossi Impianti S.r.l.',
+        country: 'IT',
+        role: 'owner',
+        permissions: ['*'],
+      },
+    ],
+  };
+
+  await page.addInitScript((user) => {
+    localStorage.setItem('ff_is_authenticated', 'true');
+    localStorage.setItem('ff_active_user_id', user.id);
+    localStorage.setItem('ff_active_tenant_id', 't-it-01');
+    localStorage.setItem('tenant_id', 't-it-01');
+    localStorage.setItem('ff_user_profile', JSON.stringify(user));
+  }, mockUser);
+
+  await page.route('**/api/v1/auth/profile', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: mockUser }),
+    });
+  });
+
+  await page.route('**/api/v1/auth/me', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: mockUser }),
+    });
+  });
+
+  await page.route('**/api/v1/i18n/**', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: { translations: {} } }),
+    });
+  });
+
+  await page.route('**/api/v1/lookups**', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: {} }),
+    });
+  });
+}
+
 export class InvoicingPage {
   readonly page: Page;
   readonly newInvoiceButton: Locator;
@@ -38,7 +106,7 @@ export class InvoicingPage {
   }
 
   async goto() {
-    await this.page.goto('/invoicing/sales');
+    await this.page.goto('/sales/invoices');
   }
 }
 
@@ -65,9 +133,9 @@ export class PaymentsPage {
 
   async goto(invoiceId?: string) {
     if (invoiceId) {
-      await this.page.goto(`/invoicing/sales/${invoiceId}`);
+      await this.page.goto(`/sales/invoices?id=${invoiceId}`);
     } else {
-      await this.page.goto('/treasury/payments');
+      await this.page.goto('/treasury');
     }
   }
 }
@@ -86,7 +154,7 @@ export class InventoryPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.stockItemsTable = page.locator('[data-testid="table-stock-items"]');
+    this.stockItemsTable = page.locator('[data-testid="table-stock-items"], nz-table');
     this.newMovementButton = page.locator('[data-testid="btn-new-movement"], button:has-text("Nuovo Movimento")');
     this.productSelect = page.locator('[data-testid="select-product"]');
     this.movementTypeSelect = page.locator('[data-testid="select-movement-type"]');
@@ -98,6 +166,6 @@ export class InventoryPage {
   }
 
   async goto() {
-    await this.page.goto('/inventory');
+    await this.page.goto('/inventory/stock');
   }
 }

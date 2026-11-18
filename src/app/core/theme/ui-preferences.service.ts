@@ -203,6 +203,10 @@ export class UiPreferencesService {
       if (legacy === 'light' || legacy === 'dark') {
         this.themeSignal.set(legacy);
       }
+      const legacyDensity = storage.getItem('ff-density');
+      if (isOneOf(UI_DENSITIES, legacyDensity)) {
+        this.densitySignal.set(legacyDensity);
+      }
     } catch {
       // A damaged cache is ignored: the defaults apply.
     }
