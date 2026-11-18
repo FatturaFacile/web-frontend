@@ -1,0 +1,152 @@
+name: E2E Layout & Full CRUD Verification (Main Only)
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: e2e-layout-crud-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e-layout-and-crud:
+    name: Playwright Layout Crawler & Full UI CRUD
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: fatturafacile_e2e
+          POSTGRES_USER: fatturafacile
+          POSTGRES_PASSWORD: secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U fatturafacile -d fatturafacile_e2e"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout web-frontend
+        uses: actions/checkout@v4
+        with:
+          path: web-frontend
+
+      - name: Checkout web-api (main branch)
+        uses: actions/checkout@v4
+        with:
+          repository: FatturaFacile/web-api
+          ref: main
+          # token: ${{ secrets.WEB_API_READ_TOKEN }} # Uncomment if web-api is private
+          path: web-api
+
+      - name: Setup PHP 8.5 with Extensions
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: mbstring, pdo, pdo_pgsql, pgsql, redis, intl, gd, zip, bcmath
+          ini-values: memory_limit=2048M
+          coverage: none
+
+      - name: Cache Composer Dependencies
+        uses: actions/cache@v4
+        with:
+          path: web-api/vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('web-api/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install & Boot Laravel 13 Backend (web-api)
+        working-directory: web-api
+        env:
+          APP_ENV: testing
+          APP_DEBUG: 'true'
+          APP_URL: http://127.0.0.1:8000
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: fatturafacile_e2e
+          DB_USERNAME: fatturafacile
+          DB_PASSWORD: secret
+          REDIS_HOST: 127.0.0.1
+          REDIS_PORT: 6379
+          CACHE_STORE: redis
+          QUEUE_CONNECTION: sync
+          SESSION_DRIVER: file
+        run: |
+          cp .env.example .env
+          composer install --no-interaction --prefer-dist --optimize-autoloader
+          php artisan key:generate --force
+          php artisan migrate:fresh --seed --force
+          nohup php artisan serve --host=127.0.0.1 --port=8000 > /tmp/laravel-e2e.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8000/up > /dev/null; then
+              echo "Laravel API ready on :8000"
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/laravel-e2e.log
+          exit 1
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: web-frontend/package-lock.json
+
+      - name: Install Frontend Dependencies & Playwright Browsers
+        working-directory: web-frontend
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Build Angular 22 Production Bundle
+        working-directory: web-frontend
+        run: npm run build -- --configuration production
+
+      - name: Run Playwright Layout Crawler & Full UI CRUD Suites
+        working-directory: web-frontend
+        env:
+          BASE_URL: http://127.0.0.1:4200
+          API_URL: http://127.0.0.1:8000
+          CI: 'true'
+        run: |
+          npx ng serve --host 127.0.0.1 --port 4200 --configuration production > /tmp/angular-e2e.log 2>&1 &
+          for i in $(seq 1 45); do
+            if curl -fsS http://127.0.0.1:4200 > /dev/null; then
+              echo "Angular frontend ready on :4200"
+              break
+            fi
+            sleep 1
+          done
+          npx playwright test e2e/layout-full-audit.spec.ts e2e/crud-full-lifecycle.spec.ts --project=chromium --reporter=list,html
+
+      - name: Upload Playwright Report & Failure Screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-layout-crud-artifacts-${{ github.run_number }}
+          path: |
+            web-frontend/playwright-report/
+            web-frontend/test-results/
+            /tmp/laravel-e2e.log
+            /tmp/angular-e2e.log
+          retention-days: 14

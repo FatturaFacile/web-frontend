@@ -39,7 +39,7 @@ export const INVENTORY_ROUTES: Routes = [
   wmsRoute('lots', 'Lotti & Richiami', LOTS_PAGE),
   wmsRoute('items', 'Anagrafica articoli', STOCK_ITEMS_PAGE),
   wmsRoute('reports', 'Valorizzazione & KPI', STOCK_REPORTS_PAGE),
-  wmsRoute('valuation', 'Costing & Libro inventari', VALUATION_COSTING_PAGE),
+  wmsRoute('valuation-costing', 'Costing & Libro inventari', VALUATION_COSTING_PAGE),
   wmsRoute('terminal', 'Terminale & Barcode', TERMINAL_PAGE),
   wmsRoute('services', 'Assistenza & Pesa', INVENTORY_SERVICES_PAGE),
   {
