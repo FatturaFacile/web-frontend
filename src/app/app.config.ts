@@ -18,6 +18,7 @@ import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { en_US, provideNzI18n } from 'ng-zorro-antd/i18n';
 import { provideNzDateFnsAdapter } from 'ng-zorro-antd/core/time';
 import { credentialsInterceptor } from '@core/interceptors/credentials.interceptor';
+import { portalAuthInterceptor } from '@core/interceptors/portal-auth.interceptor';
 import { csrfRefreshInterceptor } from '@core/interceptors/csrf-refresh.interceptor';
 import { errorInterceptor } from '@core/interceptors/error.interceptor';
 import { idempotencyInterceptor } from '@core/interceptors/idempotency.interceptor';
@@ -52,6 +53,7 @@ export const appConfig: ApplicationConfig = {
         headerName: 'X-XSRF-TOKEN',
       }),
       withInterceptors([
+        portalAuthInterceptor,
         credentialsInterceptor,
         csrfRefreshInterceptor,
         tenantAuthInterceptor,
