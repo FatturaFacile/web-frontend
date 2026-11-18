@@ -62,7 +62,22 @@ export interface VatSettings {
   interest_expense_account_id: string | null;
   declarant_tax_code: string | null;
   declarant_role_code: string | null;
+  /** Swiss MWST method. */
+  regime?: VatRegime | null;
+  /** Swiss MWST basis: agreed (Soll) or received (Ist) counter-performances. */
+  mwst_basis?: MwstBasis | null;
+  /** Swiss Saldosteuersatz rates (percent, decimal strings). */
+  sss_rate_1?: string | null;
+  sss_rate_2?: string | null;
+  /** Italian LIPE: pro-rata percentage 0-100 (decimal string). */
+  lipe_prorata_percent?: string | null;
+  /** Italian LIPE: advance payment amount (decimal string). */
+  lipe_advance_amount?: string | null;
+  carry_over_below_minimum?: boolean | null;
 }
+
+export type VatRegime = 'effective' | 'net_tax_rate' | 'flat_tax_rate';
+export type MwstBasis = 'agreed' | 'received';
 
 export type VatSettingsPayload = Partial<VatSettings>;
 

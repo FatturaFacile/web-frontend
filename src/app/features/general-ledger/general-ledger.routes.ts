@@ -79,6 +79,14 @@ export const GENERAL_LEDGER_ROUTES: Routes = [
         loadComponent: () => import('./localization/gl-us-1099.component').then((m) => m.GlUs1099Component),
       },
       {
+        path: 'vat-settlement',
+        loadComponent: () => import('./vat/gl-vat-settlement.component').then((m) => m.GlVatSettlementComponent),
+      },
+      {
+        path: 'vat-settings',
+        loadComponent: () => import('./vat/gl-vat-settings.component').then((m) => m.GlVatSettingsComponent),
+      },
+      {
         path: 'fiscal-years',
         loadComponent: () => import('./fiscal-years/gl-fiscal-years.component').then((m) => m.GlFiscalYearsComponent),
       },

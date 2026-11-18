@@ -98,6 +98,7 @@ export * from './treasury-ops.model';
 export * from './eam-ops.model';
 export * from './project-control.model';
 export * from './general-ledger-fiscal.model';
+export * from './vat-settlement.model';
 export * from './general-ledger-consolidation.model';
 export * from './general-ledger-localization.model';
 export * from './payroll-compliance.model';

@@ -309,6 +309,11 @@ export interface SupplierInvoice {
   cost_center_id?: string | null;
   is_reconciled?: boolean;
   sdi_file_name?: string | null;
+  /** True when the invoice is subject to reverse charge (needs an integration self-invoice). */
+  reverse_charge?: boolean | null;
+  /** True when the supplier is established abroad. */
+  is_foreign?: boolean | null;
+  supplier_country?: string | null;
 }
 
 export interface SupplierInvoiceApproval {
