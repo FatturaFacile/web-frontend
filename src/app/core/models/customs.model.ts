@@ -78,6 +78,9 @@ export interface CustomsDeclarationItem {
   origin_country?: string;
 }
 
+export const CUSTOMS_WORKFLOW_STAGES = ['draft', 'declared', 'cleared', 'archived_evv'] as const;
+export type CustomsWorkflowStage = (typeof CUSTOMS_WORKFLOW_STAGES)[number];
+
 export interface CustomsDeclarationResource {
   id: string;
   dossier_id?: string | null;
@@ -95,6 +98,8 @@ export interface CustomsDeclarationResource {
   dispatch_country?: string | null;
   destination_country?: string | null;
   incoterms?: string | null;
+  /** draft, declared, cleared or archived_evv (null for a cancelled declaration). */
+  workflow_stage?: CustomsWorkflowStage | null;
   declared_on?: string | null;
   customs_regime?: CustomsRegime | null;
   transit_document_type?: CustomsTransitDocumentType | null;
@@ -233,6 +238,8 @@ export interface CustomsTradeComplianceDashboard {
   by_direction: Record<string, number>;
   by_regime: Record<string, number>;
   by_status: Record<string, number>;
+  /** Declarations per workflow stage: draft, declared, cleared, archived_evv. */
+  by_stage?: Record<string, number>;
   transit_overdue: number;
   missing_evv: CustomsMissingEvvEntry[];
 }

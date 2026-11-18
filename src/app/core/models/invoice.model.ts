@@ -42,6 +42,10 @@ export interface InvoiceResource {
   free_trade_agreement_id?: string | null;
   origin_declaration_text?: string | null;
   duty_exemption_eligible?: boolean;
+  incoterm?: string | null;
+  incoterm_place?: string | null;
+  freight_amount?: number | string | null;
+  insurance_amount?: number | string | null;
 }
 
 export interface InvoiceItemResource {
@@ -126,6 +130,10 @@ export interface CreateInvoicePayload {
   free_trade_agreement_id?: string | null;
   origin_declaration_text?: string | null;
   duty_exemption_eligible?: boolean;
+  incoterm?: string | null;
+  incoterm_place?: string | null;
+  freight_amount?: number | null;
+  insurance_amount?: number | null;
   items: InvoiceLineItemPayload[];
   /** Italian fiscal fields (issue #286): omitted = tenant default, `null` = disabled. */
   vat_payability?: VatPayability;

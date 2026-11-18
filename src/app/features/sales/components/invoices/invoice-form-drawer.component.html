@@ -94,6 +94,14 @@
           </nz-form-control>
         </nz-form-item>
 
+        <app-cross-border-fields
+          [incoterm]="form.controls.incoterm"
+          [place]="form.controls.incoterm_place"
+          [freight]="form.controls.freight_amount"
+          [insurance]="form.controls.insurance_amount"
+          [crossBorder]="crossBorder()"
+        />
+
         <nz-form-item>
           <nz-form-label nzRequired nzFor="currency">{{
             "SALES.INVOICES.FORM.CURRENCY" | translate

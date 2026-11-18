@@ -130,6 +130,7 @@ export * from './api/sales-cycle-api.service';
 export * from './api/billing-api.service';
 export * from './api/catalog-api.service';
 export * from './api/customs-codes-api.service';
+export * from './api/foreign-trade-api.service';
 export * from './lookups/customs-origin.utils';
 export * from './api/association-area-api.service';
 export * from './api/association-public-api.service';

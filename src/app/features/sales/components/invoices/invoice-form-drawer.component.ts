@@ -33,6 +33,7 @@ import {
 import { IconActionDirective, ModalActionsDirective, TranslatePipe } from '@shared';
 import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
 import { hasSharedRuleError, validationTipKey } from '@shared/utils/validation-tip';
+import { CrossBorderFieldsComponent } from '../../../customs/cross-border/cross-border-fields.component';
 import {
   applyServerErrors,
   CatalogApiService,
@@ -52,6 +53,7 @@ import {
   NATURA_CODES,
   serverErrorMessage,
   SettingsApiService,
+  isCrossBorder,
   TaxApiService,
   TaxPreviewRequest,
   TaxPreviewResult,
@@ -112,6 +114,7 @@ function toIsoDate(d: Date): string {
     NzCheckboxModule,
     InvoiceFiscalSectionComponent,
     InvoiceTotalsBreakdownComponent,
+    CrossBorderFieldsComponent,
     TranslatePipe,
   ],
   templateUrl: './invoice-form-drawer.component.html',
@@ -157,6 +160,10 @@ export class InvoiceFormDrawerComponent {
     currency: this.fb.control('CHF', Validators.required),
     jurisdiction: this.fb.control<Jurisdiction>('CH', Validators.required),
     notes: this.fb.control('', Validators.maxLength(2000)),
+    incoterm: new FormControl<string | null>(null),
+    incoterm_place: new FormControl<string | null>(null, Validators.maxLength(100)),
+    freight_amount: new FormControl<number | null>(null),
+    insurance_amount: new FormControl<number | null>(null),
     items: this.fb.array<ItemGroup>([]),
     ...createFiscalControls(this.fb),
   });
@@ -189,7 +196,7 @@ export class InvoiceFormDrawerComponent {
       startWith(''),
       switchMap((search) =>
         this.clientApi.list({ search, per_page: 20 }).pipe(
-          map((res) => res.data.map((c) => ({ label: contactDisplayName(c), value: c.id }))),
+          map((res) => res.data.map((c) => ({ label: contactDisplayName(c), value: c.id, country: c.country }))),
           catchError(() => of([])),
         ),
       ),
@@ -203,7 +210,13 @@ export class InvoiceFormDrawerComponent {
     if (!id || fetched.some((o) => o.value === id)) {
       return fetched;
     }
-    return [{ label: tpl?.contact ? contactDisplayName(tpl.contact) : id, value: id }, ...fetched];
+    return [{ label: tpl?.contact ? contactDisplayName(tpl.contact) : id, value: id, country: tpl?.contact?.country }, ...fetched];
+  });
+  /** The counterparty is in another country than the jurisdiction of the invoice: customs data is mandatory. */
+  protected readonly crossBorder = computed(() => {
+    const v = this.formValue();
+    const country = this.contactOptions().find((o) => o.value === v.contact_id)?.country;
+    return isCrossBorder(v.jurisdiction, country);
   });
 
   private readonly formValue = toSignal(
@@ -358,6 +371,10 @@ export class InvoiceFormDrawerComponent {
       currency,
       jurisdiction: tpl?.jurisdiction ?? (currency === 'EUR' ? 'IT' : 'CH'),
       notes: tpl?.notes ?? '',
+      incoterm: tpl?.incoterm ?? null,
+      incoterm_place: tpl?.incoterm_place ?? null,
+      freight_amount: tpl?.freight_amount === null || tpl?.freight_amount === undefined ? null : Number(tpl.freight_amount),
+      insurance_amount: tpl?.insurance_amount === null || tpl?.insurance_amount === undefined ? null : Number(tpl.insurance_amount),
       date: new Date(),
       due_date: null,
     });
@@ -426,6 +443,10 @@ export class InvoiceFormDrawerComponent {
       payment_term_id: v.payment_term_id || null,
       jurisdiction: v.jurisdiction,
       notes: v.notes.trim() || null,
+      incoterm: v.incoterm || null,
+      incoterm_place: v.incoterm_place?.trim() || null,
+      freight_amount: v.freight_amount,
+      insurance_amount: v.insurance_amount,
       items: v.items.map(
         ({ description, quantity, unit_price, tax_rate, discount_percentage }) => ({
           description,

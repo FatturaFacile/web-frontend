@@ -294,8 +294,16 @@
                 [nzOptions]="carriageOptions()"
             /></nz-form-control>
           </nz-form-item>
+          @if (crossBorder()) {
+            <nz-alert
+              nzType="warning"
+              nzShowIcon
+              data-testid="ddt-cross-border-alert"
+              [nzMessage]="'FOREIGN_TRADE.FIELDS.ALERT' | translate"
+            />
+          }
           <nz-form-item>
-            <nz-form-label nzFor="l-incoterms">{{
+            <nz-form-label [nzRequired]="crossBorder()" nzFor="l-incoterms">{{
               'LOGISTICS.DDT.INCOTERMS' | translate
             }}</nz-form-label>
             <nz-form-control

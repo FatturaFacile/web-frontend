@@ -9,6 +9,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { catchError, map, of } from 'rxjs';
 import { AuthStore, CatalogApiService, DocumentEmailRecord, InvoiceApiService, InvoiceDetailResource } from '@core';
 import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { CrossBorderReadinessComponent } from '../../../customs/cross-border/cross-border-readiness.component';
 import { InvoiceOriginDeclarationComponent, isCrossBorderInvoice } from './invoice-origin-declaration.component';
 
 /**
@@ -32,6 +33,7 @@ import { InvoiceOriginDeclarationComponent, isCrossBorderInvoice } from './invoi
     NzTagModule,
     TranslatePipe,
     InvoiceOriginDeclarationComponent,
+    CrossBorderReadinessComponent,
   ],
   template: `
     <nz-modal
@@ -116,6 +118,7 @@ import { InvoiceOriginDeclarationComponent, isCrossBorderInvoice } from './invoi
             </nz-table>
           }
           @if (crossBorder()) {
+            <app-cross-border-readiness [invoiceId]="inv.id" />
             <app-invoice-origin-declaration [invoice]="inv" />
           }
           <h4 class="emails-title">{{ 'SALES.INVOICES.DETAIL.EMAILS' | translate }}</h4>

@@ -124,6 +124,8 @@ export interface CoreOrder {
   total_gross?: string | null;
   credit_status?: 'pending_check' | 'approved' | 'on_hold' | 'rejected' | 'warning' | string | null;
   credit_hold_reason?: string | null;
+  incoterm?: string | null;
+  incoterm_place?: string | null;
   /** Id of the credit hold that parks the order (`GET /sales/orders` and `/sales/orders/{id}`), when it has one. */
   credit_hold_id?: string | null;
   /** Credit holds of the order, present only when the endpoint loads them. */
@@ -138,6 +140,8 @@ export interface CoreOrderPayload {
   notes?: string | null;
   items: CoreDocumentLinePayload[];
   due_date?: string | null;
+  incoterm?: string | null;
+  incoterm_place?: string | null;
   status?: 'draft' | 'confirmed' | 'in_production' | 'shipped' | 'completed' | 'cancelled';
 }
 
