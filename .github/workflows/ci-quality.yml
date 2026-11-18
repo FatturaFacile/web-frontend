@@ -2,7 +2,7 @@ name: Frontend Quality & Merge Gates
 
 on:
   pull_request:
-    branches: [main, master, develop]
+    branches: [main, master, develop, dev]
     paths:
       - 'src/**'
       - 'tests/**'
@@ -14,7 +14,7 @@ on:
       - 'playwright.config.ts'
       - '.github/workflows/ci-quality.yml'
   push:
-    branches: [main, master]
+    branches: [main, master, dev]
   schedule:
     # Weekly security audit every Monday at 04:00 UTC
     - cron: '0 4 * * 1'
@@ -72,6 +72,12 @@ jobs:
 
       - name: Install Node Dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Generate local HTTPS certificate
+        run: >-
+          openssl req -x509 -newkey rsa:2048 -nodes -days 1 -subj "/CN=localhost"
+          -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
+          -keyout certs/localhost.key -out certs/localhost.crt
 
       - name: Install Playwright Browsers with System Dependencies
         run: pnpm exec playwright install --with-deps chromium
