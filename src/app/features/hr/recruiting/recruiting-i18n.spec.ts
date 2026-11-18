@@ -1,5 +1,3 @@
-import * as fs from 'node:fs';
-import * as path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   APPLICATION_SOURCES,
@@ -16,35 +14,23 @@ import {
   REJECTION_REASON_CODES,
   SIGNATURE_STATUSES,
 } from '@core';
+import { hasSeededDictionaries, seededDictionaries } from '../../../../testing/seeded-dictionaries';
 
 type Dict = Record<string, unknown>;
 
-const load = (lang: string): Dict =>
-  JSON.parse(
-    fs.readFileSync(path.resolve(process.cwd(), `public/assets/i18n/${lang}.json`), 'utf8'),
-  ) as Dict;
+/** The dictionaries live in the API seeders (flat dotted keys); the specs are skipped without the API project. */
+const load = (lang: string): Dict => (seededDictionaries as Record<string, Dict>)[lang] ?? {};
 
-function leafKeys(node: unknown, prefix = ''): string[] {
-  if (typeof node !== 'object' || node === null) {
-    return [prefix];
-  }
-  return Object.entries(node as Dict).flatMap(([k, v]) =>
-    leafKeys(v, prefix ? `${prefix}.${k}` : k),
-  );
-}
+const resolve = (dict: Dict, key: string): unknown => dict[key];
 
-function resolve(dict: Dict, key: string): unknown {
-  return key.split('.').reduce<unknown>((node, part) => (node as Dict | undefined)?.[part], dict);
-}
+const keysUnder = (dict: Dict, prefixes: string[]): string[] =>
+  Object.keys(dict).filter((key) => prefixes.some((prefix) => key.startsWith(`${prefix}.`)));
 
 const LANGS = ['en', 'it', 'de', 'fr'];
 
-describe('recruiting & careers translations', () => {
+describe.skipIf(!hasSeededDictionaries)('recruiting & careers translations', () => {
   const en = load('en');
-  const enKeys = [
-    ...leafKeys(resolve(en, 'hr.recruiting'), 'hr.recruiting'),
-    ...leafKeys(resolve(en, 'careers'), 'careers'),
-  ];
+  const enKeys = keysUnder(en, ['hr.recruiting', 'careers']);
 
   it.each(LANGS)('%s has every recruiting/careers key as a non-empty string', (lang) => {
     const dict = load(lang);

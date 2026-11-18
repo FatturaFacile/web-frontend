@@ -1,14 +1,15 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { hasSeededDictionaries, seededDictionaries } from '../../../testing/seeded-dictionaries';
 import { INVENTORY_ROUTES } from './inventory.routes';
 
 const LANGS = ['en', 'it', 'de', 'fr'] as const;
-const I18N_DIR = path.resolve(process.cwd(), 'public/assets/i18n');
 const FEATURE_DIR = path.resolve(process.cwd(), 'src/app/features/inventory');
 
+/** The dictionaries live in the API seeders; the i18n specs are skipped when the API project is not available. */
 function load(lang: string): Record<string, unknown> {
-  return JSON.parse(fs.readFileSync(path.join(I18N_DIR, `${lang}.json`), 'utf8')) as Record<string, unknown>;
+  return (seededDictionaries as Record<string, Record<string, string>>)[lang] ?? {};
 }
 
 function sourceFiles(dir: string): string[] {
@@ -21,7 +22,7 @@ function sourceFiles(dir: string): string[] {
   });
 }
 
-describe('inventory valuation i18n', () => {
+describe.skipIf(!hasSeededDictionaries)('inventory valuation i18n', () => {
   const dictionaries = Object.fromEntries(LANGS.map((l) => [l, load(l)]));
   const ownKeys = (lang: string) =>
     Object.keys(dictionaries[lang])
