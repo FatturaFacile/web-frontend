@@ -1,6 +1,6 @@
 import { Component, computed, inject } from '@angular/core';
 import { ExtraRecord, I18nService, PermissionsService, WebhookDeliveryParams, WebhookEndpointRequest, WebhooksApiService } from '@core';
-import { NzModalService } from 'ng-zorro-antd/modal';
+import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { tap } from 'rxjs';
 import { HubPageComponent } from '../../../resource-hub/hub-page.component';
 import { f, HubTab, rows } from '../../../resource-hub/hub.types';
@@ -15,7 +15,7 @@ const STATUSES = {
 /** Outbound webhooks: endpoints (create, enable, test, rotate the secret), event catalog and delivery log with redelivery. */
 @Component({
   selector: 'app-webhooks',
-  imports: [HubPageComponent],
+  imports: [HubPageComponent, NzModalModule],
   template: `<app-hub-page
     title="WEBHOOKS.TITLE"
     subtitle="WEBHOOKS.SUBTITLE"

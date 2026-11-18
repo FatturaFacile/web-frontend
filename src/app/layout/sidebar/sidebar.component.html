@@ -87,7 +87,7 @@
           [nzTooltipPlacement]="'right'"
         >
           <ng-template #submenuTitle>
-            <div class="submenu-title-wrapper" [title]="item.key | translate">
+            <div class="submenu-title-wrapper" [title]="item.key | translate" [attr.data-group-key]="item.key">
               <i [class]="item.icon + ' sidebar-icon'"></i>
               <span class="menu-title-text">{{ item.key | translate }}</span>
             </div>

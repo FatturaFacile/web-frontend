@@ -49,12 +49,13 @@
                 [contactId]="contact()?.id ?? null"
               />
             }
-            @if ((f.key === 'vat_number' || f.key === 'uid_number') && canLookupFiscal()) {
+            @if (f.key === 'vat_number' || f.key === 'uid_number') {
               <button
                 nz-button
                 nzType="default"
                 nzSize="small"
                 type="button"
+                [disabled]="!canLookupFiscal()"
                 [nzLoading]="lookingUpFiscal()"
                 (click)="lookupFiscal()"
               >

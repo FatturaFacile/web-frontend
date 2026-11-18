@@ -159,6 +159,7 @@ function getInitialTenants(user: UserProfile | null): Tenant[] {
         vatNumber: '',
         address: '',
         role: t.role,
+        permissions: t.permissions,
       };
     });
   }
@@ -205,11 +206,9 @@ function getInitialAuthState(): AuthState {
   };
 }
 
-const initialState: AuthState = getInitialAuthState();
-
 export const AuthStore = signalStore(
   { providedIn: 'root' },
-  withState(initialState),
+  withState(() => getInitialAuthState()),
   withComputed(({ tenants, activeTenantId, activeJurisdiction, user }, ui = inject(UiPreferencesService)) => ({
     activeTenant: computed(
       () => tenants().find((t) => t.id === activeTenantId()) ?? tenants()[0]

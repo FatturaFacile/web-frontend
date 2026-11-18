@@ -90,6 +90,7 @@ export const HR_ROUTES: Routes = [
   },
   {
     path: 'recruiting-ats',
+    pathMatch: 'full',
     redirectTo: 'recruiting',
   },
   {
