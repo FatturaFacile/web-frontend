@@ -17,6 +17,8 @@ interface Case {
 }
 
 const gl = `${environment.apiBaseUrl}/general-ledger`;
+const vat = `${environment.apiBaseUrl}/vat/settlements`;
+
 const acc = `${environment.apiBaseUrl}/accounting`;
 
 const CASES: Case[] = [
@@ -50,6 +52,13 @@ const CASES: Case[] = [
   { name: 'postPayrollRun', call: (s) => s.postPayrollRun('r1'), method: 'POST', url: `${gl}/payroll-postings/r1/post`, body: {} },
   { name: 'getVatSettings', call: (s) => s.getVatSettings(), method: 'GET', url: `${gl}/tax-settings` },
   { name: 'updateVatSettings', call: (s) => s.updateVatSettings({ periodicity: 'quarterly' }), method: 'PUT', url: `${gl}/tax-settings`, body: { periodicity: 'quarterly' } },
+  { name: 'previewVatSettlement', call: (s) => s.previewVatSettlement({ period_type: 'quarterly', year: 2026, period: 2 }), method: 'POST', url: `${vat}/preview`, body: { period_type: 'quarterly', year: 2026, period: 2 } },
+  { name: 'lockVatSettlement', call: (s) => s.lockVatSettlement({ period_type: 'monthly', year: 2026, period: 3 }), method: 'POST', url: vat, body: { period_type: 'monthly', year: 2026, period: 3 } },
+  { name: 'getVatSettlements', call: (s) => s.getVatSettlements(), method: 'GET', url: vat },
+  { name: 'getVatSettlementRecord', call: (s) => s.getVatSettlementRecord('v1'), method: 'GET', url: `${vat}/v1` },
+  { name: 'exportVatSettlementXml', call: (s) => s.exportVatSettlementXml('v1'), method: 'GET', url: `${vat}/v1/export-xml`, blob: true },
+  { name: 'exportVatSettlementPdf', call: (s) => s.exportVatSettlementPdf('v1'), method: 'GET', url: `${vat}/v1/export-pdf`, blob: true },
+  { name: 'updateVatSettings (CH/IT fields)', call: (s) => s.updateVatSettings({ regime: 'net_tax_rate', mwst_basis: 'received', sss_rate_1: '6.20', lipe_prorata_percent: '80.00', lipe_advance_amount: '100.00' }), method: 'PUT', url: `${gl}/tax-settings`, body: { regime: 'net_tax_rate', mwst_basis: 'received', sss_rate_1: '6.20', lipe_prorata_percent: '80.00', lipe_advance_amount: '100.00' } },
   { name: 'downloadLipe', call: (s) => s.downloadLipe('t1'), method: 'GET', url: `${gl}/tax-settlements/t1/lipe`, blob: true },
   { name: 'getVatSettlementF24', call: (s) => s.getVatSettlementF24('t1'), method: 'GET', url: `${gl}/tax-settlements/t1/f24` },
   { name: 'downloadMwstStatement', call: (s) => s.downloadMwstStatement('t1'), method: 'GET', url: `${gl}/tax-settlements/t1/statement`, blob: true },
