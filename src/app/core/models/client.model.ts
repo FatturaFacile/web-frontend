@@ -28,6 +28,8 @@ export interface ContactResource {
   vat_number: string | null;
   fiscal_code: string | null;
   uid_number: string | null;
+  eori_number?: string | null;
+  default_incoterm?: string | null;
   sdi_code: string | null;
   pec: string | null;
   iban: string | null;

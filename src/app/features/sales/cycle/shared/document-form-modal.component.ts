@@ -1,12 +1,13 @@
-import { Component, DestroyRef, effect, inject, input, model, output, signal } from '@angular/core';
-import { FormArray, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, computed, DestroyRef, effect, inject, input, model, output, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { FormArray, FormControl, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzSelectModule } from 'ng-zorro-antd/select';
-import { Observable } from 'rxjs';
+import { Observable, startWith } from 'rxjs';
 import {
   ApiResponse,
   applyServerErrors,
@@ -15,10 +16,12 @@ import {
   CoreOrderPayload,
   CoreQuote,
   CoreQuotePayload,
+  isCrossBorder,
   SalesCycleApiService,
 } from '@core';
 import { ModalActionsDirective, TranslatePipe } from '@shared';
 import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
+import { CrossBorderFieldsComponent } from '../../../customs/cross-border/cross-border-fields.component';
 import { createLineGroup, DocumentLinesEditorComponent, LineGroup, linesToPayload } from './document-lines-editor.component';
 import { SalesLookupsService } from './sales-lookups.service';
 import { inDaysIso, todayIso } from './sales-status';
@@ -38,6 +41,7 @@ export type SalesDocumentKind = 'quote' | 'order';
     NzInputModule,
     NzSelectModule,
     DocumentLinesEditorComponent,
+    CrossBorderFieldsComponent,
     TranslatePipe,
   ],
   template: `
@@ -100,6 +104,13 @@ export type SalesDocumentKind = 'quote' | 'order';
               </nz-form-item>
             </div>
           </div>
+          @if (kind() === 'order') {
+            <app-cross-border-fields
+              [incoterm]="form.controls.incoterm"
+              [place]="form.controls.incoterm_place"
+              [crossBorder]="crossBorder()"
+            />
+          }
           <app-document-lines-editor [lines]="items" />
           <nz-form-item class="notes">
             <nz-form-label nzFor="doc-notes">{{ 'SC.COMMON.NOTES' | translate }}</nz-form-label>
@@ -143,6 +154,14 @@ export class DocumentFormModalComponent {
     currency: ['EUR', [Validators.required, Validators.minLength(3), Validators.maxLength(3)]],
     notes: ['', Validators.maxLength(2000)],
     custom_text: ['', Validators.maxLength(5000)],
+    incoterm: new FormControl<string | null>(null),
+    incoterm_place: new FormControl<string | null>(null, Validators.maxLength(100)),
+  });
+  private readonly formValue = toSignal(this.form.valueChanges.pipe(startWith(this.form.getRawValue())), { initialValue: this.form.getRawValue() });
+  /** The customer country differs from the country of the company. */
+  protected readonly crossBorder = computed(() => {
+    const contact = this.lookups.contacts().find((c) => c.id === this.formValue().contact_id);
+    return isCrossBorder(this.authStore.activeJurisdiction(), contact?.country);
   });
 
   constructor() {
@@ -184,6 +203,8 @@ export class DocumentFormModalComponent {
       currency: doc?.currency ?? this.authStore.activeCurrency(),
       notes: doc?.notes ?? '',
       custom_text: doc && 'custom_text' in doc ? (doc.custom_text ?? '') : '',
+      incoterm: doc && 'incoterm' in doc ? (doc.incoterm ?? null) : null,
+      incoterm_place: doc && 'incoterm_place' in doc ? (doc.incoterm_place ?? null) : null,
     });
     this.items.clear();
     const lines = doc?.items?.length ? doc.items : [undefined];
@@ -211,7 +232,7 @@ export class DocumentFormModalComponent {
     const request: Observable<ApiResponse<CoreQuote | CoreOrder>> =
       this.kind() === 'quote'
         ? this.saveQuote(doc, { ...base, valid_until: value.due || null, custom_text: value.custom_text || null })
-        : this.saveOrder(doc, { ...base, due_date: value.due || null });
+        : this.saveOrder(doc, { ...base, due_date: value.due || null, incoterm: value.incoterm || null, incoterm_place: value.incoterm_place?.trim() || null });
     request.subscribe({
       next: (res) => {
         this.saving.set(false);

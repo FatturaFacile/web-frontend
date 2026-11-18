@@ -15,6 +15,7 @@ import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   AuthStore,
+  CUSTOMS_WORKFLOW_STAGES,
   CustomsApiService,
   CustomsDeclarationResource,
   CustomsDeclarationStatus,
@@ -95,6 +96,14 @@ import {
         @for (row of statusCounts(); track row.key) {
           <div class="count-row">
             <span>{{ 'CUSTOMS_TRADE.STATUS.' + row.key | translate }}</span>
+            <strong>{{ row.count }}</strong>
+          </div>
+        }
+      </nz-card>
+      <nz-card class="summary-card" [nzLoading]="loadingDashboard()" [nzTitle]="'FOREIGN_TRADE.STAGE.TITLE' | translate">
+        @for (row of stageCounts(); track row.key) {
+          <div class="count-row" [attr.data-testid]="'stage-' + row.key">
+            <span>{{ 'FOREIGN_TRADE.STAGE.' + row.key.toUpperCase() | translate }}</span>
             <strong>{{ row.count }}</strong>
           </div>
         }
@@ -318,6 +327,7 @@ export class TradeComplianceComponent implements OnInit {
   readonly directionCounts = computed(() => orderedCounts(this.dashboard()?.by_direction, this.directions));
   readonly regimeCounts = computed(() => orderedCounts(this.dashboard()?.by_regime, this.regimes));
   readonly statusCounts = computed(() => orderedCounts(this.dashboard()?.by_status, this.statuses));
+  readonly stageCounts = computed(() => orderedCounts(this.dashboard()?.by_stage, CUSTOMS_WORKFLOW_STAGES));
   readonly transitOverdue = computed(() => this.dashboard()?.transit_overdue ?? 0);
   readonly missingEvv = computed<CustomsMissingEvvEntry[]>(() => this.dashboard()?.missing_evv ?? []);
 

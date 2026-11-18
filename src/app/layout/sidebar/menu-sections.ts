@@ -604,6 +604,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             module: 'customs',
           },
           {
+            key: 'FOREIGN_TRADE.HUB.TITLE',
+            route: '/customs/foreign-trade',
+            icon: 'fa-solid fa-globe',
+            module: 'customs',
+          },
+          {
             key: 'NAV.CUSTOMS_TRADE_COMPLIANCE',
             route: '/customs/trade-compliance',
             icon: 'fa-solid fa-earth-europe',

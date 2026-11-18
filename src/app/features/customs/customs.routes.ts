@@ -31,6 +31,12 @@ export const CUSTOMS_ROUTES: Routes = [
       import('./codes/free-trade-agreements.component').then((m) => m.FreeTradeAgreementsComponent),
   },
   {
+    path: 'foreign-trade',
+    data: { breadcrumb: 'FOREIGN_TRADE.HUB.TITLE', title: 'FOREIGN_TRADE.HUB.TITLE' },
+    loadComponent: () =>
+      import('./foreign-trade-hub/foreign-trade-hub.component').then((m) => m.ForeignTradeHubComponent),
+  },
+  {
     path: 'trade-compliance',
     data: { breadcrumb: 'NAV.CUSTOMS_TRADE_COMPLIANCE', title: 'NAV.CUSTOMS_TRADE_COMPLIANCE' },
     loadComponent: () =>

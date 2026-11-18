@@ -1,5 +1,5 @@
 import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
@@ -18,12 +18,14 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { Subject, debounceTime, merge, switchMap } from 'rxjs';
 import {
   applyServerErrors,
+  AuthStore,
   CARRIAGE_TERMS,
   DELIVERY_NOTE_TYPES,
   DeliveryNotePayload,
   DeliveryNoteType,
   I18nService,
   INCOTERMS,
+  isCrossBorder,
   LogisticsApiService,
   LookupPartner,
   LookupProduct,
@@ -76,6 +78,7 @@ const DEFAULT_REASON: Record<DeliveryNoteType, TransportReason> = {
 export class DeliveryNoteEditorComponent implements OnInit {
   private readonly fb = inject(FormBuilder).nonNullable;
   private readonly api = inject(LogisticsApiService);
+  private readonly authStore = inject(AuthStore);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly message = inject(NzMessageService);
@@ -155,6 +158,14 @@ export class DeliveryNoteEditorComponent implements OnInit {
     TRANSPORT_BY.map((value) => ({ value, label: this.i18n.translate(transportByKey(value)) })),
   );
   protected readonly incotermOptions = INCOTERMS.map((value) => ({ value, label: value }));
+  private readonly selectedContact = toSignal(this.header.controls.contact_id.valueChanges, {
+    initialValue: this.header.controls.contact_id.value,
+  });
+  /** The counterparty is in another country than the company: Incoterm and customs data are mandatory. */
+  protected readonly crossBorder = computed(() => {
+    const partner = this.partners().find((p) => p.id === this.selectedContact());
+    return isCrossBorder(this.authStore.activeJurisdiction(), partner?.country);
+  });
   protected readonly partnerOptions = computed(() =>
     this.partners().map((p) => ({
       value: p.id,
