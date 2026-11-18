@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -39,7 +38,6 @@ import { RecurringContractFormDrawerComponent } from './recurring-contract-form-
   selector: 'app-recurring-contracts-list',
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     NzTableModule,
     NzTagModule,
@@ -93,7 +91,9 @@ import { RecurringContractFormDrawerComponent } from './recurring-contract-form-
               [nzTitle]="'RC.LIST.KPI_MRR' | translate"
               [nzPrefix]="mrrIcon"
             ></nz-statistic>
-            <ng-template #mrrIcon><i class="fa-solid fa-sack-dollar text-primary me-2"></i></ng-template>
+            <ng-template #mrrIcon
+              ><i class="fa-solid fa-sack-dollar text-primary me-2"></i
+            ></ng-template>
           </nz-card>
         </div>
         <div nz-col [nzSpan]="5">
@@ -113,7 +113,9 @@ import { RecurringContractFormDrawerComponent } from './recurring-contract-form-
               [nzTitle]="'RC.LIST.KPI_ACTIVE' | translate"
               [nzPrefix]="activeIcon"
             ></nz-statistic>
-            <ng-template #activeIcon><i class="fa-solid fa-circle-check text-info me-2"></i></ng-template>
+            <ng-template #activeIcon
+              ><i class="fa-solid fa-circle-check text-info me-2"></i
+            ></ng-template>
           </nz-card>
         </div>
         <div nz-col [nzSpan]="5">
@@ -134,7 +136,9 @@ import { RecurringContractFormDrawerComponent } from './recurring-contract-form-
               [nzTitle]="'RC.LIST.KPI_EXPIRING' | translate"
               [nzPrefix]="expiringIcon"
             ></nz-statistic>
-            <ng-template #expiringIcon><i class="fa-solid fa-calendar-xmark text-danger me-2"></i></ng-template>
+            <ng-template #expiringIcon
+              ><i class="fa-solid fa-calendar-xmark text-danger me-2"></i
+            ></ng-template>
           </nz-card>
         </div>
       </div>
@@ -315,9 +319,7 @@ import { RecurringContractFormDrawerComponent } from './recurring-contract-form-
         (runCompleted)="loadData()"
       ></app-recurring-billing-batch-drawer>
 
-      <app-price-index-registry-drawer
-        #indicesDrawer
-      ></app-price-index-registry-drawer>
+      <app-price-index-registry-drawer #indicesDrawer></app-price-index-registry-drawer>
     </div>
   `,
   styles: [

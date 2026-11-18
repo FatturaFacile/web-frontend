@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -8,13 +7,7 @@ import {
   Output,
   signal,
 } from '@angular/core';
-import {
-  FormArray,
-  FormBuilder,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
@@ -41,7 +34,6 @@ import { RecurringContract } from '@core/models/recurring-contracts.model';
   selector: 'app-recurring-contract-form-drawer',
   standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     NzDrawerModule,
     NzFormModule,
@@ -331,7 +323,12 @@ import { RecurringContract } from '@core/models/recurring-contracts.model';
                       <nz-form-item>
                         <nz-form-label>{{ 'RC.FORM.BASE_VALUE_LABEL' | translate }}</nz-form-label>
                         <nz-form-control>
-                          <input nz-input type="number" step="0.0001" formControlName="base_index_value" />
+                          <input
+                            nz-input
+                            type="number"
+                            step="0.0001"
+                            formControlName="base_index_value"
+                          />
                         </nz-form-control>
                       </nz-form-item>
                     </div>
@@ -342,7 +339,12 @@ import { RecurringContract } from '@core/models/recurring-contracts.model';
                       <nz-form-item>
                         <nz-form-label>{{ 'RC.FORM.PASS_THROUGH_LABEL' | translate }}</nz-form-label>
                         <nz-form-control>
-                          <input nz-input type="number" step="0.01" formControlName="pass_through_percent" />
+                          <input
+                            nz-input
+                            type="number"
+                            step="0.01"
+                            formControlName="pass_through_percent"
+                          />
                         </nz-form-control>
                       </nz-form-item>
                     </div>
@@ -366,7 +368,11 @@ import { RecurringContract } from '@core/models/recurring-contracts.model';
                       <nz-form-item>
                         <nz-form-label>{{ 'RC.FORM.ADJ_FREQ_LABEL' | translate }}</nz-form-label>
                         <nz-form-control>
-                          <input nz-input type="number" formControlName="adjustment_frequency_months" />
+                          <input
+                            nz-input
+                            type="number"
+                            formControlName="adjustment_frequency_months"
+                          />
                         </nz-form-control>
                       </nz-form-item>
                     </div>
