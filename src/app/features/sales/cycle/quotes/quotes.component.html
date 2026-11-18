@@ -84,6 +84,11 @@
       </nz-descriptions>
       <app-document-lines-view [lines]="q.items ?? []" [currency]="q.currency" />
 
+      <div class="actions">
+        <a nz-button type="button" data-test="open-cpq" [routerLink]="['/sales/cycle/quotes', q.id, 'cpq']">
+          <nz-icon nzType="calculator" /> {{ 'CPQ.BUILDER.TITLE' | translate }}
+        </a>
+      </div>
       @if (canWrite() && isOpen(q)) {
         <div class="actions">
           @if (q.status === 'draft') {

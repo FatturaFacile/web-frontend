@@ -35,6 +35,7 @@ import { DocumentFormModalComponent } from '../shared/document-form-modal.compon
 import { DocumentLinesViewComponent } from '../shared/document-lines-view.component';
 import { SalesLookupsService } from '../shared/sales-lookups.service';
 import { apiErrorText } from '../shared/sales-api-helpers';
+import { RouterLink } from '@angular/router';
 import { statusColor, statusKey } from '../shared/sales-status';
 import { SignaturePadComponent } from '../shared/signature-pad.component';
 
@@ -58,6 +59,7 @@ const OPEN_STATUSES = ['draft', 'sent', 'accepted'];
     NzPopconfirmModule,
     NzSelectModule,
     NzTagModule,
+    RouterLink,
     BaseTableComponent,
     MoneyPipe,
     PageHeaderComponent,

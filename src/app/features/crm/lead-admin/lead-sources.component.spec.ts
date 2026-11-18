@@ -96,7 +96,7 @@ describe('lead source secrets', () => {
     expect(cmp.secrets()).toBeNull();
 
     // Never persisted nor logged.
-    const persisted = setItem.mock.calls.map((c) => String(c[1])).join(' ');
+    const persisted = setItem.mock.calls.map((c: unknown[]) => String(c[1])).join(' ');
     expect(persisted).not.toContain('whsec_supersecret');
     expect(consoleLog).not.toHaveBeenCalledWith(expect.stringContaining('whsec_supersecret'));
   });
