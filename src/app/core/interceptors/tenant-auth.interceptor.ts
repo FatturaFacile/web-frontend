@@ -35,7 +35,7 @@ export const tenantAuthInterceptor: HttpInterceptorFn = (req, next) => {
   const injector = inject(Injector);
   // Public careers portal endpoints are anonymous and slug-scoped: never leak the
   // session token or a stale tenant id of a logged-in visitor to them.
-  const isPublicPortal = req.url.includes('/public/careers/');
+  const isPublicPortal = req.url.includes('/public/careers/') || req.url.includes('/portal/');
 
   const headersToSet: Record<string, string> = {
     'Accept': 'application/json',
