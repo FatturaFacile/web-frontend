@@ -90,8 +90,7 @@ export const HR_ROUTES: Routes = [
   },
   {
     path: 'recruiting-ats',
-    data: { breadcrumb: 'hrmAts.title', title: 'hrmAts.title' },
-    loadComponent: () => import('./recruiting-ats/recruiting-ats.component').then((m) => m.RecruitingAtsComponent),
+    redirectTo: 'recruiting',
   },
   {
     path: 'shifts',

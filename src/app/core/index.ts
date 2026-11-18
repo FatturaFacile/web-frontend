@@ -1,4 +1,5 @@
 export * from './auth/auth.guard';
+export * from './auth/feature-flag.guard';
 export * from './auth/permissions';
 export * from './auth/permissions.service';
 export * from './auth/customs-permissions';
