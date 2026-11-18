@@ -22,7 +22,6 @@ import { PriceIndexRate } from '@core/models/recurring-contracts.model';
   selector: 'app-price-index-registry-drawer',
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     NzDrawerModule,
     NzTableModule,

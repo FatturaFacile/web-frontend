@@ -1,5 +1,11 @@
-import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, EventEmitter, inject, Output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  inject,
+  Output,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -21,7 +27,6 @@ import { BillingPreviewItem } from '@core/models/recurring-contracts.model';
   selector: 'app-recurring-billing-batch-drawer',
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     NzDrawerModule,
     NzTableModule,
@@ -48,12 +53,7 @@ import { BillingPreviewItem } from '@core/models/recurring-contracts.model';
             <nz-form-item>
               <nz-form-label>{{ 'RC.BATCH.CUTOFF_DATE' | translate }}</nz-form-label>
               <nz-form-control>
-                <input
-                  nz-input
-                  type="date"
-                  [(ngModel)]="cutoffDate"
-                  name="cutoffDate"
-                />
+                <input nz-input type="date" [(ngModel)]="cutoffDate" name="cutoffDate" />
               </nz-form-control>
             </nz-form-item>
             <nz-form-item>
@@ -228,12 +228,16 @@ export class RecurringBillingBatchDrawerComponent {
 
   isAllSelected(): boolean {
     const unbilled = this.previewItems().filter((i) => !i.is_already_billed);
-    return unbilled.length > 0 && unbilled.every((i) => this.selectedContractIds.has(i.contract_id));
+    return (
+      unbilled.length > 0 && unbilled.every((i) => this.selectedContractIds.has(i.contract_id))
+    );
   }
 
   isIndeterminate(): boolean {
     const unbilled = this.previewItems().filter((i) => !i.is_already_billed);
-    const selectedCount = unbilled.filter((i) => this.selectedContractIds.has(i.contract_id)).length;
+    const selectedCount = unbilled.filter((i) =>
+      this.selectedContractIds.has(i.contract_id),
+    ).length;
     return selectedCount > 0 && selectedCount < unbilled.length;
   }
 
