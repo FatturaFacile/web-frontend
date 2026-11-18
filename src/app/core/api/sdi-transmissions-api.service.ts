@@ -33,6 +33,35 @@ export interface SdiPassiveImportResult {
   invoices?: { duplicate: boolean; invoice: Record<string, unknown> }[];
 }
 
+/** One outbound exchange with the SDI provider (`GET /sdi/invoices/{id}/notifications`, `outbound`). */
+export interface SdiOutboundLog {
+  id: string;
+  provider: string | null;
+  action: string | null;
+  status: string | null;
+  sdi_uuid: string | null;
+  file_name: string | null;
+  error: string | null;
+  created_at: string;
+}
+
+/** One SDI notification received for the invoice (`inbound`). */
+export interface SdiInboundLog {
+  id: string;
+  provider: string | null;
+  event_type: string | null;
+  status: string | null;
+  sdi_uuid: string | null;
+  error: string | null;
+  processed_at: string | null;
+  created_at: string;
+}
+
+export interface SdiNotificationLogs {
+  outbound: SdiOutboundLog[];
+  inbound: SdiInboundLog[];
+}
+
 export interface SdiTransmissionQuery {
   status?: SdiTransmissionStatus;
   search?: string;
@@ -54,6 +83,11 @@ export class SdiTransmissionsApiService {
   /** The FatturaPA of an invoice as sandboxed read-only HTML, to be shown through an object URL in an iframe. */
   previewHtml(invoiceId: string): Observable<Blob> {
     return this.http.get(`${environment.apiBaseUrl}/sdi/invoices/${invoiceId}/preview-html`, { responseType: 'blob' });
+  }
+
+  /** The status history of an invoice: what was sent to SDI and the notifications received back. */
+  notifications(invoiceId: string): Observable<ApiResponse<SdiNotificationLogs>> {
+    return this.http.get<ApiResponse<SdiNotificationLogs>>(`${environment.apiBaseUrl}/sdi/invoices/${invoiceId}/notifications`);
   }
 
   /** Reads a supplier FatturaPA (.xml or CAdES .xml.p7m); with `previewOnly` nothing is saved. */
