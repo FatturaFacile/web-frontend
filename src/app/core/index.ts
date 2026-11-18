@@ -93,6 +93,7 @@ export * from './api/appointment-api.service';
 export * from './api/communication-api.service';
 export * from './api/visitors-api.service';
 export * from './api/configurator-api.service';
+export * from './api/cpq-api.service';
 export * from './api/facility-api.service';
 export * from './api/governance-api.service';
 export * from './api/lease-accounting-api.service';

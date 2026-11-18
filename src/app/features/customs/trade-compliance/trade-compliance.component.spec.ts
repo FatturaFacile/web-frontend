@@ -241,7 +241,7 @@ describe('ImportBillsPanelComponent', () => {
     component.form.patchValue({
       bill_number: 'B-2',
       bill_date: '2026-11-17',
-      currency: 'chf',
+      currency: 'CHF',
       customs_value: 1000,
       duty_amount: 50,
       vat_rate: 8.1,

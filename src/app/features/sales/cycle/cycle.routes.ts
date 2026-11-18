@@ -14,6 +14,11 @@ export const CYCLE_ROUTES: Routes = [
     loadComponent: () => import('./quotes/quotes.component').then((m) => m.CycleQuotesComponent),
   },
   {
+    path: 'quotes/:id/cpq',
+    data: { breadcrumb: 'CPQ.BUILDER.TITLE', title: 'CPQ.BUILDER.TITLE' },
+    loadComponent: () => import('../cpq/quote-cpq-page.component').then((m) => m.QuoteCpqPageComponent),
+  },
+  {
     path: 'orders',
     data: { breadcrumb: 'BREADCRUMB.ORDINI_CLIENTE', title: 'PAGE_TITLE.ORDINI_CLIENTE' },
     loadComponent: () => import('./orders/orders.component').then((m) => m.CycleOrdersComponent),

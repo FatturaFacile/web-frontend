@@ -224,6 +224,12 @@ export const routes: Routes = [
       import('./features/contract-signing/contract-signing.component').then((m) => m.ContractSigningComponent),
   },
   {
+    path: 'quote-signature/:token',
+    data: { title: 'CPQ.SIGN.TITLE' },
+    loadComponent: () =>
+      import('./features/quote-signature/quote-signature.component').then((m) => m.QuoteSignatureComponent),
+  },
+  {
     path: 'portal',
     data: { breadcrumb: 'NAV.PORTAL', title: 'PAGE_TITLE.AREA_CLIENTI_PORTALE_B2B' },
     loadChildren: () =>

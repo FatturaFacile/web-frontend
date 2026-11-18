@@ -47,9 +47,22 @@ export interface LeadResource {
   status: string;
   score: number;
   rating: string;
-  score_breakdown: string | CrmLeadScoreBreakdownItem[];
+  rating_label?: string | null;
+  score_breakdown: string | CrmLeadScoreBreakdownItem[] | Record<string, number>;
   score_model: string | null;
   score_calculated_at: string | null;
+  assigned_user_id?: string | null;
+  assigned_at?: string | null;
+  duplicate_of_id?: string | null;
+  vat_number?: string | null;
+  industry?: string | null;
+  region?: string | null;
+  product_line?: string | null;
+  company_size?: string | null;
+  estimated_revenue?: string | null;
+  email_opens?: number;
+  catalog_downloads?: number;
+  site_visits?: number;
   estimated_budget: string | null;
   lead_source: {
     id: string;
