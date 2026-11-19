@@ -743,6 +743,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         module: 'document_trust',
       },
       {
+        key: 'PRESERVATION.NAV',
+        icon: 'fa-solid fa-vault',
+        route: '/digital-preservation',
+        module: 'digital_preservation',
+      },
+      {
         key: 'NAV.ECOMMERCE_INTEGRATIONS',
         icon: 'fa-solid fa-cart-shopping',
         route: '/ecommerce-integrations',

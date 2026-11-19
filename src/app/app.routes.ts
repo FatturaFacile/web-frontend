@@ -250,6 +250,15 @@ export const routes: Routes = [
       import('./features/document-trust/document-trust.routes').then((m) => m.DOCUMENT_TRUST_ROUTES),
   },
   {
+    path: 'digital-preservation',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'PRESERVATION.TITLE', title: 'PRESERVATION.TITLE' },
+    loadChildren: () =>
+      import('./features/digital-preservation/digital-preservation.routes').then(
+        (m) => m.DIGITAL_PRESERVATION_ROUTES,
+      ),
+  },
+  {
     path: 'ecommerce-integrations',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.ECOMMERCE_INTEGRATIONS', title: 'PAGE_TITLE.E_COMMERCE_INTEGRAZIONI_API' },
