@@ -77,6 +77,7 @@ export * from './loyalty.model';
 export * from './workspace.model';
 export * from './analytics.model';
 export * from './analytics-designer.model';
+export * from './analytics-studio.model';
 export * from './enterprise-auth.model';
 export * from './resource.model';
 export * from './hr-self-service.model';
