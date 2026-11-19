@@ -103,10 +103,16 @@ describe('SubscriptionsComponent', () => {
     ),
     createContract: vi.fn().mockReturnValue(of({ success: true, data: mockContracts[0] })),
     activateContract: vi.fn().mockReturnValue(of({ success: true, data: mockContracts[0] })),
-    pauseContract: vi.fn().mockReturnValue(of({ success: true, data: { ...mockContracts[0], status: 'paused' } })),
-    reactivateContract: vi.fn().mockReturnValue(of({ success: true, data: { ...mockContracts[0], status: 'active' } })),
+    pauseContract: vi
+      .fn()
+      .mockReturnValue(of({ success: true, data: { ...mockContracts[0], status: 'paused' } })),
+    reactivateContract: vi
+      .fn()
+      .mockReturnValue(of({ success: true, data: { ...mockContracts[0], status: 'active' } })),
     billContract: vi.fn().mockReturnValue(of({ success: true, data: null })),
-    cancelContract: vi.fn().mockReturnValue(of({ success: true, data: { ...mockContracts[0], status: 'cancelled' } })),
+    cancelContract: vi
+      .fn()
+      .mockReturnValue(of({ success: true, data: { ...mockContracts[0], status: 'cancelled' } })),
     runDunning: vi.fn().mockReturnValue(of({ success: true, data: null })),
   };
 
@@ -115,7 +121,6 @@ describe('SubscriptionsComponent', () => {
     info: vi.fn(),
     error: vi.fn(),
   };
-
 
   const mockAuthStore = {
     activeCurrency: vi.fn().mockReturnValue('CHF'),
@@ -158,11 +163,14 @@ describe('SubscriptionsComponent', () => {
     await settle();
     const event = { target: { value: 'Alpha' } } as unknown as Event;
     component.onSearch(event);
-    await new Promise((resolve) => setTimeout(resolve, 400));
-
-    expect(component['grid'].filterParams().search).toBe('Alpha');
-    expect(mockSubApi.getContracts).toHaveBeenCalledWith(
-      expect.objectContaining({ search: 'Alpha', page: 1 }),
+    await vi.waitFor(
+      () => {
+        expect(component['grid'].filterParams().search).toBe('Alpha');
+        expect(mockSubApi.getContracts).toHaveBeenCalledWith(
+          expect.objectContaining({ search: 'Alpha', page: 1 }),
+        );
+      },
+      { timeout: 5000 },
     );
   });
 
@@ -188,7 +196,9 @@ describe('SubscriptionsComponent', () => {
         quantity: 3,
       }),
     );
-    expect(mockMessage.success).toHaveBeenCalledWith('subscriptions.msgSubscriptionContractCreated');
+    expect(mockMessage.success).toHaveBeenCalledWith(
+      'subscriptions.msgSubscriptionContractCreated',
+    );
     expect(component.createModalVisible()).toBe(false);
   });
 
@@ -206,7 +216,9 @@ describe('SubscriptionsComponent', () => {
     fixture.detectChanges();
     component.billNow(mockContracts[0]);
     expect(mockSubApi.billContract).toHaveBeenCalledWith('contract-1');
-    expect(mockMessage.success).toHaveBeenCalledWith('subscriptions.msgInvoiceGeneratedForCurrentBillingPeriod');
+    expect(mockMessage.success).toHaveBeenCalledWith(
+      'subscriptions.msgInvoiceGeneratedForCurrentBillingPeriod',
+    );
 
     component.pause(mockContracts[0]);
     expect(mockSubApi.pauseContract).toHaveBeenCalledWith('contract-1', expect.anything());
@@ -220,7 +232,9 @@ describe('SubscriptionsComponent', () => {
     component.triggerDunning();
 
     expect(mockSubApi.runDunning).toHaveBeenCalled();
-    expect(mockMessage.success).toHaveBeenCalledWith('subscriptions.msgAutomatedDunningRunExecuted');
+    expect(mockMessage.success).toHaveBeenCalledWith(
+      'subscriptions.msgAutomatedDunningRunExecuted',
+    );
     expect(component.runningDunning()).toBe(false);
   });
 });
