@@ -142,6 +142,7 @@ export * from './api/project-control-api.service';
 export * from './api/general-ledger-fiscal-api.service';
 export * from './api/general-ledger-consolidation-api.service';
 export * from './api/privacy-api.service';
+export * from './api/privacy-governance-api.service';
 export * from './api/supplier-portal-api.service';
 export * from './api/supplier-self-service-api.service';
 export * from './api/public-careers-api.service';
