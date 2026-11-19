@@ -1,6 +1,11 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormsModule,
+  NonNullableFormBuilder,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { Clipboard } from '@angular/cdk/clipboard';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -26,8 +31,8 @@ import {
   LeadSourceType,
   serverErrorMessage,
 } from '@core';
-import { PageHeaderComponent } from '@shared';
-import { apiErrorMessage, httpStatus, humanize, translateOr, TranslateOrPipe } from '../leads/lead-i18n';
+import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { apiErrorMessage, httpStatus } from '../leads/lead-i18n';
 import { LeadSecretModalComponent } from './lead-secret-modal.component';
 
 /** One-shot credentials carried by a create / rotate-secret response, if any. */
@@ -68,7 +73,7 @@ export function stripSecrets(source: LeadSource): LeadSource {
     NzTableModule,
     NzTagModule,
     PageHeaderComponent,
-    TranslateOrPipe,
+    TranslatePipe,
     LeadSecretModalComponent,
   ],
   templateUrl: './lead-sources.component.html',
@@ -130,12 +135,12 @@ export class LeadSourcesComponent {
   }
 
   protected typeLabel(type: string): string {
-    return translateOr(this.i18n, `CRM.LEAD_SOURCES.TYPES.${type.toUpperCase()}`, humanize(type));
+    return this.i18n.translate(`CRM.LEAD_SOURCES.TYPES.${type.toUpperCase()}`);
   }
 
   protected copy(value: string | null | undefined): void {
     if (value && this.clipboard.copy(value)) {
-      this.message.success(translateOr(this.i18n, 'COMMON.COPIED', 'Copied to clipboard'));
+      this.message.success(this.i18n.translate('COMMON.COPIED'));
     }
   }
 
@@ -194,7 +199,9 @@ export class LeadSourcesComponent {
       default_product_line: v.default_product_line.trim() || null,
     };
     const editing = this.editing();
-    const call = editing ? this.api.updateSource(editing.id, payload) : this.api.createSource(payload);
+    const call = editing
+      ? this.api.updateSource(editing.id, payload)
+      : this.api.createSource(payload);
     this.saving.set(true);
     this.formError.set(null);
     call.subscribe({
@@ -208,7 +215,7 @@ export class LeadSourcesComponent {
         if (!editing) {
           this.secrets.set(extractSecrets(saved));
         }
-        this.message.success(translateOr(this.i18n, 'CRM.LEAD_SOURCES.SAVED', 'Source saved'));
+        this.message.success(this.i18n.translate('CRM.LEAD_SOURCES.SAVED'));
       },
       error: (err: unknown) => {
         this.saving.set(false);
@@ -243,7 +250,7 @@ export class LeadSourcesComponent {
       next: () => {
         this.busyId.set(null);
         this.sources.update((list) => list.filter((x) => x.id !== s.id));
-        this.message.success(translateOr(this.i18n, 'CRM.LEAD_SOURCES.DELETED', 'Source deleted'));
+        this.message.success(this.i18n.translate('CRM.LEAD_SOURCES.DELETED'));
       },
       error: () => this.busyId.set(null),
     });

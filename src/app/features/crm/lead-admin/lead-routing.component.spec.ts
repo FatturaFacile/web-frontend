@@ -31,7 +31,10 @@ describe('moveRule', () => {
 });
 
 describe('LeadRoutingComponent reorder', () => {
-  let api: { listRoutingRules: ReturnType<typeof vi.fn>; reorderRoutingRules: ReturnType<typeof vi.fn> };
+  let api: {
+    listRoutingRules: ReturnType<typeof vi.fn>;
+    reorderRoutingRules: ReturnType<typeof vi.fn>;
+  };
   let reorder$: Subject<unknown>;
 
   beforeEach(() => {
@@ -81,15 +84,19 @@ describe('LeadRoutingComponent reorder', () => {
   it('restores the previous order and shows a message when saving fails', () => {
     const fixture = create();
     const cmp = fixture.componentInstance;
-    cmp.onDrop({ previousIndex: 0, currentIndex: 2 } as Parameters<LeadRoutingComponent['onDrop']>[0]);
+    cmp.onDrop({ previousIndex: 0, currentIndex: 2 } as Parameters<
+      LeadRoutingComponent['onDrop']
+    >[0]);
     expect(cmp.rules().map((r) => r.id)).toEqual(['b', 'c', 'a']);
 
     reorder$.error(httpError(500, {}));
     fixture.detectChanges();
 
     expect(cmp.rules().map((r) => r.id)).toEqual(['a', 'b', 'c']);
-    expect(cmp.reorderError()).toBe('The new order could not be saved; it was restored.');
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('it was restored');
+    expect(cmp.reorderError()).toBe('CRM.LEAD_ROUTING.REORDER_FAILED');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain(
+      'CRM.LEAD_ROUTING.REORDER_FAILED',
+    );
   });
 
   it('ignores no-op moves and moves while a reorder is in flight', () => {

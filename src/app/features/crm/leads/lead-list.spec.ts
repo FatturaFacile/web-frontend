@@ -25,9 +25,17 @@ describe('lead filters <-> query params', () => {
         assigned_user_id: 'u1',
         source: 's1',
       }),
-    ).toEqual({ rating: 'hot', min_score: 60, sort: '-score', assigned_user_id: 'u1', source: 's1' });
+    ).toEqual({
+      rating: 'hot',
+      min_score: 60,
+      sort: '-score',
+      assigned_user_id: 'u1',
+      source: 's1',
+    });
 
-    expect(leadFiltersFromQueryParams({ rating: 'boiling', min_score: 'abc', sort: 'name' })).toEqual({});
+    expect(
+      leadFiltersFromQueryParams({ rating: 'boiling', min_score: 'abc', sort: 'name' }),
+    ).toEqual({});
     expect(leadFiltersFromQueryParams({ min_score: '250' })).toEqual({ min_score: 100 });
   });
 
@@ -57,7 +65,9 @@ describe('LeadFacade', () => {
 
   beforeEach(() => {
     vi.useFakeTimers();
-    api = { listLeads: vi.fn().mockReturnValue(of(page([{ id: 'l1', score: 80, rating: 'hot' }], 1))) };
+    api = {
+      listLeads: vi.fn().mockReturnValue(of(page([{ id: 'l1', score: 80, rating: 'hot' }], 1))),
+    };
     TestBed.configureTestingModule({
       providers: [LeadFacade, { provide: LeadApiService, useValue: api }],
     });

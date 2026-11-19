@@ -2,7 +2,13 @@ import { TestBed } from '@angular/core/testing';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { of, Subject, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ClientApiService, Lead, LeadApiService, LeadConvertResult, SettingsApiService } from '@core';
+import {
+  ClientApiService,
+  Lead,
+  LeadApiService,
+  LeadConvertResult,
+  SettingsApiService,
+} from '@core';
 import { LeadConvertWizardComponent } from './lead-convert-wizard.component';
 import { httpError, i18nStub, messageStub } from './lead-test.utils';
 
@@ -35,7 +41,10 @@ describe('LeadConvertWizardComponent', () => {
     contactsApi = {
       list: vi.fn().mockImplementation(({ search }: { search: string }) =>
         of({
-          data: search === LEAD.vat_number ? [{ id: 'contact-9', company_name: 'Rossi Impianti', vat_number: search }] : [],
+          data:
+            search === LEAD.vat_number
+              ? [{ id: 'contact-9', company_name: 'Rossi Impianti', vat_number: search }]
+              : [],
           meta: { total: 0 },
         }),
       ),
@@ -63,8 +72,12 @@ describe('LeadConvertWizardComponent', () => {
 
   it('prefills an existing contact matched by VAT and sends existing_contact_id once', () => {
     const cmp = create();
-    expect(contactsApi.list).toHaveBeenCalledWith(expect.objectContaining({ search: 'IT01234567890' }));
-    expect(contactsApi.list).toHaveBeenCalledWith(expect.objectContaining({ search: 'anna@rossi.it' }));
+    expect(contactsApi.list).toHaveBeenCalledWith(
+      expect.objectContaining({ search: 'IT01234567890' }),
+    );
+    expect(contactsApi.list).toHaveBeenCalledWith(
+      expect.objectContaining({ search: 'anna@rossi.it' }),
+    );
     expect(cmp.contactMode()).toBe('existing');
     expect(cmp.contactId()).toBe('contact-9');
 
@@ -115,7 +128,7 @@ describe('LeadConvertWizardComponent', () => {
 
     cmp.submit();
 
-    expect(message.warning).toHaveBeenCalledWith('This lead has already been converted.');
+    expect(message.warning).toHaveBeenCalledWith('CRM.LEADS.CONVERT.ALREADY_CONVERTED');
     expect(cmp.open()).toBe(false);
     expect(changed).toHaveBeenCalledTimes(1);
     expect(cmp.submitting()).toBe(false);
@@ -131,14 +144,19 @@ describe('LeadConvertWizardComponent', () => {
       throwError(() =>
         httpError(422, {
           message: 'The given data was invalid.',
-          errors: { new_account_name: ['The account name is too long.'], foo: ['Unmapped problem.'] },
+          errors: {
+            new_account_name: ['The account name is too long.'],
+            foo: ['Unmapped problem.'],
+          },
         }),
       ),
     );
 
     cmp.submit();
 
-    expect(cmp.form.controls.new_account_name.errors).toEqual({ serverError: 'The account name is too long.' });
+    expect(cmp.form.controls.new_account_name.errors).toEqual({
+      serverError: 'The account name is too long.',
+    });
     expect(cmp.step()).toBe(1);
     expect(cmp.formError()).toBe('Unmapped problem.');
     expect(cmp.open()).toBe(true);

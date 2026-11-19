@@ -1,7 +1,6 @@
 import { Component, computed, inject, input } from '@angular/core';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { I18nService, LeadRating } from '@core';
-import { humanize, translateOr } from './lead-i18n';
 
 const RATING_COLORS: Record<LeadRating, string> = {
   cold: 'blue',
@@ -68,6 +67,6 @@ export class LeadRatingTagComponent {
     if (!r) {
       return '';
     }
-    return translateOr(this.i18n, `CRM.LEADS.RATING.${r.toUpperCase()}`, humanize(r));
+    return this.i18n.translate(`CRM.LEADS.RATING.${r.toUpperCase()}`);
   });
 }

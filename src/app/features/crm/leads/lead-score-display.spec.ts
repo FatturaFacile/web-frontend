@@ -2,9 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { LeadRatingTagComponent } from './lead-rating-tag.component';
 import { LeadScoreBadgeComponent } from './lead-score-badge.component';
-import { humanize, translateOr } from './lead-i18n';
 import { i18nStub } from './lead-test.utils';
-import { I18nService } from '@core';
 
 describe('lead score display', () => {
   beforeEach(() => {
@@ -27,9 +25,9 @@ describe('lead score display', () => {
   }
 
   it.each([
-    ['cold', 'Cold'],
-    ['warm', 'Warm'],
-    ['hot', 'Hot'],
+    ['cold', 'CRM.LEADS.RATING.COLD'],
+    ['warm', 'CRM.LEADS.RATING.WARM'],
+    ['hot', 'CRM.LEADS.RATING.HOT'],
   ])('rating tag %s always renders its text label', (rating, label) => {
     const el = tag(rating);
     const t = el.querySelector('nz-tag') as HTMLElement;
@@ -53,21 +51,13 @@ describe('lead score display', () => {
     expect(badge(140).textContent?.trim()).toBe('100');
     expect(badge(-5).textContent?.trim()).toBe('0');
     const b = badge(72, 'warm');
-    expect(b.getAttribute('aria-label')).toBe('Score 72 out of 100');
+    expect(b.getAttribute('aria-label')).toBe('CRM.LEADS.SCORE_ARIA');
     expect(b.classList.contains('warm')).toBe(true);
   });
 
   it('score badge shows a dash when the lead is not scored', () => {
     const b = badge(null);
     expect(b.textContent?.trim()).toBe('-');
-    expect(b.getAttribute('aria-label')).toBe('Not scored');
-  });
-
-  it('translateOr prefers the dictionary and falls back to readable text', () => {
-    const i18n = TestBed.inject(I18nService);
-    expect(translateOr(i18n, 'MISSING.KEY', 'Fallback {n}', { n: 3 })).toBe('Fallback 3');
-    const known = { translate: () => 'Tradotto' } as unknown as I18nService;
-    expect(translateOr(known, 'KNOWN.KEY', 'Fallback')).toBe('Tradotto');
-    expect(humanize('catalog_downloaded')).toBe('Catalog downloaded');
+    expect(b.getAttribute('aria-label')).toBe('CRM.LEADS.SCORE_NONE');
   });
 });

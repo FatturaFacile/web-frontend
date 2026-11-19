@@ -5,11 +5,13 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { I18nService, Lead, LeadApiService, LeadScorePreview, leadDisplayName } from '@core';
-import { apiErrorMessage, translateOr, TranslateOrPipe } from '../leads/lead-i18n';
+import { apiErrorMessage } from '../leads/lead-i18n';
 import { LeadRatingTagComponent } from '../leads/lead-rating-tag.component';
 import { LeadScoreBadgeComponent } from '../leads/lead-score-badge.component';
 
 /** Server-side score preview for a selected lead with the current rules and thresholds. */
+import { TranslatePipe } from '@shared';
+
 @Component({
   selector: 'app-lead-score-preview',
   imports: [
@@ -18,25 +20,32 @@ import { LeadScoreBadgeComponent } from '../leads/lead-score-badge.component';
     NzButtonModule,
     NzCardModule,
     NzSelectModule,
-    TranslateOrPipe,
+    TranslatePipe,
     LeadRatingTagComponent,
     LeadScoreBadgeComponent,
   ],
   template: `
-    <nz-card [nzTitle]="'CRM.LEAD_SCORING.PREVIEW.TITLE' | translateOr: 'Preview score'">
+    <nz-card [nzTitle]="'CRM.LEAD_SCORING.PREVIEW.TITLE' | translate">
       <div class="row">
         <nz-select
           class="picker"
           nzShowSearch
           nzAllowClear
-          [nzPlaceHolder]="'CRM.LEAD_SCORING.PREVIEW.PICK_LEAD' | translateOr: 'Pick a lead'"
-          [attr.aria-label]="'CRM.LEAD_SCORING.PREVIEW.PICK_LEAD' | translateOr: 'Pick a lead'"
+          [nzPlaceHolder]="'CRM.LEAD_SCORING.PREVIEW.PICK_LEAD' | translate"
+          [attr.aria-label]="'CRM.LEAD_SCORING.PREVIEW.PICK_LEAD' | translate"
           [nzOptions]="leadOptions()"
           [ngModel]="leadId()"
           (ngModelChange)="leadId.set($event)"
         />
-        <button nz-button nzType="primary" type="button" [disabled]="!leadId() || loading()" [nzLoading]="loading()" (click)="run()">
-          {{ 'CRM.LEAD_SCORING.PREVIEW.RUN' | translateOr: 'Preview' }}
+        <button
+          nz-button
+          nzType="primary"
+          type="button"
+          [disabled]="!leadId() || loading()"
+          [nzLoading]="loading()"
+          (click)="run()"
+        >
+          {{ 'CRM.LEAD_SCORING.PREVIEW.RUN' | translate }}
         </button>
       </div>
 
@@ -57,7 +66,7 @@ import { LeadScoreBadgeComponent } from '../leads/lead-score-badge.component';
                 <span [class.neg]="b.points < 0">{{ b.points > 0 ? '+' : '' }}{{ b.points }}</span>
               </li>
             } @empty {
-              <li>{{ 'CRM.LEADS.DETAIL.NO_BREAKDOWN' | translateOr: 'No scoring rule applied' }}</li>
+              <li>{{ 'CRM.LEADS.DETAIL.NO_BREAKDOWN' | translate }}</li>
             }
           </ul>
         </div>
@@ -105,7 +114,10 @@ export class LeadScorePreviewComponent {
   readonly error = signal<string | null>(null);
 
   protected readonly leadOptions = computed(() =>
-    this.leads().map((l) => ({ value: l.id, label: `${leadDisplayName(l)}${l.company_name ? ' - ' + l.company_name : ''}` })),
+    this.leads().map((l) => ({
+      value: l.id,
+      label: `${leadDisplayName(l)}${l.company_name ? ' - ' + l.company_name : ''}`,
+    })),
   );
 
   constructor() {
@@ -130,7 +142,9 @@ export class LeadScorePreviewComponent {
       error: (err: unknown) => {
         this.loading.set(false);
         this.result.set(null);
-        this.error.set(apiErrorMessage(err) ?? translateOr(this.i18n, 'CRM.LEAD_SCORING.PREVIEW.FAILED', 'Preview failed'));
+        this.error.set(
+          apiErrorMessage(err) ?? this.i18n.translate('CRM.LEAD_SCORING.PREVIEW.FAILED'),
+        );
       },
     });
   }

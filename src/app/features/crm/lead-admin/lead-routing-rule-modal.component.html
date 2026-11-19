@@ -1,12 +1,8 @@
 <nz-modal
   [nzVisible]="open()"
-  [nzTitle]="
-    rule()
-      ? ('CRM.LEAD_ROUTING.EDIT' | translateOr: 'Edit routing rule')
-      : ('CRM.LEAD_ROUTING.NEW' | translateOr: 'New routing rule')
-  "
-  [nzOkText]="'COMMON.SAVE' | translateOr: 'Save'"
-  [nzCancelText]="'COMMON.CANCEL' | translateOr: 'Cancel'"
+  [nzTitle]="rule() ? ('CRM.LEAD_ROUTING.EDIT' | translate) : ('CRM.LEAD_ROUTING.NEW' | translate)"
+  [nzOkText]="'COMMON.SAVE' | translate"
+  [nzCancelText]="'COMMON.CANCEL' | translate"
   [nzOkLoading]="saving()"
   [nzWidth]="680"
   (nzOnOk)="save()"
@@ -18,8 +14,10 @@
     }
     <form nz-form nzLayout="vertical" [formGroup]="form" (ngSubmit)="save()">
       <nz-form-item>
-        <nz-form-label nzFor="route_name" nzRequired>{{ 'CRM.LEAD_ROUTING.NAME' | translateOr: 'Name' }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="fieldError('name') ?? ('COMMON.REQUIRED' | translateOr: 'Required')">
+        <nz-form-label nzFor="route_name" nzRequired>{{
+          'CRM.LEAD_ROUTING.NAME' | translate
+        }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldError('name') ?? ('COMMON.REQUIRED' | translate)">
           <input nz-input id="route_name" formControlName="name" />
         </nz-form-control>
       </nz-form-item>
@@ -27,23 +25,28 @@
       <div nz-row [nzGutter]="16">
         <div nz-col [nzXs]="24" [nzMd]="12">
           <nz-form-item>
-            <nz-form-label nzFor="route_strategy">{{ 'CRM.LEAD_ROUTING.STRATEGY' | translateOr: 'Strategy' }}</nz-form-label>
+            <nz-form-label nzFor="route_strategy">{{
+              'CRM.LEAD_ROUTING.STRATEGY' | translate
+            }}</nz-form-label>
             <nz-form-control [nzErrorTip]="fieldError('strategy') ?? ''">
               <nz-select nzId="route_strategy" formControlName="strategy">
-                <nz-option nzValue="round_robin" [nzLabel]="'CRM.LEAD_ROUTING.ROUND_ROBIN' | translateOr: 'Round robin'" />
-                <nz-option nzValue="fixed" [nzLabel]="'CRM.LEAD_ROUTING.FIXED' | translateOr: 'Fixed assignee'" />
+                <nz-option
+                  nzValue="round_robin"
+                  [nzLabel]="'CRM.LEAD_ROUTING.ROUND_ROBIN' | translate"
+                />
+                <nz-option nzValue="fixed" [nzLabel]="'CRM.LEAD_ROUTING.FIXED' | translate" />
               </nz-select>
             </nz-form-control>
           </nz-form-item>
         </div>
         <div nz-col [nzXs]="24" [nzMd]="12">
           <nz-form-item>
-            <nz-form-label nzRequired>{{ 'CRM.LEAD_ROUTING.ASSIGNEES' | translateOr: 'Assignees' }}</nz-form-label>
+            <nz-form-label nzRequired>{{ 'CRM.LEAD_ROUTING.ASSIGNEES' | translate }}</nz-form-label>
             <nz-form-control [nzErrorTip]="fieldError('assignee_user_ids') ?? ''">
               <app-lead-assignee-select
                 [multiple]="true"
-                [label]="'CRM.LEAD_ROUTING.ASSIGNEES' | translateOr: 'Assignees'"
-                [placeholder]="'CRM.LEAD_ROUTING.ASSIGNEES_HINT' | translateOr: 'User ids, comma separated'"
+                [label]="'CRM.LEAD_ROUTING.ASSIGNEES' | translate"
+                [placeholder]="'CRM.LEAD_ROUTING.ASSIGNEES_HINT' | translate"
                 [ids]="assigneeIds()"
                 (idsChange)="assigneeIds.set($event)"
               />
@@ -53,29 +56,43 @@
       </div>
 
       <fieldset class="conditions">
-        <legend>{{ 'CRM.LEAD_ROUTING.CONDITIONS' | translateOr: 'Conditions (all optional)' }}</legend>
+        <legend>{{ 'CRM.LEAD_ROUTING.CONDITIONS' | translate }}</legend>
         <div nz-row [nzGutter]="16">
           <div nz-col [nzXs]="24" [nzMd]="12">
             <nz-form-item>
-              <nz-form-label nzFor="route_countries">{{ 'CRM.LEAD_ROUTING.COUNTRIES' | translateOr: 'Countries (ISO)' }}</nz-form-label>
+              <nz-form-label nzFor="route_countries">{{
+                'CRM.LEAD_ROUTING.COUNTRIES' | translate
+              }}</nz-form-label>
               <nz-form-control [nzErrorTip]="fieldError('conditions.countries') ?? ''">
-                <nz-select nzId="route_countries" nzMode="tags" formControlName="countries" nzPlaceHolder="IT, CH" />
+                <nz-select
+                  nzId="route_countries"
+                  nzMode="tags"
+                  formControlName="countries"
+                  nzPlaceHolder="IT, CH"
+                />
               </nz-form-control>
             </nz-form-item>
           </div>
           <div nz-col [nzXs]="24" [nzMd]="12">
             <nz-form-item>
               <nz-form-label nzFor="route_regions">{{
-                'CRM.LEAD_ROUTING.REGIONS' | translateOr: 'Regions (canton / province codes)'
+                'CRM.LEAD_ROUTING.REGIONS' | translate
               }}</nz-form-label>
               <nz-form-control [nzErrorTip]="fieldError('conditions.regions') ?? ''">
-                <nz-select nzId="route_regions" nzMode="tags" formControlName="regions" nzPlaceHolder="TI, MI" />
+                <nz-select
+                  nzId="route_regions"
+                  nzMode="tags"
+                  formControlName="regions"
+                  nzPlaceHolder="TI, MI"
+                />
               </nz-form-control>
             </nz-form-item>
           </div>
           <div nz-col [nzXs]="24" [nzMd]="12">
             <nz-form-item>
-              <nz-form-label nzFor="route_products">{{ 'CRM.LEAD_ROUTING.PRODUCT_LINES' | translateOr: 'Product lines' }}</nz-form-label>
+              <nz-form-label nzFor="route_products">{{
+                'CRM.LEAD_ROUTING.PRODUCT_LINES' | translate
+              }}</nz-form-label>
               <nz-form-control [nzErrorTip]="fieldError('conditions.product_lines') ?? ''">
                 <nz-select nzId="route_products" nzMode="tags" formControlName="product_lines" />
               </nz-form-control>
@@ -83,11 +100,13 @@
           </div>
           <div nz-col [nzXs]="24" [nzMd]="12">
             <nz-form-item>
-              <nz-form-label nzFor="route_ratings">{{ 'CRM.LEAD_ROUTING.RATINGS' | translateOr: 'Ratings' }}</nz-form-label>
+              <nz-form-label nzFor="route_ratings">{{
+                'CRM.LEAD_ROUTING.RATINGS' | translate
+              }}</nz-form-label>
               <nz-form-control [nzErrorTip]="fieldError('conditions.ratings') ?? ''">
                 <nz-select nzId="route_ratings" nzMode="multiple" formControlName="ratings">
                   @for (r of ratingOptions; track r.value) {
-                    <nz-option [nzValue]="r.value" [nzLabel]="r.key | translateOr: r.fallback" />
+                    <nz-option [nzValue]="r.value" [nzLabel]="r.key | translate" />
                   }
                 </nz-select>
               </nz-form-control>
@@ -95,7 +114,9 @@
           </div>
           <div nz-col [nzXs]="12" [nzMd]="6">
             <nz-form-item>
-              <nz-form-label nzFor="route_emp_min">{{ 'CRM.LEAD_ROUTING.EMPLOYEE_MIN' | translateOr: 'Employees from' }}</nz-form-label>
+              <nz-form-label nzFor="route_emp_min">{{
+                'CRM.LEAD_ROUTING.EMPLOYEE_MIN' | translate
+              }}</nz-form-label>
               <nz-form-control [nzErrorTip]="fieldError('conditions.employee_min') ?? ''">
                 <nz-input-number nzId="route_emp_min" [nzMin]="0" formControlName="employee_min" />
               </nz-form-control>
@@ -103,7 +124,9 @@
           </div>
           <div nz-col [nzXs]="12" [nzMd]="6">
             <nz-form-item>
-              <nz-form-label nzFor="route_emp_max">{{ 'CRM.LEAD_ROUTING.EMPLOYEE_MAX' | translateOr: 'Employees to' }}</nz-form-label>
+              <nz-form-label nzFor="route_emp_max">{{
+                'CRM.LEAD_ROUTING.EMPLOYEE_MAX' | translate
+              }}</nz-form-label>
               <nz-form-control [nzErrorTip]="fieldError('conditions.employee_max') ?? ''">
                 <nz-input-number nzId="route_emp_max" [nzMin]="0" formControlName="employee_max" />
               </nz-form-control>
@@ -115,11 +138,11 @@
       <div class="toolbar">
         <span class="switch">
           <nz-switch nzId="route_is_default" formControlName="is_default" />
-          <label for="route_is_default">{{ 'CRM.LEAD_ROUTING.IS_DEFAULT' | translateOr: 'Default rule (used when nothing matches)' }}</label>
+          <label for="route_is_default">{{ 'CRM.LEAD_ROUTING.IS_DEFAULT' | translate }}</label>
         </span>
         <span class="switch">
           <nz-switch nzId="route_is_active" formControlName="is_active" />
-          <label for="route_is_active">{{ 'COMMON.ACTIVE' | translateOr: 'Active' }}</label>
+          <label for="route_is_active">{{ 'COMMON.ACTIVE' | translate }}</label>
         </span>
       </div>
     </form>

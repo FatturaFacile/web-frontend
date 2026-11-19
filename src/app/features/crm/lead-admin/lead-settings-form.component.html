@@ -1,19 +1,17 @@
-<nz-card [nzTitle]="'CRM.LEAD_SCORING.SETTINGS.TITLE' | translateOr: 'Thresholds and deduplication'" [nzLoading]="loading()">
+<nz-card [nzTitle]="'CRM.LEAD_SCORING.SETTINGS.TITLE' | translate" [nzLoading]="loading()">
   @if (forbidden()) {
-    <nz-alert
-      nzType="info"
-      nzShowIcon
-      [nzMessage]="'CRM.LEADS.FORBIDDEN' | translateOr: 'You do not have permission to manage this section.'"
-    />
+    <nz-alert nzType="info" nzShowIcon [nzMessage]="'CRM.LEADS.FORBIDDEN' | translate" />
   } @else if (loadError()) {
     <nz-alert
       nzType="error"
       nzShowIcon
-      [nzMessage]="'CRM.LEAD_SCORING.SETTINGS.LOAD_ERROR' | translateOr: 'Settings could not be loaded.'"
+      [nzMessage]="'CRM.LEAD_SCORING.SETTINGS.LOAD_ERROR' | translate"
       [nzAction]="retryTpl"
     />
     <ng-template #retryTpl>
-      <button nz-button nzSize="small" type="button" (click)="load()">{{ 'COMMON.RETRY' | translateOr: 'Retry' }}</button>
+      <button nz-button nzSize="small" type="button" (click)="load()">
+        {{ 'COMMON.RETRY' | translate }}
+      </button>
     </ng-template>
   } @else {
     @if (formError()) {
@@ -24,44 +22,65 @@
         class="block"
         nzType="error"
         nzShowIcon
-        [nzMessage]="'CRM.LEAD_SCORING.SETTINGS.THRESHOLD_ORDER' | translateOr: 'The warm threshold must be lower than the hot threshold.'"
+        [nzMessage]="'CRM.LEAD_SCORING.SETTINGS.THRESHOLD_ORDER' | translate"
       />
     }
     <form nz-form nzLayout="vertical" [formGroup]="form" (ngSubmit)="save()">
       <div nz-row [nzGutter]="16">
         <div nz-col [nzXs]="24" [nzMd]="8">
           <nz-form-item>
-            <nz-form-label nzFor="warm_threshold">{{ 'CRM.LEAD_SCORING.SETTINGS.WARM' | translateOr: 'Warm from score' }}</nz-form-label>
+            <nz-form-label nzFor="warm_threshold">{{
+              'CRM.LEAD_SCORING.SETTINGS.WARM' | translate
+            }}</nz-form-label>
             <nz-form-control [nzErrorTip]="fieldError('warm_threshold') ?? '0-100'">
-              <nz-input-number nzId="warm_threshold" [nzMin]="0" [nzMax]="100" formControlName="warm_threshold" />
+              <nz-input-number
+                nzId="warm_threshold"
+                [nzMin]="0"
+                [nzMax]="100"
+                formControlName="warm_threshold"
+              />
             </nz-form-control>
           </nz-form-item>
         </div>
         <div nz-col [nzXs]="24" [nzMd]="8">
           <nz-form-item>
-            <nz-form-label nzFor="hot_threshold">{{ 'CRM.LEAD_SCORING.SETTINGS.HOT' | translateOr: 'Hot from score' }}</nz-form-label>
+            <nz-form-label nzFor="hot_threshold">{{
+              'CRM.LEAD_SCORING.SETTINGS.HOT' | translate
+            }}</nz-form-label>
             <nz-form-control [nzErrorTip]="fieldError('hot_threshold') ?? '0-100'">
-              <nz-input-number nzId="hot_threshold" [nzMin]="0" [nzMax]="100" formControlName="hot_threshold" />
+              <nz-input-number
+                nzId="hot_threshold"
+                [nzMin]="0"
+                [nzMax]="100"
+                formControlName="hot_threshold"
+              />
             </nz-form-control>
           </nz-form-item>
         </div>
         <div nz-col [nzXs]="24" [nzMd]="8">
           <nz-form-item>
             <nz-form-label nzFor="auto_qualify_threshold">{{
-              'CRM.LEAD_SCORING.SETTINGS.AUTO_QUALIFY' | translateOr: 'Auto-qualify from score'
+              'CRM.LEAD_SCORING.SETTINGS.AUTO_QUALIFY' | translate
             }}</nz-form-label>
             <nz-form-control [nzErrorTip]="fieldError('auto_qualify_threshold') ?? '0-100'">
-              <nz-input-number nzId="auto_qualify_threshold" [nzMin]="0" [nzMax]="100" formControlName="auto_qualify_threshold" />
+              <nz-input-number
+                nzId="auto_qualify_threshold"
+                [nzMin]="0"
+                [nzMax]="100"
+                formControlName="auto_qualify_threshold"
+              />
             </nz-form-control>
           </nz-form-item>
         </div>
         <div nz-col [nzXs]="24" [nzMd]="8">
           <nz-form-item>
-            <nz-form-label nzFor="dedup_mode">{{ 'CRM.LEAD_SCORING.SETTINGS.DEDUP_MODE' | translateOr: 'Duplicate handling' }}</nz-form-label>
+            <nz-form-label nzFor="dedup_mode">{{
+              'CRM.LEAD_SCORING.SETTINGS.DEDUP_MODE' | translate
+            }}</nz-form-label>
             <nz-form-control [nzErrorTip]="fieldError('dedup_mode') ?? ''">
               <nz-select nzId="dedup_mode" formControlName="dedup_mode">
                 @for (m of dedupModes; track m.value) {
-                  <nz-option [nzValue]="m.value" [nzLabel]="m.key | translateOr: m.fallback" />
+                  <nz-option [nzValue]="m.value" [nzLabel]="m.key | translate" />
                 }
               </nz-select>
             </nz-form-control>
@@ -70,17 +89,22 @@
         <div nz-col [nzXs]="24" [nzMd]="5">
           <nz-form-item>
             <nz-form-label nzFor="dedup_levenshtein_max">{{
-              'CRM.LEAD_SCORING.SETTINGS.LEVENSHTEIN' | translateOr: 'Max name distance'
+              'CRM.LEAD_SCORING.SETTINGS.LEVENSHTEIN' | translate
             }}</nz-form-label>
             <nz-form-control [nzErrorTip]="fieldError('dedup_levenshtein_max') ?? ''">
-              <nz-input-number nzId="dedup_levenshtein_max" [nzMin]="0" [nzMax]="10" formControlName="dedup_levenshtein_max" />
+              <nz-input-number
+                nzId="dedup_levenshtein_max"
+                [nzMin]="0"
+                [nzMax]="10"
+                formControlName="dedup_levenshtein_max"
+              />
             </nz-form-control>
           </nz-form-item>
         </div>
         <div nz-col [nzXs]="24" [nzMd]="5">
           <nz-form-item>
             <nz-form-label nzFor="dedup_similarity_min">{{
-              'CRM.LEAD_SCORING.SETTINGS.SIMILARITY' | translateOr: 'Min similarity (0-1)'
+              'CRM.LEAD_SCORING.SETTINGS.SIMILARITY' | translate
             }}</nz-form-label>
             <nz-form-control [nzErrorTip]="fieldError('dedup_similarity_min') ?? '0-1'">
               <nz-input-number
@@ -96,16 +120,21 @@
         <div nz-col [nzXs]="24" [nzMd]="6">
           <nz-form-item>
             <nz-form-label nzFor="default_country">{{
-              'CRM.LEAD_SCORING.SETTINGS.DEFAULT_COUNTRY' | translateOr: 'Default country (ISO)'
+              'CRM.LEAD_SCORING.SETTINGS.DEFAULT_COUNTRY' | translate
             }}</nz-form-label>
             <nz-form-control [nzErrorTip]="fieldError('default_country') ?? 'IT, CH, ...'">
-              <input nz-input id="default_country" maxlength="2" formControlName="default_country" />
+              <input
+                nz-input
+                id="default_country"
+                maxlength="2"
+                formControlName="default_country"
+              />
             </nz-form-control>
           </nz-form-item>
         </div>
       </div>
       <button nz-button nzType="primary" type="submit" [nzLoading]="saving()" [disabled]="saving()">
-        {{ 'COMMON.SAVE' | translateOr: 'Save' }}
+        {{ 'COMMON.SAVE' | translate }}
       </button>
     </form>
   }

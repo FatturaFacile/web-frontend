@@ -49,7 +49,10 @@ describe('LeadDetailComponent', () => {
         provideNzIcons(icons),
         provideNzDateFnsAdapter(),
         i18nStub(),
-        { provide: ActivatedRoute, useValue: { paramMap: new BehaviorSubject(convertToParamMap({ id: 'lead-1' })) } },
+        {
+          provide: ActivatedRoute,
+          useValue: { paramMap: new BehaviorSubject(convertToParamMap({ id: 'lead-1' })) },
+        },
         { provide: LeadApiService, useValue: api },
         { provide: ClientApiService, useValue: { list: () => of({ data: [] }) } },
         { provide: SettingsApiService, useValue: { getTenantUsers: () => of({ data: [] }) } },
@@ -66,13 +69,19 @@ describe('LeadDetailComponent', () => {
 
   it('lists every applied rule with its points', () => {
     const fixture = render();
-    const rows = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('table.breakdown tbody tr'));
-    const cells = rows.map((r) => Array.from(r.querySelectorAll('td')).map((td) => td.textContent?.trim()));
+    const rows = Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll('table.breakdown tbody tr'),
+    );
+    const cells = rows.map((r) =>
+      Array.from(r.querySelectorAll('td')).map((td) => td.textContent?.trim()),
+    );
     expect(cells).toEqual([
       ['INDUSTRY_IT', '+25'],
       ['NO_PHONE', '-5'],
     ]);
-    expect((fixture.nativeElement as HTMLElement).querySelector('app-lead-rating-tag')?.textContent).toContain('Cold');
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector('app-lead-rating-tag')?.textContent,
+    ).toContain('CRM.LEADS.RATING.COLD');
   });
 
   it('adding an event posts it and refreshes score and rating', () => {
@@ -81,10 +90,21 @@ describe('LeadDetailComponent', () => {
     api.addEvent.mockReturnValue(of({ id: 'e1' }));
     api.getLead.mockReturnValue(of({ ...BASE, score: 75, rating: 'hot' }));
     api.listEvents.mockReturnValue(
-      of([{ id: 'e1', lead_id: 'lead-1', type: 'catalog_downloaded', occurred_at: '2026-11-10T10:00:00Z' }]),
+      of([
+        {
+          id: 'e1',
+          lead_id: 'lead-1',
+          type: 'catalog_downloaded',
+          occurred_at: '2026-11-10T10:00:00Z',
+        },
+      ]),
     );
 
-    cmp.eventForm.setValue({ type: 'catalog_downloaded', occurred_at: null, metadata: '{"campaign":"spring"}' });
+    cmp.eventForm.setValue({
+      type: 'catalog_downloaded',
+      occurred_at: null,
+      metadata: '{"campaign":"spring"}',
+    });
     cmp.addEvent();
     fixture.detectChanges();
 
@@ -97,7 +117,9 @@ describe('LeadDetailComponent', () => {
     expect(cmp.events()).toHaveLength(1);
     const el = fixture.nativeElement as HTMLElement;
     expect(el.querySelector('app-lead-score-badge')?.textContent?.trim()).toBe('75');
-    expect(el.querySelector('nz-timeline')?.textContent).toContain('Catalog downloaded');
+    expect(el.querySelector('nz-timeline')?.textContent).toContain(
+      'CRM.LEADS.EVENTS.TYPES.CATALOG_DOWNLOADED',
+    );
   });
 
   it('rejects metadata that is not a JSON object without calling the API', () => {
@@ -111,7 +133,7 @@ describe('LeadDetailComponent', () => {
     api.getLead.mockReturnValue(throwError(() => httpError(404)));
     const fixture = render();
     expect(fixture.componentInstance.notFound()).toBe(true);
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Lead not found');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('CRM.LEADS.NOT_FOUND');
   });
 
   it('rescore updates the lead in place', () => {

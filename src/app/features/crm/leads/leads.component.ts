@@ -17,11 +17,16 @@ import {
   LeadSource,
   leadDisplayName,
 } from '@core';
-import { BaseTableComponent, PageHeaderComponent, TableColumnDef, TableQueryParams } from '@shared';
+import {
+  BaseTableComponent,
+  PageHeaderComponent,
+  TableColumnDef,
+  TableQueryParams,
+  TranslatePipe,
+} from '@shared';
 import { LeadAssigneeDirectory } from './lead-assignee-directory';
 import { LeadAssigneeSelectComponent } from './lead-assignee-select.component';
 import { leadFiltersFromQueryParams, leadFiltersToQueryParams } from './lead-filters';
-import { humanize, translateOr, TranslateOrPipe } from './lead-i18n';
 import { LeadRatingTagComponent } from './lead-rating-tag.component';
 import { LeadScoreBadgeComponent } from './lead-score-badge.component';
 import { LeadFacade } from './lead.facade';
@@ -42,7 +47,7 @@ type CellTpl = TemplateRef<{ $implicit: Lead; value: unknown }>;
     NzSelectModule,
     BaseTableComponent,
     PageHeaderComponent,
-    TranslateOrPipe,
+    TranslatePipe,
     LeadAssigneeSelectComponent,
     LeadRatingTagComponent,
     LeadScoreBadgeComponent,
@@ -71,20 +76,50 @@ export class LeadsComponent {
 
   readonly columns = computed<TableColumnDef<Lead>[]>(() => {
     this.i18n.currentLanguage();
-    const t = (key: string, fb: string) => translateOr(this.i18n, key, fb);
+    const t = (key: string) => this.i18n.translate(key);
     return [
-      { key: 'name', header: t('CRM.LEADS.COLUMNS.NAME', 'Lead'), width: '240px', customCellTemplate: this.nameTpl() },
-      { key: 'score', header: t('CRM.LEADS.COLUMNS.SCORE', 'Score'), width: '100px', customCellTemplate: this.scoreTpl() },
-      { key: 'rating', header: t('CRM.LEADS.COLUMNS.RATING', 'Rating'), width: '120px', customCellTemplate: this.ratingTpl() },
-      { key: 'lead_source', header: t('CRM.LEADS.COLUMNS.SOURCE', 'Source'), width: '160px', customCellTemplate: this.sourceTpl() },
+      {
+        key: 'name',
+        header: t('CRM.LEADS.COLUMNS.NAME'),
+        width: '240px',
+        customCellTemplate: this.nameTpl(),
+      },
+      {
+        key: 'score',
+        header: t('CRM.LEADS.COLUMNS.SCORE'),
+        width: '100px',
+        customCellTemplate: this.scoreTpl(),
+      },
+      {
+        key: 'rating',
+        header: t('CRM.LEADS.COLUMNS.RATING'),
+        width: '120px',
+        customCellTemplate: this.ratingTpl(),
+      },
+      {
+        key: 'lead_source',
+        header: t('CRM.LEADS.COLUMNS.SOURCE'),
+        width: '160px',
+        customCellTemplate: this.sourceTpl(),
+      },
       {
         key: 'assigned_user_id',
-        header: t('CRM.LEADS.COLUMNS.ASSIGNEE', 'Assignee'),
+        header: t('CRM.LEADS.COLUMNS.ASSIGNEE'),
         width: '180px',
         customCellTemplate: this.assigneeTpl(),
       },
-      { key: 'status', header: t('CRM.LEADS.COLUMNS.STATUS', 'Status'), width: '120px', customCellTemplate: this.statusTpl() },
-      { key: 'created_at', header: t('CRM.LEADS.COLUMNS.CREATED_AT', 'Created'), width: '140px', customCellTemplate: this.createdTpl() },
+      {
+        key: 'status',
+        header: t('CRM.LEADS.COLUMNS.STATUS'),
+        width: '120px',
+        customCellTemplate: this.statusTpl(),
+      },
+      {
+        key: 'created_at',
+        header: t('CRM.LEADS.COLUMNS.CREATED_AT'),
+        width: '140px',
+        customCellTemplate: this.createdTpl(),
+      },
     ];
   });
 
@@ -92,16 +127,16 @@ export class LeadsComponent {
     this.i18n.currentLanguage();
     return (['cold', 'warm', 'hot'] as const).map((r) => ({
       value: r,
-      label: translateOr(this.i18n, `CRM.LEADS.RATING.${r.toUpperCase()}`, humanize(r)),
+      label: this.i18n.translate(`CRM.LEADS.RATING.${r.toUpperCase()}`),
     }));
   });
 
   protected readonly sortOptions = computed(() => {
     this.i18n.currentLanguage();
     return [
-      { value: '-score', label: translateOr(this.i18n, 'CRM.LEADS.SORT.SCORE_DESC', 'Score: high to low') },
-      { value: 'score', label: translateOr(this.i18n, 'CRM.LEADS.SORT.SCORE_ASC', 'Score: low to high') },
-      { value: 'created_at', label: translateOr(this.i18n, 'CRM.LEADS.SORT.CREATED_AT', 'Creation date') },
+      { value: '-score', label: this.i18n.translate('CRM.LEADS.SORT.SCORE_DESC') },
+      { value: 'score', label: this.i18n.translate('CRM.LEADS.SORT.SCORE_ASC') },
+      { value: 'created_at', label: this.i18n.translate('CRM.LEADS.SORT.CREATED_AT') },
     ];
   });
 
@@ -124,7 +159,7 @@ export class LeadsComponent {
   }
 
   protected statusLabel(status: string | null): string {
-    return status ? translateOr(this.i18n, `CRM.LEADS.STATUS.${status.toUpperCase()}`, humanize(status)) : '-';
+    return status ? this.i18n.translate(`CRM.LEADS.STATUS.${status.toUpperCase()}`) : '-';
   }
 
   protected setFilter(patch: Partial<LeadFilterParams>): void {

@@ -1,7 +1,12 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DatePipe, JsonPipe } from '@angular/common';
-import { AbstractControl, NonNullableFormBuilder, ReactiveFormsModule, ValidationErrors } from '@angular/forms';
+import {
+  AbstractControl,
+  NonNullableFormBuilder,
+  ReactiveFormsModule,
+  ValidationErrors,
+} from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -31,10 +36,10 @@ import {
   leadDisplayName,
   serverErrorMessage,
 } from '@core';
-import { PageHeaderComponent } from '@shared';
+import { PageHeaderComponent, TranslatePipe } from '@shared';
 import { LeadAssigneeDirectory } from './lead-assignee-directory';
 import { LeadConvertWizardComponent } from './lead-convert-wizard.component';
-import { apiErrorMessage, httpStatus, humanize, translateOr, TranslateOrPipe } from './lead-i18n';
+import { apiErrorMessage, httpStatus } from './lead-i18n';
 import { LeadRatingTagComponent } from './lead-rating-tag.component';
 import { LeadScoreBadgeComponent } from './lead-score-badge.component';
 
@@ -45,7 +50,9 @@ function jsonObjectValidator(control: AbstractControl<string>): ValidationErrors
   }
   try {
     const parsed: unknown = JSON.parse(raw);
-    return typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed) ? null : { json: true };
+    return typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)
+      ? null
+      : { json: true };
   } catch {
     return { json: true };
   }
@@ -73,7 +80,7 @@ function jsonObjectValidator(control: AbstractControl<string>): ValidationErrors
     NzSkeletonModule,
     NzTimelineModule,
     PageHeaderComponent,
-    TranslateOrPipe,
+    TranslatePipe,
     LeadConvertWizardComponent,
     LeadRatingTagComponent,
     LeadScoreBadgeComponent,
@@ -171,11 +178,11 @@ export class LeadDetailComponent {
   }
 
   protected eventTypeLabel(type: string): string {
-    return translateOr(this.i18n, `CRM.LEADS.EVENTS.TYPES.${type.toUpperCase()}`, humanize(type));
+    return this.i18n.translate(`CRM.LEADS.EVENTS.TYPES.${type.toUpperCase()}`);
   }
 
   protected statusLabel(status: string | null | undefined): string {
-    return status ? translateOr(this.i18n, `CRM.LEADS.STATUS.${status.toUpperCase()}`, humanize(status)) : '-';
+    return status ? this.i18n.translate(`CRM.LEADS.STATUS.${status.toUpperCase()}`) : '-';
   }
 
   protected hasMetadata(e: LeadActivityEvent): boolean {
@@ -201,7 +208,7 @@ export class LeadDetailComponent {
       next: () => {
         this.busy.set(null);
         this.eventForm.reset({ type: v.type, occurred_at: null, metadata: '' });
-        this.message.success(translateOr(this.i18n, 'CRM.LEADS.EVENTS.ADDED', 'Activity recorded'));
+        this.message.success(this.i18n.translate('CRM.LEADS.EVENTS.ADDED'));
         // The backend rescores on new events: refresh score, rating and timeline.
         this.load();
       },
@@ -215,24 +222,23 @@ export class LeadDetailComponent {
 
   protected eventFieldError(path: string): string | null {
     if (path === 'metadata' && this.eventForm.controls.metadata.hasError('json')) {
-      return translateOr(this.i18n, 'CRM.LEADS.EVENTS.METADATA_INVALID', 'Metadata must be a JSON object');
+      return this.i18n.translate('CRM.LEADS.EVENTS.METADATA_INVALID');
     }
     return serverErrorMessage(this.eventForm, path);
   }
 
   rescore(): void {
-    this.runAction('rescore', () => this.api.rescore(this.leadId), 'CRM.LEADS.ACTIONS.RESCORED', 'Lead rescored');
+    this.runAction('rescore', () => this.api.rescore(this.leadId), 'CRM.LEADS.ACTIONS.RESCORED');
   }
 
   reroute(): void {
-    this.runAction('route', () => this.api.route(this.leadId), 'CRM.LEADS.ACTIONS.ROUTED', 'Lead routed again');
+    this.runAction('route', () => this.api.route(this.leadId), 'CRM.LEADS.ACTIONS.ROUTED');
   }
 
   private runAction(
     kind: 'rescore' | 'route',
     call: () => ReturnType<LeadApiService['rescore']>,
     key: string,
-    fallback: string,
   ): void {
     if (this.busy()) {
       return;
@@ -246,7 +252,7 @@ export class LeadDetailComponent {
         } else {
           this.load();
         }
-        this.message.success(translateOr(this.i18n, key, fallback));
+        this.message.success(this.i18n.translate(key));
       },
       error: () => this.busy.set(null),
     });
