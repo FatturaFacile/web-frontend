@@ -63,6 +63,7 @@ export * from './marketplace.model';
 export * from './platform.model';
 export * from './planning.model';
 export * from './budgeting.model';
+export * from './controlling.model';
 export * from './credit-management.model';
 export * from './talent-learning.model';
 export * from './returns.model';
