@@ -560,6 +560,12 @@ export const routes: Routes = [
     loadComponent: () => import('./features/exports/exports.component').then((m) => m.ExportsComponent),
   },
   {
+    path: 'sdi-cockpit',
+    canActivate: [authGuard, menuEnabledGuard, moduleGuard('invoicing', 'read')],
+    data: { breadcrumb: 'NAV.SDI_COCKPIT', title: 'NAV.SDI_COCKPIT' },
+    loadComponent: () => import('./features/sdi-cockpit/sdi-cockpit.component').then((m) => m.SdiCockpitComponent),
+  },
+  {
     path: 'sdi-transmissions',
     canActivate: [authGuard, menuEnabledGuard, moduleGuard('invoicing', 'read')],
     data: { breadcrumb: 'NAV.SDI_TRANSMISSIONS', title: 'NAV.SDI_TRANSMISSIONS' },

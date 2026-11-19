@@ -423,6 +423,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         module: 'exports',
       },
       {
+        key: 'NAV.SDI_COCKPIT',
+        icon: 'fa-solid fa-file-invoice',
+        route: '/sdi-cockpit',
+        module: 'invoicing',
+      },
+      {
         key: 'NAV.SDI_TRANSMISSIONS',
         icon: 'fa-solid fa-paper-plane',
         route: '/sdi-transmissions',

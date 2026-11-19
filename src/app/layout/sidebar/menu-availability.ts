@@ -113,6 +113,7 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/logistics/consignment',
   '/logistics/delivery-notes',
   '/logistics/transfers',
+  '/sdi-cockpit',
   '/sdi-transmissions',
   '/facility',
   '/facility/inspections',
