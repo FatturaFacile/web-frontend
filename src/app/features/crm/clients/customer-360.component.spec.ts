@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, provideRouter } from '@angular/router';
-import { I18nService } from '@core';
+import { I18nService, PermissionsService } from '@core';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { icons } from '../../../icons-provider';
@@ -20,6 +20,8 @@ describe('Customer360Component', () => {
         provideRouter([]),
         provideNzIcons(icons),
         { provide: I18nService, useValue: { translate: (key: string) => key } },
+        // The embedded audit timeline renders only for a member who may read the audit trail.
+        { provide: PermissionsService, useValue: { canRead: () => false, canWrite: () => false } },
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => 'c1' } } } },
       ],
     });

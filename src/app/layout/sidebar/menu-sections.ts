@@ -1688,6 +1688,7 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
           { key: 'NAV.ACCESS_AUDIT', route: '/settings/access/audit', icon: 'fa-solid fa-clock-rotate-left', module: 'system' },
           { key: 'NAV.PRIVACY_COMPLIANCE', route: '/settings/privacy/compliance', icon: 'fa-solid fa-user-shield', module: 'system' },
           { key: 'NAV.ENTERPRISE_SECURITY', route: '/settings/security/enterprise', icon: 'fa-solid fa-shield-halved', module: 'system' },
+          { key: 'NAV.AUDIT_TRAIL', route: '/security/audit-trail', icon: 'fa-solid fa-fingerprint', module: 'audit_trail' },
           { key: 'Webhook', route: '/settings/webhooks', icon: 'fa-solid fa-satellite-dish', module: 'system' },
           { key: 'Tag condivisi', route: '/settings/tags', icon: 'fa-solid fa-tags', module: 'system' },
         ],

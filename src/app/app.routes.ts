@@ -422,6 +422,13 @@ export const routes: Routes = [
       import('./features/planning/planning.routes').then((m) => m.PLANNING_ROUTES),
   },
   {
+    path: 'security/audit-trail',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'NAV.AUDIT_TRAIL', title: 'PAGE_TITLE.AUDIT_TRAIL' },
+    loadChildren: () =>
+      import('./features/security/audit-trail/audit-trail.routes').then((m) => m.AUDIT_TRAIL_ROUTES),
+  },
+  {
     path: 'controlling',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.CONTROLLING', title: 'PAGE_TITLE.CONTROLLING' },

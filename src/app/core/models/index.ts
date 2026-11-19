@@ -121,3 +121,4 @@ export * from './warranty-rma.model';
 export * from './logistics.model';
 export * from './swiss-qr-bill.model';
 export * from './iso20022.model';
+export * from './audit-trail.model';
