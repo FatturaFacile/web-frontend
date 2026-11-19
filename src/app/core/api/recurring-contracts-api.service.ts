@@ -75,19 +75,27 @@ export class RecurringContractsApiService {
 
   renewContract(id: string, months?: number): Observable<{ message: string; data: RecurringContract }> {
     return this.http.post<{ message: string; data: RecurringContract }>(`${this.baseUrl}/${id}/renew`, {
+      renewal_months: months,
       months,
     });
   }
 
-  applyIndexation(id: string, targetPeriod: string): Observable<{ message: string; data: RecurringContract; log: unknown }> {
-    return this.http.post<{ message: string; data: RecurringContract; log: unknown }>(
+  applyIndexation(
+    id: string,
+    priceIndexRateId: string,
+    targetPeriod?: string,
+  ): Observable<{ message: string; data: RecurringContract; log?: unknown }> {
+    return this.http.post<{ message: string; data: RecurringContract; log?: unknown }>(
       `${this.baseUrl}/${id}/apply-indexation`,
-      { target_period: targetPeriod }
+      {
+        price_index_rate_id: priceIndexRateId,
+        ...(targetPeriod ? { target_period: targetPeriod } : {}),
+      }
     );
   }
 
-  billNow(id: string): Observable<{ message: string; invoice: unknown; contract: RecurringContract }> {
-    return this.http.post<{ message: string; invoice: unknown; contract: RecurringContract }>(
+  billNow(id: string): Observable<{ message: string; invoice?: unknown; contract?: RecurringContract; data?: unknown }> {
+    return this.http.post<{ message: string; invoice?: unknown; contract?: RecurringContract; data?: unknown }>(
       `${this.baseUrl}/${id}/bill-now`,
       {}
     );
@@ -97,9 +105,21 @@ export class RecurringContractsApiService {
     return this.http.get<RecurringContractsMetrics>(`${this.baseUrl}/metrics`);
   }
 
-  getBillingPreview(cutoffDate: string): Observable<{ cutoff_date: string; total_contracts: number; preview: BillingPreviewItem[] }> {
+  getBillingPreview(cutoffDate: string): Observable<{
+    cutoff_date: string;
+    total_contracts?: number;
+    count?: number;
+    items?: BillingPreviewItem[];
+    preview?: BillingPreviewItem[];
+  }> {
     const params = new HttpParams().set('cutoff_date', cutoffDate);
-    return this.http.get<{ cutoff_date: string; total_contracts: number; preview: BillingPreviewItem[] }>(
+    return this.http.get<{
+      cutoff_date: string;
+      total_contracts?: number;
+      count?: number;
+      items?: BillingPreviewItem[];
+      preview?: BillingPreviewItem[];
+    }>(
       `${this.billingUrl}/preview`,
       { params }
     );
@@ -109,8 +129,11 @@ export class RecurringContractsApiService {
     cutoff_date: string;
     run_type?: 'manual' | 'scheduled';
     contract_ids?: string[];
-  }): Observable<{ message: string; run: RecurringBillingRun }> {
-    return this.http.post<{ message: string; run: RecurringBillingRun }>(`${this.billingUrl}/runs`, payload);
+  }): Observable<{ message?: string; data?: RecurringBillingRun; run?: RecurringBillingRun }> {
+    return this.http.post<{ message?: string; data?: RecurringBillingRun; run?: RecurringBillingRun }>(
+      `${this.billingUrl}/runs`,
+      payload
+    );
   }
 
   getBillingRuns(params?: { page?: number; per_page?: number }): Observable<{

@@ -559,18 +559,18 @@
         </nz-table>
       </nz-card>
 
-      <nz-card nzTitle="Richieste di spedizione inviate" class="mt-3">
+      <nz-card [nzTitle]="'PORTAL.SHIPMENT_REQUESTS_SENT' | translate" class="mt-3">
         <nz-table #requestsTable [nzData]="customsRequests()" [nzFrontPagination]="false" [nzShowPagination]="false">
           <thead>
             <tr>
-              <th>Servizio</th>
-              <th>Direzione</th>
-              <th>Origine</th>
-              <th>Destinazione</th>
-              <th>Colli</th>
-              <th>Peso lordo</th>
-              <th>Ritiro</th>
-              <th>Stato</th>
+              <th>{{ 'PORTAL.SERVICE_TYPE' | translate }}</th>
+              <th>{{ 'PORTAL.DIRECTION' | translate }}</th>
+              <th>{{ 'PORTAL.ORIGIN' | translate }}</th>
+              <th>{{ 'PORTAL.DESTINATION' | translate }}</th>
+              <th>{{ 'PORTAL.PACKAGES' | translate }}</th>
+              <th>{{ 'PORTAL.GROSS_WEIGHT' | translate }}</th>
+              <th>{{ 'PORTAL.PICKUP_DATE' | translate }}</th>
+              <th>{{ 'PORTAL.STATUS' | translate }}</th>
             </tr>
           </thead>
           <tbody>

@@ -1,19 +1,24 @@
 import { Component, computed, inject } from '@angular/core';
-import { ExtraRecord, PermissionsService, WebhookDeliveryParams, WebhookEndpointRequest, WebhooksApiService } from '@core';
-import { NzModalService } from 'ng-zorro-antd/modal';
+import { ExtraRecord, I18nService, PermissionsService, WebhookDeliveryParams, WebhookEndpointRequest, WebhooksApiService } from '@core';
+import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { tap } from 'rxjs';
 import { HubPageComponent } from '../../../resource-hub/hub-page.component';
 import { f, HubTab, rows } from '../../../resource-hub/hub.types';
 
-const STATUSES = { pending: 'In attesa', retrying: 'Nuovo tentativo', succeeded: 'Consegnato', dead: 'Fallito' };
+const STATUSES = {
+  pending: 'WEBHOOKS.STATUS_PENDING',
+  retrying: 'WEBHOOKS.STATUS_RETRYING',
+  succeeded: 'WEBHOOKS.STATUS_SUCCEEDED',
+  dead: 'WEBHOOKS.STATUS_DEAD',
+};
 
 /** Outbound webhooks: endpoints (create, enable, test, rotate the secret), event catalog and delivery log with redelivery. */
 @Component({
   selector: 'app-webhooks',
-  imports: [HubPageComponent],
+  imports: [HubPageComponent, NzModalModule],
   template: `<app-hub-page
-    title="Webhook"
-    subtitle="Notifiche in uscita verso sistemi esterni, firmate e con registro delle consegne"
+    title="WEBHOOKS.TITLE"
+    subtitle="WEBHOOKS.SUBTITLE"
     [tabs]="tabs()"
   />`,
 })
@@ -21,6 +26,7 @@ export class WebhooksComponent {
   private readonly api = inject(WebhooksApiService);
   private readonly modal = inject(NzModalService);
   private readonly permissions = inject(PermissionsService);
+  private readonly i18n = inject(I18nService, { optional: true });
   private readonly canWrite = computed(() => this.permissions.canWrite('integrations'));
 
   protected readonly tabs = computed<HubTab[]>(() => {
@@ -28,30 +34,30 @@ export class WebhooksComponent {
     return [
       {
         kind: 'crud',
-        title: 'Endpoint',
-        hint: 'Il segreto di firma viene mostrato una sola volta, alla creazione o alla rotazione.',
+        title: 'WEBHOOKS.TAB_ENDPOINTS',
+        hint: 'WEBHOOKS.SECRET_HINT',
         config: {
-          titleKey: 'Endpoint webhook',
+          titleKey: 'WEBHOOKS.ENDPOINT_TITLE',
           canWrite,
           list: () => rows(this.api.getEndpoints()),
           create: (p) => this.api.createEndpoint(this.toRequest(p)).pipe(tap((r) => this.showSecret(r.data))),
           update: (id, p) => this.api.updateEndpoint(id, this.toRequest(p)),
           remove: (id) => this.api.deleteEndpoint(id),
           fields: [
-            f.text('name', 'Nome', { required: true, maxLength: 120 }),
-            f.text('url', 'URL HTTPS', { required: true, pattern: '^https://.+' }),
-            f.text('events', 'Eventi (separati da virgola)', { required: true }),
-            f.area('description', 'Descrizione', { nullable: true, column: false }),
-            f.col('is_active', 'Attivo'),
-            f.col('status', 'Stato'),
+            f.text('name', 'COMMON.NAME', { required: true, maxLength: 120 }),
+            f.text('url', 'WEBHOOKS.HTTPS_URL', { required: true, pattern: '^https://.+' }),
+            f.text('events', 'WEBHOOKS.EVENTS_CSV', { required: true }),
+            f.area('description', 'COMMON.DESCRIPTION', { nullable: true, column: false }),
+            f.col('is_active', 'COMMON.ACTIVE'),
+            f.col('status', 'COMMON.STATUS'),
           ],
           rowActions: [
-            { labelKey: 'Abilita', run: (r) => this.api.enableEndpoint(r.id), visible: (r) => r['is_active'] === false, writeOnly: true },
-            { labelKey: 'Disabilita', run: (r) => this.api.disableEndpoint(r.id), visible: (r) => r['is_active'] !== false, writeOnly: true },
-            { labelKey: 'Invia test', run: (r) => this.api.testEndpoint(r.id), writeOnly: true },
+            { labelKey: 'WEBHOOKS.ENABLE', run: (r) => this.api.enableEndpoint(r.id), visible: (r) => r['is_active'] === false, writeOnly: true },
+            { labelKey: 'WEBHOOKS.DISABLE', run: (r) => this.api.disableEndpoint(r.id), visible: (r) => r['is_active'] !== false, writeOnly: true },
+            { labelKey: 'WEBHOOKS.SEND_TEST', run: (r) => this.api.testEndpoint(r.id), writeOnly: true },
             {
-              labelKey: 'Ruota segreto',
-              input: { labelKey: 'Ore di validità del vecchio segreto', kind: 'decimal', optional: true },
+              labelKey: 'WEBHOOKS.ROTATE_SECRET',
+              input: { labelKey: 'WEBHOOKS.OLD_SECRET_TTL_HOURS', kind: 'decimal', optional: true },
               run: (r, v) => this.api.rotateEndpointSecret(r.id, v ? Number(v) : undefined).pipe(tap((res) => this.showSecret(res.data))),
               writeOnly: true,
             },
@@ -60,24 +66,24 @@ export class WebhooksComponent {
       },
       {
         kind: 'report',
-        title: 'Consegne',
+        title: 'WEBHOOKS.TAB_DELIVERIES',
         filters: [
-          f.id('endpoint_id', 'ID endpoint', { column: false }),
-          f.select('status', 'Stato', STATUSES),
-          f.text('event_name', 'Evento'),
+          f.id('endpoint_id', 'WEBHOOKS.ENDPOINT_ID', { column: false }),
+          f.select('status', 'COMMON.STATUS', STATUSES),
+          f.text('event_name', 'WEBHOOKS.EVENT_NAME'),
         ],
         load: (p) => this.api.getDeliveries(p as WebhookDeliveryParams),
       },
       {
         kind: 'form',
-        title: 'Rinvia consegna',
-        hint: 'Rimette in coda una consegna fallita o consegnata (ID dalla tab Consegne).',
+        title: 'WEBHOOKS.TAB_REDELIVER',
+        hint: 'WEBHOOKS.REDELIVER_HINT',
         canWrite,
-        fields: [f.id('id', 'ID consegna', { required: true })],
-        submitLabel: 'Rinvia',
+        fields: [f.id('id', 'WEBHOOKS.DELIVERY_ID', { required: true })],
+        submitLabel: 'WEBHOOKS.REDELIVER_BTN',
         submit: (p) => this.api.redeliver(String(p['id'])),
       },
-      { kind: 'report', title: 'Catalogo eventi', load: () => this.api.getEventCatalog() },
+      { kind: 'report', title: 'WEBHOOKS.TAB_CATALOG', load: () => this.api.getEventCatalog() },
     ];
   });
 
@@ -92,7 +98,9 @@ export class WebhooksComponent {
   private showSecret(record: ExtraRecord): void {
     const secret = record['secret'] ?? record['signing_secret'];
     if (typeof secret === 'string') {
-      this.modal.info({ nzTitle: 'Segreto di firma', nzContent: `Copialo ora, non verrà mostrato di nuovo: ${secret}` });
+      const title = this.i18n ? this.i18n.translate('WEBHOOKS.SIGNING_SECRET_TITLE') : 'WEBHOOKS.SIGNING_SECRET_TITLE';
+      const prefix = this.i18n ? this.i18n.translate('WEBHOOKS.SIGNING_SECRET_COPY_NOW') : 'WEBHOOKS.SIGNING_SECRET_COPY_NOW';
+      this.modal.info({ nzTitle: title, nzContent: `${prefix}: ${secret}` });
     }
   }
 }

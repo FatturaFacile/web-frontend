@@ -117,6 +117,7 @@ interface MatchCandidate {
       (nzOnOk)="confirmMatch()"
     >
       <ng-container *nzModalContent>
+        <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
         <label class="field">
           <span>{{ 'iso20022.workbench.invoice' | translate }}</span>
           <nz-select [ngModel]="selectedInvoice()" (ngModelChange)="selectedInvoice.set($event)" nzShowSearch class="full" data-testid="invoice-select">
@@ -125,6 +126,7 @@ interface MatchCandidate {
             }
           </nz-select>
         </label>
+        <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
         <label class="field">
           <span>{{ 'iso20022.workbench.difference' | translate }}</span>
           <nz-select [ngModel]="difference()" (ngModelChange)="difference.set($event)" class="full">

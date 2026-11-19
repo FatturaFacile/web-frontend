@@ -24,6 +24,8 @@ import { NzStatisticModule } from 'ng-zorro-antd/statistic';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { RecurringContractsApiService } from '@core/api/recurring-contracts-api.service';
+import { I18nService } from '@core/i18n/i18n.service';
+import { TranslatePipe } from '@shared';
 import {
   RecurringContract,
   RecurringContractsMetrics,
@@ -53,6 +55,7 @@ import { RecurringContractFormDrawerComponent } from './recurring-contract-form-
     NzDividerModule,
     NzEmptyModule,
     NzIconModule,
+    TranslatePipe,
     RecurringContractFormDrawerComponent,
     RecurringContractDetailDrawerComponent,
     RecurringBillingBatchDrawerComponent,
@@ -63,20 +66,20 @@ import { RecurringContractFormDrawerComponent } from './recurring-contract-form-
       <!-- Title & Action Bar -->
       <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-          <h2 class="mb-1">Contratti Ricorrenti & Abbonamenti</h2>
+          <h2 class="mb-1">{{ 'RC.LIST.TITLE' | translate }}</h2>
           <p class="text-muted mb-0">
-            Gestione contratti periodici, clausole ISTAT / Swiss IPC e motore di fatturazione massiva
+            {{ 'RC.LIST.SUBTITLE' | translate }}
           </p>
         </div>
         <div class="actions-group">
           <button nz-button nzType="default" (click)="openPriceIndexRegistry()" class="me-2">
-            <i class="fa-solid fa-chart-line me-1"></i> Registro Indici Prezzi
+            <i class="fa-solid fa-chart-line me-1"></i> {{ 'RC.LIST.PRICE_INDEX_REGISTRY' | translate }}
           </button>
           <button nz-button nzType="default" (click)="openBatchBilling()" class="me-2">
-            <i class="fa-solid fa-bolt me-1"></i> Esegui Batch Fatturazione
+            <i class="fa-solid fa-bolt me-1"></i> {{ 'RC.LIST.RUN_BATCH_BILLING' | translate }}
           </button>
           <button nz-button nzType="primary" (click)="openCreateForm()">
-            <i class="fa-solid fa-plus me-1"></i> Nuovo Contratto
+            <i class="fa-solid fa-plus me-1"></i> {{ 'RC.LIST.NEW_CONTRACT' | translate }}
           </button>
         </div>
       </div>
@@ -86,8 +89,8 @@ import { RecurringContractFormDrawerComponent } from './recurring-contract-form-
         <div nz-col [nzSpan]="5">
           <nz-card>
             <nz-statistic
-              [nzValue]="metrics()?.mrr || '0.00'"
-              [nzTitle]="'MRR (Monthly Recurring Revenue)'"
+              [nzValue]="formatMetricMoney(metrics()?.mrr)"
+              [nzTitle]="'RC.LIST.KPI_MRR' | translate"
               [nzPrefix]="mrrIcon"
             ></nz-statistic>
             <ng-template #mrrIcon><i class="fa-solid fa-sack-dollar text-primary me-2"></i></ng-template>
@@ -96,8 +99,8 @@ import { RecurringContractFormDrawerComponent } from './recurring-contract-form-
         <div nz-col [nzSpan]="5">
           <nz-card>
             <nz-statistic
-              [nzValue]="metrics()?.arr || '0.00'"
-              [nzTitle]="'ARR (Annual Recurring Revenue)'"
+              [nzValue]="formatMetricMoney(metrics()?.arr)"
+              [nzTitle]="'RC.LIST.KPI_ARR' | translate"
               [nzPrefix]="arrIcon"
             ></nz-statistic>
             <ng-template #arrIcon><i class="fa-solid fa-vault text-success me-2"></i></ng-template>
@@ -106,8 +109,8 @@ import { RecurringContractFormDrawerComponent } from './recurring-contract-form-
         <div nz-col [nzSpan]="4">
           <nz-card>
             <nz-statistic
-              [nzValue]="metrics()?.active_contracts_count || 0"
-              [nzTitle]="'Contratti Attivi'"
+              [nzValue]="metrics()?.active_contracts_count ?? metrics()?.active_count ?? 0"
+              [nzTitle]="'RC.LIST.KPI_ACTIVE' | translate"
               [nzPrefix]="activeIcon"
             ></nz-statistic>
             <ng-template #activeIcon><i class="fa-solid fa-circle-check text-info me-2"></i></ng-template>
@@ -117,7 +120,7 @@ import { RecurringContractFormDrawerComponent } from './recurring-contract-form-
           <nz-card>
             <nz-statistic
               [nzValue]="metrics()?.due_for_billing_count || 0"
-              [nzTitle]="'Da Fatturare (Oggi/Scaduti)'"
+              [nzTitle]="'RC.LIST.KPI_DUE' | translate"
               [nzValueStyle]="{ color: (metrics()?.due_for_billing_count || 0) > 0 ? '#cf1322' : '#3f8600' }"
               [nzPrefix]="dueIcon"
             ></nz-statistic>
@@ -127,8 +130,8 @@ import { RecurringContractFormDrawerComponent } from './recurring-contract-form-
         <div nz-col [nzSpan]="5">
           <nz-card>
             <nz-statistic
-              [nzValue]="metrics()?.expiring_within_30_days_count || 0"
-              [nzTitle]="'In Scadenza (30 gg)'"
+              [nzValue]="metrics()?.expiring_within_30_days_count ?? metrics()?.expiring_in_30_days_count ?? 0"
+              [nzTitle]="'RC.LIST.KPI_EXPIRING' | translate"
               [nzPrefix]="expiringIcon"
             ></nz-statistic>
             <ng-template #expiringIcon><i class="fa-solid fa-calendar-xmark text-danger me-2"></i></ng-template>
@@ -143,7 +146,7 @@ import { RecurringContractFormDrawerComponent } from './recurring-contract-form-
             <nz-input-group nzPrefixIcon="search">
               <input
                 nz-input
-                placeholder="Cerca per titolo, numero contratto..."
+                [placeholder]="'RC.LIST.SEARCH_PLACEHOLDER' | translate"
                 [(ngModel)]="searchQuery"
                 (ngModelChange)="applyFilters()"
               />
@@ -153,34 +156,34 @@ import { RecurringContractFormDrawerComponent } from './recurring-contract-form-
             <nz-select
               [(ngModel)]="selectedStatus"
               (ngModelChange)="applyFilters()"
-              nzPlaceHolder="Filtra per Stato"
+              [nzPlaceHolder]="'RC.LIST.FILTER_STATUS' | translate"
               nzAllowClear
               class="w-100"
             >
-              <nz-option nzValue="draft" nzLabel="Bozza"></nz-option>
-              <nz-option nzValue="active" nzLabel="Attivo"></nz-option>
-              <nz-option nzValue="suspended" nzLabel="Sospeso"></nz-option>
-              <nz-option nzValue="expired" nzLabel="Scaduto"></nz-option>
-              <nz-option nzValue="cancelled" nzLabel="Annullato"></nz-option>
+              <nz-option nzValue="draft" [nzLabel]="'RC.STATUS.DRAFT' | translate"></nz-option>
+              <nz-option nzValue="active" [nzLabel]="'RC.STATUS.ACTIVE' | translate"></nz-option>
+              <nz-option nzValue="suspended" [nzLabel]="'RC.STATUS.SUSPENDED' | translate"></nz-option>
+              <nz-option nzValue="expired" [nzLabel]="'RC.STATUS.EXPIRED' | translate"></nz-option>
+              <nz-option nzValue="cancelled" [nzLabel]="'RC.STATUS.CANCELLED' | translate"></nz-option>
             </nz-select>
           </div>
           <div nz-col [nzSpan]="5">
             <nz-select
               [(ngModel)]="selectedType"
               (ngModelChange)="applyFilters()"
-              nzPlaceHolder="Tipologia Contratto"
+              [nzPlaceHolder]="'RC.LIST.FILTER_TYPE' | translate"
               nzAllowClear
               class="w-100"
             >
-              <nz-option nzValue="maintenance" nzLabel="Manutenzione"></nz-option>
-              <nz-option nzValue="rental" nzLabel="Noleggio / Locazione"></nz-option>
-              <nz-option nzValue="software_license" nzLabel="Licenza Software"></nz-option>
-              <nz-option nzValue="service_subscription" nzLabel="Abbonamento Servizi"></nz-option>
+              <nz-option nzValue="maintenance" [nzLabel]="'RC.TYPE.MAINTENANCE' | translate"></nz-option>
+              <nz-option nzValue="rental" [nzLabel]="'RC.TYPE.RENTAL' | translate"></nz-option>
+              <nz-option nzValue="software_license" [nzLabel]="'RC.TYPE.SOFTWARE_LICENSE' | translate"></nz-option>
+              <nz-option nzValue="service_subscription" [nzLabel]="'RC.TYPE.SERVICE_SUBSCRIPTION' | translate"></nz-option>
             </nz-select>
           </div>
           <div nz-col [nzSpan]="6" class="text-end">
             <button nz-button nzType="default" (click)="resetFilters()">
-              <i class="fa-solid fa-rotate-left me-1"></i> Ripristina
+              <i class="fa-solid fa-rotate-left me-1"></i> {{ 'RC.LIST.RESET_FILTERS' | translate }}
             </button>
           </div>
         </div>
@@ -202,87 +205,96 @@ import { RecurringContractFormDrawerComponent } from './recurring-contract-form-
         >
           <thead>
             <tr>
-              <th>Numero</th>
-              <th>Titolo & Tipologia</th>
-              <th>Cliente</th>
-              <th>Frequenza</th>
-              <th>Prossima Fatt.</th>
-              <th>Subtotale Ciclo</th>
-              <th>Rinnovo</th>
-              <th>Stato</th>
-              <th nzWidth="180px">Azioni</th>
+              <th>{{ 'RC.LIST.COL_NUMBER' | translate }}</th>
+              <th>{{ 'RC.LIST.COL_TITLE_TYPE' | translate }}</th>
+              <th>{{ 'RC.LIST.COL_CUSTOMER' | translate }}</th>
+              <th>{{ 'RC.LIST.COL_FREQUENCY' | translate }}</th>
+              <th>{{ 'RC.LIST.COL_NEXT_BILLING' | translate }}</th>
+              <th>{{ 'RC.LIST.COL_SUBTOTAL' | translate }}</th>
+              <th>{{ 'RC.LIST.COL_RENEWAL' | translate }}</th>
+              <th>{{ 'RC.LIST.COL_STATUS' | translate }}</th>
+              <th nzWidth="180px">{{ 'RC.LIST.COL_ACTIONS' | translate }}</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let contract of contractsTable.data">
-              <td>
-                <a (click)="openDetail(contract.id)">
-                  <strong>{{ contract.contract_number }}</strong>
-                </a>
-              </td>
-              <td>
-                <div>{{ contract.title }}</div>
-                <small class="text-muted">{{ formatType(contract.contract_type) }}</small>
-              </td>
-              <td>
-                {{ contract.customer?.company_name || 'N/A' }}
-              </td>
-              <td>
-                <span class="badge-freq">{{ contract.billing_frequency }}</span>
-                <small class="d-block text-muted">({{ contract.billing_timing }})</small>
-              </td>
-              <td>
-                <span [class.text-danger]="isPastDue(contract.next_billing_date)">
-                  {{ contract.next_billing_date }}
-                </span>
-              </td>
-              <td>
-                <strong>{{ contract.subtotal }} {{ contract.currency }}</strong>
-              </td>
-              <td>
-                <nz-tag [nzColor]="contract.auto_renew ? 'green' : 'default'">
-                  {{ contract.auto_renew ? 'Auto' : 'Manuale' }}
-                </nz-tag>
-              </td>
-              <td>
-                <nz-tag [nzColor]="statusColor(contract.status)">
-                  {{ contract.status.toUpperCase() }}
-                </nz-tag>
-              </td>
-              <td>
-                <button
-                  nz-button
-                  nzType="text"
-                  nzSize="small"
-                  (click)="openDetail(contract.id)"
-                  title="Dettagli e Operazioni"
-                >
-                  <i class="fa-solid fa-eye text-primary"></i>
-                </button>
-                <button
-                  nz-button
-                  nzType="text"
-                  nzSize="small"
-                  (click)="openEditForm(contract)"
-                  title="Modifica"
-                >
-                  <i class="fa-solid fa-pen-to-square text-secondary"></i>
-                </button>
-                <button
-                  *ngIf="contract.status === 'draft'"
-                  nz-button
-                  nzType="text"
-                  nzDanger
-                  nzSize="small"
-                  nz-popconfirm
-                  nzPopconfirmTitle="Sei sicuro di voler eliminare questo contratto?"
-                  (nzOnConfirm)="deleteContract(contract.id)"
-                  title="Elimina"
-                >
-                  <i class="fa-solid fa-trash"></i>
-                </button>
-              </td>
-            </tr>
+            @for (contract of contractsTable.data; track contract.id) {
+              <tr>
+                <td>
+                  <a
+                    tabindex="0"
+                    role="button"
+                    (click)="openDetail(contract.id)"
+                    (keydown.enter)="openDetail(contract.id)"
+                    (keydown.space)="$event.preventDefault(); openDetail(contract.id)"
+                  >
+                    <strong>{{ contract.contract_number }}</strong>
+                  </a>
+                </td>
+                <td>
+                  <div>{{ contract.title }}</div>
+                  <small class="text-muted">{{ formatType(contract.contract_type) }}</small>
+                </td>
+                <td>
+                  {{ contract.customer?.company_name || 'N/A' }}
+                </td>
+                <td>
+                  <span class="badge-freq">{{ contract.billing_frequency }}</span>
+                  <small class="d-block text-muted">({{ contract.billing_timing }})</small>
+                </td>
+                <td>
+                  <span [class.text-danger]="isPastDue(contract.next_billing_date)">
+                    {{ contract.next_billing_date }}
+                  </span>
+                </td>
+                <td>
+                  <strong>{{ contract.subtotal }} {{ contract.currency }}</strong>
+                </td>
+                <td>
+                  <nz-tag [nzColor]="contract.auto_renew ? 'green' : 'default'">
+                    {{ (contract.auto_renew ? 'RC.LIST.AUTO' : 'RC.LIST.MANUAL') | translate }}
+                  </nz-tag>
+                </td>
+                <td>
+                  <nz-tag [nzColor]="statusColor(contract.status)">
+                    {{ contract.status.toUpperCase() }}
+                  </nz-tag>
+                </td>
+                <td>
+                  <button
+                    nz-button
+                    nzType="text"
+                    nzSize="small"
+                    (click)="openDetail(contract.id)"
+                    [title]="'RC.LIST.ACTION_DETAILS' | translate"
+                  >
+                    <i class="fa-solid fa-eye text-primary"></i>
+                  </button>
+                  <button
+                    nz-button
+                    nzType="text"
+                    nzSize="small"
+                    (click)="openEditForm(contract)"
+                    [title]="'RC.LIST.ACTION_EDIT' | translate"
+                  >
+                    <i class="fa-solid fa-pen-to-square text-secondary"></i>
+                  </button>
+                  @if (contract.status === 'draft') {
+                    <button
+                      nz-button
+                      nzType="text"
+                      nzDanger
+                      nzSize="small"
+                      nz-popconfirm
+                      [nzPopconfirmTitle]="'RC.LIST.DELETE_CONFIRM' | translate"
+                      (nzOnConfirm)="deleteContract(contract.id)"
+                      [title]="'RC.LIST.ACTION_DELETE' | translate"
+                    >
+                      <i class="fa-solid fa-trash"></i>
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
           </tbody>
         </nz-table>
       </nz-card>
@@ -359,6 +371,7 @@ import { RecurringContractFormDrawerComponent } from './recurring-contract-form-
 export class RecurringContractsListComponent implements OnInit {
   private readonly api = inject(RecurringContractsApiService);
   private readonly message = inject(NzMessageService);
+  private readonly i18n = inject(I18nService);
 
   @ViewChild('formDrawer') formDrawer!: RecurringContractFormDrawerComponent;
   @ViewChild('detailDrawer') detailDrawer!: RecurringContractDetailDrawerComponent;
@@ -397,15 +410,31 @@ export class RecurringContractsListComponent implements OnInit {
           this.loading.set(false);
         },
         error: () => {
-          this.message.error('Errore durante il caricamento dei contratti ricorrenti.');
+          this.message.error(this.i18n.translate('RC.LIST.LOAD_ERROR'));
           this.loading.set(false);
         },
       });
 
     this.api.getMetrics().subscribe({
       next: (m) => this.metrics.set(m),
-      error: () => {},
+      error: () => {
+        this.metrics.set(null);
+      },
     });
+  }
+
+  formatMetricMoney(val: string | Record<string, string | number> | undefined): string {
+    if (!val) {
+      return '0.00';
+    }
+    if (typeof val === 'string') {
+      return val;
+    }
+    const entries = Object.entries(val).filter(([, amount]) => amount !== undefined && amount !== null);
+    if (entries.length === 0) {
+      return '0.00';
+    }
+    return entries.map(([currency, amount]) => `${currency} ${amount}`).join(' / ');
   }
 
   applyFilters(): void {
@@ -454,11 +483,11 @@ export class RecurringContractsListComponent implements OnInit {
   deleteContract(id: string): void {
     this.api.deleteContract(id).subscribe({
       next: () => {
-        this.message.success('Contratto eliminato con successo.');
+        this.message.success(this.i18n.translate('RC.LIST.DELETE_SUCCESS'));
         this.loadData();
       },
       error: () => {
-        this.message.error('Impossibile eliminare il contratto.');
+        this.message.error(this.i18n.translate('RC.LIST.DELETE_ERROR'));
       },
     });
   }
@@ -489,13 +518,13 @@ export class RecurringContractsListComponent implements OnInit {
   formatType(type: string): string {
     switch (type) {
       case 'maintenance':
-        return 'Manutenzione';
+        return this.i18n.translate('RC.TYPE.MAINTENANCE');
       case 'rental':
-        return 'Noleggio / Locazione';
+        return this.i18n.translate('RC.TYPE.RENTAL');
       case 'software_license':
-        return 'Licenza SaaS';
+        return this.i18n.translate('RC.TYPE.SOFTWARE_LICENSE');
       case 'service_subscription':
-        return 'Abbonamento';
+        return this.i18n.translate('RC.TYPE.SERVICE_SUBSCRIPTION');
       default:
         return type;
     }

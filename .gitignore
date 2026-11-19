@@ -74,6 +74,11 @@ src/**/*.css.map
 .claude/worktrees/
 .sandbox/
 *.tmp
+.tmp-*
+ed[0-9]*.php
+ed[0-9]*.cjs
+_r.php
+plm[0-9]*.json
 
 # Agent skills installed by `npx skills` (copies/symlinks per tool): regenerated, never committed
 /skills/

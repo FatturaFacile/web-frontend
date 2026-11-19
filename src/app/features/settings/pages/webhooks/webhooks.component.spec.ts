@@ -43,7 +43,12 @@ describe('WebhooksComponent', () => {
   });
 
   it('offers endpoints, deliveries, redelivery and the event catalog', () => {
-    expect(tabs().map((t) => t.title)).toEqual(['Endpoint', 'Consegne', 'Rinvia consegna', 'Catalogo eventi']);
+    expect(tabs().map((t) => t.title)).toEqual([
+      'WEBHOOKS.TAB_ENDPOINTS',
+      'WEBHOOKS.TAB_DELIVERIES',
+      'WEBHOOKS.TAB_REDELIVER',
+      'WEBHOOKS.TAB_CATALOG',
+    ]);
   });
 
   it('creates an endpoint splitting the events and shows the secret once', () => {

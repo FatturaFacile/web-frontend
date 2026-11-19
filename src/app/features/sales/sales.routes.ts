@@ -52,20 +52,16 @@ export const SALES_ROUTES: Routes = [
   {
     path: 'sdi',
     data: { breadcrumb: 'BREADCRUMB.FATTURA_ELETTRONICA_SDI', title: 'PAGE_TITLE.FATTURA_ELETTRONICA_SDI' },
-    providers: [
-      { provide: QR_BILL_REPOSITORY, useClass: QrBillHttpRepository },
-      QrBillStore,
-    ],
     loadComponent: () =>
-      import('./components/swiss-qr-bill/swiss-qr-bill.component').then(
-        (m) => m.SwissQrBillComponent
+      import('../sdi-transmissions/sdi-transmissions.component').then(
+        (m) => m.SdiTransmissionsComponent
       ),
   },
   {
     path: 'recurring-contracts',
     data: {
       breadcrumb: 'NAV.RECURRING_CONTRACTS',
-      title: 'Contratti Ricorrenti & Abbonamenti',
+      title: 'PAGE_TITLE.RECURRING_CONTRACTS',
     },
     loadComponent: () =>
       import('./recurring-contracts/recurring-contracts-list.component').then(

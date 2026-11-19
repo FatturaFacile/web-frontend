@@ -170,7 +170,12 @@ describe('TrPaymentRunComponent', () => {
     return fixture;
   }
 
-  type Run = { toggle(id: string, checked: boolean): void; generate(): void; version: { set(v: string): void }; scheme: { set(v: string): void } };
+  interface Run {
+    toggle(id: string, checked: boolean): void;
+    generate(): void;
+    version: { set(v: string): void };
+    scheme: { set(v: string): void };
+  }
 
   it('lists only invoices that can be paid and totals the open amounts of the selection', async () => {
     const fixture = await setup();

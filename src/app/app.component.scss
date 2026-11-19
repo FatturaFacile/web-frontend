@@ -22,6 +22,8 @@
 
 .app-layout {
   min-height: 100vh;
+  max-width: 100vw;
+  overflow-x: hidden;
   background: var(--bg-primary);
 }
 
@@ -38,7 +40,9 @@
 
 .main-layout {
   min-width: 0;
+  max-width: 100%;
   min-height: 100vh;
+  overflow-x: hidden;
   background: var(--bg-primary);
 }
 
@@ -55,6 +59,8 @@
 .main-content {
   flex: 1;
   min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
   padding: var(--space-4) var(--space-5) var(--space-5);
 }
 

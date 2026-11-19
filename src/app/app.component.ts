@@ -6,6 +6,7 @@ import { filter, map } from 'rxjs';
 import { AuthApiService } from '@core/api/auth-api.service';
 import { AuthStore } from '@core/auth/auth.store';
 import { AppStore } from '@core/state/app.store';
+import { DisplayPreferencesService } from '@core/theme/display-preferences.service';
 import { HeaderComponent, SidebarComponent, BreadcrumbComponent } from './layout';
 import { TranslatePipe } from '@shared/pipes/translate.pipe';
 import { ToastHostComponent } from '@shared/ui/toast/toast-host.component';
@@ -45,6 +46,7 @@ export class AppComponent implements OnInit {
   readonly appStore = inject(AppStore);
   readonly authStore = inject(AuthStore);
   private readonly authApi = inject(AuthApiService, { optional: true });
+  private readonly displayPreferences = inject(DisplayPreferencesService, { optional: true });
   private readonly router = inject(Router);
 
   /** Public pages (RMA estimate/tracking) render without the shell, even for signed-in staff. */

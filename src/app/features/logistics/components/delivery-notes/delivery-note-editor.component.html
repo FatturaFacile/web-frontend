@@ -385,6 +385,54 @@
             /></nz-form-control>
           </nz-form-item>
           <nz-form-item>
+            <nz-form-label nzFor="l-awb">AWB</nz-form-label>
+            <nz-form-control
+              ><input id="l-awb" nz-input formControlName="awb_number"
+            /></nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label nzFor="l-shipment-flow">{{
+              'LOGISTICS.DDT.SHIPMENT_FLOW' | translate
+            }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="l-shipment-flow" formControlName="shipment_flow">
+                <nz-option nzValue="direct" [nzLabel]="'LOGISTICS.DDT.FLOW_DIRECT' | translate" />
+                <nz-option nzValue="triangular" [nzLabel]="'LOGISTICS.DDT.FLOW_TRIANGULAR' | translate" />
+                <nz-option nzValue="dropshipping" [nzLabel]="'LOGISTICS.DDT.FLOW_DROPSHIPPING' | translate" />
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+          @if (logistics.controls.shipment_flow.value !== 'direct') {
+            <nz-form-item>
+              <nz-form-label nzFor="l-sender-display">{{
+                'LOGISTICS.DDT.SENDER_DISPLAY' | translate
+              }}</nz-form-label>
+              <nz-form-control>
+                <nz-select id="l-sender-display" formControlName="sender_display">
+                  <nz-option nzValue="company" [nzLabel]="'LOGISTICS.DDT.SENDER_COMPANY' | translate" />
+                  <nz-option nzValue="blank" [nzLabel]="'LOGISTICS.DDT.SENDER_BLANK' | translate" />
+                  <nz-option nzValue="custom" [nzLabel]="'LOGISTICS.DDT.SENDER_CUSTOM' | translate" />
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+              <nz-form-label nzFor="l-sender-name">{{
+                'LOGISTICS.DDT.SENDER_NAME' | translate
+              }}</nz-form-label>
+              <nz-form-control>
+                <input id="l-sender-name" nz-input formControlName="sender_name" />
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+              <nz-form-label nzFor="l-final-recipient">{{
+                'LOGISTICS.DDT.FINAL_RECIPIENT' | translate
+              }}</nz-form-label>
+              <nz-form-control>
+                <input id="l-final-recipient" nz-input formControlName="final_recipient_name" />
+              </nz-form-control>
+            </nz-form-item>
+          }
+          <nz-form-item>
             <nz-form-label nzFor="l-show-prices">{{
               'LOGISTICS.DDT.SHOW_PRICES' | translate
             }}</nz-form-label>

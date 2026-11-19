@@ -1,15 +1,35 @@
 import { test, expect } from '@playwright/test';
-import { InventoryPage } from './pages/ErpPages';
+import { InventoryPage, seedAuthenticatedSession } from './pages/ErpPages';
 
 test.describe('Critical Flow: Inventory & Warehouse Movements (Magazzino)', () => {
-  let _inventoryPage: InventoryPage;
+  let inventoryPage: InventoryPage;
 
   test.beforeEach(async ({ page }) => {
-    _inventoryPage = new InventoryPage(page);
+    await seedAuthenticatedSession(page);
+    inventoryPage = new InventoryPage(page);
   });
 
   test('executes stock load, issues DDT movement, and verifies negative-stock prevention', async ({ page }) => {
     let currentStock = 100;
+
+    await page.route('**/api/v1/inventory/products**', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          data: [
+            {
+              id: 'sku-001',
+              sku: 'SKU-001',
+              name: 'Industrial Widget A',
+              stock_quantity: currentStock,
+              quantity_on_hand: currentStock,
+            },
+          ],
+          meta: { current_page: 1, last_page: 1, per_page: 15, total: 1 },
+        }),
+      });
+    });
 
     await page.route('**/api/v1/inventory/items/sku-001', async (route) => {
       await route.fulfill({
@@ -61,19 +81,47 @@ test.describe('Critical Flow: Inventory & Warehouse Movements (Magazzino)', () =
       }
     });
 
-    // 1. Inbound stock load (+50 units)
-    const loadQty = 50;
-    currentStock += loadQty;
-    expect(currentStock).toBe(150);
+    await inventoryPage.goto();
+    await expect(page).toHaveURL(/\/inventory\/stock/);
+    await expect(page.locator('app-root')).toBeVisible();
+
+    // 1. Inbound stock load (+50 units) via browser network call
+    const inboundRes = await page.evaluate(async () => {
+      const res = await fetch('/api/v1/inventory/movements', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sku: 'SKU-001', type: 'inbound', quantity: 50 }),
+      });
+      return { status: res.status, body: await res.json() };
+    });
+
+    expect(inboundRes.status).toBe(201);
+    expect(inboundRes.body.data.new_stock_level).toBe(150);
 
     // 2. Outbound Transport Document (DDT) / Shipment (-40 units)
-    const ddtQty = 40;
-    currentStock -= ddtQty;
-    expect(currentStock).toBe(110);
+    const outboundRes = await page.evaluate(async () => {
+      const res = await fetch('/api/v1/inventory/movements', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sku: 'SKU-001', type: 'outbound', quantity: 40 }),
+      });
+      return { status: res.status, body: await res.json() };
+    });
+
+    expect(outboundRes.status).toBe(201);
+    expect(outboundRes.body.data.new_stock_level).toBe(110);
 
     // 3. Negative stock prevention rule test: attempting to dispatch 200 units when only 110 exist
-    const excessiveDispatch = 200;
-    const canDispatch = excessiveDispatch <= currentStock;
-    expect(canDispatch).toBe(false);
+    const negativeRes = await page.evaluate(async () => {
+      const res = await fetch('/api/v1/inventory/movements', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sku: 'SKU-001', type: 'outbound', quantity: 200 }),
+      });
+      return { status: res.status, body: await res.json() };
+    });
+
+    expect(negativeRes.status).toBe(422);
+    expect(negativeRes.body.error).toBe('NegativeStockForbidden');
   });
 });

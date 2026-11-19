@@ -5,7 +5,7 @@ import { MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilter
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { NzModalService } from 'ng-zorro-antd/modal';
+import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { NzSkeletonModule } from 'ng-zorro-antd/skeleton';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
@@ -29,6 +29,7 @@ import { PayrollRunStatusTagComponent } from './payroll-run-status-tag.component
     MoneyPipe,
     NzButtonModule,
     NzDescriptionsModule,
+    NzModalModule,
     NzSkeletonModule,
     NzTableModule,
     NzTabsModule,

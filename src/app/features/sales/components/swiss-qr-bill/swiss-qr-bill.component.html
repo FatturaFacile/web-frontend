@@ -49,30 +49,30 @@
         <nz-tag nzColor="red">🇨🇭 {{ "SWISS_QR.STANDARDS_TAG" | translate }}</nz-tag>
       </ng-template>
 
-      <form nz-form [formGroup]="billForm" (ngSubmit)="onCreateBill()" nzLayout="vertical">
+      <form nz-form [formGroup]="billForm" (ngSubmit)="onValidateReference()" nzLayout="vertical">
         <div nz-row [nzGutter]="16">
           <div nz-col [nzSpan]="12">
             <nz-form-item>
-              <nz-form-label nzRequired>{{ "SWISS_QR.DEBTOR_LABEL" | translate }}</nz-form-label>
+              <nz-form-label nzRequired>{{ "SWISS_QR.ACCOUNT_PAYABLE_TO" | translate }}</nz-form-label>
               <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.REQUIRED' | translate">
                 <input
                   nz-input
-                  formControlName="debtorName"
-                  [placeholder]="'SWISS_QR.DEBTOR_PLACEHOLDER' | translate"
-                  [attr.aria-label]="'SWISS_QR.DEBTOR_LABEL' | translate"
+                  formControlName="iban"
+                  placeholder="CH4431999123000889012"
+                  [attr.aria-label]="'SWISS_QR.ACCOUNT_PAYABLE_TO' | translate"
                 />
               </nz-form-control>
             </nz-form-item>
           </div>
           <div nz-col [nzSpan]="12">
             <nz-form-item>
-              <nz-form-label nzRequired>{{ "SWISS_QR.ADDRESS_LABEL" | translate }}</nz-form-label>
-              <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.REQUIRED' | translate">
+              <nz-form-label>{{ "SWISS_QR.REFERENCE_SCOR" | translate }}</nz-form-label>
+              <nz-form-control>
                 <input
                   nz-input
-                  formControlName="debtorAddress"
-                  [placeholder]="'SWISS_QR.ADDRESS_PLACEHOLDER' | translate"
-                  [attr.aria-label]="'SWISS_QR.ADDRESS_LABEL' | translate"
+                  formControlName="reference"
+                  placeholder="21 00000 00003 13947 14300 09017"
+                  [attr.aria-label]="'SWISS_QR.REFERENCE_SCOR' | translate"
                 />
               </nz-form-control>
             </nz-form-item>
@@ -80,33 +80,7 @@
         </div>
 
         <div nz-row [nzGutter]="16">
-          <div nz-col [nzSpan]="8">
-            <nz-form-item>
-              <nz-form-label nzRequired>{{ "SWISS_QR.POSTAL_LABEL" | translate }}</nz-form-label>
-              <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.REQUIRED' | translate">
-                <input
-                  nz-input
-                  formControlName="debtorPostalCode"
-                  placeholder="6900"
-                  [attr.aria-label]="'SWISS_QR.POSTAL_LABEL' | translate"
-                />
-              </nz-form-control>
-            </nz-form-item>
-          </div>
-          <div nz-col [nzSpan]="8">
-            <nz-form-item>
-              <nz-form-label nzRequired>{{ "SWISS_QR.CITY_LABEL" | translate }}</nz-form-label>
-              <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.REQUIRED' | translate">
-                <input
-                  nz-input
-                  formControlName="debtorCity"
-                  placeholder="Lugano"
-                  [attr.aria-label]="'SWISS_QR.CITY_LABEL' | translate"
-                />
-              </nz-form-control>
-            </nz-form-item>
-          </div>
-          <div nz-col [nzSpan]="8">
+          <div nz-col [nzSpan]="12">
             <nz-form-item>
               <nz-form-label nzRequired>{{
                 "SWISS_QR.RAW_AMOUNT_LABEL" | translate
@@ -136,19 +110,17 @@
           </span>
         </div>
 
-        <nz-form-item>
-          <nz-form-label>{{ "SWISS_QR.MESSAGE_LABEL" | translate }}</nz-form-label>
-          <nz-form-control>
-            <input
-              nz-input
-              formControlName="message"
-              [placeholder]="'SWISS_QR.MESSAGE_PLACEHOLDER' | translate"
-              [attr.aria-label]="'SWISS_QR.MESSAGE_LABEL' | translate"
-            />
-          </nz-form-control>
-        </nz-form-item>
+        @if (referenceCheckResult(); as check) {
+          <nz-alert
+            [nzType]="check.valid ? 'success' : 'error'"
+            [nzMessage]="check.formatted_reference || check.reference_type"
+            [nzDescription]="check.errors.join(', ')"
+            nzShowIcon
+            class="mb-3"
+          />
+        }
 
-        <button nz-button nzType="primary" nzBlock [disabled]="billForm.invalid">
+        <button nz-button nzType="primary" nzBlock [nzLoading]="validating()" [disabled]="billForm.invalid">
           <i class="fa-solid fa-qrcode fa-icon-spaced"></i> {{ "SWISS_QR.SUBMIT_BTN" | translate }}
         </button>
       </form>
@@ -220,87 +192,13 @@
   <!-- Right Column: Visual Swiss QR Voucher Preview -->
   <div nz-col [nzXs]="24" [nzLg]="11">
     @if (store.currentBill(); as bill) {
-      <nz-card [nzTitle]="'SWISS_QR.VOUCHER_TITLE' | translate" class="voucher-card">
-        <div class="qr-voucher-container">
-          <!-- Header / Title -->
-          <div class="voucher-header">
-            <h3>{{ "SWISS_QR.PAYMENT_PART_TITLE" | translate }}</h3>
-            <span class="voucher-sub">{{ "SWISS_QR.PAYMENT_PART_SUB" | translate }}</span>
-          </div>
-
-          <!-- Main voucher body -->
-          <div class="voucher-grid">
-            <!-- QR Code representation with Swiss Cross -->
-            <div class="qr-box">
-              <div class="qr-graphic">
-                <!-- SVG Swiss Cross in center -->
-                <div class="qr-pattern">
-                  <div class="swiss-cross-badge">
-                    <div class="cross-v"></div>
-                    <div class="cross-h"></div>
-                  </div>
-                </div>
-              </div>
-              <div class="qr-amount-box">
-                <div class="amount-col">
-                  <span class="lbl">{{ "SWISS_QR.CURRENCY_LBL" | translate }}</span>
-                  <span class="val">{{ bill.currency }}</span>
-                </div>
-                <div class="amount-col">
-                  <span class="lbl">{{ "SWISS_QR.AMOUNT_LBL" | translate }}</span>
-                  <span class="val amount-main">{{ bill.amount | number: "1.2-2" }}</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Creditor & Debtor Info -->
-            <div class="qr-info-col">
-              <div class="info-group">
-                <span class="info-label">{{ "SWISS_QR.ACCOUNT_PAYABLE_TO" | translate }}</span>
-                <span class="info-val strong">{{ bill.creditor.qrIban }}</span>
-                <span class="info-val">{{ bill.creditor.name }}</span>
-                <span class="info-val">{{ bill.creditor.address }}</span>
-                <span class="info-val"
-                  >{{ bill.creditor.postalCode }} {{ bill.creditor.city }}</span
-                >
-              </div>
-
-              <div class="info-group">
-                <span class="info-label">{{ "SWISS_QR.REFERENCE_SCOR" | translate }}</span>
-                <span class="info-val scor-code">{{ formatScor(bill.reference) }}</span>
-              </div>
-
-              <div class="info-group">
-                <span class="info-label">{{ "SWISS_QR.ADDITIONAL_INFO" | translate }}</span>
-                <span class="info-val">{{ bill.unstructuredMessage }}</span>
-              </div>
-
-              <div class="info-group">
-                <span class="info-label">{{ "SWISS_QR.PAYABLE_BY" | translate }}</span>
-                <span class="info-val">{{ bill.debtor.name }}</span>
-                <span class="info-val">{{ bill.debtor.address }}</span>
-                <span class="info-val">{{ bill.debtor.postalCode }} {{ bill.debtor.city }}</span>
-              </div>
-            </div>
-          </div>
-
-          <nz-divider />
-          <!-- Receipt Part (Empfangsschein) -->
-          <div class="receipt-part">
-            <h4>{{ "SWISS_QR.RECEIPT_TITLE" | translate }}</h4>
-            <div class="receipt-content">
-              <div>
-                <span class="info-label">{{ "SWISS_QR.RECEIPT_ACCOUNT" | translate }}</span>
-                {{ bill.creditor.qrIban }}<br />
-                <span class="info-label">{{ "SWISS_QR.RECEIPT_BENEFICIARY" | translate }}</span>
-                {{ bill.creditor.name }}
-              </div>
-              <div class="receipt-amount">
-                <strong>{{ bill.currency }} {{ bill.amount | number: "1.2-2" }}</strong>
-              </div>
-            </div>
-          </div>
-        </div>
+      <nz-card [nzTitle]="'SWISS_QR.VOUCHER_TITLE' | translate" [nzExtra]="pdfAction" class="voucher-card">
+        <ng-template #pdfAction>
+          <button nz-button nzSize="small" nzType="primary" [nzLoading]="downloadingPdf()" (click)="downloadInvoiceQrPdf(bill)">
+            PDF
+          </button>
+        </ng-template>
+        <app-qr-bill-preview [invoiceId]="bill.id" />
       </nz-card>
     }
   </div>

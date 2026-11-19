@@ -59,8 +59,77 @@ interface TimelineEntry {
           <nz-descriptions-item [nzTitle]="label('CRM.CUSTOMER360.PHONE')">{{
             contact()['phone']
           }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="label('CRM.CUSTOMER360.RECEIVABLES_DUE')">{{
+            receivables()['total_due'] ?? 0
+          }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="label('CRM.CUSTOMER360.RECEIVABLES_OVERDUE')">{{
+            receivables()['overdue_total'] ?? 0
+          }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="label('CRM.CUSTOMER360.CREDIT_LIMIT')">{{
+            credit()['credit_limit'] ?? '—'
+          }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="label('CRM.CUSTOMER360.CREDIT_EXPOSURE')">{{
+            credit()['exposure'] ?? 0
+          }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="label('CRM.CUSTOMER360.PRIVACY_REGIME')">{{
+            str(privacy()['regime']).toUpperCase() || 'GDPR'
+          }}</nz-descriptions-item>
         </nz-descriptions>
       </nz-card>
+
+      @if (quotesList().length || ordersList().length || deliveryNotesList().length || invoicesList().length) {
+        <nz-card [nzTitle]="label('CRM.CUSTOMER360.COMMERCIAL_ACTIVITY')" class="c360-card">
+          @for (inv of invoicesList(); track inv['id']) {
+            <div class="c360-row">
+              <strong>{{ inv['invoice_number'] }}</strong>
+              <span>{{ inv['date'] }}</span>
+              <nz-tag>{{ value(inv['payment_status']) }}</nz-tag>
+              <span>{{ inv['total_gross'] }} {{ inv['currency'] }}</span>
+            </div>
+          }
+          @for (ord of ordersList(); track ord['id']) {
+            <div class="c360-row">
+              <strong>{{ ord['order_number'] }}</strong>
+              <span>{{ ord['date'] }}</span>
+              <nz-tag>{{ value(ord['status']) }}</nz-tag>
+              <span>{{ ord['total_gross'] }} {{ ord['currency'] }}</span>
+            </div>
+          }
+          @for (qt of quotesList(); track qt['id']) {
+            <div class="c360-row">
+              <strong>{{ qt['quote_number'] }}</strong>
+              <span>{{ qt['date'] }}</span>
+              <nz-tag>{{ value(qt['status']) }}</nz-tag>
+              <span>{{ qt['total_gross'] }} {{ qt['currency'] }}</span>
+            </div>
+          }
+          @for (ddt of deliveryNotesList(); track ddt['id']) {
+            <div class="c360-row">
+              <strong>{{ ddt['ddt_number'] }}</strong>
+              <span>{{ ddt['date'] }}</span>
+            </div>
+          }
+        </nz-card>
+      }
+
+      @if (openTicketsList().length || recentInteractions().length) {
+        <nz-card [nzTitle]="label('CRM.CUSTOMER360.TICKETS_INTERACTIONS')" class="c360-card">
+          @for (ticket of openTicketsList(); track ticket['id']) {
+            <div class="c360-row">
+              <strong>{{ ticket['subject'] }}</strong>
+              <nz-tag>{{ value(ticket['status']) }}</nz-tag>
+              <nz-tag>{{ value(ticket['priority']) }}</nz-tag>
+            </div>
+          }
+          @for (interaction of recentInteractions(); track interaction['id']) {
+            <div class="c360-row">
+              <nz-tag>{{ value(interaction['type']) }}</nz-tag>
+              <strong>{{ interaction['subject'] }}</strong>
+              <span>{{ $any(interaction['occurred_at']) | date: 'short' }}</span>
+            </div>
+          }
+        </nz-card>
+      }
 
       <nz-card [nzTitle]="label('CRM.CUSTOMER360.CONTRACTS')" class="c360-card">
         @for (contract of contracts(); track contract['id']) {
@@ -138,6 +207,15 @@ export class Customer360Component {
 
   protected readonly loading = signal(true);
   protected readonly contact = signal<ResourceRow>({});
+  protected readonly receivables = signal<ResourceRow>({});
+  protected readonly credit = signal<ResourceRow>({});
+  protected readonly privacy = signal<ResourceRow>({});
+  protected readonly quotesList = signal<ResourceRow[]>([]);
+  protected readonly ordersList = signal<ResourceRow[]>([]);
+  protected readonly deliveryNotesList = signal<ResourceRow[]>([]);
+  protected readonly invoicesList = signal<ResourceRow[]>([]);
+  protected readonly openTicketsList = signal<ResourceRow[]>([]);
+  protected readonly recentInteractions = signal<ResourceRow[]>([]);
   protected readonly contracts = signal<ResourceRow[]>([]);
   protected readonly assets = signal<ResourceRow[]>([]);
   protected readonly history = signal<Record<string, TimelineEntry[]>>({});
@@ -163,8 +241,28 @@ export class Customer360Component {
     })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(({ overview, contracts, assets }) => {
-        const contact = (overview as { contact?: ResourceRow }).contact ?? {};
-        this.contact.set(contact);
+        const ov = overview as {
+          contact?: ResourceRow;
+          receivables?: ResourceRow;
+          credit?: ResourceRow;
+          privacy?: ResourceRow;
+          quotes?: { recent?: ResourceRow[] };
+          orders_in_progress?: { items?: ResourceRow[] };
+          delivery_notes_to_invoice?: { items?: ResourceRow[] };
+          invoices?: { recent?: ResourceRow[] };
+          open_tickets?: { items?: ResourceRow[] };
+          recent_interactions?: ResourceRow[];
+        };
+        this.contact.set(ov.contact ?? {});
+        this.receivables.set(ov.receivables ?? {});
+        this.credit.set(ov.credit ?? {});
+        this.privacy.set(ov.privacy ?? {});
+        this.quotesList.set(ov.quotes?.recent ?? []);
+        this.ordersList.set(ov.orders_in_progress?.items ?? []);
+        this.deliveryNotesList.set(ov.delivery_notes_to_invoice?.items ?? []);
+        this.invoicesList.set(ov.invoices?.recent ?? []);
+        this.openTicketsList.set(ov.open_tickets?.items ?? []);
+        this.recentInteractions.set(ov.recent_interactions ?? []);
         this.contracts.set(
           contracts.rows.filter((row) => !row['customer_id'] || row['customer_id'] === this.id),
         );

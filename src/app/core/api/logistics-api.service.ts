@@ -111,6 +111,20 @@ export class LogisticsApiService {
     );
   }
 
+  assignAwb(
+    id: string,
+    awbNumber: string,
+    carrierTrackingUrl?: string | null,
+  ): Observable<ApiResponse<LogisticsDeliveryNote>> {
+    return this.http.post<ApiResponse<LogisticsDeliveryNote>>(
+      `${this.base}/delivery-notes/${id}/awb`,
+      {
+        awb_number: awbNumber,
+        carrier_tracking_url: carrierTrackingUrl ?? null,
+      },
+    );
+  }
+
   cancel(id: string): Observable<ApiResponse<LogisticsDeliveryNote>> {
     return this.http.post<ApiResponse<LogisticsDeliveryNote>>(
       `${this.base}/delivery-notes/${id}/cancel`,

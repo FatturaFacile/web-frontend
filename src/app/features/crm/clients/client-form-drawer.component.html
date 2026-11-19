@@ -49,6 +49,19 @@
                 [contactId]="contact()?.id ?? null"
               />
             }
+            @if (f.key === 'vat_number' || f.key === 'uid_number') {
+              <button
+                nz-button
+                nzType="default"
+                nzSize="small"
+                type="button"
+                [disabled]="!canLookupFiscal()"
+                [nzLoading]="lookingUpFiscal()"
+                (click)="lookupFiscal()"
+              >
+                {{ 'CRM.CLIENTS.FORM.LOOKUP_FISCAL' | translate }}
+              </button>
+            }
           </nz-form-control>
         </nz-form-item>
       }

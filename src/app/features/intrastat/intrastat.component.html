@@ -264,28 +264,28 @@
       @if (periodicity(); as p) {
         <nz-alert
           class="advice-alert"
-          [nzType]="p.advised_periodicity === 'M' ? 'warning' : 'info'"
-          [nzMessage]="(p.advised_periodicity === 'M' ? 'INTRASTAT.ADVISED_MONTHLY_MSG' : 'INTRASTAT.ADVISED_QUARTERLY_MSG') | translate"
+          [nzType]="advisedPeriodicity(p) === 'M' ? 'warning' : 'info'"
+          [nzMessage]="(advisedPeriodicity(p) === 'M' ? 'INTRASTAT.ADVISED_MONTHLY_MSG' : 'INTRASTAT.ADVISED_QUARTERLY_MSG') | translate"
           [nzDescription]="'INTRASTAT.THRESHOLDS_RULE_NOTE' | translate"
           nzShowIcon
         ></nz-alert>
 
         <div class="thresholds-grid">
           <nz-card class="thresh-card" [nzTitle]="'INTRASTAT.SALES_GOODS' | translate">
-            <div class="thresh-amount">{{ p.sales_goods_amount | money }}</div>
-            <div class="thresh-limit">{{ 'INTRASTAT.THRESHOLD_LIMIT' | translate }}: € 100.000</div>
+            <div class="thresh-amount">{{ categoryAmount(p, 'sales_goods') | money }}</div>
+            <div class="thresh-limit">{{ 'INTRASTAT.THRESHOLD_LIMIT' | translate }}: {{ categoryThreshold(p, 'sales_goods', 50000) | money }}</div>
           </nz-card>
           <nz-card class="thresh-card" [nzTitle]="'INTRASTAT.SALES_SERVICES' | translate">
-            <div class="thresh-amount">{{ p.sales_services_amount | money }}</div>
-            <div class="thresh-limit">{{ 'INTRASTAT.THRESHOLD_LIMIT' | translate }}: € 100.000</div>
+            <div class="thresh-amount">{{ categoryAmount(p, 'sales_services') | money }}</div>
+            <div class="thresh-limit">{{ 'INTRASTAT.THRESHOLD_LIMIT' | translate }}: {{ categoryThreshold(p, 'sales_services', 50000) | money }}</div>
           </nz-card>
           <nz-card class="thresh-card" [nzTitle]="'INTRASTAT.PURCHASES_GOODS' | translate">
-            <div class="thresh-amount">{{ p.purchases_goods_amount | money }}</div>
-            <div class="thresh-limit">{{ 'INTRASTAT.THRESHOLD_LIMIT' | translate }}: € 350.000</div>
+            <div class="thresh-amount">{{ categoryAmount(p, 'purchases_goods') | money }}</div>
+            <div class="thresh-limit">{{ 'INTRASTAT.THRESHOLD_LIMIT' | translate }}: {{ categoryThreshold(p, 'purchases_goods', 2000000) | money }}</div>
           </nz-card>
           <nz-card class="thresh-card" [nzTitle]="'INTRASTAT.PURCHASES_SERVICES' | translate">
-            <div class="thresh-amount">{{ p.purchases_services_amount | money }}</div>
-            <div class="thresh-limit">{{ 'INTRASTAT.THRESHOLD_LIMIT' | translate }}: € 100.000</div>
+            <div class="thresh-amount">{{ categoryAmount(p, 'purchases_services') | money }}</div>
+            <div class="thresh-limit">{{ 'INTRASTAT.THRESHOLD_LIMIT' | translate }}: {{ categoryThreshold(p, 'purchases_services', 100000) | money }}</div>
           </nz-card>
         </div>
       }

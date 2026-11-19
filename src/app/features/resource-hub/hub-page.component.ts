@@ -1,6 +1,6 @@
 import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { I18nService } from '@core';
-import { PageHeaderComponent } from '@shared';
+import { PageHeaderComponent, TranslatePipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -15,14 +15,14 @@ import { HubValueComponent } from './hub-value.component';
 /** One tab of a hub page: the widget that fits its kind. */
 @Component({
   selector: 'app-hub-panel',
-  imports: [ActionFormComponent, CrudTableComponent, HubValueComponent, NzButtonModule],
+  imports: [ActionFormComponent, CrudTableComponent, HubValueComponent, NzButtonModule, TranslatePipe],
   styles: [
     '.hint { margin-bottom: var(--space-3); color: var(--text-secondary); } .result { margin-top: var(--space-4); } .file { margin-bottom: var(--space-3); display: block; }',
   ],
   template: `
     @let t = tab();
     @if (t.hint) {
-      <p class="hint">{{ t.hint }}</p>
+      <p class="hint">{{ t.hint | translate }}</p>
     }
     @switch (t.kind) {
       @case ('crud') {
@@ -32,7 +32,7 @@ import { HubValueComponent } from './hub-value.component';
         @if (hasFields()) {
           <app-action-form [config]="formConfig()" (submitted)="result.set($event)" />
         } @else {
-          <button nz-button type="button" (click)="refresh()">Aggiorna</button>
+          <button nz-button type="button" (click)="refresh()">{{ 'COMMON.REFRESH' | translate }}</button>
         }
         <div class="result"><app-hub-value [value]="result()" /></div>
       }
@@ -47,7 +47,7 @@ import { HubValueComponent } from './hub-value.component';
       }
       @case ('upload') {
         <label class="file">
-          <span>File</span>
+          <span>{{ 'COMMON.FILE' | translate }}</span>
           <input type="file" [attr.accept]="accept()" (change)="pick($event)" />
         </label>
         <app-action-form [config]="formConfig()" [canWrite]="canWrite()" (submitted)="result.set($event)" />
@@ -86,22 +86,22 @@ export class HubPanelComponent {
     const t = this.tab();
     switch (t.kind) {
       case 'report':
-        return { fields: t.filters ?? [], submitLabelKey: 'Mostra', successKey: 'Dati aggiornati', submit: (p) => t.load(p) };
+        return { fields: t.filters ?? [], submitLabelKey: 'COMMON.SHOW', successKey: 'COMMON.UPDATED', submit: (p) => t.load(p) };
       case 'form':
-        return { fields: t.fields, submitLabelKey: t.submitLabel, successKey: 'Operazione completata', resetOnSuccess: t.resetOnSuccess, submit: (p) => t.submit(p) };
+        return { fields: t.fields, submitLabelKey: t.submitLabel, successKey: 'COMMON.COMPLETED', resetOnSuccess: t.resetOnSuccess, submit: (p) => t.submit(p) };
       case 'download':
         return {
           fields: t.fields,
           submitLabelKey: t.buttonLabel,
-          successKey: 'Download pronto',
+          successKey: 'COMMON.DOWNLOAD_READY',
           submit: (p) => t.download(p) as Observable<unknown>,
         };
       case 'upload':
         return {
           fields: t.fields,
           submitLabelKey: t.buttonLabel,
-          successKey: 'File caricato',
-          validate: () => (this.file ? null : 'Seleziona un file'),
+          successKey: 'COMMON.FILE_UPLOADED',
+          validate: () => (this.file ? null : 'COMMON.SELECT_FILE'),
           submit: (p) => t.upload(Object.fromEntries(Object.entries(p).map(([k, v]) => [k, String(v)])), this.file as File),
         };
       default:
@@ -143,13 +143,13 @@ export class HubPanelComponent {
 /** A page made of tabs, each one a list, a report, a form, a download or an upload bound to endpoints of the module. */
 @Component({
   selector: 'app-hub-page',
-  imports: [HubPanelComponent, NzCardModule, NzTabsModule, PageHeaderComponent],
+  imports: [HubPanelComponent, NzCardModule, NzTabsModule, PageHeaderComponent, TranslatePipe],
   template: `
-    <app-page-header [title]="title()" [subtitle]="subtitle()" />
+    <app-page-header [title]="title() | translate" [subtitle]="subtitle() | translate" />
     <nz-card>
       <nz-tabs [nzSelectedIndex]="selected()" (nzSelectedIndexChange)="selected.set($event)">
         @for (t of tabs(); track t.title) {
-          <nz-tab [nzTitle]="t.title">
+          <nz-tab [nzTitle]="t.title | translate">
             <ng-template nzTabContent>
               <app-hub-panel [tab]="t" />
             </ng-template>

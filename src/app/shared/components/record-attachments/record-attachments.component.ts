@@ -6,6 +6,7 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { AttachableType, AttachmentsApiService } from '@core/api/attachments-api.service';
 import { ExtraRecord } from '@core/api/extra-api.types';
+import { I18nService } from '@core/i18n/i18n.service';
 import { downloadBlob } from '../../utils/download-blob';
 
 const MAX_BYTES = 25 * 1024 * 1024;
@@ -22,7 +23,7 @@ const MAX_BYTES = 25 * 1024 * 1024;
   ],
   template: `
     @if (items().length === 0 && !loading()) {
-      <nz-empty nzNotFoundContent="Nessun allegato" />
+      <nz-empty [nzNotFoundContent]="t('ATTACHMENTS.EMPTY')" />
     } @else {
       <ul>
         @for (a of items(); track a.id) {
@@ -31,7 +32,7 @@ const MAX_BYTES = 25 * 1024 * 1024;
             @if (a['created_at']) {
               <span class="meta">{{ $any(a['created_at']) | date: 'dd/MM/yyyy HH:mm' }}</span>
             }
-            <button nz-button nzSize="small" type="button" (click)="download(a)">Scarica</button>
+            <button nz-button nzSize="small" type="button" (click)="download(a)">{{ t('COMMON.DOWNLOAD') }}</button>
             @if (canWrite()) {
               <button
                 nz-button
@@ -39,10 +40,10 @@ const MAX_BYTES = 25 * 1024 * 1024;
                 nzDanger
                 type="button"
                 nz-popconfirm
-                nzPopconfirmTitle="Eliminare l'allegato?"
+                [nzPopconfirmTitle]="t('ATTACHMENTS.DELETE_CONFIRM')"
                 (nzOnConfirm)="remove(a)"
               >
-                Elimina
+                {{ t('COMMON.DELETE') }}
               </button>
             }
           </li>
@@ -51,7 +52,7 @@ const MAX_BYTES = 25 * 1024 * 1024;
     }
     @if (canWrite()) {
       <label>
-        <span class="meta">Aggiungi un file (max 25 MB)</span><br />
+        <span class="meta">{{ t('ATTACHMENTS.ADD_FILE_HINT') }}</span><br />
         <input type="file" [disabled]="uploading()" (change)="onPick($event)" />
       </label>
     }
@@ -64,6 +65,7 @@ export class RecordAttachmentsComponent {
 
   private readonly api = inject(AttachmentsApiService);
   private readonly message = inject(NzMessageService);
+  private readonly i18n = inject(I18nService, { optional: true });
 
   protected readonly items = signal<ExtraRecord[]>([]);
   protected readonly loading = signal(false);
@@ -75,6 +77,10 @@ export class RecordAttachmentsComponent {
       this.key();
       untracked(() => this.load());
     });
+  }
+
+  protected t(key: string): string {
+    return this.i18n ? this.i18n.translate(key) : key;
   }
 
   protected nameOf(a: ExtraRecord): string {
@@ -90,7 +96,7 @@ export class RecordAttachmentsComponent {
       },
       error: () => {
         this.loading.set(false);
-        this.message.error('Impossibile caricare gli allegati');
+        this.message.error(this.t('ATTACHMENTS.LOAD_ERROR'));
       },
     });
   }
@@ -102,7 +108,7 @@ export class RecordAttachmentsComponent {
       return;
     }
     if (file.size > MAX_BYTES) {
-      this.message.error('Il file supera i 25 MB');
+      this.message.error(this.t('ATTACHMENTS.FILE_TOO_LARGE'));
       input.value = '';
       return;
     }
@@ -111,12 +117,12 @@ export class RecordAttachmentsComponent {
       next: () => {
         this.uploading.set(false);
         input.value = '';
-        this.message.success('Allegato caricato');
+        this.message.success(this.t('ATTACHMENTS.UPLOAD_SUCCESS'));
         this.load();
       },
       error: () => {
         this.uploading.set(false);
-        this.message.error('Caricamento non riuscito');
+        this.message.error(this.t('ATTACHMENTS.UPLOAD_ERROR'));
       },
     });
   }
@@ -124,17 +130,17 @@ export class RecordAttachmentsComponent {
   protected download(a: ExtraRecord): void {
     this.api.download(a.id).subscribe({
       next: (blob) => downloadBlob(blob, this.nameOf(a)),
-      error: () => this.message.error('Download non riuscito'),
+      error: () => this.message.error(this.t('ATTACHMENTS.DOWNLOAD_ERROR')),
     });
   }
 
   protected remove(a: ExtraRecord): void {
     this.api.delete(a.id).subscribe({
       next: () => {
-        this.message.success('Allegato eliminato');
+        this.message.success(this.t('ATTACHMENTS.DELETE_SUCCESS'));
         this.load();
       },
-      error: () => this.message.error('Eliminazione non riuscita'),
+      error: () => this.message.error(this.t('ATTACHMENTS.DELETE_ERROR')),
     });
   }
 }

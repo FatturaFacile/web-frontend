@@ -268,26 +268,40 @@
         </nz-col>
       </nz-row>
 
-      <nz-divider nzText="Righe Preventivo" nzOrientation="left"></nz-divider>
+      <nz-divider [nzText]="'SALES.COL_ITEMS' | translate" nzOrientation="left"></nz-divider>
 
       <div formArrayName="items">
         @for (_ of quoteItems.controls; track $index) {
           <div [formGroupName]="$index" class="item-row">
             <nz-row [nzGutter]="12">
-              <nz-col [nzSpan]="8">
+              <nz-col [nzSpan]="4">
+                <nz-select
+                  class="w-full"
+                  formControlName="product_id"
+                  nzAllowClear
+                  nzShowSearch
+                  [nzPlaceHolder]="'PRICING.PRODUCT' | translate"
+                  (ngModelChange)="onProductSelected('quote', $index, $event)"
+                >
+                  @for (p of products(); track p.id) {
+                    <nz-option [nzValue]="p.id" [nzLabel]="p.sku + ' · ' + p.name"></nz-option>
+                  }
+                </nz-select>
+              </nz-col>
+              <nz-col [nzSpan]="5">
                 <input nz-input formControlName="description" [placeholder]="'SALES.LBL_DESCRIZIONE_ARTICOLO_SERVIZIO' | translate" />
               </nz-col>
-              <nz-col [nzSpan]="4">
-                <nz-input-number class="w-full" formControlName="quantity" [nzMin]="0.001" [nzPlaceHolder]="'Q.tà'"></nz-input-number>
+              <nz-col [nzSpan]="3">
+                <nz-input-number class="w-full" formControlName="quantity" [nzMin]="0.001" [nzPlaceHolder]="'COMMON.QUANTITY' | translate"></nz-input-number>
               </nz-col>
               <nz-col [nzSpan]="4">
-                <nz-input-number class="w-full" formControlName="unit_price" [nzMin]="0" [nzPlaceHolder]="'Prezzo unitario'"></nz-input-number>
+                <nz-input-number class="w-full" formControlName="unit_price" [nzMin]="0" [nzPlaceHolder]="'PRICING.PRICE' | translate"></nz-input-number>
               </nz-col>
               <nz-col [nzSpan]="3">
-                <nz-input-number class="w-full" formControlName="tax_rate" [nzMin]="0" [nzMax]="100" [nzPlaceHolder]="'IVA %'"></nz-input-number>
+                <nz-input-number class="w-full" formControlName="tax_rate" [nzMin]="0" [nzMax]="100" nzPlaceHolder="VAT %"></nz-input-number>
               </nz-col>
               <nz-col [nzSpan]="3">
-                <nz-input-number class="w-full" formControlName="discount_percentage" [nzMin]="0" [nzMax]="100" [nzPlaceHolder]="'Sconto %'"></nz-input-number>
+                <nz-input-number class="w-full" formControlName="discount_percentage" [nzMin]="0" [nzMax]="100" nzPlaceHolder="%"></nz-input-number>
               </nz-col>
               <nz-col class="item-remove" [nzSpan]="2">
                 <button nz-button appIconAction="delete" nzType="text" nzDanger (click)="removeQuoteItem($index)"></button>
@@ -353,26 +367,40 @@
         </nz-col>
       </nz-row>
 
-      <nz-divider nzText="Righe Ordine" nzOrientation="left"></nz-divider>
+      <nz-divider [nzText]="'SALES.COL_ITEMS' | translate" nzOrientation="left"></nz-divider>
 
       <div formArrayName="items">
         @for (_ of orderItems.controls; track $index) {
           <div [formGroupName]="$index" class="item-row">
             <nz-row [nzGutter]="12">
-              <nz-col [nzSpan]="8">
+              <nz-col [nzSpan]="4">
+                <nz-select
+                  class="w-full"
+                  formControlName="product_id"
+                  nzAllowClear
+                  nzShowSearch
+                  [nzPlaceHolder]="'PRICING.PRODUCT' | translate"
+                  (ngModelChange)="onProductSelected('order', $index, $event)"
+                >
+                  @for (p of products(); track p.id) {
+                    <nz-option [nzValue]="p.id" [nzLabel]="p.sku + ' · ' + p.name"></nz-option>
+                  }
+                </nz-select>
+              </nz-col>
+              <nz-col [nzSpan]="5">
                 <input nz-input formControlName="description" [placeholder]="'SALES.LBL_DESCRIZIONE_ARTICOLO' | translate" />
               </nz-col>
-              <nz-col [nzSpan]="4">
-                <nz-input-number class="w-full" formControlName="quantity" [nzMin]="0.001" [nzPlaceHolder]="'Q.tà'"></nz-input-number>
+              <nz-col [nzSpan]="3">
+                <nz-input-number class="w-full" formControlName="quantity" [nzMin]="0.001" [nzPlaceHolder]="'COMMON.QUANTITY' | translate"></nz-input-number>
               </nz-col>
               <nz-col [nzSpan]="4">
-                <nz-input-number class="w-full" formControlName="unit_price" [nzMin]="0" [nzPlaceHolder]="'Prezzo unitario'"></nz-input-number>
+                <nz-input-number class="w-full" formControlName="unit_price" [nzMin]="0" [nzPlaceHolder]="'PRICING.PRICE' | translate"></nz-input-number>
               </nz-col>
               <nz-col [nzSpan]="3">
-                <nz-input-number class="w-full" formControlName="tax_rate" [nzMin]="0" [nzMax]="100" [nzPlaceHolder]="'IVA %'"></nz-input-number>
+                <nz-input-number class="w-full" formControlName="tax_rate" [nzMin]="0" [nzMax]="100" nzPlaceHolder="VAT %"></nz-input-number>
               </nz-col>
               <nz-col [nzSpan]="3">
-                <nz-input-number class="w-full" formControlName="discount_percentage" [nzMin]="0" [nzMax]="100" [nzPlaceHolder]="'Sconto %'"></nz-input-number>
+                <nz-input-number class="w-full" formControlName="discount_percentage" [nzMin]="0" [nzMax]="100" nzPlaceHolder="%"></nz-input-number>
               </nz-col>
               <nz-col class="item-remove" [nzSpan]="2">
                 <button nz-button appIconAction="delete" nzType="text" nzDanger (click)="removeOrderItem($index)"></button>

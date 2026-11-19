@@ -26,6 +26,7 @@ const BLOCKED_APPROVALS = ['pending', 'in_approval', 'rejected', 'match_blocked'
   template: `
     <nz-card [nzTitle]="'iso20022.run.title' | translate">
       <div class="controls">
+        <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
         <label>
           <span>{{ 'iso20022.run.scheme' | translate }}</span>
           <nz-select [ngModel]="scheme()" (ngModelChange)="scheme.set($event)" class="select" data-testid="scheme">
@@ -33,6 +34,7 @@ const BLOCKED_APPROVALS = ['pending', 'in_approval', 'rejected', 'match_blocked'
             <nz-option nzValue="it" nzLabel="SEPA (IT)" />
           </nz-select>
         </label>
+        <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
         <label>
           <span>{{ 'iso20022.run.version' | translate }}</span>
           <nz-select [ngModel]="version()" (ngModelChange)="version.set($event)" class="select" data-testid="version">

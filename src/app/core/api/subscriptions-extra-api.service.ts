@@ -78,28 +78,28 @@ export class SubscriptionsExtraApiService {
     return this.http.put<ApiResponse<Row>>(`${this.base}/subscriptions/dunning-policy`, payload);
   }
 
-  /** POST /subscriptions/{}/activate */
+  /** POST /sub/contracts/{}/activate */
   activateSubscription(subscriptionId: string, payload: Payload = {}): Observable<ApiResponse<Row>> {
-    return this.http.post<ApiResponse<Row>>(`${this.base}/subscriptions/${subscriptionId}/activate`, payload);
+    return this.http.post<ApiResponse<Row>>(`${this.base}/sub/contracts/${subscriptionId}/activate`, payload);
   }
 
-  /** POST /subscriptions/{}/suspend */
+  /** POST /sub/contracts/{}/suspend */
   suspendSubscription(subscriptionId: string, payload: Payload = {}): Observable<ApiResponse<Row>> {
-    return this.http.post<ApiResponse<Row>>(`${this.base}/subscriptions/${subscriptionId}/suspend`, payload);
+    return this.http.post<ApiResponse<Row>>(`${this.base}/sub/contracts/${subscriptionId}/suspend`, payload);
   }
 
-  /** POST /subscriptions/{}/reactivate */
+  /** POST /sub/contracts/{}/reactivate */
   reactivateSubscription(subscriptionId: string, payload: Payload = {}): Observable<ApiResponse<Row>> {
-    return this.http.post<ApiResponse<Row>>(`${this.base}/subscriptions/${subscriptionId}/reactivate`, payload);
+    return this.http.post<ApiResponse<Row>>(`${this.base}/sub/contracts/${subscriptionId}/reactivate`, payload);
   }
 
-  /** POST /subscriptions/{}/upgrade */
+  /** POST /sub/contracts/{}/upgrade */
   upgradeSubscription(subscriptionId: string, payload: Payload = {}): Observable<ApiResponse<Row>> {
-    return this.http.post<ApiResponse<Row>>(`${this.base}/subscriptions/${subscriptionId}/upgrade`, payload);
+    return this.http.post<ApiResponse<Row>>(`${this.base}/sub/contracts/${subscriptionId}/upgrade`, payload);
   }
 
-  /** POST /subscriptions/{}/downgrade */
+  /** POST /sub/contracts/{}/downgrade */
   downgradeSubscription(subscriptionId: string, payload: Payload = {}): Observable<ApiResponse<Row>> {
-    return this.http.post<ApiResponse<Row>>(`${this.base}/subscriptions/${subscriptionId}/downgrade`, payload);
+    return this.http.post<ApiResponse<Row>>(`${this.base}/sub/contracts/${subscriptionId}/downgrade`, payload);
   }
 }

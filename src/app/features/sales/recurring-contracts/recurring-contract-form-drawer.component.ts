@@ -4,7 +4,6 @@ import {
   Component,
   EventEmitter,
   inject,
-  Input,
   OnInit,
   Output,
   signal,
@@ -34,6 +33,8 @@ import { NzSwitchModule } from 'ng-zorro-antd/switch';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { RecurringContractsApiService } from '@core/api/recurring-contracts-api.service';
+import { I18nService } from '@core/i18n/i18n.service';
+import { TranslatePipe } from '@shared';
 import { RecurringContract } from '@core/models/recurring-contracts.model';
 
 @Component({
@@ -58,12 +59,13 @@ import { RecurringContract } from '@core/models/recurring-contracts.model';
     NzSwitchModule,
     NzCardModule,
     NzIconModule,
+    TranslatePipe,
   ],
   template: `
     <nz-drawer
       [nzVisible]="visible()"
       [nzWidth]="900"
-      [nzTitle]="isEditing() ? 'Modifica Contratto Ricorrente' : 'Nuovo Contratto Ricorrente'"
+      [nzTitle]="(isEditing() ? 'RC.FORM.EDIT_TITLE' : 'RC.FORM.CREATE_TITLE') | translate"
       (nzOnClose)="close()"
     >
       <ng-container *nzDrawerContent>
@@ -71,21 +73,21 @@ import { RecurringContract } from '@core/models/recurring-contracts.model';
           <form nz-form [formGroup]="form" (ngSubmit)="submitForm()" nzLayout="vertical">
             <nz-tabs>
               <!-- TAB 1: General Info & Terms -->
-              <nz-tab nzTitle="Dati Generali & Sottoscrizione">
+              <nz-tab [nzTitle]="'RC.FORM.TAB_GENERAL' | translate">
                 <div nz-row [nzGutter]="16">
                   <div nz-col [nzSpan]="12">
                     <nz-form-item>
-                      <nz-form-label nzRequired>Titolo Contratto</nz-form-label>
-                      <nz-form-control nzErrorTip="Inserisci il titolo del contratto">
-                        <input nz-input formControlName="title" placeholder="es. Canone Assistenza Server 2026" />
+                      <nz-form-label nzRequired>{{ 'RC.FORM.TITLE_LABEL' | translate }}</nz-form-label>
+                      <nz-form-control [nzErrorTip]="'RC.FORM.TITLE_REQUIRED' | translate">
+                        <input nz-input formControlName="title" [placeholder]="'RC.FORM.TITLE_PLACEHOLDER' | translate" />
                       </nz-form-control>
                     </nz-form-item>
                   </div>
                   <div nz-col [nzSpan]="12">
                     <nz-form-item>
-                      <nz-form-label nzRequired>ID Cliente / Contatto (UUID)</nz-form-label>
-                      <nz-form-control nzErrorTip="Seleziona o specifica il cliente">
-                        <input nz-input formControlName="customer_id" placeholder="UUID del cliente" />
+                      <nz-form-label nzRequired>{{ 'RC.FORM.CUSTOMER_ID_LABEL' | translate }}</nz-form-label>
+                      <nz-form-control [nzErrorTip]="'RC.FORM.CUSTOMER_ID_REQUIRED' | translate">
+                        <input nz-input formControlName="customer_id" [placeholder]="'RC.FORM.CUSTOMER_ID_PLACEHOLDER' | translate" />
                       </nz-form-control>
                     </nz-form-item>
                   </div>
@@ -94,38 +96,38 @@ import { RecurringContract } from '@core/models/recurring-contracts.model';
                 <div nz-row [nzGutter]="16">
                   <div nz-col [nzSpan]="8">
                     <nz-form-item>
-                      <nz-form-label nzRequired>Tipologia Contratto</nz-form-label>
+                      <nz-form-label nzRequired>{{ 'RC.FORM.TYPE_LABEL' | translate }}</nz-form-label>
                       <nz-form-control>
                         <nz-select formControlName="contract_type">
-                          <nz-option nzValue="maintenance" nzLabel="Manutenzione"></nz-option>
-                          <nz-option nzValue="rental" nzLabel="Noleggio / Locazione"></nz-option>
-                          <nz-option nzValue="software_license" nzLabel="Licenza Software / SaaS"></nz-option>
-                          <nz-option nzValue="service_subscription" nzLabel="Abbonamento Servizi"></nz-option>
+                          <nz-option nzValue="maintenance" [nzLabel]="'RC.TYPE.MAINTENANCE' | translate"></nz-option>
+                          <nz-option nzValue="rental" [nzLabel]="'RC.TYPE.RENTAL' | translate"></nz-option>
+                          <nz-option nzValue="software_license" [nzLabel]="'RC.TYPE.SOFTWARE_LICENSE' | translate"></nz-option>
+                          <nz-option nzValue="service_subscription" [nzLabel]="'RC.TYPE.SERVICE_SUBSCRIPTION' | translate"></nz-option>
                         </nz-select>
                       </nz-form-control>
                     </nz-form-item>
                   </div>
                   <div nz-col [nzSpan]="8">
                     <nz-form-item>
-                      <nz-form-label nzRequired>Valuta</nz-form-label>
+                      <nz-form-label nzRequired>{{ 'RC.FORM.CURRENCY_LABEL' | translate }}</nz-form-label>
                       <nz-form-control>
                         <nz-select formControlName="currency">
-                          <nz-option nzValue="CHF" nzLabel="CHF (Franco Svizzero)"></nz-option>
-                          <nz-option nzValue="EUR" nzLabel="EUR (Euro)"></nz-option>
+                          <nz-option nzValue="CHF" nzLabel="CHF"></nz-option>
+                          <nz-option nzValue="EUR" nzLabel="EUR"></nz-option>
                         </nz-select>
                       </nz-form-control>
                     </nz-form-item>
                   </div>
                   <div nz-col [nzSpan]="8">
                     <nz-form-item>
-                      <nz-form-label nzRequired>Frequenza Fatturazione</nz-form-label>
+                      <nz-form-label nzRequired>{{ 'RC.FORM.FREQUENCY_LABEL' | translate }}</nz-form-label>
                       <nz-form-control>
                         <nz-select formControlName="billing_frequency">
-                          <nz-option nzValue="monthly" nzLabel="Mensile"></nz-option>
-                          <nz-option nzValue="quarterly" nzLabel="Trimestrale"></nz-option>
-                          <nz-option nzValue="semi_annual" nzLabel="Semestrale"></nz-option>
-                          <nz-option nzValue="annual" nzLabel="Annuale"></nz-option>
-                          <nz-option nzValue="custom_days" nzLabel="Intervallo Personalizzato (gg)"></nz-option>
+                          <nz-option nzValue="monthly" [nzLabel]="'RC.FREQ.MONTHLY' | translate"></nz-option>
+                          <nz-option nzValue="quarterly" [nzLabel]="'RC.FREQ.QUARTERLY' | translate"></nz-option>
+                          <nz-option nzValue="semi_annual" [nzLabel]="'RC.FREQ.SEMI_ANNUAL' | translate"></nz-option>
+                          <nz-option nzValue="annual" [nzLabel]="'RC.FREQ.ANNUAL' | translate"></nz-option>
+                          <nz-option nzValue="custom_days" [nzLabel]="'RC.FREQ.CUSTOM_DAYS' | translate"></nz-option>
                         </nz-select>
                       </nz-form-control>
                     </nz-form-item>
@@ -135,18 +137,18 @@ import { RecurringContract } from '@core/models/recurring-contracts.model';
                 <div nz-row [nzGutter]="16">
                   <div nz-col [nzSpan]="8">
                     <nz-form-item>
-                      <nz-form-label nzRequired>Tempistica Fatturazione</nz-form-label>
+                      <nz-form-label nzRequired>{{ 'RC.FORM.TIMING_LABEL' | translate }}</nz-form-label>
                       <nz-form-control>
                         <nz-select formControlName="billing_timing">
-                          <nz-option nzValue="in_advance" nzLabel="Anticipata"></nz-option>
-                          <nz-option nzValue="in_arrears" nzLabel="Posticipata"></nz-option>
+                          <nz-option nzValue="in_advance" [nzLabel]="'RC.TIMING.IN_ADVANCE' | translate"></nz-option>
+                          <nz-option nzValue="in_arrears" [nzLabel]="'RC.TIMING.IN_ARREARS' | translate"></nz-option>
                         </nz-select>
                       </nz-form-control>
                     </nz-form-item>
                   </div>
                   <div nz-col [nzSpan]="8">
                     <nz-form-item>
-                      <nz-form-label nzRequired>Data Inizio</nz-form-label>
+                      <nz-form-label nzRequired>{{ 'RC.FORM.START_DATE_LABEL' | translate }}</nz-form-label>
                       <nz-form-control>
                         <input nz-input type="date" formControlName="start_date" />
                       </nz-form-control>
@@ -154,7 +156,7 @@ import { RecurringContract } from '@core/models/recurring-contracts.model';
                   </div>
                   <div nz-col [nzSpan]="8">
                     <nz-form-item>
-                      <nz-form-label>Data Fine (opzionale)</nz-form-label>
+                      <nz-form-label>{{ 'RC.FORM.END_DATE_LABEL' | translate }}</nz-form-label>
                       <nz-form-control>
                         <input nz-input type="date" formControlName="end_date" />
                       </nz-form-control>
@@ -165,7 +167,7 @@ import { RecurringContract } from '@core/models/recurring-contracts.model';
                 <div nz-row [nzGutter]="16">
                   <div nz-col [nzSpan]="8">
                     <nz-form-item>
-                      <nz-form-label nzRequired>Prossima Fatturazione</nz-form-label>
+                      <nz-form-label nzRequired>{{ 'RC.FORM.NEXT_BILLING_LABEL' | translate }}</nz-form-label>
                       <nz-form-control>
                         <input nz-input type="date" formControlName="next_billing_date" />
                       </nz-form-control>
@@ -173,7 +175,7 @@ import { RecurringContract } from '@core/models/recurring-contracts.model';
                   </div>
                   <div nz-col [nzSpan]="8">
                     <nz-form-item>
-                      <nz-form-label>Preavviso Disdetta (gg)</nz-form-label>
+                      <nz-form-label>{{ 'RC.FORM.NOTICE_DAYS_LABEL' | translate }}</nz-form-label>
                       <nz-form-control>
                         <input nz-input type="number" formControlName="notice_period_days" />
                       </nz-form-control>
@@ -181,10 +183,10 @@ import { RecurringContract } from '@core/models/recurring-contracts.model';
                   </div>
                   <div nz-col [nzSpan]="8">
                     <nz-form-item>
-                      <nz-form-label>Emissione Automatica</nz-form-label>
+                      <nz-form-label>{{ 'RC.FORM.AUTO_ISSUE_LABEL' | translate }}</nz-form-label>
                       <nz-form-control>
                         <nz-switch formControlName="invoice_auto_issue"></nz-switch>
-                        <span class="ms-2 text-muted">Emetti fattura (anziché bozza)</span>
+                        <span class="ms-2 text-muted">{{ 'RC.FORM.AUTO_ISSUE_HINT' | translate }}</span>
                       </nz-form-control>
                     </nz-form-item>
                   </div>
@@ -193,50 +195,52 @@ import { RecurringContract } from '@core/models/recurring-contracts.model';
                 <div nz-row [nzGutter]="16">
                   <div nz-col [nzSpan]="8">
                     <nz-form-item>
-                      <nz-form-label>Rinnovo Automatico</nz-form-label>
+                      <nz-form-label>{{ 'RC.FORM.AUTO_RENEW_LABEL' | translate }}</nz-form-label>
                       <nz-form-control>
                         <nz-switch formControlName="auto_renew"></nz-switch>
                       </nz-form-control>
                     </nz-form-item>
                   </div>
-                  <div nz-col [nzSpan]="8" *ngIf="form.get('auto_renew')?.value">
-                    <nz-form-item>
-                      <nz-form-label>Mesi Rinnovo</nz-form-label>
-                      <nz-form-control>
-                        <input nz-input type="number" formControlName="renewal_period_months" placeholder="es. 12" />
-                      </nz-form-control>
-                    </nz-form-item>
-                  </div>
+                  @if (form.get('auto_renew')?.value) {
+                    <div nz-col [nzSpan]="8">
+                      <nz-form-item>
+                        <nz-form-label>{{ 'RC.FORM.RENEWAL_MONTHS_LABEL' | translate }}</nz-form-label>
+                        <nz-form-control>
+                          <input nz-input type="number" formControlName="renewal_period_months" placeholder="12" />
+                        </nz-form-control>
+                      </nz-form-item>
+                    </div>
+                  }
                 </div>
               </nz-tab>
 
               <!-- TAB 2: Contract Lines & Proration -->
-              <nz-tab nzTitle="Voci di Canone & Ripartizione">
+              <nz-tab [nzTitle]="'RC.FORM.TAB_LINES' | translate">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                  <span class="text-muted">Specifica le righe periodiche e il metodo di prorata</span>
+                  <span class="text-muted">{{ 'RC.FORM.LINES_HINT' | translate }}</span>
                   <button nz-button nzType="dashed" (click)="addLine()" type="button">
-                    <i class="fa-solid fa-plus me-1"></i> Aggiungi Voce
+                    <i class="fa-solid fa-plus me-1"></i> {{ 'RC.FORM.ADD_LINE' | translate }}
                   </button>
                 </div>
 
                 <div formArrayName="lines">
-                  <div
-                    *ngFor="let lineCtrl of linesArray.controls; let i = index"
-                    [formGroupName]="i"
-                    class="line-row-card mb-3 p-3 border rounded"
-                  >
+                  @for (lineCtrl of linesArray.controls; track lineCtrl; let i = $index) {
+                    <div
+                      [formGroupName]="i"
+                      class="line-row-card mb-3 p-3 border rounded"
+                    >
                     <div nz-row [nzGutter]="12">
                       <div nz-col [nzSpan]="8">
                         <nz-form-item>
-                          <nz-form-label nzRequired>Descrizione Voce</nz-form-label>
+                          <nz-form-label nzRequired>{{ 'RC.FORM.LINE_DESCRIPTION' | translate }}</nz-form-label>
                           <nz-form-control>
-                            <input nz-input formControlName="description" placeholder="es. Canone Base" />
+                            <input nz-input formControlName="description" />
                           </nz-form-control>
                         </nz-form-item>
                       </div>
                       <div nz-col [nzSpan]="4">
                         <nz-form-item>
-                          <nz-form-label nzRequired>Quantità</nz-form-label>
+                          <nz-form-label nzRequired>{{ 'RC.FORM.LINE_QTY' | translate }}</nz-form-label>
                           <nz-form-control>
                             <input nz-input type="number" step="0.0001" formControlName="quantity" />
                           </nz-form-control>
@@ -244,7 +248,7 @@ import { RecurringContract } from '@core/models/recurring-contracts.model';
                       </div>
                       <div nz-col [nzSpan]="4">
                         <nz-form-item>
-                          <nz-form-label nzRequired>Prezzo Unitario</nz-form-label>
+                          <nz-form-label nzRequired>{{ 'RC.FORM.LINE_UNIT_PRICE' | translate }}</nz-form-label>
                           <nz-form-control>
                             <input nz-input type="number" step="0.0001" formControlName="unit_price" />
                           </nz-form-control>
@@ -252,7 +256,7 @@ import { RecurringContract } from '@core/models/recurring-contracts.model';
                       </div>
                       <div nz-col [nzSpan]="4">
                         <nz-form-item>
-                          <nz-form-label>Sconto %</nz-form-label>
+                          <nz-form-label>{{ 'RC.FORM.LINE_DISCOUNT' | translate }}</nz-form-label>
                           <nz-form-control>
                             <input nz-input type="number" step="0.01" formControlName="discount_percent" />
                           </nz-form-control>
@@ -260,7 +264,7 @@ import { RecurringContract } from '@core/models/recurring-contracts.model';
                       </div>
                       <div nz-col [nzSpan]="4">
                         <nz-form-item>
-                          <nz-form-label>Aliquota IVA %</nz-form-label>
+                          <nz-form-label>{{ 'RC.FORM.LINE_TAX_RATE' | translate }}</nz-form-label>
                           <nz-form-control>
                             <input nz-input type="number" step="0.1" formControlName="tax_rate" />
                           </nz-form-control>
@@ -271,12 +275,12 @@ import { RecurringContract } from '@core/models/recurring-contracts.model';
                     <div nz-row [nzGutter]="12" class="align-items-center">
                       <div nz-col [nzSpan]="10">
                         <nz-form-item class="mb-0">
-                          <nz-form-label>Modalità Prorata Ciclo</nz-form-label>
+                          <nz-form-label>{{ 'RC.FORM.LINE_PRORATION' | translate }}</nz-form-label>
                           <nz-form-control>
                             <nz-select formControlName="proration_mode">
-                              <nz-option nzValue="none" nzLabel="Nessuna prorata (Canone intero)"></nz-option>
-                              <nz-option nzValue="daily_exact" nzLabel="Giorni esatti effettivi (Actual/Actual)"></nz-option>
-                              <nz-option nzValue="thirty_day_month" nzLabel="Mese commerciale (30/360)"></nz-option>
+                              <nz-option nzValue="none" [nzLabel]="'RC.PRORATION.NONE' | translate"></nz-option>
+                              <nz-option nzValue="daily_exact" [nzLabel]="'RC.PRORATION.DAILY_EXACT' | translate"></nz-option>
+                              <nz-option nzValue="thirty_day_month" [nzLabel]="'RC.PRORATION.THIRTY_DAY_MONTH' | translate"></nz-option>
                             </nz-select>
                           </nz-form-control>
                         </nz-form-item>
@@ -290,41 +294,42 @@ import { RecurringContract } from '@core/models/recurring-contracts.model';
                           type="button"
                           [disabled]="linesArray.length <= 1"
                         >
-                          <i class="fa-solid fa-trash me-1"></i> Rimuovi
+                          <i class="fa-solid fa-trash me-1"></i> {{ 'RC.FORM.REMOVE_LINE' | translate }}
                         </button>
                       </div>
                     </div>
                   </div>
+                  }
                 </div>
               </nz-tab>
 
               <!-- TAB 3: Indexation Clause -->
-              <nz-tab nzTitle="Clausola ISTAT / Swiss IPC" formGroupName="indexation_clause">
-                <nz-card nzType="inner" nzTitle="Parametri di Rivalutazione Periodica">
+              <nz-tab [nzTitle]="'RC.FORM.TAB_INDEXATION' | translate" formGroupName="indexation_clause">
+                <nz-card nzType="inner" [nzTitle]="'RC.FORM.INDEXATION_CARD_TITLE' | translate">
                   <div nz-row [nzGutter]="16">
                     <div nz-col [nzSpan]="8">
                       <nz-form-item>
-                        <nz-form-label>Indice di Riferimento</nz-form-label>
+                        <nz-form-label>{{ 'RC.FORM.INDEX_TYPE_LABEL' | translate }}</nz-form-label>
                         <nz-form-control>
                           <nz-select formControlName="index_type">
-                            <nz-option nzValue="none" nzLabel="Nessuna Rivalutazione"></nz-option>
-                            <nz-option nzValue="istat_foi" nzLabel="ISTAT FOI (Italia)"></nz-option>
-                            <nz-option nzValue="swiss_ipc" nzLabel="Swiss IPC (Svizzera)"></nz-option>
+                            <nz-option nzValue="none" [nzLabel]="'RC.INDEX.NONE' | translate"></nz-option>
+                            <nz-option nzValue="istat_foi" nzLabel="ISTAT FOI"></nz-option>
+                            <nz-option nzValue="swiss_ipc" nzLabel="Swiss IPC"></nz-option>
                           </nz-select>
                         </nz-form-control>
                       </nz-form-item>
                     </div>
                     <div nz-col [nzSpan]="8">
                       <nz-form-item>
-                        <nz-form-label>Periodo Base (YYYY-MM)</nz-form-label>
+                        <nz-form-label>{{ 'RC.FORM.BASE_PERIOD_LABEL' | translate }}</nz-form-label>
                         <nz-form-control>
-                          <input nz-input placeholder="es. 2025-01" formControlName="base_index_period" />
+                          <input nz-input placeholder="2025-01" formControlName="base_index_period" />
                         </nz-form-control>
                       </nz-form-item>
                     </div>
                     <div nz-col [nzSpan]="8">
                       <nz-form-item>
-                        <nz-form-label>Valore Indice Base</nz-form-label>
+                        <nz-form-label>{{ 'RC.FORM.BASE_VALUE_LABEL' | translate }}</nz-form-label>
                         <nz-form-control>
                           <input nz-input type="number" step="0.0001" formControlName="base_index_value" />
                         </nz-form-control>
@@ -335,7 +340,7 @@ import { RecurringContract } from '@core/models/recurring-contracts.model';
                   <div nz-row [nzGutter]="16">
                     <div nz-col [nzSpan]="6">
                       <nz-form-item>
-                        <nz-form-label>Pass-Through % (es. 75 o 100)</nz-form-label>
+                        <nz-form-label>{{ 'RC.FORM.PASS_THROUGH_LABEL' | translate }}</nz-form-label>
                         <nz-form-control>
                           <input nz-input type="number" step="0.01" formControlName="pass_through_percent" />
                         </nz-form-control>
@@ -343,23 +348,23 @@ import { RecurringContract } from '@core/models/recurring-contracts.model';
                     </div>
                     <div nz-col [nzSpan]="6">
                       <nz-form-item>
-                        <nz-form-label>Floor % (Rivalutazione Minima)</nz-form-label>
+                        <nz-form-label>{{ 'RC.FORM.FLOOR_LABEL' | translate }}</nz-form-label>
                         <nz-form-control>
-                          <input nz-input type="number" step="0.01" formControlName="floor_percent" placeholder="opzionale" />
+                          <input nz-input type="number" step="0.01" formControlName="floor_percent" />
                         </nz-form-control>
                       </nz-form-item>
                     </div>
                     <div nz-col [nzSpan]="6">
                       <nz-form-item>
-                        <nz-form-label>Cap % (Tetto Massimo)</nz-form-label>
+                        <nz-form-label>{{ 'RC.FORM.CAP_LABEL' | translate }}</nz-form-label>
                         <nz-form-control>
-                          <input nz-input type="number" step="0.01" formControlName="cap_percent" placeholder="opzionale" />
+                          <input nz-input type="number" step="0.01" formControlName="cap_percent" />
                         </nz-form-control>
                       </nz-form-item>
                     </div>
                     <div nz-col [nzSpan]="6">
                       <nz-form-item>
-                        <nz-form-label>Frequenza Adeguamento (Mesi)</nz-form-label>
+                        <nz-form-label>{{ 'RC.FORM.ADJ_FREQ_LABEL' | translate }}</nz-form-label>
                         <nz-form-control>
                           <input nz-input type="number" formControlName="adjustment_frequency_months" />
                         </nz-form-control>
@@ -372,11 +377,11 @@ import { RecurringContract } from '@core/models/recurring-contracts.model';
 
             <div class="drawer-actions mt-4">
               <button nz-button nzType="default" (click)="close()" type="button" class="me-2">
-                Annulla
+                {{ 'COMMON.CANCEL' | translate }}
               </button>
               <button nz-button nzType="primary" [nzLoading]="saving()" type="submit">
                 <i class="fa-solid fa-check me-1"></i>
-                {{ isEditing() ? 'Salva Modifiche' : 'Crea Contratto' }}
+                {{ (isEditing() ? 'RC.FORM.SAVE_CHANGES' : 'RC.FORM.CREATE_SUBMIT') | translate }}
               </button>
             </div>
           </form>
@@ -419,6 +424,7 @@ export class RecurringContractFormDrawerComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly api = inject(RecurringContractsApiService);
   private readonly message = inject(NzMessageService);
+  private readonly i18n = inject(I18nService);
 
   @Output() readonly saved = new EventEmitter<void>();
 
@@ -546,7 +552,7 @@ export class RecurringContractFormDrawerComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.message.error('Impossibile caricare il contratto.');
+        this.message.error(this.i18n.translate('RC.FORM.LOAD_ERROR'));
         this.loading.set(false);
       },
     });
@@ -562,7 +568,7 @@ export class RecurringContractFormDrawerComponent implements OnInit {
         ctrl.markAsDirty();
         ctrl.updateValueAndValidity({ onlySelf: true });
       });
-      this.message.warning('Compila correttamente tutti i campi obbligatori.');
+      this.message.warning(this.i18n.translate('RC.FORM.VALIDATION_WARNING'));
       return;
     }
 
@@ -576,14 +582,14 @@ export class RecurringContractFormDrawerComponent implements OnInit {
     request$.subscribe({
       next: () => {
         this.message.success(
-          this.isEditing() ? 'Contratto modificato con successo.' : 'Contratto creato con successo.'
+          this.i18n.translate(this.isEditing() ? 'RC.FORM.UPDATE_SUCCESS' : 'RC.FORM.CREATE_SUCCESS')
         );
         this.saving.set(false);
         this.close();
         this.saved.emit();
       },
       error: () => {
-        this.message.error('Errore durante il salvataggio del contratto.');
+        this.message.error(this.i18n.translate('RC.FORM.SAVE_ERROR'));
         this.saving.set(false);
       },
     });

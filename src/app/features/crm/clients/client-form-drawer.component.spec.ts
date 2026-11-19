@@ -4,13 +4,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { icons } from '../../../icons-provider';
-import { ClientApiService, ContactResource, I18nService } from '@core';
+import { ClientApiService, ContactResource, I18nService, ViesApiService } from '@core';
 import { ClientFormDrawerComponent } from './client-form-drawer.component';
 
 describe('ClientFormDrawerComponent validation', () => {
   const api = {
     create: vi.fn().mockReturnValue(of({ success: true, data: {} })),
     update: vi.fn().mockReturnValue(of({ success: true, data: {} })),
+  };
+  const viesApi = {
+    validate: vi.fn().mockReturnValue(of({ success: true, data: { status: 'valid' } })),
   };
 
   function createDrawer(contact: ContactResource | null = null) {
@@ -29,6 +32,7 @@ describe('ClientFormDrawerComponent validation', () => {
       providers: [
         provideNzIcons(icons),
         { provide: ClientApiService, useValue: api },
+        { provide: ViesApiService, useValue: viesApi },
         { provide: NzMessageService, useValue: { success: vi.fn(), error: vi.fn() } },
         { provide: I18nService, useValue: { translate: (key: string) => key, instant: (key: string) => key } },
       ],

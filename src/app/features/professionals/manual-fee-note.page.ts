@@ -8,8 +8,8 @@ import { f, HubTab } from '../resource-hub/hub.types';
   selector: 'app-manual-fee-note',
   imports: [HubPageComponent],
   template: `<app-hub-page
-    title="Parcella manuale"
-    subtitle="Emetti una nota di parcella indicando direttamente onorari imponibili e aliquote"
+    title="PROFESSIONALS.MANUAL_FEE_NOTE.TITLE"
+    subtitle="PROFESSIONALS.MANUAL_FEE_NOTE.SUBTITLE"
     [tabs]="tabs()"
   />`,
 })
@@ -20,20 +20,20 @@ export class ManualFeeNoteComponent {
   protected readonly tabs = computed<HubTab[]>(() => [
     {
       kind: 'form',
-      title: 'Nuova parcella',
-      submitLabel: 'Emetti parcella',
+      title: 'PROFESSIONALS.MANUAL_FEE_NOTE.TAB_NEW',
+      submitLabel: 'PROFESSIONALS.MANUAL_FEE_NOTE.SUBMIT_BTN',
       canWrite: this.permissions.canWrite('professionals'),
       resetOnSuccess: true,
-      hint: 'Le aliquote sono percentuali: CPA fino al 10%, ritenuta fino al 30%, IVA fino al 25%.',
+      hint: 'PROFESSIONALS.MANUAL_FEE_NOTE.RATES_HINT',
       fields: [
-        f.id('client_id', 'Cliente (ID contatto)', { required: true }),
-        f.id('legal_case_id', 'Pratica (ID, facoltativo)'),
-        f.text('note_number', 'Numero parcella', { required: true }),
-        f.date('date', 'Data', { required: true }),
-        f.num('taxable_fees', 'Onorari imponibili', { required: true, min: 0 }),
-        f.num('cpa_rate', 'Aliquota CPA %', { min: 0, max: 10 }),
-        f.num('ritenuta_rate', 'Aliquota ritenuta %', { min: 0, max: 30 }),
-        f.num('vat_rate', 'Aliquota IVA %', { min: 0, max: 25 }),
+        f.id('client_id', 'PROFESSIONALS.MANUAL_FEE_NOTE.CLIENT_ID', { required: true }),
+        f.id('legal_case_id', 'PROFESSIONALS.MANUAL_FEE_NOTE.LEGAL_CASE_ID'),
+        f.text('note_number', 'PROFESSIONALS.MANUAL_FEE_NOTE.NOTE_NUMBER', { required: true }),
+        f.date('date', 'COMMON.DATE', { required: true }),
+        f.num('taxable_fees', 'PROFESSIONALS.MANUAL_FEE_NOTE.TAXABLE_FEES', { required: true, min: 0 }),
+        f.num('cpa_rate', 'PROFESSIONALS.MANUAL_FEE_NOTE.CPA_RATE', { min: 0, max: 10 }),
+        f.num('ritenuta_rate', 'PROFESSIONALS.MANUAL_FEE_NOTE.RITENUTA_RATE', { min: 0, max: 30 }),
+        f.num('vat_rate', 'PROFESSIONALS.MANUAL_FEE_NOTE.VAT_RATE', { min: 0, max: 25 }),
       ],
       submit: (p) => this.api.createFeeNote(this.toPayload(p)),
     },

@@ -1,5 +1,0 @@
-<nz-select [(ngModel)]="selectedPaymentType" [nzPlaceHolder]="'common.selectPaymentType' | translate" class="w-full">
-  @for (item of paymentTypes(); track item.id) {
-    <nz-option [nzValue]="item.code" [nzLabel]="item.label"></nz-option>
-  }
-</nz-select>

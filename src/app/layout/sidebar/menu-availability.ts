@@ -1,3 +1,8 @@
+import {
+  isFeatureFlagEnabled,
+  PREMATURE_OPEN_ISSUE_MODULES,
+} from '../../core/auth/feature-flag.guard';
+
 /**
  * Routes of the menu entries that have been tested and can be opened from the menu.
  *
@@ -83,6 +88,10 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/crm/engagement/reports',
   '/crm/engagement/scoring',
   '/crm/engagement/segments',
+  '/crm/lead-routing',
+  '/crm/lead-scoring',
+  '/crm/lead-sources',
+  '/crm/leads',
   '/crm/partners',
   '/crm/prm-config',
   '/crm/suppliers',
@@ -97,9 +106,6 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/dashboard',
   '/dms',
   '/dms/workflows',
-  '/docs/intro',
-  '/docs/labels',
-  '/docs/use-cases',
   '/document-trust',
   '/document-trust/preservation',
   '/ecommerce-integrations',
@@ -158,10 +164,13 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/hr/talent',
   '/hr/time',
   '/intrastat',
+  '/inventory/book',
+  '/inventory/cost-layers',
   '/inventory/counting',
   '/inventory/customs',
   '/inventory/ddt',
   '/inventory/items',
+  '/inventory/landed-costs',
   '/inventory/lots',
   '/inventory/outbound',
   '/inventory/replenishment',
@@ -193,10 +202,6 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/rebates',
   '/rebates/agreements',
   '/rebates/promotions',
-  '/modules/agenda',
-  '/modules/forms',
-  '/modules/marketing',
-  '/modules/products',
   '/planning',
   '/planning/admin',
   '/planning/compare',
@@ -254,9 +259,6 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/sales/qr-bill',
   '/sales/recurring-contracts',
   '/sales/sdi',
-  '/sectors/craft-lab',
-  '/sectors/mechanic',
-  '/sectors/sme',
   '/settings/access/audit',
   '/settings/access/delegations',
   '/settings/access/invitations',
@@ -265,8 +267,10 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/settings/access/teams',
   '/settings/admin/tenant-plan',
   '/settings/admin/user-tenants',
+  '/settings/corporate-group',
   '/settings/document-templates',
   '/settings/lookups',
+  '/settings/notifications',
   '/settings/sdi-channel',
   '/settings/security/enterprise',
   '/settings/tenant',
@@ -297,15 +301,8 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/talent-learning/succession',
   '/talent-learning/surveys',
   '/tessera-sanitaria',
-  '/tools/camt-statement',
-  '/tools/commercial-letter',
   '/tools/margin-calculator',
-  '/tools/pdf-editor',
-  '/tools/qr-generator',
-  '/tools/qr-invoice',
   '/tools/vat-calculator',
-  '/tools/vcard-qr',
-  '/tools/working-hours',
   '/transportation',
   '/transportation/audit',
   '/transportation/carriers',
@@ -334,13 +331,47 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   // '/portal': token page, not testable from the menu (demo token 404)
   // '/portal/family': token page, not testable from the menu ("Invalid or expired portal link")
   // '/visitors': kiosk page, needs a kiosk session (401)
+  // Unfinished / coming-soon placeholder pages disabled for release:
+  // '/docs/intro', '/docs/labels', '/docs/use-cases'
+  // '/modules/agenda', '/modules/forms', '/modules/marketing', '/modules/products'
+  // '/sectors/craft-lab', '/sectors/mechanic', '/sectors/sme'
+  // '/tools/camt-statement', '/tools/commercial-letter', '/tools/pdf-editor', '/tools/qr-generator', '/tools/qr-invoice', '/tools/vcard-qr', '/tools/working-hours'
+];
+
+export const DISABLED_PLACEHOLDER_ROUTES: readonly string[] = [
+  '/docs/intro',
+  '/docs/labels',
+  '/docs/use-cases',
+  '/modules/agenda',
+  '/modules/forms',
+  '/modules/marketing',
+  '/modules/products',
+  '/sectors/craft-lab',
+  '/sectors/mechanic',
+  '/sectors/sme',
+  '/tools/camt-statement',
+  '/tools/commercial-letter',
+  '/tools/pdf-editor',
+  '/tools/qr-generator',
+  '/tools/qr-invoice',
+  '/tools/vcard-qr',
+  '/tools/working-hours',
 ];
 
 export function isMenuRouteTested(
   route: string | undefined,
   tested: readonly string[] = TESTED_MENU_ROUTES,
 ): boolean {
-  return route !== undefined && tested.includes(route);
+  if (route === undefined || !tested.includes(route)) {
+    return false;
+  }
+  const prematureEntry = Object.entries(PREMATURE_OPEN_ISSUE_MODULES).find(
+    ([, meta]) => route === meta.routePrefix || route.startsWith(`${meta.routePrefix}/`),
+  );
+  if (prematureEntry && !isFeatureFlagEnabled(prematureEntry[0])) {
+    return false;
+  }
+  return true;
 }
 
 /** Lower case without accents, so that "contabilita" finds "Contabilità". */
