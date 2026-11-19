@@ -54,7 +54,12 @@ const transaction = (over: Partial<ReconciliationTransaction> = {}): Reconciliat
 async function configure(providers: unknown[]): Promise<void> {
   TestBed.resetTestingModule();
   await TestBed.configureTestingModule({
-    providers: [provideHttpClient(), provideRouter([]), provideNzIcons([InboxOutline]), ...(providers as never[])],
+    providers: [
+      provideHttpClient(),
+      provideRouter([]),
+      provideNzIcons([InboxOutline]),
+      ...(providers as never[]),
+    ],
   }).compileComponents();
 }
 
@@ -70,7 +75,8 @@ describe('TrIso20022ImportComponent', () => {
     fixture.detectChanges();
 
     expect(importIso20022).toHaveBeenCalledWith(file, true);
-    const text = fixture.nativeElement.querySelector('[data-testid="import-summary"]').textContent as string;
+    const text = fixture.nativeElement.querySelector('[data-testid="import-summary"]')
+      .textContent as string;
     expect(text).toContain('camt.054');
     expect(text).toContain('CH4431999123000889012');
   });
@@ -89,7 +95,12 @@ describe('TrIso20022ImportComponent', () => {
   });
 
   it('reports an import failure', async () => {
-    await configure([{ provide: BankingApiService, useValue: { importIso20022: () => throwError(() => ({ status: 422 })) } }]);
+    await configure([
+      {
+        provide: BankingApiService,
+        useValue: { importIso20022: () => throwError(() => ({ status: 422 })) },
+      },
+    ]);
     const fixture = TestBed.createComponent(TrIso20022ImportComponent);
     fixture.detectChanges();
 
@@ -103,9 +114,27 @@ describe('TrIso20022ImportComponent', () => {
 
 describe('TrReconciliationWorkbenchComponent', () => {
   it('lists the unmatched transactions and links one to an invoice', async () => {
-    const getReconciliationTransactions = vi.fn().mockReturnValue(of({ success: true, data: [transaction()], meta: { total: 1 } }));
-    const matchTransaction = vi.fn().mockReturnValue(of({ success: true, data: transaction({ reconciled: true }) }));
-    const list = vi.fn().mockReturnValue(of({ data: [{ id: 'inv-1', invoice_number: 'INV-1', total: 500, currency: 'CHF', contact: { company_name: 'Café Müller AG' } }] }));
+    const getReconciliationTransactions = vi
+      .fn()
+      .mockReturnValue(of({ success: true, data: [transaction()], meta: { total: 1 } }));
+    const matchTransaction = vi
+      .fn()
+      .mockReturnValue(of({ success: true, data: transaction({ reconciled: true }) }));
+    const list = vi
+      .fn()
+      .mockReturnValue(
+        of({
+          data: [
+            {
+              id: 'inv-1',
+              invoice_number: 'INV-1',
+              total: 500,
+              currency: 'CHF',
+              contact: { company_name: 'Café Müller AG' },
+            },
+          ],
+        }),
+      );
     await configure([
       { provide: BankingApiService, useValue: { getReconciliationTransactions, matchTransaction } },
       { provide: InvoiceApiService, useValue: { list } },
@@ -114,8 +143,12 @@ describe('TrReconciliationWorkbenchComponent', () => {
     const fixture = TestBed.createComponent(TrReconciliationWorkbenchComponent);
     fixture.detectChanges();
 
-    expect(getReconciliationTransactions).toHaveBeenCalledWith(expect.objectContaining({ status: 'unmatched', page: 1 }));
-    expect(fixture.nativeElement.querySelectorAll('[data-testid="transaction-row"]').length).toBe(1);
+    expect(getReconciliationTransactions).toHaveBeenCalledWith(
+      expect.objectContaining({ status: 'unmatched', page: 1 }),
+    );
+    expect(fixture.nativeElement.querySelectorAll('[data-testid="transaction-row"]').length).toBe(
+      1,
+    );
 
     const component = fixture.componentInstance as unknown as {
       openMatch(row: ReconciliationTransaction): void;
@@ -130,39 +163,89 @@ describe('TrReconciliationWorkbenchComponent', () => {
     component.difference.set('write_off');
     component.confirmMatch();
 
-    expect(matchTransaction).toHaveBeenCalledWith('t-1', { invoice_id: 'inv-1', difference_handling: 'write_off' });
+    expect(matchTransaction).toHaveBeenCalledWith('t-1', {
+      invoice_id: 'inv-1',
+      difference_handling: 'write_off',
+    });
     expect(getReconciliationTransactions).toHaveBeenCalledTimes(2);
   });
 
   it('offers supplier invoices for a debit', async () => {
     const getSupplierInvoices = vi.fn().mockReturnValue(of({ data: [] }));
     await configure([
-      { provide: BankingApiService, useValue: { getReconciliationTransactions: () => of({ success: true, data: [], meta: { total: 0 } }) } },
+      {
+        provide: BankingApiService,
+        useValue: {
+          getReconciliationTransactions: () => of({ success: true, data: [], meta: { total: 0 } }),
+        },
+      },
       { provide: InvoiceApiService, useValue: { list: vi.fn() } },
       { provide: ProcurementApiService, useValue: { getSupplierInvoices } },
     ]);
     const fixture = TestBed.createComponent(TrReconciliationWorkbenchComponent);
     fixture.detectChanges();
 
-    (fixture.componentInstance as unknown as { openMatch(row: ReconciliationTransaction): void }).openMatch(transaction({ direction: 'debit' }));
+    (
+      fixture.componentInstance as unknown as { openMatch(row: ReconciliationTransaction): void }
+    ).openMatch(transaction({ direction: 'debit' }));
 
-    expect(getSupplierInvoices).toHaveBeenCalledWith(expect.objectContaining({ payment_status: 'unpaid' }));
+    expect(getSupplierInvoices).toHaveBeenCalledWith(
+      expect.objectContaining({ payment_status: 'unpaid' }),
+    );
   });
 });
 
 describe('TrPaymentRunComponent', () => {
   const invoices = [
-    { id: 'a', invoice_number: 'SUP-1', supplier_name: 'Robert Schneider AG', date: '2026-03-01', due_date: '2026-03-31', currency: 'CHF', total_amount: '1949.75', total_paid: '0', approval_status: 'approved' },
-    { id: 'b', invoice_number: 'SUP-2', supplier_name: 'Rossi SRL', date: '2026-03-02', currency: 'CHF', total_amount: '250.00', total_paid: '50.00', approval_status: null },
-    { id: 'c', invoice_number: 'SUP-3', supplier_name: 'Blocked AG', date: '2026-03-03', currency: 'CHF', total_amount: '10.00', approval_status: 'pending' },
-    { id: 'd', invoice_number: 'SUP-4', supplier_name: 'Euro GmbH', date: '2026-03-04', currency: 'EUR', total_amount: '99.00', approval_status: 'approved' },
+    {
+      id: 'a',
+      invoice_number: 'SUP-1',
+      supplier_name: 'Robert Schneider AG',
+      date: '2026-03-01',
+      due_date: '2026-03-31',
+      currency: 'CHF',
+      total_amount: '1949.75',
+      total_paid: '0',
+      approval_status: 'approved',
+    },
+    {
+      id: 'b',
+      invoice_number: 'SUP-2',
+      supplier_name: 'Rossi SRL',
+      date: '2026-03-02',
+      currency: 'CHF',
+      total_amount: '250.00',
+      total_paid: '50.00',
+      approval_status: null,
+    },
+    {
+      id: 'c',
+      invoice_number: 'SUP-3',
+      supplier_name: 'Blocked AG',
+      date: '2026-03-03',
+      currency: 'CHF',
+      total_amount: '10.00',
+      approval_status: 'pending',
+    },
+    {
+      id: 'd',
+      invoice_number: 'SUP-4',
+      supplier_name: 'Euro GmbH',
+      date: '2026-03-04',
+      currency: 'EUR',
+      total_amount: '99.00',
+      approval_status: 'approved',
+    },
   ];
 
   afterEach(() => vi.restoreAllMocks());
 
   async function setup(exportPain001 = vi.fn()) {
     await configure([
-      { provide: ProcurementApiService, useValue: { getSupplierInvoices: () => of({ data: invoices }) } },
+      {
+        provide: ProcurementApiService,
+        useValue: { getSupplierInvoices: () => of({ data: invoices }) },
+      },
       { provide: BankingApiService, useValue: { exportPain001 } },
     ]);
     const fixture = TestBed.createComponent(TrPaymentRunComponent);
@@ -187,7 +270,9 @@ describe('TrPaymentRunComponent', () => {
     run.toggle('b', true);
     fixture.detectChanges();
 
-    expect((fixture.nativeElement.querySelector('[data-testid="selection-total"]').textContent as string)).toContain('2');
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="selection-total"]').textContent as string,
+    ).toContain('2');
     expect(fixture.nativeElement.querySelector('[data-testid="mixed-currencies"]')).toBeNull();
   });
 
@@ -206,7 +291,16 @@ describe('TrPaymentRunComponent', () => {
   });
 
   it('requests the chosen version and scheme and downloads the validated XML', async () => {
-    const result = { batch_id: 'b-1', message_id: 'MSG-1', format: 'iso_pain_001_ch', pain_version: '03', status: 'exported', xml_preview: '<Document/>', schema_valid: true, filename: 'pain.001.001.03-MSG-1.xml' };
+    const result = {
+      batch_id: 'b-1',
+      message_id: 'MSG-1',
+      format: 'iso_pain_001_ch',
+      pain_version: '03',
+      status: 'exported',
+      xml_preview: '<Document/>',
+      schema_valid: true,
+      filename: 'pain.001.001.03-MSG-1.xml',
+    };
     const exportPain001 = vi.fn().mockReturnValue(of({ success: true, data: result }));
     const fixture = await setup(exportPain001);
     const run = fixture.componentInstance as unknown as Run;
@@ -220,14 +314,27 @@ describe('TrPaymentRunComponent', () => {
     run.generate();
     fixture.detectChanges();
 
-    expect(exportPain001).toHaveBeenCalledWith({ invoice_ids: ['a'], version: '03', scheme: 'ch', execution_date: null });
+    expect(exportPain001).toHaveBeenCalledWith({
+      invoice_ids: ['a'],
+      version: '03',
+      scheme: 'ch',
+      execution_date: null,
+    });
     expect(click).toHaveBeenCalled();
-    expect(fixture.nativeElement.querySelector('[data-testid="run-result"]').textContent).toContain('pain.001.001.03-MSG-1.xml');
+    expect(fixture.nativeElement.querySelector('[data-testid="run-result"]').textContent).toContain(
+      'pain.001.001.03-MSG-1.xml',
+    );
     expect(fixture.nativeElement.querySelectorAll('[data-testid="run-row"]').length).toBe(2);
   });
 
   it('shows the validation message of a refused export', async () => {
-    const exportPain001 = vi.fn().mockReturnValue(throwError(() => ({ error: { errors: { invoice_ids: ['The payment reference is missing'] } } })));
+    const exportPain001 = vi
+      .fn()
+      .mockReturnValue(
+        throwError(() => ({
+          error: { errors: { invoice_ids: ['The payment reference is missing'] } },
+        })),
+      );
     const fixture = await setup(exportPain001);
     const run = fixture.componentInstance as unknown as Run;
 
@@ -235,6 +342,8 @@ describe('TrPaymentRunComponent', () => {
     run.generate();
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelector('[data-testid="run-error"]').textContent).toContain('The payment reference is missing');
+    expect(fixture.nativeElement.querySelector('[data-testid="run-error"]').textContent).toContain(
+      'The payment reference is missing',
+    );
   });
 });

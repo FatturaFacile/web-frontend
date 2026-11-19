@@ -49,12 +49,29 @@ interface SdiTimelineEntry {
 @Component({
   selector: 'app-sdi-transmissions',
   imports: [
-    DatePipe, FormsModule, NzButtonModule, NzCardModule, NzEmptyModule, NzInputModule, NzModalModule, NzSelectModule, NzTableModule, NzTagModule,
-    PageHeaderComponent, SdiHtmlPreviewComponent, SupplierFatturaPaImporterComponent, TranslatePipe,
+    DatePipe,
+    FormsModule,
+    NzButtonModule,
+    NzCardModule,
+    NzEmptyModule,
+    NzInputModule,
+    NzModalModule,
+    NzSelectModule,
+    NzTableModule,
+    NzTagModule,
+    PageHeaderComponent,
+    SdiHtmlPreviewComponent,
+    SupplierFatturaPaImporterComponent,
+    TranslatePipe,
   ],
-  styles: ['.toolbar { display: flex; gap: var(--space-2); margin-bottom: var(--space-3); } .sdi-error { display: block; color: var(--text-secondary); }'],
+  styles: [
+    '.toolbar { display: flex; gap: var(--space-2); margin-bottom: var(--space-3); } .sdi-error { display: block; color: var(--text-secondary); }',
+  ],
   template: `
-    <app-page-header [title]="'sdiTransmissions.title' | translate" [subtitle]="'sdiTransmissions.subtitle' | translate" />
+    <app-page-header
+      [title]="'sdiTransmissions.title' | translate"
+      [subtitle]="'sdiTransmissions.subtitle' | translate"
+    />
     @if (canWrite()) {
       <nz-card [nzTitle]="'sdiTransmissions.import.title' | translate">
         <app-supplier-fatturapa-importer (imported)="reload()" />
@@ -62,15 +79,45 @@ interface SdiTimelineEntry {
     }
     <nz-card>
       <div class="toolbar">
-        <input nz-input style="width: 240px" [ngModel]="search()" (ngModelChange)="search.set($event)" (keyup.enter)="reload()" [placeholder]="'sdiTransmissions.search' | translate" [attr.aria-label]="'sdiTransmissions.search' | translate" />
-        <nz-select style="width: 220px" nzAllowClear [ngModel]="status()" (ngModelChange)="status.set($event); reload()" [nzPlaceHolder]="'sdiTransmissions.allStatuses' | translate" [attr.aria-label]="'sdiTransmissions.status' | translate">
+        <input
+          nz-input
+          style="width: 240px"
+          [ngModel]="search()"
+          (ngModelChange)="search.set($event)"
+          (keyup.enter)="reload()"
+          [placeholder]="'sdiTransmissions.search' | translate"
+          [attr.aria-label]="'sdiTransmissions.search' | translate"
+        />
+        <nz-select
+          style="width: 220px"
+          nzAllowClear
+          [ngModel]="status()"
+          (ngModelChange)="status.set($event); reload()"
+          [nzPlaceHolder]="'sdiTransmissions.allStatuses' | translate"
+          [attr.aria-label]="'sdiTransmissions.status' | translate"
+        >
           @for (value of statuses; track value) {
-            <nz-option [nzValue]="value" [nzLabel]="'sdiTransmissions.statuses.' + value | translate"></nz-option>
+            <nz-option
+              [nzValue]="value"
+              [nzLabel]="'sdiTransmissions.statuses.' + value | translate"
+            ></nz-option>
           }
         </nz-select>
-        <button nz-button type="button" (click)="reload()">{{ 'sdiTransmissions.refresh' | translate }}</button>
+        <button nz-button type="button" (click)="reload()">
+          {{ 'sdiTransmissions.refresh' | translate }}
+        </button>
       </div>
-      <nz-table #table nzSize="small" [nzFrontPagination]="false" [nzData]="rows()" [nzLoading]="loading()" [nzTotal]="total()" [nzPageIndex]="page()" [nzPageSize]="25" (nzPageIndexChange)="goTo($event)">
+      <nz-table
+        #table
+        nzSize="small"
+        [nzFrontPagination]="false"
+        [nzData]="rows()"
+        [nzLoading]="loading()"
+        [nzTotal]="total()"
+        [nzPageIndex]="page()"
+        [nzPageSize]="25"
+        (nzPageIndexChange)="goTo($event)"
+      >
         <thead>
           <tr>
             <th>{{ 'sdiTransmissions.invoice' | translate }}</th>
@@ -83,9 +130,13 @@ interface SdiTimelineEntry {
         <tbody>
           @for (row of table.data; track row.id) {
             <tr>
-              <td>{{ row.invoice_number }} <span class="sdi-error">{{ row.file_name }}</span></td>
               <td>
-                <nz-tag [nzColor]="color(row.sdi_status)">{{ 'sdiTransmissions.statuses.' + row.sdi_status | translate }}</nz-tag>
+                {{ row.invoice_number }} <span class="sdi-error">{{ row.file_name }}</span>
+              </td>
+              <td>
+                <nz-tag [nzColor]="color(row.sdi_status)">{{
+                  'sdiTransmissions.statuses.' + row.sdi_status | translate
+                }}</nz-tag>
                 @if (row.last_error) {
                   <span class="sdi-error">{{ row.last_error }}</span>
                 }
@@ -93,10 +144,28 @@ interface SdiTimelineEntry {
               <td>{{ row.sdi_identifier ?? '-' }}</td>
               <td>{{ row.sent_at ? (row.sent_at | date: 'short') : '-' }}</td>
               <td>
-                <button nz-button nzSize="small" type="button" (click)="openPreview(row)" data-testid="sdi-preview">{{ 'sdiTransmissions.preview' | translate }}</button>
-                <button nz-button nzSize="small" type="button" (click)="openHistory(row)" data-testid="sdi-history">{{ 'sdiTransmissions.history' | translate }}</button>
+                <button
+                  nz-button
+                  nzSize="small"
+                  type="button"
+                  (click)="openPreview(row)"
+                  data-testid="sdi-preview"
+                >
+                  {{ 'sdiTransmissions.preview' | translate }}
+                </button>
+                <button
+                  nz-button
+                  nzSize="small"
+                  type="button"
+                  (click)="openHistory(row)"
+                  data-testid="sdi-history"
+                >
+                  {{ 'sdiTransmissions.history' | translate }}
+                </button>
                 @if (row.can_retry && canWrite()) {
-                  <button nz-button nzSize="small" type="button" (click)="retry(row)">{{ 'sdiTransmissions.retry' | translate }}</button>
+                  <button nz-button nzSize="small" type="button" (click)="retry(row)">
+                    {{ 'sdiTransmissions.retry' | translate }}
+                  </button>
                 }
               </td>
             </tr>
@@ -107,7 +176,13 @@ interface SdiTimelineEntry {
         <nz-empty [nzNotFoundContent]="'sdiTransmissions.empty' | translate"></nz-empty>
       }
     </nz-card>
-    <nz-modal [nzVisible]="previewVisible()" [nzTitle]="'sdiTransmissions.preview' | translate" nzWidth="900px" [nzFooter]="null" (nzOnCancel)="closePreview()">
+    <nz-modal
+      [nzVisible]="previewVisible()"
+      [nzTitle]="'sdiTransmissions.preview' | translate"
+      nzWidth="900px"
+      [nzFooter]="null"
+      (nzOnCancel)="closePreview()"
+    >
       <ng-container *nzModalContent>
         <app-sdi-html-preview [content]="previewContent()" />
       </ng-container>
@@ -138,8 +213,22 @@ export class SdiTransmissionsComponent implements OnInit {
   protected readonly timeline = computed<SdiTimelineEntry[]>(() => {
     const { outbound, inbound } = this.logs();
     const entries: SdiTimelineEntry[] = [
-      ...outbound.map((log) => ({ id: `o-${log.id}`, direction: 'out' as const, label: log.action ?? log.provider ?? '', status: log.status, error: log.error, at: log.created_at })),
-      ...inbound.map((log) => ({ id: `i-${log.id}`, direction: 'in' as const, label: log.event_type ?? log.provider ?? '', status: log.status, error: log.error, at: log.processed_at ?? log.created_at })),
+      ...outbound.map((log) => ({
+        id: `o-${log.id}`,
+        direction: 'out' as const,
+        label: log.action ?? log.provider ?? '',
+        status: log.status,
+        error: log.error,
+        at: log.created_at,
+      })),
+      ...inbound.map((log) => ({
+        id: `i-${log.id}`,
+        direction: 'in' as const,
+        label: log.event_type ?? log.provider ?? '',
+        status: log.status,
+        error: log.error,
+        at: log.processed_at ?? log.created_at,
+      })),
     ];
 
     return entries.sort((a, b) => a.at.localeCompare(b.at));
@@ -148,7 +237,10 @@ export class SdiTransmissionsComponent implements OnInit {
   openHistory(row: SdiTransmission): void {
     this.api.notifications(row.invoice_id).subscribe({
       next: (response) => {
-        this.logs.set({ outbound: response.data?.outbound ?? [], inbound: response.data?.inbound ?? [] });
+        this.logs.set({
+          outbound: response.data?.outbound ?? [],
+          inbound: response.data?.inbound ?? [],
+        });
         this.historyVisible.set(true);
       },
       error: (error: unknown) => reportHttpError(error, this.message, this.i18n),
@@ -194,17 +286,24 @@ export class SdiTransmissionsComponent implements OnInit {
   goTo(page: number): void {
     this.page.set(page);
     this.loading.set(true);
-    this.api.list({ status: this.status() ?? undefined, search: this.search() || undefined, page, per_page: 25 }).subscribe({
-      next: (response) => {
-        this.rows.set(response.data);
-        this.total.set(response.meta?.total ?? response.data.length);
-        this.loading.set(false);
-      },
-      error: (error: unknown) => {
-        this.loading.set(false);
-        reportHttpError(error, this.message, this.i18n);
-      },
-    });
+    this.api
+      .list({
+        status: this.status() ?? undefined,
+        search: this.search() || undefined,
+        page,
+        per_page: 25,
+      })
+      .subscribe({
+        next: (response) => {
+          this.rows.set(response.data);
+          this.total.set(response.meta?.total ?? response.data.length);
+          this.loading.set(false);
+        },
+        error: (error: unknown) => {
+          this.loading.set(false);
+          reportHttpError(error, this.message, this.i18n);
+        },
+      });
   }
 
   retry(row: SdiTransmission): void {

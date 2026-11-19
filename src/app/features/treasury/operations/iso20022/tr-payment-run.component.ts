@@ -22,14 +22,30 @@ const BLOCKED_APPROVALS = ['pending', 'in_approval', 'rejected', 'match_blocked'
  */
 @Component({
   selector: 'app-tr-payment-run',
-  imports: [FormsModule, NzAlertModule, NzButtonModule, NzCardModule, NzInputModule, NzSelectModule, NzTableModule, MoneyPipe, TranslatePipe],
+  imports: [
+    FormsModule,
+    NzAlertModule,
+    NzButtonModule,
+    NzCardModule,
+    NzInputModule,
+    NzSelectModule,
+    NzTableModule,
+    MoneyPipe,
+    TranslatePipe,
+  ],
   template: `
     <nz-card [nzTitle]="'iso20022.run.title' | translate">
       <div class="controls">
         <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
         <label>
           <span>{{ 'iso20022.run.scheme' | translate }}</span>
-          <nz-select [ngModel]="scheme()" (ngModelChange)="scheme.set($event)" class="select" data-testid="scheme">
+          <nz-select
+            nzId="run-1"
+            [ngModel]="scheme()"
+            (ngModelChange)="scheme.set($event)"
+            class="select"
+            data-testid="scheme"
+          >
             <nz-option nzValue="ch" nzLabel="Swiss (CH)" />
             <nz-option nzValue="it" nzLabel="SEPA (IT)" />
           </nz-select>
@@ -37,21 +53,45 @@ const BLOCKED_APPROVALS = ['pending', 'in_approval', 'rejected', 'match_blocked'
         <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
         <label>
           <span>{{ 'iso20022.run.version' | translate }}</span>
-          <nz-select [ngModel]="version()" (ngModelChange)="version.set($event)" class="select" data-testid="version">
+          <nz-select
+            nzId="run-2"
+            [ngModel]="version()"
+            (ngModelChange)="version.set($event)"
+            class="select"
+            data-testid="version"
+          >
             <nz-option nzValue="09" nzLabel="pain.001.001.09" />
             <nz-option nzValue="03" nzLabel="pain.001.001.03" />
           </nz-select>
         </label>
         <label>
           <span>{{ 'iso20022.run.executionDate' | translate }}</span>
-          <input nz-input type="date" [ngModel]="executionDate()" (ngModelChange)="executionDate.set($event)" class="date" />
+          <input
+            nz-input
+            type="date"
+            [ngModel]="executionDate()"
+            (ngModelChange)="executionDate.set($event)"
+            class="date"
+          />
         </label>
       </div>
 
-      <nz-table nzSize="small" [nzData]="invoices()" [nzLoading]="loading()" [nzShowPagination]="false" [nzPageSize]="500">
+      <nz-table
+        nzSize="small"
+        [nzData]="invoices()"
+        [nzLoading]="loading()"
+        [nzShowPagination]="false"
+        [nzPageSize]="500"
+      >
         <thead>
           <tr>
-            <th nzWidth="48px" [nzChecked]="allSelected()" [nzIndeterminate]="someSelected()" (nzCheckedChange)="toggleAll($event)" data-testid="select-all"></th>
+            <th
+              nzWidth="48px"
+              [nzChecked]="allSelected()"
+              [nzIndeterminate]="someSelected()"
+              (nzCheckedChange)="toggleAll($event)"
+              data-testid="select-all"
+            ></th>
             <th>{{ 'iso20022.run.col.invoice' | translate }}</th>
             <th>{{ 'iso20022.run.col.supplier' | translate }}</th>
             <th>{{ 'iso20022.run.col.due' | translate }}</th>
@@ -61,7 +101,10 @@ const BLOCKED_APPROVALS = ['pending', 'in_approval', 'rejected', 'match_blocked'
         <tbody>
           @for (invoice of invoices(); track invoice.id) {
             <tr data-testid="run-row">
-              <td [nzChecked]="selected().has(invoice.id)" (nzCheckedChange)="toggle(invoice.id, $event)"></td>
+              <td
+                [nzChecked]="selected().has(invoice.id)"
+                (nzCheckedChange)="toggle(invoice.id, $event)"
+              ></td>
               <td>{{ invoice.invoice_number }}</td>
               <td>{{ invoice.supplier_name ?? '-' }}</td>
               <td>{{ invoice.due_date ?? invoice.date }}</td>
@@ -73,21 +116,44 @@ const BLOCKED_APPROVALS = ['pending', 'in_approval', 'rejected', 'match_blocked'
 
       <div class="footer">
         <strong data-testid="selection-total">
-          {{ 'iso20022.run.selected' | translate }}: {{ selected().size }} · {{ total() | money: currency() }}
+          {{ 'iso20022.run.selected' | translate }}: {{ selected().size }} ·
+          {{ total() | money: currency() }}
         </strong>
-        <button nz-button nzType="primary" [nzLoading]="exporting()" [disabled]="selected().size === 0 || mixedCurrencies()" (click)="generate()" data-testid="generate">
+        <button
+          nz-button
+          nzType="primary"
+          [nzLoading]="exporting()"
+          [disabled]="selected().size === 0 || mixedCurrencies()"
+          (click)="generate()"
+          data-testid="generate"
+        >
           {{ 'iso20022.run.generate' | translate }}
         </button>
       </div>
 
       @if (mixedCurrencies()) {
-        <nz-alert nzType="warning" nzShowIcon [nzMessage]="'iso20022.run.mixedCurrencies' | translate" data-testid="mixed-currencies" />
+        <nz-alert
+          nzType="warning"
+          nzShowIcon
+          [nzMessage]="'iso20022.run.mixedCurrencies' | translate"
+          data-testid="mixed-currencies"
+        />
       }
       @if (error(); as key) {
-        <nz-alert nzType="error" nzShowIcon [nzMessage]="key.startsWith('iso20022.') ? (key | translate) : key" data-testid="run-error" />
+        <nz-alert
+          nzType="error"
+          nzShowIcon
+          [nzMessage]="key.startsWith('iso20022.') ? (key | translate) : key"
+          data-testid="run-error"
+        />
       }
       @if (result(); as r) {
-        <nz-alert nzType="success" nzShowIcon [nzMessage]="('iso20022.run.success' | translate) + ' · ' + r.filename" data-testid="run-result" />
+        <nz-alert
+          nzType="success"
+          nzShowIcon
+          [nzMessage]="('iso20022.run.success' | translate) + ' · ' + r.filename"
+          data-testid="run-result"
+        />
       }
     </nz-card>
   `,
@@ -139,11 +205,21 @@ export class TrPaymentRunComponent implements OnInit {
   protected readonly error = signal<string | null>(null);
   protected readonly result = signal<Pain001ExportResult | null>(null);
 
-  private readonly chosen = computed(() => this.invoices().filter((invoice) => this.selected().has(invoice.id)));
-  protected readonly total = computed(() => Math.round(this.chosen().reduce((sum, invoice) => sum + this.openAmount(invoice), 0) * 100) / 100);
+  private readonly chosen = computed(() =>
+    this.invoices().filter((invoice) => this.selected().has(invoice.id)),
+  );
+  protected readonly total = computed(
+    () =>
+      Math.round(this.chosen().reduce((sum, invoice) => sum + this.openAmount(invoice), 0) * 100) /
+      100,
+  );
   protected readonly currency = computed(() => this.chosen()[0]?.currency ?? 'CHF');
-  protected readonly mixedCurrencies = computed(() => new Set(this.chosen().map((invoice) => invoice.currency)).size > 1);
-  protected readonly allSelected = computed(() => this.invoices().length > 0 && this.selected().size === this.invoices().length);
+  protected readonly mixedCurrencies = computed(
+    () => new Set(this.chosen().map((invoice) => invoice.currency)).size > 1,
+  );
+  protected readonly allSelected = computed(
+    () => this.invoices().length > 0 && this.selected().size === this.invoices().length,
+  );
   protected readonly someSelected = computed(() => this.selected().size > 0 && !this.allSelected());
 
   ngOnInit(): void {
@@ -205,19 +281,28 @@ export class TrPaymentRunComponent implements OnInit {
         next: (res) => {
           this.exporting.set(false);
           this.result.set(res.data);
-          downloadBlob(new Blob([res.data.xml_preview], { type: 'application/xml' }), res.data.filename);
+          downloadBlob(
+            new Blob([res.data.xml_preview], { type: 'application/xml' }),
+            res.data.filename,
+          );
           this.selected.set(new Set());
           this.invoices.update((list) => list.filter((invoice) => !ids.includes(invoice.id)));
         },
         error: (err) => {
           this.exporting.set(false);
           const errors = err?.error?.errors as Record<string, string[]> | undefined;
-          this.error.set(Object.values(errors ?? {}).flat()[0] ?? err?.error?.message ?? 'iso20022.run.failure');
+          this.error.set(
+            Object.values(errors ?? {}).flat()[0] ?? err?.error?.message ?? 'iso20022.run.failure',
+          );
         },
       });
   }
 
   private payable(invoice: SupplierInvoice): boolean {
-    return invoice.document_type !== 'TD04' && this.openAmount(invoice) > 0 && !BLOCKED_APPROVALS.includes(String(invoice.approval_status ?? ''));
+    return (
+      invoice.document_type !== 'TD04' &&
+      this.openAmount(invoice) > 0 &&
+      !BLOCKED_APPROVALS.includes(String(invoice.approval_status ?? ''))
+    );
   }
 }
