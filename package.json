@@ -16,7 +16,7 @@
     "build": "node scripts/ng-env.mjs build",
     "watch": "node scripts/ng-env.mjs build --watch --configuration development",
     "test": "vitest run",
-    "test:ci": "vitest run --coverage",
+    "test:ci": "node scripts/test-ci-sharded.mjs",
     "e2e": "playwright test",
     "e2e:a11y": "playwright test -c playwright.a11y.config.ts",
     "storybook": "ng run fatturafacile:storybook",

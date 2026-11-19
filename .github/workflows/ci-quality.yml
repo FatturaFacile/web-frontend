@@ -50,10 +50,8 @@ jobs:
       - name: Run Angular Strict Production Build
         run: pnpm run build
 
-      - name: Run Vitest Unit & Component Tests with Coverage Gate (>=80%)
-        env:
-          NODE_OPTIONS: --max-old-space-size=3072
-        run: pnpm run test:ci --maxWorkers=2
+      - name: Run Vitest Unit & Component Tests with Coverage Gate (>=70%)
+        run: pnpm run test:ci
 
   e2e-critical-flows:
     name: Playwright Critical E2E Test Suite

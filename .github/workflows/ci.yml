@@ -37,9 +37,7 @@ jobs:
         run: pnpm run lint
 
       - name: Run unit tests with coverage
-        env:
-          NODE_OPTIONS: --max-old-space-size=3072
-        run: pnpm test --watch=false --coverage --maxWorkers=2
+        run: pnpm run test:ci
 
   build:
     needs: validate
