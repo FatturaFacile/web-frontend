@@ -22,6 +22,32 @@ export const SALES_ROUTES: Routes = [
       import('./components/sales-orders/sales-orders.component').then((m) => m.SalesOrdersComponent),
   },
   {
+    path: 'workspace/orders',
+    data: { breadcrumb: 'BREADCRUMB.SWK_ORDERS', title: 'PAGE_TITLE.SWK_ORDERS' },
+    loadComponent: () =>
+      import('./workspace/sales-orders-workspace.component').then((m) => m.SalesOrdersWorkspaceComponent),
+  },
+  {
+    path: 'workspace/orders/:id',
+    data: { breadcrumb: 'BREADCRUMB.SWK_ORDER', title: 'PAGE_TITLE.SWK_ORDERS' },
+    loadComponent: () =>
+      import('./workspace/sales-order-workspace-detail.component').then(
+        (m) => m.SalesOrderWorkspaceDetailComponent
+      ),
+  },
+  {
+    path: 'blanket-agreements',
+    data: { breadcrumb: 'BREADCRUMB.SWK_BLANKET', title: 'PAGE_TITLE.SWK_BLANKET' },
+    loadComponent: () =>
+      import('./workspace/blanket-agreements.component').then((m) => m.BlanketAgreementsComponent),
+  },
+  {
+    path: 'backorders',
+    data: { breadcrumb: 'BREADCRUMB.SWK_BACKORDERS', title: 'PAGE_TITLE.SWK_BACKORDERS' },
+    loadComponent: () =>
+      import('./workspace/backorder-monitor.component').then((m) => m.BackorderMonitorComponent),
+  },
+  {
     path: 'cycle',
     data: { breadcrumb: 'BREADCRUMB.CICLO_VENDITE', title: 'PAGE_TITLE.CICLO_VENDITE' },
     loadChildren: () => import('./cycle/cycle.routes').then((m) => m.CYCLE_ROUTES),
