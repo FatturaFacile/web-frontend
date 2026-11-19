@@ -24,6 +24,15 @@ import {
   PaginatedResponse,
   QueryFilterParams,
   RevenueComparisonData,
+  PivotResult,
+  StudioCatalog,
+  StudioExecutionLog,
+  StudioRunRequest,
+  StudioSaveReportRequest,
+  StudioSaveScheduleRequest,
+  StudioSavedReport,
+  StudioSchedule,
+  StudioScheduleOutcome,
 } from '../models';
 
 export interface AnalyticsKpiQueryParams {
@@ -353,5 +362,75 @@ export class AnalyticsApiService {
       { params: httpParams }
     );
   }
-}
 
+  // ── Report and pivot studio ──────────────────────────────────────────────
+
+  getStudioCatalog(): Observable<ApiResponse<StudioCatalog>> {
+    return this.http.get<ApiResponse<StudioCatalog>>(`${this.baseUrl}/semantic/catalog`);
+  }
+
+  runPivot(payload: StudioRunRequest): Observable<ApiResponse<PivotResult>> {
+    return this.http.post<ApiResponse<PivotResult>>(`${this.baseUrl}/designer/pivot`, payload);
+  }
+
+  exportStudio(payload: StudioRunRequest): Observable<Blob> {
+    return this.http.post(`${this.baseUrl}/designer/export`, payload, { responseType: 'blob' });
+  }
+
+  getStudioReports(): Observable<ApiResponse<StudioSavedReport[]>> {
+    return this.http.get<ApiResponse<StudioSavedReport[]>>(`${this.baseUrl}/designed-reports`);
+  }
+
+  getStudioReport(id: string): Observable<ApiResponse<StudioSavedReport>> {
+    return this.http.get<ApiResponse<StudioSavedReport>>(`${this.baseUrl}/designed-reports/${encodeURIComponent(id)}`);
+  }
+
+  createStudioReport(payload: StudioSaveReportRequest): Observable<ApiResponse<StudioSavedReport>> {
+    return this.http.post<ApiResponse<StudioSavedReport>>(`${this.baseUrl}/designed-reports`, payload);
+  }
+
+  updateStudioReport(id: string, payload: StudioSaveReportRequest): Observable<ApiResponse<StudioSavedReport>> {
+    return this.http.put<ApiResponse<StudioSavedReport>>(
+      `${this.baseUrl}/designed-reports/${encodeURIComponent(id)}`,
+      payload
+    );
+  }
+
+  getStudioSchedules(): Observable<ApiResponse<StudioSchedule[]>> {
+    return this.http.get<ApiResponse<StudioSchedule[]>>(`${this.baseUrl}/export-schedules`);
+  }
+
+  createStudioSchedule(payload: StudioSaveScheduleRequest): Observable<ApiResponse<StudioScheduleOutcome>> {
+    return this.http.post<ApiResponse<StudioScheduleOutcome>>(`${this.baseUrl}/export-schedules`, payload);
+  }
+
+  updateStudioSchedule(id: string, payload: StudioSaveScheduleRequest): Observable<ApiResponse<StudioScheduleOutcome>> {
+    return this.http.put<ApiResponse<StudioScheduleOutcome>>(
+      `${this.baseUrl}/export-schedules/${encodeURIComponent(id)}`,
+      payload
+    );
+  }
+
+  runStudioScheduleNow(id: string): Observable<ApiResponse<StudioSchedule>> {
+    return this.http.post<ApiResponse<StudioSchedule>>(
+      `${this.baseUrl}/export-schedules/${encodeURIComponent(id)}/run`,
+      {}
+    );
+  }
+
+  previewCron(cronExpression: string, timezone: string): Observable<ApiResponse<{ next_runs: string[] }>> {
+    return this.http.post<ApiResponse<{ next_runs: string[] }>>(`${this.baseUrl}/export-schedules/cron-preview`, {
+      cron_expression: cronExpression,
+      timezone,
+    });
+  }
+
+  getExecutionLogs(params?: {
+    designed_report_id?: string;
+    schedule_id?: string;
+  }): Observable<ApiResponse<StudioExecutionLog[]>> {
+    return this.http.get<ApiResponse<StudioExecutionLog[]>>(`${this.baseUrl}/execution-logs`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+}
