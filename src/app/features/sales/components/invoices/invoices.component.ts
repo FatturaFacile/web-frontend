@@ -43,6 +43,7 @@ import {
 import { InvoiceFacade } from '../../services/invoice.facade';
 import { InvoiceDetailModalComponent } from './invoice-detail-modal.component';
 import { InvoiceFormDrawerComponent } from './invoice-form-drawer.component';
+import { SdiPreflightDrawerComponent } from '../../../sdi-cockpit/sdi-preflight-drawer.component';
 
 const STATUS: Record<InvoiceStatus, { key: string; color: string }> = {
   draft: { key: 'SALES.INVOICES.STATUS.DRAFT', color: 'default' },
@@ -80,6 +81,7 @@ const JURISDICTION_KEYS: { key: string; value: Jurisdiction }[] = [
     DatePipe,
     MoneyPipe,
     NzTagModule,
+    SdiPreflightDrawerComponent,
     NzCardModule,
     NzButtonModule,
     NzInputModule,
@@ -124,6 +126,8 @@ export class InvoicesComponent {
 
   // SDI Logs Modal
   readonly sdiLogsModalVisible = signal(false);
+  /** The invoice open in the SDI pre-flight drawer, null while it is closed. */
+  readonly preflightInvoiceId = signal<string | null>(null);
   readonly currentSdiLogs = signal<SdiLogsData | null>(null);
 
   // Installments Modal
