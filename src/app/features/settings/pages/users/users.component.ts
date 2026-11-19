@@ -6,6 +6,7 @@ import {
   AuthStore,
   CustomRole,
   I18nService,
+  PermissionsService,
   SaveTenantMemberPayload,
   SettingsApiService,
   UserResource,
@@ -13,6 +14,7 @@ import {
 import { PageHeaderComponent, TranslatePipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
+import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
@@ -20,6 +22,7 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { Observable } from 'rxjs';
 import { reportHttpError } from '../../../hr/shared/hr-http.util';
+import { EntityAuditTimelineComponent } from '../../../security/audit-trail/entity-audit-timeline.component';
 import { AccessNavComponent } from '../access/access-nav.component';
 import { reportAccessError } from '../access/access-ui.util';
 import { PlanLimitsComponent } from '../access/plan-limits.component';
@@ -33,9 +36,11 @@ import { MemberAccessFormComponent } from './member-access-form.component';
   selector: 'app-tenant-users',
   imports: [
     AccessNavComponent,
+    EntityAuditTimelineComponent,
     MemberAccessFormComponent,
     NzButtonModule,
     NzCardModule,
+    NzDrawerModule,
     NzModalModule,
     NzPopconfirmModule,
     NzTableModule,
@@ -97,6 +102,11 @@ import { MemberAccessFormComponent } from './member-access-form.component';
               </td>
               <td>{{ customModules(member) }}</td>
               <td>
+                @if (canViewAudit()) {
+                  <button nz-button nzSize="small" type="button" data-test="member-history" (click)="openHistory(member)">
+                    {{ 'AUDIT.TIMELINE.TITLE' | translate }}
+                  </button>
+                }
                 @if (member.id !== currentUserId()) {
                   <button nz-button nzSize="small" type="button" data-test="edit-member" (click)="openEdit(member)">
                     {{ 'memberAccess.edit' | translate }}
@@ -161,6 +171,20 @@ import { MemberAccessFormComponent } from './member-access-form.component';
         }
       </ng-container>
     </nz-modal>
+
+    <nz-drawer
+      [nzVisible]="history() !== null"
+      nzPlacement="right"
+      nzWidth="560px"
+      [nzTitle]="history()?.name ?? ''"
+      (nzOnClose)="history.set(null)"
+    >
+      <ng-container *nzDrawerContent>
+        @if (history(); as current) {
+          <app-entity-audit-timeline entityType="User" [entityId]="current.id" />
+        }
+      </ng-container>
+    </nz-drawer>
   `,
 })
 export class TenantUsersComponent implements OnInit {
@@ -169,7 +193,11 @@ export class TenantUsersComponent implements OnInit {
   private readonly authStore = inject(AuthStore);
   private readonly message = inject(NzMessageService);
   private readonly i18n = inject(I18nService);
+  private readonly permissions = inject(PermissionsService);
 
+  /** The member whose audit history is open (the audit trail keeps the lifecycle of every user). */
+  protected readonly history = signal<UserResource | null>(null);
+  protected readonly canViewAudit = computed(() => this.permissions.canRead('audit_trail'));
   protected readonly members = signal<UserResource[]>([]);
   protected readonly options = signal<AccessOptions>({ roles: [], modules: [], levels: [] });
   protected readonly customRoles = signal<CustomRole[]>([]);
@@ -195,6 +223,10 @@ export class TenantUsersComponent implements OnInit {
       error: () => this.customRoles.set([]),
     });
     this.reload();
+  }
+
+  protected openHistory(member: UserResource): void {
+    this.history.set(member);
   }
 
   /** Name of the custom role of the member, or the label of the system role. */

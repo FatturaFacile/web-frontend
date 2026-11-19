@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { of, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { AuthStore, CatalogApiService, InvoiceApiService, InvoiceDetailResource } from '@core';
+import { AuthStore, CatalogApiService, InvoiceApiService, InvoiceDetailResource, PermissionsService } from '@core';
 import { icons } from '../../../../icons-provider';
 import { InvoiceDetailModalComponent } from './invoice-detail-modal.component';
 
@@ -44,6 +44,8 @@ describe('InvoiceDetailModalComponent', () => {
         { provide: InvoiceApiService, useValue: invoiceApi },
         { provide: CatalogApiService, useValue: { getPaymentTerms: () => of({ data: [] }) } },
         { provide: AuthStore, useValue: { activeCurrency: () => 'CHF' } },
+        // The embedded audit timeline renders only for a member who may read the audit trail.
+        { provide: PermissionsService, useValue: { canRead: () => false, canWrite: () => false } },
       ],
     });
   });
