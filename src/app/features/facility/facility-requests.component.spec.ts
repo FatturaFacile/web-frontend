@@ -43,6 +43,7 @@ describe('FacilityRequestsComponent', () => {
     getRequestComments: vi.fn(),
     addRequestComment: vi.fn(),
     createServiceRequest: vi.fn(),
+    updateServiceRequest: vi.fn(),
     actOnServiceRequest: vi.fn(),
   };
   const settings = { getTenantUsers: vi.fn() };
@@ -118,6 +119,20 @@ describe('FacilityRequestsComponent', () => {
 
     expect(api.createServiceRequest).toHaveBeenCalledWith({ category: 'hvac', priority: 'urgent', title: 'Niente aria condizionata', description: 'Sala 2', building_id: 'b-1', space_id: null });
     expect(message.success).toHaveBeenCalledWith('FACILITY.REQUEST_SAVED');
+    expect(component.createVisible()).toBe(false);
+  });
+
+  it('edits an open request through the update endpoint', () => {
+    const component = create();
+    api.updateServiceRequest.mockReturnValue(of({ data: request({ title: 'Lampada sostituita' }) }));
+    component.openEdit(component.requests()[0]);
+    expect(component.editingId()).toBe('r-1');
+
+    component.createForm.patchValue({ title: 'Lampada sostituita' });
+    component.create();
+
+    expect(api.updateServiceRequest).toHaveBeenCalledWith('r-1', expect.objectContaining({ title: 'Lampada sostituita', category: 'repair' }));
+    expect(api.createServiceRequest).not.toHaveBeenCalled();
     expect(component.createVisible()).toBe(false);
   });
 

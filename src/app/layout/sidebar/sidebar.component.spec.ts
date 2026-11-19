@@ -4,7 +4,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
 import { describe, expect, it } from 'vitest';
 import { PermissionsService } from '@core/auth/permissions.service';
-import { isMenuRouteTested, normalizeMenuSearch } from './menu-availability';
+import { DISABLED_PLACEHOLDER_ROUTES, isMenuRouteTested, normalizeMenuSearch } from './menu-availability';
 import { SidebarComponent } from './sidebar.component';
 
 function createSidebar() {
@@ -34,7 +34,7 @@ describe('menu availability', () => {
     for (const route of ['/fleet', '/returns', '/planning', '/budgeting', '/credit-management', '/talent-learning', '/business-intelligence', '/marketplace', '/wms', '/transportation', '/communication/inbox', '/communication/campaigns', '/professionals/trust', '/governance/segregation-of-duties']) {
       expect(isMenuRouteTested(route)).toBe(true);
     }
-    for (const route of ['/portal', '/portal/family', '/visitors', '/hr/self-service', '/settings/admin/access-requests']) {
+    for (const route of ['/portal', '/portal/family', '/visitors', '/hr/self-service', '/settings/admin/access-requests', ...DISABLED_PLACEHOLDER_ROUTES]) {
       expect(isMenuRouteTested(route)).toBe(false);
     }
   });

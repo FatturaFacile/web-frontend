@@ -47,6 +47,10 @@
     </nz-descriptions>
   </nz-card>
   <ng-template #lookupLink>
+    <button nz-button nzSize="small" type="button" (click)="editOpen.set(true)">
+      <i class="fa-solid fa-pen" aria-hidden="true"></i>&nbsp;{{ 'RMA.PASSPORT.EDIT' | translate }}
+    </button>
+    &nbsp;
     <a routerLink="/warranty-rma/lookup" [queryParams]="{ serial: p.serial_number }">{{
       'RMA.PASSPORT.CHECK_WARRANTY' | translate
     }}</a>
@@ -182,6 +186,7 @@
     </nz-table>
   </ng-template>
 
+  <app-edit-passport-dialog [(open)]="editOpen" [passport]="p" />
   <app-add-extension-dialog
     [(open)]="extensionOpen"
     [passportId]="p.id"

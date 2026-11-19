@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { environment } from '@env';
 import { Observable } from 'rxjs';
+import { handleErrorsLocally } from '../http/error-handling.context';
 import {
   ApiResponse,
   CustomsAssessmentDecisionResource,
@@ -11,11 +12,19 @@ import {
   CustomsDeclarationResource,
   CustomsDossierParams,
   CustomsDossierRequest,
+  CustomsDocumentLanguage,
   CustomsDossierResource,
+  CustomsExportProof,
+  CustomsImportBillParams,
+  CustomsImportBillReconciliation,
+  CustomsImportBillRequest,
+  CustomsImportBillResource,
+  CustomsLinkedInvoices,
   CustomsProfitabilityResource,
   CustomsShipmentRequestResource,
   CustomsTariffGridRequest,
   CustomsTariffGridResource,
+  CustomsTradeComplianceDashboard,
   PaginatedResponse,
 } from '../models';
 import { toHttpParams } from '../http/laravel-http.utils';
@@ -131,6 +140,104 @@ export class CustomsApiService {
     return this.http.get(`${this.base}/customs/declarations/${id}/pdf`, {
       responseType: 'blob',
     });
+  }
+
+  /** Generated payload of the declaration: e-dec XML, Passar XML or AIDA JSON depending on the channel. */
+  getDeclarationMessage(id: string): Observable<string> {
+    return this.http.get(`${this.base}/customs/declarations/${id}/message`, { responseType: 'text' });
+  }
+
+  /** The 422 (malformed MRN) is handled by the caller as an inline field error. */
+  assignMrn(id: string, mrn: string): Observable<ApiResponse<CustomsDeclarationResource>> {
+    return this.http.post<ApiResponse<CustomsDeclarationResource>>(
+      `${this.base}/customs/declarations/${id}/mrn`,
+      { mrn },
+      { context: handleErrorsLocally(422) },
+    );
+  }
+
+  linkInvoices(id: string, invoiceIds: string[]): Observable<ApiResponse<CustomsDeclarationResource>> {
+    return this.http.post<ApiResponse<CustomsDeclarationResource>>(
+      `${this.base}/customs/declarations/${id}/invoices`,
+      { invoice_ids: invoiceIds },
+    );
+  }
+
+  autoLinkInvoices(id: string): Observable<ApiResponse<CustomsLinkedInvoices>> {
+    return this.http.post<ApiResponse<CustomsLinkedInvoices>>(
+      `${this.base}/customs/declarations/${id}/invoices/auto-link`,
+      {},
+    );
+  }
+
+  getExportProof(id: string): Observable<ApiResponse<CustomsExportProof>> {
+    return this.http.get<ApiResponse<CustomsExportProof>>(
+      `${this.base}/customs/declarations/${id}/export-proof`,
+    );
+  }
+
+  dischargeTransit(id: string): Observable<ApiResponse<CustomsDeclarationResource>> {
+    return this.http.post<ApiResponse<CustomsDeclarationResource>>(
+      `${this.base}/customs/declarations/${id}/transit-discharge`,
+      {},
+    );
+  }
+
+  downloadProForma(id: string, language: CustomsDocumentLanguage): Observable<Blob> {
+    return this.http.get(`${this.base}/customs/declarations/${id}/pro-forma`, {
+      params: { language },
+      responseType: 'blob',
+    });
+  }
+
+  downloadTransitSheet(id: string, language: CustomsDocumentLanguage): Observable<Blob> {
+    return this.http.get(`${this.base}/customs/declarations/${id}/transit-sheet`, {
+      params: { language },
+      responseType: 'blob',
+    });
+  }
+
+  getTradeComplianceDashboard(): Observable<ApiResponse<CustomsTradeComplianceDashboard>> {
+    return this.http.get<ApiResponse<CustomsTradeComplianceDashboard>>(
+      `${this.base}/customs/trade-compliance/dashboard`,
+    );
+  }
+
+  // --- IMPORT CUSTOMS BILLS ---
+  getImportBills(
+    params?: CustomsImportBillParams,
+  ): Observable<PaginatedResponse<CustomsImportBillResource>> {
+    return this.http.get<PaginatedResponse<CustomsImportBillResource>>(
+      `${this.base}/customs/import-bills`,
+      { params: params ? toHttpParams(params) : undefined },
+    );
+  }
+
+  getImportBill(id: string): Observable<ApiResponse<CustomsImportBillResource>> {
+    return this.http.get<ApiResponse<CustomsImportBillResource>>(`${this.base}/customs/import-bills/${id}`);
+  }
+
+  createImportBill(
+    payload: CustomsImportBillRequest,
+  ): Observable<ApiResponse<CustomsImportBillResource>> {
+    return this.http.post<ApiResponse<CustomsImportBillResource>>(
+      `${this.base}/customs/import-bills`,
+      payload,
+      { context: handleErrorsLocally(422) },
+    );
+  }
+
+  getImportBillReconciliation(id: string): Observable<ApiResponse<CustomsImportBillReconciliation>> {
+    return this.http.get<ApiResponse<CustomsImportBillReconciliation>>(
+      `${this.base}/customs/import-bills/${id}/reconciliation`,
+    );
+  }
+
+  postImportBill(id: string): Observable<ApiResponse<CustomsImportBillResource>> {
+    return this.http.post<ApiResponse<CustomsImportBillResource>>(
+      `${this.base}/customs/import-bills/${id}/post`,
+      {},
+    );
   }
 
   // --- ASSESSMENT DECISIONS (eVV) ---

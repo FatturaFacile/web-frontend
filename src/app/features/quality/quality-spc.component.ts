@@ -11,7 +11,7 @@ import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
-import { QualityApiService, SpcCharacteristic, SpcCharacteristicRequest, SpcChart, SpcSampleRequest, TranslateService } from '@core';
+import { QualityApiService, QualityExtraApiService, SpcCharacteristic, SpcCharacteristicRequest, SpcChart, SpcSampleRequest, TranslateService } from '@core';
 import { IconActionDirective, ModalActionsDirective, PageHeaderComponent, TranslatePipe } from '@shared';
 import { apiErrorText, blankToNull, decimalOrNull } from '../fleet/fleet.util';
 
@@ -67,6 +67,7 @@ const CHART_PADDING = 24;
               <td class="num">{{ row.subgroup_size }}</td>
               <td>
                 <div class="row-actions">
+                  <button nz-button nzType="text" (click)="openEditCharacteristic(row); $event.stopPropagation()">{{ 'QUALITY.ACTION_EDIT' | translate }}</button>
                   <button nz-button nzType="text" (click)="openSampleModal(row); $event.stopPropagation()">{{ 'QUALITY.ADD_SAMPLE' | translate }}</button>
                   <button nz-button nzType="text" nzDanger appIconAction="delete" nz-popconfirm [nzPopconfirmTitle]="'QUALITY.DELETE_CONFIRM' | translate" (nzOnConfirm)="remove(row)" (click)="$event.stopPropagation()"></button>
                 </div>
@@ -154,7 +155,7 @@ const CHART_PADDING = 24;
       </nz-card>
     }
 
-    <nz-modal [(nzVisible)]="characteristicVisible" [nzTitle]="'QUALITY.NEW_CHARACTERISTIC' | translate" (nzOnCancel)="characteristicVisible.set(false)" (nzOnOk)="saveCharacteristic()" okAction="save" [nzOkDisabled]="characteristicForm.invalid">
+    <nz-modal [(nzVisible)]="characteristicVisible" [nzTitle]="(editingId() ? 'QUALITY.ACTION_EDIT' : 'QUALITY.NEW_CHARACTERISTIC') | translate" (nzOnCancel)="characteristicVisible.set(false)" (nzOnOk)="saveCharacteristic()" okAction="save" [nzOkDisabled]="characteristicForm.invalid">
       <ng-container *nzModalContent>
         <form nz-form [formGroup]="characteristicForm" nzLayout="vertical">
           <div class="form-row">
@@ -215,6 +216,7 @@ const CHART_PADDING = 24;
 })
 export class QualitySpcComponent implements OnInit {
   private readonly api = inject(QualityApiService);
+  private readonly extraApi = inject(QualityExtraApiService);
   private readonly message = inject(NzMessageService);
   private readonly translate = inject(TranslateService);
   private readonly fb = inject(NonNullableFormBuilder);
@@ -229,6 +231,7 @@ export class QualitySpcComponent implements OnInit {
   readonly loading = signal(false);
   readonly characteristicVisible = signal(false);
   readonly sampleVisible = signal(false);
+  readonly editingId = signal<string | null>(null);
   readonly sampleTarget = signal<SpcCharacteristic | null>(null);
 
   readonly characteristicForm = this.fb.group({
@@ -314,7 +317,22 @@ export class QualitySpcComponent implements OnInit {
     });
   }
 
+  openEditCharacteristic(characteristic: SpcCharacteristic): void {
+    this.editingId.set(characteristic.id);
+    this.characteristicForm.reset({
+      code: characteristic.code,
+      name: characteristic.name,
+      unit: characteristic.unit ?? '',
+      lower_spec_limit: characteristic.lower_spec_limit === null ? null : Number(characteristic.lower_spec_limit),
+      upper_spec_limit: characteristic.upper_spec_limit === null ? null : Number(characteristic.upper_spec_limit),
+      target: characteristic.target === null ? null : Number(characteristic.target),
+      subgroup_size: characteristic.subgroup_size,
+    });
+    this.characteristicVisible.set(true);
+  }
+
   openCharacteristicModal(): void {
+    this.editingId.set(null);
     this.characteristicForm.reset({ code: '', name: '', unit: '', lower_spec_limit: null, upper_spec_limit: null, target: null, subgroup_size: 5 });
     this.characteristicVisible.set(true);
   }
@@ -332,7 +350,9 @@ export class QualitySpcComponent implements OnInit {
       instrument_id: null,
       notes: null,
     };
-    this.api.createCharacteristic(payload).subscribe({
+    const id = this.editingId();
+    const request$ = id ? this.extraApi.updateCharacteristic(id, payload) : this.api.createCharacteristic(payload);
+    request$.subscribe({
       next: () => {
         this.message.success(this.translate.instant('QUALITY.SAVED'));
         this.characteristicVisible.set(false);

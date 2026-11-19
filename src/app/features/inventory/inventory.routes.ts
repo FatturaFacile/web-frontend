@@ -3,6 +3,7 @@ import { LOTS_PAGE, STOCK_REPORTS_PAGE } from './wms/lots-reports.page';
 import { INVENTORY_SERVICES_PAGE, STOCK_ITEMS_PAGE } from './wms/items-service.page';
 import { OUTBOUND_PAGE } from './wms/outbound.page';
 import { COUNTING_PAGE, REPLENISHMENT_PAGE, TRANSFERS_PAGE } from './wms/stock-flows.page';
+import { VALUATION_COSTING_PAGE } from './wms/valuation-costing.page';
 import { TERMINAL_PAGE } from './wms/terminal-service.page';
 import { WAREHOUSE_PAGE } from './wms/warehouse.page';
 
@@ -38,6 +39,7 @@ export const INVENTORY_ROUTES: Routes = [
   wmsRoute('lots', 'Lotti & Richiami', LOTS_PAGE),
   wmsRoute('items', 'Anagrafica articoli', STOCK_ITEMS_PAGE),
   wmsRoute('reports', 'Valorizzazione & KPI', STOCK_REPORTS_PAGE),
+  wmsRoute('valuation-costing', 'Costing & Libro inventari', VALUATION_COSTING_PAGE),
   wmsRoute('terminal', 'Terminale & Barcode', TERMINAL_PAGE),
   wmsRoute('services', 'Assistenza & Pesa', INVENTORY_SERVICES_PAGE),
   {

@@ -16,7 +16,12 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzSelectModule } from 'ng-zorro-antd/select';
-import { IconActionDirective, ModalActionsDirective, TranslatePipe } from '@shared';
+import {
+  IconActionDirective,
+  ModalActionsDirective,
+  TranslatePipe,
+  ViesVerifyComponent,
+} from '@shared';
 import {
   applyServerErrors,
   ClientApiService,
@@ -26,6 +31,7 @@ import {
   ContactResource,
   ContactType,
   I18nService,
+  isEuMemberState,
   serverErrorMessage,
 } from '@core';
 
@@ -70,6 +76,7 @@ function exactLengthWhenFilled(length: number): ValidatorFn {
     NzSelectModule,
     NzButtonModule,
     TranslatePipe,
+    ViesVerifyComponent,
   ],
   templateUrl: './client-form-drawer.component.html',
 })
@@ -83,6 +90,7 @@ export class ClientFormDrawerComponent {
   readonly contact = input<ContactResource | null>(null);
   readonly saved = output<void>();
   readonly saving = signal(false);
+  readonly lookingUpFiscal = signal(false);
   /** True after the first attempt to save: the errors of the whole form are then shown. */
   readonly submitted = signal(false);
   /** The address is optional, but once one of its fields is filled street, postal code and city are required. */
@@ -241,6 +249,62 @@ export class ClientFormDrawerComponent {
       }
       control.updateValueAndValidity({ emitEvent: false });
     }
+  }
+
+  /** The VIES check only applies to counterparties of an EU Member State. */
+  isEuCountry(): boolean {
+    return isEuMemberState(this.form.controls.country.value);
+  }
+
+  canLookupFiscal(): boolean {
+    const country = this.form.controls.country.value.toUpperCase();
+    return country === 'IT' || country === 'CH';
+  }
+
+  lookupFiscal(): void {
+    const country = this.form.controls.country.value.toUpperCase();
+    const vat = this.form.controls.vat_number.value.trim();
+    const uid = this.form.controls.uid_number.value.trim();
+    if (!vat && !uid) {
+      return;
+    }
+    this.lookingUpFiscal.set(true);
+    this.api
+      .lookupFiscal({
+        country,
+        vat_number: vat || undefined,
+        uid_number: uid || undefined,
+      })
+      .subscribe({
+        next: (res) => {
+          this.lookingUpFiscal.set(false);
+          const data = res.data?.data;
+          if (data) {
+            if (data.company_name) {
+              this.form.controls.company_name.setValue(data.company_name);
+            }
+            if (data.vat_number) {
+              this.form.controls.vat_number.setValue(data.vat_number);
+            }
+            if (data.uid_number) {
+              this.form.controls.uid_number.setValue(data.uid_number);
+            }
+            if (data.address) {
+              this.form.controls.address.patchValue({
+                street: data.address.street ?? this.form.controls.address.controls.street.value,
+                postal_code: data.address.postal_code ?? this.form.controls.address.controls.postal_code.value,
+                city: data.address.city ?? this.form.controls.address.controls.city.value,
+                state_canton: data.address.state_canton ?? this.form.controls.address.controls.state_canton.value,
+              });
+            }
+          }
+          this.message.success(this.i18n.translate('CRM.CLIENTS.MESSAGES.FISCAL_VERIFIED'));
+        },
+        error: () => {
+          this.lookingUpFiscal.set(false);
+          this.message.error(this.i18n.translate('COMMON.VALIDATION.INVALID_VALUE'));
+        },
+      });
   }
 
   errorTip(path: string): string {

@@ -91,6 +91,9 @@ export interface SupplierLineDraft {
               <td class="num">{{ row.credit_received ?? '-' }}</td>
               <td><nz-tag [nzColor]="statusColor(row.status)">{{ ('RETURNS.RTV_' + row.status.toUpperCase()) | translate }}</nz-tag></td>
               <td>
+                @if (row.status === 'draft') {
+                  <button nz-button nzType="text" (click)="openEdit(row)">{{ 'RETURNS.EDIT' | translate }}</button>
+                }
                 @if (allows(row, 'shipped')) {
                   <button nz-button nzType="text" (click)="openDialog('ship', row)">{{ 'RETURNS.SHIP' | translate }}</button>
                 }
@@ -117,7 +120,7 @@ export interface SupplierLineDraft {
 
     <nz-modal
       [(nzVisible)]="createVisible"
-      [nzTitle]="'RETURNS.NEW_SUPPLIER_RETURN' | translate"
+      [nzTitle]="(editingId() ? 'RETURNS.EDIT_SUPPLIER_RETURN' : 'RETURNS.NEW_SUPPLIER_RETURN') | translate"
       (nzOnCancel)="createVisible.set(false)"
       (nzOnOk)="save()"
       okAction="save"
@@ -260,6 +263,8 @@ export class ReturnsSupplierReturnsComponent implements OnInit {
   readonly statusFilter = signal<ReturnsSupplierReturnStatus | null>(null);
   readonly search = signal('');
   readonly createVisible = signal(false);
+  /** Id of the draft being edited, null while creating. */
+  readonly editingId = signal<string | null>(null);
   readonly lines = signal<SupplierLineDraft[]>([]);
   readonly dialog = signal<SupplierReturnDialog | null>(null);
   readonly shipWarehouse = signal('');
@@ -305,7 +310,24 @@ export class ReturnsSupplierReturnsComponent implements OnInit {
     });
   }
 
+  openEdit(record: ReturnsSupplierReturn): void {
+    this.editingId.set(record.id);
+    this.form.reset({
+      supplier_id: record.supplier_id,
+      reason_code: record.reason_code ?? '',
+      carrier: record.carrier ?? '',
+      tracking_number: record.tracking_number ?? '',
+      credit_expected: record.credit_expected ?? '',
+    });
+    this.lines.set(record.lines.map((line) => ({ product_id: line.product_id, quantity: String(line.quantity), unit_cost: line.unit_cost ?? '' })));
+    this.lookups.loadSuppliers();
+    this.lookups.loadReasons();
+    this.lookups.searchProducts();
+    this.createVisible.set(true);
+  }
+
   openCreate(): void {
+    this.editingId.set(null);
     this.form.reset({ supplier_id: '', reason_code: '', carrier: '', tracking_number: '', credit_expected: '' });
     this.lines.set([{ product_id: '', quantity: '1', unit_cost: '' }]);
     this.lookups.loadSuppliers();
@@ -334,15 +356,16 @@ export class ReturnsSupplierReturnsComponent implements OnInit {
       unit_cost: line.unit_cost === '' ? null : Number(line.unit_cost),
     }));
 
-    this.api
-      .createSupplierReturn({
-        supplier_id: value.supplier_id,
-        reason_code: value.reason_code || null,
-        carrier: value.carrier || null,
-        tracking_number: value.tracking_number || null,
-        credit_expected: value.credit_expected === '' ? null : Number(value.credit_expected),
-        lines,
-      })
+    const payload = {
+      supplier_id: value.supplier_id,
+      reason_code: value.reason_code || null,
+      carrier: value.carrier || null,
+      tracking_number: value.tracking_number || null,
+      credit_expected: value.credit_expected === '' ? null : Number(value.credit_expected),
+      lines,
+    };
+    const editingId = this.editingId();
+    (editingId === null ? this.api.createSupplierReturn(payload) : this.api.updateSupplierReturn(editingId, payload))
       .subscribe({
         next: () => {
           this.message.success(this.translate.instant('RETURNS.SUPPLIER_RETURN_SAVED'));

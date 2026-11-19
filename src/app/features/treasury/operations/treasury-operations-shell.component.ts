@@ -33,11 +33,15 @@ export class TreasuryOperationsShellComponent {
     { path: 'balances', labelKey: 'TR.NAV_BALANCES' },
     { path: 'cash-registers', labelKey: 'TR.NAV_CASH_REGISTERS' },
     { path: 'payment-proposals', labelKey: 'TR.NAV_PROPOSALS' },
+    { path: 'iso20022-import', labelKey: 'TR.NAV_ISO20022' },
+    { path: 'reconciliation-workbench', labelKey: 'TR.NAV_WORKBENCH' },
+    { path: 'payment-run', labelKey: 'TR.NAV_PAYMENT_RUN' },
     { path: 'reconciliation-rules', labelKey: 'TR.NAV_RULES' },
     { path: 'liquidity', labelKey: 'TR.NAV_LIQUIDITY' },
     { path: 'kpis', labelKey: 'TR.NAV_KPIS' },
     { path: 'riba', labelKey: 'TR.NAV_RIBA' },
     { path: 'collections', labelKey: 'TR.NAV_COLLECTIONS' },
     { path: 'pagopa-notices', labelKey: 'TR.NAV_PAGOPA' },
+    { path: 'advanced', labelKey: 'TR.NAV_ADVANCED' },
   ];
 }

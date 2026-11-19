@@ -29,7 +29,7 @@ export default defineConfig({
     url: BASE_URL,
     ignoreHTTPSErrors: true,
     reuseExistingServer: !process.env['CI'],
-    timeout: 180_000,
+    timeout: 360_000,
   },
 });
 

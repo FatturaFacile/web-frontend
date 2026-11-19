@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { TREASURY_ADVANCED_PAGE } from './treasury-advanced.page';
 
 export const TREASURY_OPERATIONS_ROUTES: Routes = [
   {
@@ -19,6 +20,19 @@ export const TREASURY_OPERATIONS_ROUTES: Routes = [
         loadComponent: () => import('./proposals/tr-payment-proposals.component').then((m) => m.TrPaymentProposalsComponent),
       },
       {
+        path: 'iso20022-import',
+        loadComponent: () => import('./iso20022/tr-iso20022-import.component').then((m) => m.TrIso20022ImportComponent),
+      },
+      {
+        path: 'reconciliation-workbench',
+        loadComponent: () =>
+          import('./iso20022/tr-reconciliation-workbench.component').then((m) => m.TrReconciliationWorkbenchComponent),
+      },
+      {
+        path: 'payment-run',
+        loadComponent: () => import('./iso20022/tr-payment-run.component').then((m) => m.TrPaymentRunComponent),
+      },
+      {
         path: 'reconciliation-rules',
         loadComponent: () => import('./rules/tr-reconciliation-rules.component').then((m) => m.TrReconciliationRulesComponent),
       },
@@ -37,6 +51,11 @@ export const TREASURY_OPERATIONS_ROUTES: Routes = [
       {
         path: 'collections',
         loadComponent: () => import('./collections/tr-collections.component').then((m) => m.TrCollectionsComponent),
+      },
+      {
+        path: 'advanced',
+        data: { page: TREASURY_ADVANCED_PAGE },
+        loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
       },
       {
         path: 'pagopa-notices',

@@ -1,0 +1,12 @@
+:host {
+  display: grid;
+  gap: 12px;
+}
+
+.camera {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  justify-self: start;
+  cursor: pointer;
+}

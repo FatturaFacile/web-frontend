@@ -14,7 +14,7 @@ export const WARRANTY_RMA_ROUTES: Routes = [
   },
   {
     path: 'lookup',
-    data: { breadcrumb: 'Verifica garanzia', title: 'Verifica garanzia' },
+    data: { breadcrumb: 'RMA.NAV.LOOKUP', title: 'RMA.NAV.LOOKUP' },
     providers: [SerialLookupStore],
     loadComponent: () =>
       import('./components/serial-lookup/serial-lookup.component').then(
@@ -23,14 +23,14 @@ export const WARRANTY_RMA_ROUTES: Routes = [
   },
   {
     path: 'bench',
-    data: { breadcrumb: 'Banco riparazioni', title: 'Banco riparazioni RMA' },
+    data: { breadcrumb: 'RMA.NAV.BENCH', title: 'RMA.NAV.BENCH' },
     providers: [RmaBoardStore, RmaDetailStore],
     loadComponent: () =>
       import('./components/rma-board/rma-board.component').then((m) => m.RmaBoardComponent),
   },
   {
     path: 'passports',
-    data: { breadcrumb: 'Passaporti apparecchi', title: 'Passaporti apparecchi' },
+    data: { breadcrumb: 'RMA.NAV.PASSPORTS', title: 'RMA.NAV.PASSPORTS' },
     providers: [PassportStore],
     children: [
       {
@@ -42,7 +42,7 @@ export const WARRANTY_RMA_ROUTES: Routes = [
       },
       {
         path: ':id',
-        data: { breadcrumb: 'Dettaglio passaporto', title: 'Passaporto apparecchio' },
+        data: { breadcrumb: 'RMA.NAV.PASSPORT_DETAIL', title: 'RMA.NAV.PASSPORT_DETAIL' },
         loadComponent: () =>
           import('./components/passport-detail/passport-detail.component').then(
             (m) => m.PassportDetailComponent,
@@ -52,7 +52,7 @@ export const WARRANTY_RMA_ROUTES: Routes = [
   },
   {
     path: 'loaners',
-    data: { breadcrumb: 'Registro muletti', title: 'Registro apparecchi sostitutivi' },
+    data: { breadcrumb: 'RMA.NAV.LOANERS', title: 'RMA.NAV.LOANERS' },
     providers: [LoanerStore],
     loadComponent: () =>
       import('./components/loaner-register/loaner-register.component').then(
@@ -61,7 +61,7 @@ export const WARRANTY_RMA_ROUTES: Routes = [
   },
   {
     path: 'vendor-claims',
-    data: { breadcrumb: 'Rivalse fornitori', title: 'Rivalse in garanzia fornitori' },
+    data: { breadcrumb: 'RMA.NAV.VENDOR_CLAIMS', title: 'RMA.NAV.VENDOR_CLAIMS' },
     providers: [VendorClaimStore],
     loadComponent: () =>
       import('./components/vendor-claims/vendor-claims.component').then(

@@ -22,7 +22,7 @@ describe('paginatorEnvelopeInterceptor', () => {
 
   it('flattens a Laravel paginator nested in the envelope and builds meta', () => {
     let body: { data: unknown; meta: unknown } | undefined;
-    http.get('/x').subscribe((b) => (body = b));
+    http.get<{ data: unknown; meta: unknown }>('/x').subscribe((b) => (body = b));
     ctrl.expectOne('/x').flush({
       success: true,
       data: { current_page: 2, data: [{ id: 1 }], per_page: 15, total: 31, last_page: 3, from: 16, to: 16 },

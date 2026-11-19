@@ -3,6 +3,7 @@ import { CanActivateFn, Router, UrlTree } from '@angular/router';
 import { map } from 'rxjs';
 import { MENU_SECTIONS, MenuSection } from '../../layout/sidebar/menu-sections';
 import { TESTED_MENU_ROUTES } from '../../layout/sidebar/menu-availability';
+import { isFeatureFlagEnabled, PREMATURE_OPEN_ISSUE_MODULES } from './feature-flag.guard';
 import { PermissionsService } from './permissions.service';
 import { loadFullProfileIfNeeded } from './profile-loader';
 
@@ -25,6 +26,12 @@ function pathOf(url: string): string {
  */
 export function isUrlOfEnabledMenuRoute(url: string, enabledRoutes: readonly string[] = TESTED_MENU_ROUTES): boolean {
   const path = pathOf(url);
+  const prematureEntry = Object.entries(PREMATURE_OPEN_ISSUE_MODULES).find(
+    ([, meta]) => path === meta.routePrefix || path.startsWith(`${meta.routePrefix}/`),
+  );
+  if (prematureEntry && !isFeatureFlagEnabled(prematureEntry[0])) {
+    return false;
+  }
   return [HOME_ROUTE, ...enabledRoutes].some((route) => path === route || path.startsWith(`${route}/`));
 }
 

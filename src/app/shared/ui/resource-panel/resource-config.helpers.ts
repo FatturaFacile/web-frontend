@@ -27,7 +27,11 @@ export const rf = {
   bool: make('switch'),
   tags: make('tags'),
   file: make('file'),
-  multiselect: (key: string, options: readonly string[], extra: FieldOptions = {}): ResourceField => ({
+  multiselect: (
+    key: string,
+    options: readonly string[],
+    extra: FieldOptions = {},
+  ): ResourceField => ({
     key,
     type: 'multiselect',
     options,
@@ -46,7 +50,22 @@ export const rf = {
     lookup,
     ...extra,
   }),
-  lines: (key: string, fields: readonly ResourceField[], extra: FieldOptions = {}): ResourceField => ({
+  /** Several records picked from a remote list; the value is the array of their ids. */
+  multiLookup: (
+    key: string,
+    lookup: ResourceLookupName,
+    extra: FieldOptions = {},
+  ): ResourceField => ({
+    key,
+    type: 'multiselect',
+    lookup,
+    ...extra,
+  }),
+  lines: (
+    key: string,
+    fields: readonly ResourceField[],
+    extra: FieldOptions = {},
+  ): ResourceField => ({
     key,
     type: 'lines',
     fields,
@@ -67,6 +86,14 @@ export const col = (key: string, type?: ResourceColumnType, labelKey?: string): 
 export const cols = (...keys: string[]): ResourceColumn[] => keys.map((key) => col(key));
 
 export const tagCol = (key: string): ResourceColumn => col(key, 'tag');
+
+/** Progress bar of `key` (the consumed part) over `totalKey` (the whole). */
+export const progressCol = (key: string, totalKey: string, labelKey?: string): ResourceColumn => ({
+  key,
+  type: 'progress',
+  totalKey,
+  labelKey,
+});
 
 interface ActionOptions {
   fields?: readonly ResourceField[];

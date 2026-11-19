@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DecimalPipe } from '@angular/common';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -14,9 +14,12 @@ import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
-import { PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { SwissQrBillApiService } from '@core/api/swiss-qr-bill-api.service';
+import { QrReferenceCheck } from '@core/models/swiss-qr-bill.model';
+import { PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe, downloadBlob } from '@shared';
 import { QrBill } from '@domain/models/qr-bill.model';
 import { QrBillStore } from '../../state/qr-bill.store';
+import { QrBillPreviewComponent } from '../qr-bill-preview/qr-bill-preview.component';
 
 @Component({
   selector: 'app-swiss-qr-bill',
@@ -41,34 +44,30 @@ import { QrBillStore } from '../../state/qr-bill.store';
     NzDividerModule,
     PageHeaderComponent,
     TranslatePipe,
+    QrBillPreviewComponent,
   ],
   templateUrl: './swiss-qr-bill.component.html',
 })
 export class SwissQrBillComponent implements OnInit {
   readonly store = inject(QrBillStore);
+  private readonly qrApi = inject(SwissQrBillApiService);
+
+  readonly validating = signal(false);
+  readonly downloadingPdf = signal(false);
+  readonly referenceCheckResult = signal<QrReferenceCheck | null>(null);
 
   readonly billForm = new FormGroup({
-    debtorName: new FormControl('Bernasconi Costruzioni SA', {
+    iban: new FormControl('CH4431999123000889012', {
       nonNullable: true,
       validators: [Validators.required],
     }),
-    debtorAddress: new FormControl('Corso Elvezia 18', {
+    reference: new FormControl('210000000003139471430009017', {
       nonNullable: true,
-      validators: [Validators.required],
-    }),
-    debtorPostalCode: new FormControl('6900', {
-      nonNullable: true,
-      validators: [Validators.required],
-    }),
-    debtorCity: new FormControl('Lugano', {
-      nonNullable: true,
-      validators: [Validators.required],
     }),
     rawAmount: new FormControl<number>(1450.83, {
       nonNullable: true,
       validators: [Validators.required, Validators.min(0.05)],
     }),
-    message: new FormControl('Fornitura sistemi gestionali Q4 2026', { nonNullable: true }),
   });
 
   readonly roundedAmount = computed(() => {
@@ -84,39 +83,35 @@ export class SwissQrBillComponent implements OnInit {
     return reference.replace(/(\d{2})(\d{5})(\d{5})(\d{5})(\d{5})(\d{5})/, '$1 $2 $3 $4 $5 $6');
   }
 
-  onCreateBill(): void {
+  onValidateReference(): void {
     this.billForm.markAllAsTouched();
-    if (this.billForm.valid) {
-      const formVal = this.billForm.getRawValue();
-      const rounded = Math.round(formVal.rawAmount * 20) / 20;
-      const newBill: QrBill = {
-        id: `qrb-${Date.now()}`,
-        billNumber: `QR-2026-${Math.floor(1000 + Math.random() * 9000)}`,
-        issueDate: new Date().toISOString().split('T')[0],
-        dueDate: new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0],
-        currency: 'CHF',
-        amount: rounded,
-        creditor: {
-          name: 'Helvetia Tech SA',
-          address: 'Via Nassa 12',
-          postalCode: '6900',
-          city: 'Lugano',
-          country: 'CH',
-          qrIban: 'CH4431999123000889012',
-        },
-        debtor: {
-          name: formVal.debtorName,
-          address: formVal.debtorAddress,
-          postalCode: formVal.debtorPostalCode,
-          city: formVal.debtorCity,
-          country: 'CH',
-        },
-        reference: `21000000000${Math.floor(100000000000000 + Math.random() * 900000000000000)}`,
-        unstructuredMessage: formVal.message,
-        status: 'PENDING',
-      };
-
-      this.store.addBill(newBill);
+    if (this.billForm.invalid) {
+      return;
     }
+    const { iban, reference } = this.billForm.getRawValue();
+    this.validating.set(true);
+    this.qrApi.validateReference(iban.trim(), reference.trim() || null).subscribe({
+      next: (res) => {
+        this.validating.set(false);
+        this.referenceCheckResult.set(res.data);
+      },
+      error: () => {
+        this.validating.set(false);
+        this.referenceCheckResult.set(null);
+      },
+    });
+  }
+
+  downloadInvoiceQrPdf(bill: QrBill): void {
+    this.downloadingPdf.set(true);
+    this.qrApi.generatePdf({ invoice_id: bill.id, mode: 'A4_ATTACHED' }).subscribe({
+      next: (blob) => {
+        this.downloadingPdf.set(false);
+        downloadBlob(blob, `qr-bill-${bill.billNumber || bill.id}.pdf`);
+      },
+      error: () => {
+        this.downloadingPdf.set(false);
+      },
+    });
   }
 }

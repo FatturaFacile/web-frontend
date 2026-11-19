@@ -11,7 +11,7 @@ import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { NzModalService } from 'ng-zorro-antd/modal';
+import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
@@ -51,6 +51,7 @@ import { ScorecardFormComponent } from './scorecard-form.component';
     NzEmptyModule,
     NzFormModule,
     NzInputModule,
+    NzModalModule,
     NzSpinModule,
     NzTableModule,
     NzTabsModule,

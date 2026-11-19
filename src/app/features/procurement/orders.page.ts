@@ -76,6 +76,12 @@ export const PROCUREMENT_ORDERS_PAGE: ResourcePageConfig = {
         columns: [...cols('po_number', 'supplier_id'), tagCol('status'), col('order_date', 'date'), col('expected_delivery_date', 'date'), ...cols('total_amount', 'currency')],
       },
       rowActions: [
+        act('PUT', 'RES.ACTION.EDIT', '/procurement/purchase-orders/{id}', {
+          prefill: true,
+          fields: [rf.date('expected_delivery_date'), rf.textarea('notes', { maxLength: 2000 })],
+          visible: whenIn('status', 'draft'),
+        }),
+        act('DELETE', 'RES.ACTION.DELETE', '/procurement/purchase-orders/{id}', { confirm: true, danger: true, visible: whenIn('status', 'draft', 'cancelled') }),
         act('POST', 'RES.A.submit_approval', '/procurement/purchase-orders/{id}/submit-approval', { visible: whenIn('status', 'draft') }),
         act('POST', 'RES.A.approve', '/procurement/purchase-orders/{id}/approve', { confirm: true, visible: whenIn('status', 'pending_approval') }),
         act('POST', 'RES.A.reject', '/procurement/purchase-orders/{id}/reject', {
@@ -105,7 +111,15 @@ export const PROCUREMENT_ORDERS_PAGE: ResourcePageConfig = {
         filters: [rf.select('status', ['draft', 'pending_approval', 'approved', 'sourcing', 'ordered', 'rejected', 'cancelled']), rf.text('urgency')],
         columns: [...cols('requisition_number', 'description'), tagCol('status'), tagCol('urgency'), col('required_by_date', 'date')],
       },
-      rowActions: [act('POST', 'RES.ACTION.CANCEL', '/procurement/requisitions/{id}/cancel', { confirm: true, danger: true })],
+      rowActions: [
+        act('PUT', 'RES.ACTION.EDIT', '/procurement/requisitions/{id}', {
+          prefill: true,
+          fields: [rf.textarea('description', { maxLength: 2000 }), rf.select('urgency', ['low', 'normal', 'high', 'urgent']), rf.date('required_by_date'), rf.textarea('notes', { maxLength: 2000 })],
+          visible: whenIn('status', 'draft'),
+        }),
+        act('POST', 'RES.ACTION.CANCEL', '/procurement/requisitions/{id}/cancel', { confirm: true, danger: true }),
+        act('DELETE', 'RES.ACTION.DELETE', '/procurement/requisitions/{id}', { confirm: true, danger: true, visible: whenIn('status', 'draft', 'cancelled') }),
+      ],
     },
     {
       id: 'goods-receipts',

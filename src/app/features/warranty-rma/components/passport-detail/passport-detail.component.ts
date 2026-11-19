@@ -12,6 +12,7 @@ import { EquipmentComponent } from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
 import { PassportStore } from '../../state/passport.store';
 import { AddExtensionDialogComponent } from './add-extension-dialog.component';
+import { EditPassportDialogComponent } from './edit-passport-dialog.component';
 
 /** Passport detail: warranty, care-pack extensions and component genealogy. */
 @Component({
@@ -29,6 +30,7 @@ import { AddExtensionDialogComponent } from './add-extension-dialog.component';
     PageHeaderComponent,
     TranslatePipe,
     AddExtensionDialogComponent,
+    EditPassportDialogComponent,
   ],
   templateUrl: './passport-detail.component.html',
   styles: `
@@ -43,6 +45,7 @@ import { AddExtensionDialogComponent } from './add-extension-dialog.component';
 export class PassportDetailComponent {
   readonly store = inject(PassportStore);
   readonly extensionOpen = signal(false);
+  readonly editOpen = signal(false);
 
   constructor() {
     inject(ActivatedRoute)

@@ -1,5 +1,6 @@
 import { Component, computed, inject, signal, viewChild, TemplateRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzIconModule } from 'ng-zorro-antd/icon';
@@ -18,7 +19,13 @@ import {
   contactDisplayName,
   I18nService,
 } from '@core';
-import { BaseTableComponent, PageHeaderComponent, TableColumnDef, TranslatePipe, IconActionDirective } from '@shared';
+import {
+  BaseTableComponent,
+  PageHeaderComponent,
+  TableColumnDef,
+  TranslatePipe,
+  IconActionDirective,
+} from '@shared';
 import { ClientFacade } from '../services/client.facade';
 import { ClientFormDrawerComponent } from './client-form-drawer.component';
 
@@ -26,6 +33,7 @@ import { ClientFormDrawerComponent } from './client-form-drawer.component';
   selector: 'app-crm-clients',
   styleUrl: './clients.component.scss',
   imports: [
+    RouterLink,
     IconActionDirective,
     FormsModule,
     NzTagModule,

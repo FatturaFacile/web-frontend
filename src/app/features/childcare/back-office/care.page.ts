@@ -115,5 +115,66 @@ export const CHILDCARE_CARE_PAGE: ResourcePageConfig = {
         }),
       ],
     },
+    {
+      id: 'waiting-list',
+      titleKey: 'RES.P.childcare_waiting_list',
+      module: 'childcare',
+      list: {
+        path: '/childcare/waiting-list',
+        columns: [...cols('reference_code', 'first_name', 'last_name'), tagCol('status'), col('enrolled_on', 'date')],
+      },
+    },
+    {
+      id: 'attendance-corrections',
+      titleKey: 'RES.P.childcare_attendances',
+      module: 'childcare',
+      list: {
+        path: '/childcare/attendances/register',
+        report: true,
+        manual: true,
+        filters: [req(rf.text('month', { maxLength: 7 })), rf.uuid('group_id')],
+        columns: [],
+      },
+      toolbar: [
+        act('PUT', 'RES.A.correct_attendance', '/childcare/attendances/{id}', {
+          fields: [
+            req(rf.uuid('id', { labelKey: 'RES.F.attendance_id' })),
+            req(rf.text('reason', { maxLength: 500 })),
+            rf.text('status'),
+            rf.text('absence_reason'),
+            rf.datetime('check_in_at'),
+            rf.datetime('check_out_at', { notBefore: 'check_in_at' }),
+            rf.text('temperature'),
+          ],
+        }),
+        act('GET', 'RES.A.view_corrections', '/childcare/attendances/{id}/corrections', {
+          fields: [req(rf.uuid('id', { labelKey: 'RES.F.attendance_id' }))],
+          showResult: true,
+        }),
+      ],
+    },
+    {
+      id: 'staff-hours',
+      titleKey: 'RES.P.childcare_staff_hours',
+      module: 'childcare',
+      list: {
+        path: '/childcare/staff-hours',
+        manual: true,
+        filters: [req(rf.text('month', { maxLength: 7 })), rf.uuid('group_id')],
+        columns: [...cols('name', 'shifts'), col('minutes', 'decimal')],
+      },
+      toolbar: [
+        act('POST', 'RES.A.new_staff_shift', '/childcare/staff-shifts', {
+          fields: [
+            req(rf.uuid('user_id')),
+            rf.uuid('group_id'),
+            req(rf.date('date')),
+            req(rf.time('starts_at')),
+            req(rf.time('ends_at')),
+            rf.integer('break_minutes', { min: 0 }),
+          ],
+        }),
+      ],
+    },
   ],
 };

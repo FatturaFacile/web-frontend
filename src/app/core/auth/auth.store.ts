@@ -71,7 +71,6 @@ export const DEFAULT_TENANTS: Tenant[] = [
     jurisdiction: 'CH',
     currency: 'CHF',
     vatNumber: 'CHE-114.892.451 IVA',
-    qrIban: 'CH4431999123000889012',
     address: 'Via Nassa 12, 6900 Lugano (TI), Svizzera',
     role: 'admin',
   },
@@ -160,6 +159,7 @@ function getInitialTenants(user: UserProfile | null): Tenant[] {
         vatNumber: '',
         address: '',
         role: t.role,
+        permissions: t.permissions,
       };
     });
   }
@@ -206,11 +206,9 @@ function getInitialAuthState(): AuthState {
   };
 }
 
-const initialState: AuthState = getInitialAuthState();
-
 export const AuthStore = signalStore(
   { providedIn: 'root' },
-  withState(initialState),
+  withState(() => getInitialAuthState()),
   withComputed(({ tenants, activeTenantId, activeJurisdiction, user }, ui = inject(UiPreferencesService)) => ({
     activeTenant: computed(
       () => tenants().find((t) => t.id === activeTenantId()) ?? tenants()[0]

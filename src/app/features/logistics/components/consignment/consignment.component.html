@@ -133,6 +133,9 @@
   <nz-tab [nzTitle]="'LOGISTICS.AGREEMENT.TAB' | translate">
     <app-consignment-agreements />
   </nz-tab>
+  <nz-tab [nzTitle]="'LOGISTICS.CONSIGNMENT.DECLARATIONS_TAB' | translate">
+    <app-consignment-declarations [products]="products()" />
+  </nz-tab>
 </nz-tabs>
 
 <app-consumption-declaration-wizard

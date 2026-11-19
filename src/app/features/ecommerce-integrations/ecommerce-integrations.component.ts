@@ -48,6 +48,7 @@ import {
 } from '@core';
 import { BaseTableComponent, IconActionDirective, ModalActionsDirective, MoneyPipe, PageHeaderComponent, TableColumnDef, TranslatePipe } from '@shared';
 import { inFuture } from '@shared/utils/date-validators';
+import { environment } from '@env';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -92,6 +93,7 @@ export class EcommerceIntegrationsComponent implements OnInit {
 
   readonly loading = signal<boolean>(false);
   readonly selectedTabIndex = signal<number>(0);
+  readonly apiBaseUrl = environment.apiBaseUrl;
 
   // Channels
   /** Every channel (up to the API page limit): the webhook cards of the second tab list all of them. */

@@ -11,6 +11,14 @@ import {
   PaginatedResponse,
   QueryFilterParams,
 } from '../models';
+import {
+  Iso20022ImportSummary,
+  ManualTransactionMatchPayload,
+  Pain001ExportPayload,
+  Pain001ExportResult,
+  ReconciliationTransaction,
+  ReconciliationTransactionFilters,
+} from '../models/iso20022.model';
 import { toHttpParams } from '../http/laravel-http.utils';
 
 export interface BankStatementFilterParams extends QueryFilterParams {
@@ -56,6 +64,34 @@ export class BankingApiService {
       `${this.base}/statements/lines/${lineId}/categorize`,
       payload
     );
+  }
+
+  /** Imports a camt.053 statement or camt.054 notification and reconciles it, answering with the summary. */
+  importIso20022(file: File, autoReconcile = true): Observable<ApiResponse<Iso20022ImportSummary>> {
+    const body = new FormData();
+    body.append('file', file, file.name);
+    body.append('auto_reconcile', autoReconcile ? '1' : '0');
+    return this.http.post<ApiResponse<Iso20022ImportSummary>>(`${this.base}/iso20022/import`, body);
+  }
+
+  getReconciliationTransactions(
+    filters: ReconciliationTransactionFilters,
+  ): Observable<PaginatedResponse<ReconciliationTransaction>> {
+    return this.http.get<PaginatedResponse<ReconciliationTransaction>>(`${this.base}/reconciliation/transactions`, {
+      params: toHttpParams({ ...filters }),
+    });
+  }
+
+  matchTransaction(lineId: string, payload: ManualTransactionMatchPayload): Observable<ApiResponse<ReconciliationTransaction>> {
+    return this.http.post<ApiResponse<ReconciliationTransaction>>(
+      `${this.base}/reconciliation/transactions/${lineId}/match`,
+      payload,
+    );
+  }
+
+  /** The XSD-validated pain.001 file of the selected supplier invoices. */
+  exportPain001(payload: Pain001ExportPayload): Observable<ApiResponse<Pain001ExportResult>> {
+    return this.http.post<ApiResponse<Pain001ExportResult>>(`${this.base}/iso20022/pain001/export`, payload);
   }
 
   unmatchLine(lineId: string): Observable<ApiResponse<BankStatementLine>> {

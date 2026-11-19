@@ -19,6 +19,16 @@ import { PROCUREMENT_ADMIN_PAGE } from './procurement/admin.page';
 import { PROCUREMENT_ORDERS_PAGE } from './procurement/orders.page';
 import { SOURCING_PAGE } from './procurement/sourcing.page';
 import { SUPPLIERS_PAGE } from './procurement/suppliers.page';
+import { CRM_PRM_CONFIG_PAGE } from './crm/prm-config.page';
+import { MOBILE_ADMIN_PAGE } from './mobile/mobile-admin.page';
+import { ASSET_LIFECYCLE_PAGE } from './assets/operations/asset-lifecycle.page';
+import { WORKFLOW_DESIGN_PAGE } from './workflows/workflow-design.page';
+import { EVENTS_ADMIN_PAGE } from './events/events-admin.page';
+import { PLANNING_ADMIN_PAGE } from './planning/planning-admin.page';
+import { BI_LIBRARY_PAGE } from './business-intelligence/bi-library.page';
+import { PAYROLL_TOOLS_PAGE } from './hr/payroll/payroll-tools.page';
+import { HOSPITALITY_FLOOR_PAGE } from './hospitality/back-office/floor.page';
+import { CONSTRUCTION_TRADES_PAGE } from './construction/back-office/trades.page';
 import { PURCHASE_INVOICES_PAGE, PURCHASE_ORDERS_PAGE } from './purchases/purchases-ledger.page';
 
 const PAGES: Record<string, ResourcePageConfig> = {
@@ -47,6 +57,16 @@ const PAGES: Record<string, ResourcePageConfig> = {
   PRIVACY_COMPLIANCE_PAGE,
   SUPPLIER_SELF_SERVICE_PAGE,
   TERRITORY_ACCOUNTS_PAGE,
+  CRM_PRM_CONFIG_PAGE,
+  MOBILE_ADMIN_PAGE,
+  ASSET_LIFECYCLE_PAGE,
+  WORKFLOW_DESIGN_PAGE,
+  EVENTS_ADMIN_PAGE,
+  PLANNING_ADMIN_PAGE,
+  BI_LIBRARY_PAGE,
+  PAYROLL_TOOLS_PAGE,
+  HOSPITALITY_FLOOR_PAGE,
+  CONSTRUCTION_TRADES_PAGE,
 };
 
 const dictionaries = seededDictionaries;

@@ -27,7 +27,7 @@ import { ModalActionsDirective, PageHeaderComponent, TranslatePipe } from '@shar
 import { ReturnsLookupsService } from './returns-lookups.service';
 import { apiErrorText, RMA_STATUS_COLORS } from './returns.util';
 
-type RmaDialog = 'approve' | 'reject' | 'receive' | 'inspect' | 'resolve';
+type RmaDialog = 'edit' | 'approve' | 'reject' | 'receive' | 'inspect' | 'resolve';
 
 /** What the inspector decided for one received line, edited in the inspection dialog. */
 export interface InspectRow {
@@ -66,6 +66,9 @@ export interface InspectRow {
     @if (rma(); as record) {
       <app-page-header [title]="record.rma_number" [subtitle]="record.customer_name">
         <a nz-button routerLink="/returns/rmas">{{ 'RETURNS.BACK_TO_LIST' | translate }}</a>
+        @if (record.status === 'requested') {
+          <button nz-button (click)="openDialog('edit')">{{ 'RETURNS.EDIT' | translate }}</button>
+        }
         @if (can('approved')) {
           <button nz-button nzType="primary" (click)="openDialog('approve')">{{ 'RETURNS.APPROVE' | translate }}</button>
         }
@@ -193,6 +196,28 @@ export interface InspectRow {
     >
       <ng-container *nzModalContent>
         @switch (dialog()) {
+          @case ('edit') {
+            <form nz-form [formGroup]="editForm" nzLayout="vertical">
+              <nz-form-item>
+                <nz-form-label>{{ 'RETURNS.REASON' | translate }}</nz-form-label>
+                <nz-form-control>
+                  <nz-select formControlName="reason_code">
+                    @for (reason of lookups.reasons(); track reason.code) {
+                      <nz-option [nzValue]="reason.code" [nzLabel]="reason.label"></nz-option>
+                    }
+                  </nz-select>
+                </nz-form-control>
+              </nz-form-item>
+              <nz-form-item>
+                <nz-form-label>{{ 'RETURNS.REQUESTED_ON' | translate }}</nz-form-label>
+                <nz-form-control><input nz-input type="date" formControlName="requested_on" /></nz-form-control>
+              </nz-form-item>
+              <nz-form-item>
+                <nz-form-label>{{ 'RETURNS.NOTES' | translate }}</nz-form-label>
+                <nz-form-control><textarea nz-input rows="3" formControlName="notes"></textarea></nz-form-control>
+              </nz-form-item>
+            </form>
+          }
           @case ('approve') {
             <form nz-form [formGroup]="approveForm" nzLayout="vertical">
               <nz-form-item>
@@ -356,6 +381,7 @@ export class ReturnsRmaDetailComponent implements OnInit {
   readonly receivedQuantities = signal<Record<string, string>>({});
   readonly inspectRows = signal<InspectRow[]>([]);
 
+  readonly editForm = this.fb.group({ reason_code: [''], requested_on: [''], notes: [''] });
   readonly approveForm = this.fb.group({ warehouse_id: [''] });
   readonly rejectForm = this.fb.group({ reason: ['', [Validators.required, Validators.maxLength(2000)]] });
   readonly receiveForm = this.fb.group({ warehouse_id: [''] });
@@ -428,6 +454,10 @@ export class ReturnsRmaDetailComponent implements OnInit {
 
     this.lookups.loadWarehouses();
     switch (dialog) {
+      case 'edit':
+        this.lookups.loadReasons();
+        this.editForm.reset({ reason_code: record.reason_code, requested_on: record.requested_on.slice(0, 10), notes: record.notes ?? '' });
+        break;
       case 'approve':
         this.approveForm.reset({ warehouse_id: record.warehouse_id ?? '' });
         break;
@@ -479,6 +509,18 @@ export class ReturnsRmaDetailComponent implements OnInit {
     }
 
     switch (dialog) {
+      case 'edit': {
+        const value = this.editForm.getRawValue();
+        this.run(
+          this.api.updateRma(record.id, {
+            reason_code: value.reason_code || undefined,
+            requested_on: value.requested_on || undefined,
+            notes: value.notes || null,
+          }),
+          'RETURNS.RMA_UPDATED',
+        );
+        break;
+      }
       case 'approve':
         this.run(this.api.approveRma(record.id, this.approveForm.getRawValue().warehouse_id || null), 'RETURNS.RMA_APPROVED');
         break;

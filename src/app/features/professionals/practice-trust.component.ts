@@ -115,6 +115,12 @@ import { apiErrorText, blankToNull, clientName, loadCases, loadClients, todayIso
               <td class="num">{{ row.balance_after | number: '1.2-2' }}</td>
               <td>
                 <div class="row-actions">
+                  @if (row.type !== 'reversal' && !row.posting) {
+                    <button nz-button nzType="text" (click)="openLedger(row, 'post')">{{ 'PRACTICEFIRM.POST_TO_LEDGER' | translate }}</button>
+                  }
+                  @if (row.posting && !row.posting.bank_statement_line_id) {
+                    <button nz-button nzType="text" (click)="openLedger(row, 'reconcile')">{{ 'PRACTICEFIRM.RECONCILE' | translate }}</button>
+                  }
                   @if (row.type !== 'reversal') {
                     <button nz-button nzType="text" nz-popconfirm [nzPopconfirmTitle]="'PRACTICEFIRM.REVERSE_CONFIRM' | translate" (nzOnConfirm)="reverse(row)">
                       {{ 'PRACTICEFIRM.REVERSE' | translate }}
@@ -187,6 +193,38 @@ import { apiErrorText, blankToNull, clientName, loadCases, loadClients, todayIso
         </form>
       </ng-container>
     </nz-modal>
+    <nz-modal
+      [(nzVisible)]="ledgerVisible"
+      [nzTitle]="(ledgerMode() === 'post' ? 'PRACTICEFIRM.POST_TO_LEDGER' : 'PRACTICEFIRM.RECONCILE') | translate"
+      (nzOnCancel)="ledgerVisible.set(false)"
+      (nzOnOk)="saveLedger()"
+      okAction="save"
+      [nzOkDisabled]="ledgerForm.invalid"
+    >
+      <ng-container *nzModalContent>
+        <form nz-form [formGroup]="ledgerForm" nzLayout="vertical">
+          @if (ledgerMode() === 'post') {
+            <nz-form-item>
+              <nz-form-label nzRequired nzFor="ledger-funds">{{ 'PRACTICEFIRM.CLIENT_FUNDS_ACCOUNT' | translate }}</nz-form-label>
+              <nz-form-control><input nz-input id="ledger-funds" formControlName="client_funds_account_id" /></nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+              <nz-form-label nzFor="ledger-bank">{{ 'PRACTICEFIRM.BANK_ACCOUNT' | translate }}</nz-form-label>
+              <nz-form-control><input nz-input id="ledger-bank" formControlName="bank_account_id" /></nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+              <nz-form-label nzFor="ledger-revenue">{{ 'PRACTICEFIRM.FEE_REVENUE_ACCOUNT' | translate }}</nz-form-label>
+              <nz-form-control><input nz-input id="ledger-revenue" formControlName="fee_revenue_account_id" /></nz-form-control>
+            </nz-form-item>
+          } @else {
+            <nz-form-item>
+              <nz-form-label nzRequired nzFor="ledger-line">{{ 'PRACTICEFIRM.BANK_STATEMENT_LINE' | translate }}</nz-form-label>
+              <nz-form-control><input nz-input id="ledger-line" formControlName="bank_statement_line_id" /></nz-form-control>
+            </nz-form-item>
+          }
+        </form>
+      </ng-container>
+    </nz-modal>
   `,
 })
 export class PracticeTrustComponent implements OnInit {
@@ -205,6 +243,16 @@ export class PracticeTrustComponent implements OnInit {
   readonly loading = signal(false);
   readonly clientId = signal<string | null>(null);
   readonly modalVisible = signal(false);
+  readonly ledgerVisible = signal(false);
+  readonly ledgerMode = signal<'post' | 'reconcile'>('post');
+  private ledgerTarget: PracticeTrustTransaction | null = null;
+
+  readonly ledgerForm = this.fb.group({
+    client_funds_account_id: [''],
+    bank_account_id: [''],
+    fee_revenue_account_id: [''],
+    bank_statement_line_id: [''],
+  });
 
   readonly form = this.fb.group({
     type: ['deposit' as PracticeTrustTransactionRequest['type']],
@@ -267,6 +315,42 @@ export class PracticeTrustComponent implements OnInit {
       next: () => {
         this.message.success(this.translate.instant('PRACTICEFIRM.TRANSACTION_SAVED'));
         this.modalVisible.set(false);
+        this.load();
+      },
+      error: (error: unknown) => this.message.error(apiErrorText(error) ?? this.translate.instant('PRACTICEFIRM.ACTION_ERROR')),
+    });
+  }
+
+  openLedger(row: PracticeTrustTransaction, mode: 'post' | 'reconcile'): void {
+    this.ledgerTarget = row;
+    this.ledgerMode.set(mode);
+    this.ledgerForm.reset({ client_funds_account_id: '', bank_account_id: '', fee_revenue_account_id: '', bank_statement_line_id: '' });
+    const required = mode === 'post' ? 'client_funds_account_id' : 'bank_statement_line_id';
+    for (const [key, control] of Object.entries(this.ledgerForm.controls)) {
+      control.setValidators(key === required ? [Validators.required] : []);
+      control.updateValueAndValidity();
+    }
+    this.ledgerVisible.set(true);
+  }
+
+  saveLedger(): void {
+    const row = this.ledgerTarget;
+    if (!row) {
+      return;
+    }
+    const value = this.ledgerForm.getRawValue();
+    const request =
+      this.ledgerMode() === 'post'
+        ? this.api.postTrustTransactionToLedger(row.id, {
+            client_funds_account_id: value.client_funds_account_id,
+            bank_account_id: blankToNull(value.bank_account_id),
+            fee_revenue_account_id: blankToNull(value.fee_revenue_account_id),
+          })
+        : this.api.reconcileTrustTransaction(row.id, value.bank_statement_line_id);
+    request.subscribe({
+      next: () => {
+        this.message.success(this.translate.instant('PRACTICEFIRM.TRANSACTION_SAVED'));
+        this.ledgerVisible.set(false);
         this.load();
       },
       error: (error: unknown) => this.message.error(apiErrorText(error) ?? this.translate.instant('PRACTICEFIRM.ACTION_ERROR')),

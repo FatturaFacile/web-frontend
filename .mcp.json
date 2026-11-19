@@ -9,7 +9,7 @@
       ]
     },
     "webstorm": {
-      "url": "http://127.0.0.1:64619/stream",
+      "url": "http://127.0.0.1:65371/stream",
       "type": "http",
       "headers": {
         "IJ_MCP_LAUNCH_ORIGIN": "${IJ_MCP_LAUNCH_ORIGIN:-}"

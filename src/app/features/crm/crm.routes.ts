@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { CRM_PRM_CONFIG_PAGE } from './prm-config.page';
 import { TERRITORY_ACCOUNTS_PAGE } from './territory-accounts.page';
 
 export const CRM_ROUTES: Routes = [
@@ -10,14 +11,18 @@ export const CRM_ROUTES: Routes = [
   {
     path: 'clients',
     data: { breadcrumb: 'BREADCRUMB.CLIENTI_CROSS_BORDER', title: 'PAGE_TITLE.ANAGRAFICA_CLIENTI' },
+    loadComponent: () => import('./clients/clients.component').then((m) => m.CrmClientsComponent),
+  },
+  {
+    path: 'clients/:id',
+    data: { breadcrumb: 'CRM.CUSTOMER360.TITLE', title: 'CRM.CUSTOMER360.TITLE' },
     loadComponent: () =>
-      import('./clients/clients.component').then((m) => m.CrmClientsComponent),
+      import('./clients/customer-360.component').then((m) => m.Customer360Component),
   },
   {
     path: 'suppliers',
     data: { breadcrumb: 'BREADCRUMB.FORNITORI_AND_LISTINI', title: 'PAGE_TITLE.FORNITORI_LISTINI' },
-    loadComponent: () =>
-      import('./clients/clients.component').then((m) => m.CrmClientsComponent),
+    loadComponent: () => import('./clients/clients.component').then((m) => m.CrmClientsComponent),
   },
   {
     path: 'leads',
@@ -61,11 +66,25 @@ export const CRM_ROUTES: Routes = [
   {
     path: 'territories',
     data: { breadcrumb: 'NAV.CRMEXT_TERRITORIES', title: 'PAGE_TITLE.CRMEXT_TERRITORIES' },
-    loadComponent: () => import('./territories/territories.component').then((m) => m.TerritoriesComponent),
+    loadComponent: () =>
+      import('./territories/territories.component').then((m) => m.TerritoriesComponent),
   },
   {
     path: 'territory-accounts',
-    data: { breadcrumb: 'RES.PAGE.CRM_TERRITORY_ACCOUNTS', title: 'RES.PAGE.CRM_TERRITORY_ACCOUNTS', page: TERRITORY_ACCOUNTS_PAGE },
+    data: {
+      breadcrumb: 'RES.PAGE.CRM_TERRITORY_ACCOUNTS',
+      title: 'RES.PAGE.CRM_TERRITORY_ACCOUNTS',
+      page: TERRITORY_ACCOUNTS_PAGE,
+    },
+    loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
+  },
+  {
+    path: 'prm-config',
+    data: {
+      breadcrumb: 'RES.PAGE.CRM_PRM_CONFIG',
+      title: 'RES.PAGE.CRM_PRM_CONFIG',
+      page: CRM_PRM_CONFIG_PAGE,
+    },
     loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
   },
   {
@@ -81,12 +100,12 @@ export const CRM_ROUTES: Routes = [
   {
     path: 'automation',
     data: { breadcrumb: 'NAV.CRMEXT_AUTOMATION', title: 'PAGE_TITLE.CRMEXT_AUTOMATION' },
-    loadComponent: () => import('./automation/automation.component').then((m) => m.AutomationComponent),
+    loadComponent: () =>
+      import('./automation/automation.component').then((m) => m.AutomationComponent),
   },
   {
     path: 'pipeline',
     data: { breadcrumb: 'BREADCRUMB.PIPELINE_AND_OPPORTUNITA', title: 'PAGE_TITLE.PIPELINE' },
-    loadComponent: () =>
-      import('./pipeline/pipeline.component').then((m) => m.PipelineComponent),
+    loadComponent: () => import('./pipeline/pipeline.component').then((m) => m.PipelineComponent),
   },
 ];

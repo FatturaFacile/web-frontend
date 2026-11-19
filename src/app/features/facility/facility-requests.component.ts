@@ -138,6 +138,9 @@ const BOARD_COLUMNS: readonly FacilityRequestStatus[] = ['new', 'assigned', 'in_
           </nz-descriptions>
 
           <div class="toolbar" style="margin-top: 16px">
+            @if (isOpen(request) && (abilities().operate || (isOwn(request) && request.status === 'new'))) {
+              <button nz-button (click)="openEdit(request)">{{ 'FACILITY.EDIT_REQUEST' | translate }}</button>
+            }
             @if (abilities().operate) {
               @if (request.status === 'new' || request.status === 'assigned') {
                 <button nz-button (click)="askInput('assign')">{{ 'FACILITY.ASSIGN' | translate }}</button>
@@ -195,7 +198,7 @@ const BOARD_COLUMNS: readonly FacilityRequestStatus[] = ['new', 'assigned', 'in_
       </ng-container>
     </nz-drawer>
 
-    <nz-modal [(nzVisible)]="createVisible" [nzTitle]="'FACILITY.NEW_REQUEST' | translate" (nzOnCancel)="createVisible.set(false)" (nzOnOk)="create()" okAction="save" [nzOkDisabled]="createForm.invalid" nzWidth="640px">
+    <nz-modal [(nzVisible)]="createVisible" [nzTitle]="(editingId() ? 'FACILITY.EDIT_REQUEST' : 'FACILITY.NEW_REQUEST') | translate" (nzOnCancel)="createVisible.set(false)" (nzOnOk)="create()" okAction="save" [nzOkDisabled]="createForm.invalid" nzWidth="640px">
       <ng-container *nzModalContent>
         <form nz-form [formGroup]="createForm" nzLayout="vertical">
           <div class="form-row">
@@ -308,6 +311,8 @@ export class FacilityRequestsComponent implements OnInit {
   readonly selected = signal<FacilityServiceRequest | null>(null);
   readonly drawerVisible = signal(false);
   readonly createVisible = signal(false);
+  /** Id of the request being edited, null while the modal creates a new one. */
+  readonly editingId = signal<string | null>(null);
   readonly inputAction = signal<InputAction | null>(null);
   readonly category = signal<string | null>(null);
   readonly priority = signal<string | null>(null);
@@ -403,7 +408,22 @@ export class FacilityRequestsComponent implements OnInit {
     this.loadComments(request.id);
   }
 
+  openEdit(request: FacilityServiceRequest): void {
+    this.editingId.set(request.id);
+    this.selectedBuilding.set(request.building_id);
+    this.createForm.reset({
+      category: request.category,
+      priority: request.priority,
+      title: request.title,
+      description: request.description ?? '',
+      building_id: request.building_id ?? '',
+      space_id: request.space_id ?? '',
+    });
+    this.createVisible.set(true);
+  }
+
   openCreate(): void {
+    this.editingId.set(null);
     this.selectedBuilding.set(null);
     this.createForm.reset({ category: 'cleaning', priority: 'normal', title: '', description: '', building_id: '', space_id: '' });
     this.createVisible.set(true);
@@ -420,10 +440,16 @@ export class FacilityRequestsComponent implements OnInit {
       space_id: value.space_id || null,
     };
 
-    this.api.createServiceRequest(payload).subscribe({
-      next: () => {
+    const editingId = this.editingId();
+    const request$ = editingId ? this.api.updateServiceRequest(editingId, payload) : this.api.createServiceRequest(payload);
+
+    request$.subscribe({
+      next: (response) => {
         this.message.success(this.translate.instant('FACILITY.REQUEST_SAVED'));
         this.createVisible.set(false);
+        if (editingId) {
+          this.selected.set(response.data);
+        }
         this.load();
       },
       error: (error: unknown) => this.message.error(apiErrorText(error) ?? this.translate.instant('FACILITY.ACTION_ERROR')),

@@ -10,7 +10,7 @@ describe('business intelligence screens', () => {
       const component = await (route.loadComponent as () => Promise<unknown>)();
       expect(component).toBeTruthy();
     }
-    expect(BUSINESS_INTELLIGENCE_ROUTES.map((route) => route.path)).toEqual(['', 'dashboards/:id', 'explorer', 'queries', 'measures']);
+    expect(BUSINESS_INTELLIGENCE_ROUTES.map((route) => route.path)).toEqual(['', 'dashboards/:id', 'explorer', 'queries', 'measures', 'library']);
   });
 
   it('reads the first validation message of a 422 and falls back to the summary', () => {

@@ -158,4 +158,38 @@ describe('SettingsComponent', () => {
     expect(mockSettingsApi.syncExchangeRates).toHaveBeenCalled();
     expect(mockMessage.success).toHaveBeenCalled();
   });
+
+  describe('bank configuration (iban / qr_iban)', () => {
+    it('starts with empty IBAN fields, never a sample account', () => {
+      const form = component['tenantForm'];
+      expect(form.controls.iban.value).toBe('');
+      expect(form.controls.qr_iban.value).toBe('');
+    });
+
+    it('fills the bank fields from the tenant settings returned by the API', () => {
+      mockSettingsApi.getTenantSettings.mockReturnValueOnce(
+        of({ data: { id: 't', name: 'Acme', iban: 'IT00TEST', qr_iban: 'CH00TEST' } }),
+      );
+      fixture.detectChanges();
+      expect(component['tenantForm'].controls.iban.value).toBe('IT00TEST');
+      expect(component['tenantForm'].controls.qr_iban.value).toBe('CH00TEST');
+    });
+
+    it('sends both IBANs to the API on save', () => {
+      fixture.detectChanges();
+      mockSettingsApi.updateTenantSettings.mockClear();
+      component['tenantForm'].patchValue({ name: 'Acme', iban: 'IT00TEST', qr_iban: 'CH00TEST' });
+      component.saveTenantSettings();
+      expect(mockSettingsApi.updateTenantSettings).toHaveBeenCalledWith(expect.objectContaining({ iban: 'IT00TEST', qr_iban: 'CH00TEST' }));
+    });
+
+    it('rejects an IBAN longer than 34 characters', () => {
+      fixture.detectChanges();
+      mockSettingsApi.updateTenantSettings.mockClear();
+      component['tenantForm'].patchValue({ name: 'Acme', iban: 'X'.repeat(35) });
+      expect(component['tenantForm'].controls.iban.hasError('maxlength')).toBe(true);
+      component.saveTenantSettings();
+      expect(mockSettingsApi.updateTenantSettings).not.toHaveBeenCalled();
+    });
+  });
 });

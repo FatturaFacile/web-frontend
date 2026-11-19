@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { moduleGuard } from '@core';
+import { PAYROLL_TOOLS_PAGE } from './payroll/payroll-tools.page';
 
 export const HR_ROUTES: Routes = [
   {
@@ -49,6 +50,12 @@ export const HR_ROUTES: Routes = [
     loadComponent: () => import('./payroll/payroll.component').then((m) => m.PayrollComponent),
   },
   {
+    path: 'payroll-tools',
+    canActivate: [moduleGuard('payroll', 'read')],
+    data: { breadcrumb: 'RES.PAGE.PAYROLL_TOOLS', title: 'RES.PAGE.PAYROLL_TOOLS', page: PAYROLL_TOOLS_PAGE },
+    loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
+  },
+  {
     path: 'payroll-compliance',
     canActivate: [moduleGuard('payroll', 'read')],
     data: { breadcrumb: 'NAV.HR_PAYROLL_COMPLIANCE', title: 'NAV.HR_PAYROLL_COMPLIANCE' },
@@ -82,11 +89,9 @@ export const HR_ROUTES: Routes = [
     loadComponent: () => import('./analytics/hr-analytics.component').then((m) => m.HrAnalyticsComponent),
   },
   {
-  },
-  {
-    path: 'recruiting',
-    data: { breadcrumb: 'NAV.HR_RECRUITING', title: 'NAV.HR_RECRUITING' },
-    loadComponent: () => import('./recruiting/recruiting.component').then((m) => m.RecruitingComponent),
+    path: 'recruiting-ats',
+    pathMatch: 'full',
+    redirectTo: 'recruiting',
   },
   {
     path: 'shifts',
@@ -106,7 +111,7 @@ export const HR_ROUTES: Routes = [
   },
   {
     path: 'recruiting',
-    data: { breadcrumb: 'NAV.RECRUITING' },
+    data: { breadcrumb: 'NAV.HR_RECRUITING', title: 'NAV.HR_RECRUITING' },
     loadChildren: () =>
       import('./recruiting/recruiting.routes').then((m) => m.RECRUITING_ROUTES),
   },

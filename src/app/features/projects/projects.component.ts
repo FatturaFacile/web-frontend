@@ -213,6 +213,16 @@ export class ProjectsComponent {
     });
   }
 
+  resume(project: ProjectResource): void {
+    this.projectApi.resumeProject(project.id).subscribe({
+      next: () => {
+        this.message.success(this.translate.instant('PRJ.MSG_PROJECT_STARTED'));
+        this.loadProjects();
+      },
+      error: () => undefined,
+    });
+  }
+
   pause(project: ProjectResource): void {
     this.projectApi.pauseProject(project.id).subscribe({
       next: () => {

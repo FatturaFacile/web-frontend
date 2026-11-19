@@ -14,6 +14,11 @@ export type CustomsDeclarationStatus =
   | 'accepted'
   | 'rejected'
   | 'cancelled';
+export type CustomsRegime = 'edec' | 'passar' | 'aida';
+export type CustomsTransitDocumentType = 'none' | 'T1' | 'T2';
+export type CustomsDocumentLanguage = 'it_en' | 'it_de';
+export type CustomsChannel = 'local' | 'edec' | 'passar' | 'aida';
+export type CustomsImportBillStatus = 'draft' | 'posted';
 export type CustomsSignatureStatus = 'verified' | 'invalid' | 'not_signed' | 'unsupported';
 export type ShipmentRequestStatus = 'pending' | 'accepted' | 'refused';
 
@@ -91,6 +96,14 @@ export interface CustomsDeclarationResource {
   destination_country?: string | null;
   incoterms?: string | null;
   declared_on?: string | null;
+  customs_regime?: CustomsRegime | null;
+  transit_document_type?: CustomsTransitDocumentType | null;
+  transit_guarantee_reference?: string | null;
+  transit_departure_office?: string | null;
+  transit_destination_office?: string | null;
+  transit_deadline_on?: string | null;
+  transit_discharged_at?: string | null;
+  border_crossing?: string | null;
   items?: CustomsDeclarationItem[];
   created_at?: string;
   updated_at?: string;
@@ -111,12 +124,21 @@ export interface CustomsDeclarationRequest {
   incoterms?: string;
   language?: 'it' | 'en' | 'de' | 'fr';
   declared_on?: string;
+  customs_regime?: CustomsRegime;
+  transit_document_type?: CustomsTransitDocumentType;
+  transit_guarantee_reference?: string | null;
+  transit_departure_office?: string | null;
+  transit_destination_office?: string | null;
+  transit_deadline_on?: string | null;
+  border_crossing?: string | null;
   items?: CustomsDeclarationItem[];
 }
 
 export interface CustomsDeclarationParams {
   declaration_type?: CustomsDirection;
   status?: CustomsDeclarationStatus;
+  /** Sent to the API; the list endpoint ignores it until the backend filters on it. */
+  customs_regime?: CustomsRegime;
   mrn?: string;
   search?: string;
   page?: number;
@@ -197,4 +219,84 @@ export interface CustomsShipmentRequestResource {
   origin_address?: string | null;
   destination_address?: string | null;
   created_at?: string;
+}
+
+/** One export declaration that still lacks the export proof (eVV) of its invoices. */
+export interface CustomsMissingEvvEntry {
+  declaration_id: string;
+  trader_declaration_number: string;
+  mrn: string | null;
+  invoices: { id: string; invoice_number: string }[];
+}
+
+export interface CustomsTradeComplianceDashboard {
+  by_direction: Record<string, number>;
+  by_regime: Record<string, number>;
+  by_status: Record<string, number>;
+  transit_overdue: number;
+  missing_evv: CustomsMissingEvvEntry[];
+}
+
+export interface CustomsExportProof {
+  has_proof: boolean;
+  decision: Record<string, unknown> | null;
+}
+
+export interface CustomsMrnRequest {
+  mrn: string;
+}
+
+export interface CustomsLinkInvoicesRequest {
+  invoice_ids: string[];
+}
+
+export interface CustomsLinkedInvoices {
+  linked: number;
+}
+
+export interface CustomsImportBillResource {
+  id: string;
+  bill_number: string;
+  bill_date: string;
+  declaration_id?: string | null;
+  passive_invoice_id?: string | null;
+  broker_invoice_reference?: string | null;
+  currency: string;
+  customs_value: string | number;
+  duty_amount: string | number;
+  ancillary_costs?: string | number | null;
+  vat_rate: string | number;
+  import_vat_amount?: string | number | null;
+  notes?: string | null;
+  status: CustomsImportBillStatus;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CustomsImportBillRequest {
+  bill_number: string;
+  bill_date: string;
+  declaration_id?: string | null;
+  passive_invoice_id?: string | null;
+  broker_invoice_reference?: string | null;
+  currency: string;
+  customs_value: number;
+  duty_amount: number;
+  ancillary_costs?: number | null;
+  vat_rate: number;
+  /** Computed server-side on value + duty + ancillary costs when omitted. */
+  import_vat_amount?: number | null;
+  notes?: string | null;
+}
+
+export interface CustomsImportBillReconciliation {
+  bill_total: string | number;
+  supplier_total: string | number | null;
+  remainder: string | number | null;
+  matches: boolean;
+}
+
+export interface CustomsImportBillParams {
+  page?: number;
+  per_page?: number;
 }

@@ -7,6 +7,7 @@ import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalModule } from 'ng-zorro-antd/modal';
+import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
@@ -42,6 +43,7 @@ export function sodParseDuties(text: string): string[] {
     NzFormModule,
     NzInputModule,
     NzModalModule,
+    NzPopconfirmModule,
     NzSelectModule,
     NzTableModule,
     NzTabsModule,
@@ -122,6 +124,7 @@ export function sodParseDuties(text: string): string[] {
                   <td>
                     @if (access.canManage()) {
                       <button nz-button nzSize="small" (click)="toggleRule(rule)"><i class="fa-solid fa-power-off"></i></button>
+                      <button nz-button nzSize="small" nzDanger nz-popconfirm [nzPopconfirmTitle]="'GOVERNANCE.SOD.DELETE_RULE_CONFIRM' | translate" (nzOnConfirm)="deleteRule(rule)" [attr.aria-label]="'COMMON.DELETE' | translate"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
                     }
                   </td>
                 </tr>
@@ -341,6 +344,15 @@ export class GovernanceSegregationOfDutiesComponent implements OnInit {
 
   toggleRule(rule: GovSodRule): void {
     this.api.updateSodRule(rule.id, { is_active: !rule.is_active }).subscribe({ next: () => this.load() });
+  }
+
+  deleteRule(rule: GovSodRule): void {
+    this.api.deleteSodRule(rule.id).subscribe({
+      next: () => {
+        this.message.success(this.translate.instant('GOVERNANCE.SOD.DELETED'));
+        this.load();
+      },
+    });
   }
 
   openException(): void {

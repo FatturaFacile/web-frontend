@@ -7,6 +7,7 @@ import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
@@ -32,6 +33,7 @@ import { FiscalSettingsComponent } from './components/fiscal-settings.component'
     NzCardModule,
     NzButtonModule,
     NzInputModule,
+    NzSelectModule,
     NzFormModule,
     NzIconModule,
     NzTabsModule,
@@ -72,8 +74,11 @@ export class SettingsComponent implements OnInit {
     vat_number: this.fb.control<string>('IT12345678901', [Validators.maxLength(30)]),
     uid_number: this.fb.control<string>('CHE-114.892.451 IVA', [Validators.maxLength(20)]),
     default_currency: this.fb.control<string>('EUR', [Validators.minLength(3), Validators.maxLength(3)]),
-    iban: this.fb.control<string>('IT60X0569601600000001234567', [Validators.maxLength(34)]),
-    qr_iban: this.fb.control<string>('CH4431999123000889012', [Validators.maxLength(34)]),
+    iban: this.fb.control<string>('', [Validators.maxLength(34)]),
+    qr_iban: this.fb.control<string>('', [Validators.maxLength(34)]),
+    qrr_prefix: this.fb.control<string>('', [Validators.pattern(/^\d{0,6}$/)]),
+    default_reference_type: this.fb.control<'QRR' | 'SCOR' | 'NON'>('QRR'),
+    qr_bill_perforation: this.fb.control<'NONE' | 'DASHED_LINE' | 'DASHED_LINE_WITH_SCISSORS'>('DASHED_LINE_WITH_SCISSORS'),
     sdi_code: this.fb.control<string>('M5UXCR1', [Validators.minLength(7), Validators.maxLength(7)]),
     pec_email: this.fb.control<string>('rossiimpianti@pec.it', [Validators.email]),
     customs_approved_exporter_number: this.fb.control<string>('', [Validators.maxLength(50)]),
@@ -156,6 +161,9 @@ export class SettingsComponent implements OnInit {
             default_currency: res.data.default_currency || 'EUR',
             iban: res.data.iban || '',
             qr_iban: res.data.qr_iban || '',
+            qrr_prefix: res.data.qrr_prefix || '',
+            default_reference_type: res.data.default_reference_type || 'QRR',
+            qr_bill_perforation: res.data.qr_bill_perforation || 'DASHED_LINE_WITH_SCISSORS',
             sdi_code: res.data.sdi_code || '',
             pec_email: res.data.pec_email || '',
             customs_approved_exporter_number: res.data.customs_approved_exporter_number || '',

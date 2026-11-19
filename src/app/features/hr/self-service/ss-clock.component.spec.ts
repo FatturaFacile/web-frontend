@@ -53,7 +53,7 @@ describe('SsClockComponent', () => {
   function loadToday(events: unknown, inspect?: (req: TestRequest) => void): void {
     const req = httpMock.expectOne((r) => r.url === `${me}/time/events`);
     inspect?.(req);
-    req.flush(events);
+    req.flush(events as object);
     httpMock
       .expectOne(`${me}/clock-settings`)
       .flush({ success: true, message: '', data: { geolocation_enabled: false, privacy_notice_acknowledged: false } });

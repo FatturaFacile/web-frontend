@@ -85,6 +85,22 @@
         </nz-form-control>
       </nz-form-item>
 
+      @if (expense()) {
+        <nz-form-item>
+          <nz-form-label>{{ 'expenses.form.attachments' | translate }}</nz-form-label>
+          <nz-form-control>
+            <ul class="attachment-list">
+              @for (attachment of attachments(); track attachment.id) {
+                <li>
+                  <button nz-button nzType="link" type="button" (click)="download(attachment)">{{ attachment.original_name }}</button>
+                </li>
+              }
+            </ul>
+            <input type="file" multiple accept=".jpg,.jpeg,.png,.webp,.heic,.pdf" [disabled]="isUploading()" (change)="upload($event)" [attr.aria-label]="'expenses.form.addAttachment' | translate" />
+          </nz-form-control>
+        </nz-form-item>
+      }
+
       <div class="footer-actions">
         <button nz-button type="button" appIconAction="cancel" (click)="open.set(false)"></button>
         <button nz-button nzType="primary" type="submit" appIconAction="save" [nzLoading]="isSaving()" [disabled]="form.invalid"></button>

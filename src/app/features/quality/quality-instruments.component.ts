@@ -95,6 +95,9 @@ const STATUS_COLORS: Record<InstrumentCalibrationStatus, string> = {
                   @if (row.status !== 'retired') {
                     <button nz-button nzType="text" (click)="openCalibrationModal(row)">{{ 'QUALITY.RECORD_CALIBRATION' | translate }}</button>
                   }
+                  @if (row.status !== 'retired') {
+                    <button nz-button nzType="text" (click)="openEditInstrument(row)">{{ 'QUALITY.ACTION_EDIT' | translate }}</button>
+                  }
                   <button nz-button nzType="text" (click)="showHistory(row)">{{ 'QUALITY.HISTORY' | translate }}</button>
                   @if (row.status !== 'retired') {
                     <button nz-button nzType="text" nzDanger nz-popconfirm [nzPopconfirmTitle]="'QUALITY.RETIRE_CONFIRM' | translate" (nzOnConfirm)="retire(row)">{{ 'QUALITY.RETIRE' | translate }}</button>
@@ -149,7 +152,7 @@ const STATUS_COLORS: Record<InstrumentCalibrationStatus, string> = {
       </nz-card>
     }
 
-    <nz-modal [(nzVisible)]="instrumentVisible" [nzTitle]="'QUALITY.NEW_INSTRUMENT' | translate" (nzOnCancel)="instrumentVisible.set(false)" (nzOnOk)="saveInstrument()" okAction="save" [nzOkDisabled]="instrumentForm.invalid">
+    <nz-modal [(nzVisible)]="instrumentVisible" [nzTitle]="(editingId() ? 'QUALITY.ACTION_EDIT' : 'QUALITY.NEW_INSTRUMENT') | translate" (nzOnCancel)="instrumentVisible.set(false)" (nzOnOk)="saveInstrument()" okAction="save" [nzOkDisabled]="instrumentForm.invalid">
       <ng-container *nzModalContent>
         <form nz-form [formGroup]="instrumentForm" nzLayout="vertical">
           <div class="form-row">
@@ -241,6 +244,7 @@ export class QualityInstrumentsComponent implements OnInit {
   readonly loading = signal(false);
   readonly calibrationFilter = signal<'overdue' | 'due_soon' | ''>('');
   readonly instrumentVisible = signal(false);
+  readonly editingId = signal<string | null>(null);
   readonly calibrationVisible = signal(false);
   readonly calibrationTarget = signal<QualityInstrument | null>(null);
   readonly history = signal<QualityCalibration[] | null>(null);
@@ -287,7 +291,21 @@ export class QualityInstrumentsComponent implements OnInit {
     });
   }
 
+  openEditInstrument(instrument: QualityInstrument): void {
+    this.editingId.set(instrument.id);
+    this.instrumentForm.reset({
+      code: instrument.code,
+      name: instrument.name,
+      serial_number: instrument.serial_number ?? '',
+      location: instrument.location ?? '',
+      tolerance: instrument.tolerance === null ? null : Number(instrument.tolerance),
+      calibration_interval_days: instrument.calibration_interval_days,
+    });
+    this.instrumentVisible.set(true);
+  }
+
   openInstrumentModal(): void {
+    this.editingId.set(null);
     this.instrumentForm.reset({ code: '', name: '', serial_number: '', location: '', tolerance: null, calibration_interval_days: 365 });
     this.instrumentVisible.set(true);
   }
@@ -307,7 +325,9 @@ export class QualityInstrumentsComponent implements OnInit {
       calibration_interval_days: value.calibration_interval_days,
       notes: null,
     };
-    this.api.createInstrument(payload).subscribe({
+    const id = this.editingId();
+    const request$ = id ? this.api.updateInstrument(id, payload) : this.api.createInstrument(payload);
+    request$.subscribe({
       next: () => {
         this.message.success(this.translate.instant('QUALITY.SAVED'));
         this.instrumentVisible.set(false);

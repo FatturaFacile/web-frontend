@@ -245,14 +245,20 @@ export class SubscriptionsComponent implements OnInit {
       nzOkText: this.translate.instant('subscriptions.dlgCancelSubscription'),
       nzOkDanger: true,
       nzOnOk: () => {
-        this.subApi.cancelContract(contract.id, { cancel_at_period_end: true }).subscribe({
-          next: () => {
-            this.message.success(this.translate.instant('subscriptions.msgSubscriptionScheduledForCancellation'));
-            this.grid.reload();
-            this.loadMetrics();
-          },
-          error: () => undefined,
-        });
+        this.subApi
+          .cancelContract(contract.id, {
+            reason: 'Customer requested cancellation',
+            cancellation_type: 'end_of_term',
+            cancel_at_period_end: true,
+          })
+          .subscribe({
+            next: () => {
+              this.message.success(this.translate.instant('subscriptions.msgSubscriptionScheduledForCancellation'));
+              this.grid.reload();
+              this.loadMetrics();
+            },
+            error: () => undefined,
+          });
       },
     });
   }

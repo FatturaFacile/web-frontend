@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { BI_LIBRARY_PAGE } from './bi-library.page';
 
 export const BUSINESS_INTELLIGENCE_ROUTES: Routes = [
   {
@@ -26,5 +27,10 @@ export const BUSINESS_INTELLIGENCE_ROUTES: Routes = [
     path: 'measures',
     data: { breadcrumb: 'NAV.BI_MEASURES', title: 'PAGE_TITLE.BI_MEASURES' },
     loadComponent: () => import('./bi-measures.component').then((m) => m.BiMeasuresComponent),
+  },
+  {
+    path: 'library',
+    data: { breadcrumb: 'RES.PAGE.BI_LIBRARY', title: 'RES.PAGE.BI_LIBRARY', page: BI_LIBRARY_PAGE },
+    loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
   },
 ];

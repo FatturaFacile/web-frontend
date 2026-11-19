@@ -169,6 +169,7 @@ import { blankToNull, keyOf, mutationObserver, tagColor } from './talent-learnin
                 <td>{{ 'TALENT_LEARNING.LEVEL_' + key(candidate.potential) | translate }}</td>
                 <td><nz-tag [nzColor]="color(candidate.risk_of_loss)">{{ 'TALENT_LEARNING.LEVEL_' + key(candidate.risk_of_loss) | translate }}</nz-tag></td>
                 <td>
+                  <button nz-button nzType="text" appIconAction="edit" (click)="editCandidate(candidate)"></button>
                   <button nz-button nzType="text" nzDanger appIconAction="delete" nz-popconfirm [nzPopconfirmTitle]="'TALENT_LEARNING.DELETE_CONFIRM' | translate" (nzOnConfirm)="removeCandidate(candidate)"></button>
                 </td>
               </tr>
@@ -180,7 +181,7 @@ import { blankToNull, keyOf, mutationObserver, tagColor } from './talent-learnin
           <nz-form-item>
             <nz-form-label nzRequired>{{ 'TALENT_LEARNING.EMPLOYEE' | translate }}</nz-form-label>
             <nz-form-control>
-              <nz-select formControlName="employee_id" nzShowSearch>
+              <nz-select formControlName="employee_id" nzShowSearch [nzDisabled]="editingCandidate() !== null">
                 @for (employee of employees(); track employee.id) {
                   <nz-option [nzValue]="employee.id" [nzLabel]="employee.full_name"></nz-option>
                 }
@@ -227,7 +228,10 @@ import { blankToNull, keyOf, mutationObserver, tagColor } from './talent-learnin
             <nz-form-label nzFor="candidate-plan">{{ 'TALENT_LEARNING.DEVELOPMENT_PLAN' | translate }}</nz-form-label>
             <nz-form-control><textarea nz-input id="candidate-plan" rows="2" formControlName="development_plan"></textarea></nz-form-control>
           </nz-form-item>
-          <button nz-button nzType="primary" type="button" [disabled]="candidateForm.invalid" (click)="addCandidate()">{{ 'TALENT_LEARNING.ADD_SUCCESSOR' | translate }}</button>
+          <button nz-button nzType="primary" type="button" [disabled]="candidateForm.invalid" (click)="addCandidate()">{{ (editingCandidate() ? 'TALENT_LEARNING.SAVE_SUCCESSOR' : 'TALENT_LEARNING.ADD_SUCCESSOR') | translate }}</button>
+          @if (editingCandidate()) {
+            <button nz-button type="button" (click)="cancelCandidateEdit()">{{ 'TALENT_LEARNING.CANCEL' | translate }}</button>
+          }
         </form>
       </ng-container>
     </nz-modal>
@@ -253,6 +257,8 @@ export class TalentSuccessionComponent implements OnInit {
   readonly selected = signal<TalentSuccessionPosition | null>(null);
   readonly positionModalVisible = signal(false);
   readonly candidateModalVisible = signal(false);
+  /** Successor loaded in the form: saving updates it instead of adding a new one. */
+  readonly editingCandidate = signal<TalentSuccessionCandidate | null>(null);
 
   readonly positionForm = this.fb.group({
     position_id: this.fb.control<string | null>(null),
@@ -340,6 +346,23 @@ export class TalentSuccessionComponent implements OnInit {
       return;
     }
     const value = this.candidateForm.getRawValue();
+    const current = this.editingCandidate();
+    if (current) {
+      this.api
+        .updateCandidate(current.id, {
+          readiness: value.readiness,
+          risk_of_loss: value.risk_of_loss,
+          potential: value.potential,
+          ranking: value.ranking,
+          development_plan: blankToNull(value.development_plan),
+        })
+        .subscribe(mutationObserver(this.message, this.translate, () => {
+          this.cancelCandidateEdit();
+          this.refreshSelected(position.id);
+          this.load();
+        }));
+      return;
+    }
     this.api
       .createCandidate(position.id, {
         employee_id: value.employee_id,
@@ -354,6 +377,24 @@ export class TalentSuccessionComponent implements OnInit {
         this.refreshSelected(position.id);
         this.load();
       }));
+  }
+
+  editCandidate(candidate: TalentSuccessionCandidate): void {
+    this.editingCandidate.set(candidate);
+    this.candidateForm.reset({
+      employee_id: candidate.employee_id,
+      readiness: candidate.readiness,
+      risk_of_loss: candidate.risk_of_loss,
+      potential: candidate.potential,
+      ranking: candidate.ranking,
+      development_plan: candidate.development_plan ?? '',
+    });
+  }
+
+  cancelCandidateEdit(): void {
+    const position = this.selected();
+    this.editingCandidate.set(null);
+    this.candidateForm.reset({ employee_id: '', readiness: 'ready_1_2_years', risk_of_loss: 'low', potential: 'medium', ranking: (position?.candidates?.length ?? 0) + 1, development_plan: '' });
   }
 
   removeCandidate(candidate: TalentSuccessionCandidate): void {

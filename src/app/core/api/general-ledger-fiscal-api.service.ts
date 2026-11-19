@@ -21,7 +21,11 @@ import {
   SubledgerPage,
   VatSettings,
   VatSettingsPayload,
+  VatSettlementCalculation,
   VatSettlementF24,
+  VatSettlementRecord,
+  VatSettlementRequest,
+  VatSettlementSummary,
   VendorAging,
   WithholdingF24,
   WithholdingSettlement,
@@ -32,6 +36,7 @@ import {
 export class GeneralLedgerFiscalApiService {
   private readonly http = inject(HttpClient);
   private readonly base = `${environment.apiBaseUrl}/general-ledger`;
+  private readonly vatBase = `${environment.apiBaseUrl}/vat/settlements`;
   private readonly accountingBase = `${environment.apiBaseUrl}/accounting`;
 
   // --- Enasarco ---
@@ -107,6 +112,32 @@ export class GeneralLedgerFiscalApiService {
 
   downloadSwissEstvXml(settlementId: string): Observable<Blob> {
     return this.http.get(`${this.base}/tax-settlements/${settlementId}/swiss-xml`, { responseType: 'blob' });
+  }
+
+  // --- Jurisdiction-aware VAT settlements (CH MWST / IT LIPE) ---
+
+  previewVatSettlement(payload: VatSettlementRequest): Observable<{ data: VatSettlementCalculation }> {
+    return this.http.post<{ data: VatSettlementCalculation }>(`${this.vatBase}/preview`, payload);
+  }
+
+  lockVatSettlement(payload: VatSettlementRequest): Observable<{ data: VatSettlementRecord }> {
+    return this.http.post<{ data: VatSettlementRecord }>(this.vatBase, payload);
+  }
+
+  getVatSettlements(): Observable<{ data: VatSettlementSummary[] }> {
+    return this.http.get<{ data: VatSettlementSummary[] }>(this.vatBase);
+  }
+
+  getVatSettlementRecord(id: string): Observable<{ data: VatSettlementRecord }> {
+    return this.http.get<{ data: VatSettlementRecord }>(`${this.vatBase}/${id}`);
+  }
+
+  exportVatSettlementXml(id: string): Observable<Blob> {
+    return this.http.get(`${this.vatBase}/${id}/export-xml`, { responseType: 'blob' });
+  }
+
+  exportVatSettlementPdf(id: string): Observable<Blob> {
+    return this.http.get(`${this.vatBase}/${id}/export-pdf`, { responseType: 'blob' });
   }
 
   getVatAnnualReconciliation(year: number): Observable<{ data: Record<string, unknown> }> {
