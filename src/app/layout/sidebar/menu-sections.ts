@@ -882,6 +882,7 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         children: [
           { key: 'NAV.ANALYTICS_KPIS', route: '/analytics', icon: 'fa-solid fa-gauge-high', module: 'analytics' },
           { key: 'NAV.ANALYTICS_DESIGNER', route: '/analytics/designer', icon: 'fa-solid fa-table-cells', module: 'analytics' },
+          { key: 'NAV.ANALYTICS_REPORTS', route: '/analytics/reports', icon: 'fa-solid fa-table-columns', module: 'analytics' },
           { key: 'NAV.ANALYTICS_EXPORTS', route: '/analytics/exports', icon: 'fa-solid fa-calendar-check', module: 'analytics' },
           { key: 'NAV.ANALYTICS_SNAPSHOTS', route: '/analytics/snapshots', icon: 'fa-solid fa-camera', module: 'analytics' },
         ],

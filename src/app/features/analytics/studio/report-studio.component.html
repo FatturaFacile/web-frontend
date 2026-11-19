@@ -1,0 +1,672 @@
+<app-page-header
+  [title]="saved()?.name ?? ('ANALYTICS_STUDIO.NEW_REPORT' | translate)"
+  [subtitle]="'ANALYTICS_STUDIO.STUDIO_SUBTITLE' | translate"
+/>
+
+<div class="toolbar" role="toolbar" [attr.aria-label]="'ANALYTICS_STUDIO.TOOLBAR' | translate">
+  <a nz-button routerLink="/analytics/reports">{{
+    'ANALYTICS_STUDIO.BACK_TO_REPORTS' | translate
+  }}</a>
+
+  <nz-radio-group
+    [ngModel]="view()"
+    (ngModelChange)="view.set($event)"
+    nzButtonStyle="solid"
+    data-testid="view-switcher"
+  >
+    <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+    <label nz-radio-button nzValue="grid">{{ 'ANALYTICS_STUDIO.VIEW_GRID' | translate }}</label>
+    <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+    <label nz-radio-button nzValue="chart">{{ 'ANALYTICS_STUDIO.VIEW_CHART' | translate }}</label>
+    <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+    <label nz-radio-button nzValue="split">{{ 'ANALYTICS_STUDIO.VIEW_SPLIT' | translate }}</label>
+  </nz-radio-group>
+
+  <span class="spacer"></span>
+
+  <nz-select
+    class="locale"
+    [ngModel]="exportLocale()"
+    (ngModelChange)="exportLocale.set($event)"
+    [attr.aria-label]="'ANALYTICS_STUDIO.LOCALE' | translate"
+  >
+    @for (item of catalog()?.options?.locales ?? []; track item) {
+      <nz-option [nzValue]="item" [nzLabel]="keys.locale[item] | translate"></nz-option>
+    }
+  </nz-select>
+
+  <button
+    nz-button
+    type="button"
+    nz-dropdown
+    [nzDropdownMenu]="exportMenu"
+    nzTrigger="click"
+    [disabled]="!runnable()"
+    [nzLoading]="exporting()"
+    data-testid="export-button"
+  >
+    {{ 'ANALYTICS_STUDIO.EXPORT' | translate }}
+  </button>
+  <nz-dropdown-menu #exportMenu="nzDropdownMenu">
+    <ul nz-menu>
+      @for (format of exportFormats; track format) {
+        <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+        <li nz-menu-item (click)="export(format)" [attr.data-testid]="'export-' + format">
+          {{ keys.format[format] | translate }}
+        </li>
+      }
+    </ul>
+  </nz-dropdown-menu>
+
+  <button
+    nz-button
+    type="button"
+    (click)="openSave()"
+    [disabled]="!runnable()"
+    data-testid="save-button"
+  >
+    {{ 'ANALYTICS_STUDIO.SAVE_REPORT' | translate }}
+  </button>
+  <button
+    nz-button
+    nzType="primary"
+    type="button"
+    (click)="openSchedule()"
+    [disabled]="!runnable()"
+    data-testid="schedule-button"
+  >
+    {{ 'ANALYTICS_STUDIO.SCHEDULE_DELIVERY' | translate }}
+  </button>
+</div>
+
+@if (errorText(); as text) {
+  <nz-alert nzType="error" [nzMessage]="text" nzShowIcon class="block" role="alert"></nz-alert>
+}
+
+<div class="studio">
+  <!-- Field catalog -->
+  <aside class="catalog" [attr.aria-label]="'ANALYTICS_STUDIO.CATALOG' | translate">
+    <label for="studio-dataset">{{ 'ANALYTICS_STUDIO.DATASET' | translate }}</label>
+    <nz-select
+      id="studio-dataset"
+      [ngModel]="state().dataset"
+      (ngModelChange)="selectDataset($event)"
+      nzShowSearch
+      data-testid="dataset-select"
+    >
+      @for (item of catalog()?.datasets ?? []; track item.key) {
+        <nz-option [nzValue]="item.key" [nzLabel]="item.label"></nz-option>
+      }
+    </nz-select>
+
+    <label for="studio-search">{{ 'ANALYTICS_STUDIO.SEARCH_FIELDS' | translate }}</label>
+    <input id="studio-search" nz-input [ngModel]="search()" (ngModelChange)="search.set($event)" />
+
+    <h3>{{ 'ANALYTICS_STUDIO.DIMENSIONS' | translate }}</h3>
+    <div
+      class="pills"
+      cdkDropList
+      id="catalog-dimensions"
+      [cdkDropListConnectedTo]="shelfIds"
+      [cdkDropListSortingDisabled]="true"
+      cdkDropListHasAnchor
+    >
+      @for (dimension of dimensions(); track dimension.key; let index = $index) {
+        <div
+          class="pill dimension"
+          cdkDrag
+          [cdkDragData]="{ key: dimension.key, kind: 'dimension', shelf: 'catalog', index: index }"
+          [attr.data-testid]="'dim-' + dimension.key"
+        >
+          <span class="name">{{ dimension.label }}</span>
+          <span class="actions">
+            <button
+              type="button"
+              (click)="addToShelf('rows', dimension.key)"
+              [attr.aria-label]="
+                ('ANALYTICS_STUDIO.ADD_TO_ROWS' | translate) + ': ' + dimension.label
+              "
+              [attr.data-testid]="'add-rows-' + dimension.key"
+            >
+              R
+            </button>
+            <button
+              type="button"
+              (click)="addToShelf('columns', dimension.key)"
+              [attr.aria-label]="
+                ('ANALYTICS_STUDIO.ADD_TO_COLUMNS' | translate) + ': ' + dimension.label
+              "
+              [attr.data-testid]="'add-columns-' + dimension.key"
+            >
+              C
+            </button>
+            <button
+              type="button"
+              (click)="addToShelf('filters', dimension.key)"
+              [attr.aria-label]="
+                ('ANALYTICS_STUDIO.ADD_TO_FILTERS' | translate) + ': ' + dimension.label
+              "
+              [attr.data-testid]="'add-filters-' + dimension.key"
+            >
+              F
+            </button>
+          </span>
+        </div>
+      }
+    </div>
+
+    <h3>{{ 'ANALYTICS_STUDIO.MEASURES' | translate }}</h3>
+    <div
+      class="pills"
+      cdkDropList
+      id="catalog-measures"
+      [cdkDropListConnectedTo]="shelfIds"
+      [cdkDropListSortingDisabled]="true"
+      cdkDropListHasAnchor
+    >
+      @for (measure of measures(); track measure.key; let index = $index) {
+        <div
+          class="pill measure"
+          cdkDrag
+          [cdkDragData]="{ key: measure.key, kind: 'measure', shelf: 'catalog', index: index }"
+          [attr.data-testid]="'measure-' + measure.key"
+        >
+          <span class="name">{{ measure.label }}</span>
+          <span class="unit">{{ keys.unit[measure.unit] | translate }}</span>
+          <span class="actions">
+            <button
+              type="button"
+              (click)="addToShelf('values', measure.key)"
+              [attr.aria-label]="
+                ('ANALYTICS_STUDIO.ADD_TO_VALUES' | translate) + ': ' + measure.label
+              "
+              [attr.data-testid]="'add-values-' + measure.key"
+            >
+              V
+            </button>
+          </span>
+        </div>
+      }
+    </div>
+
+    @if (state().calculated.length > 0) {
+      <h3>{{ 'ANALYTICS_STUDIO.CALCULATED' | translate }}</h3>
+      <div class="pills">
+        @for (field of state().calculated; track field.key) {
+          <div class="pill measure calculated" [attr.data-testid]="'calc-' + field.key">
+            <span class="name">{{ field.label }}</span>
+            <span class="actions"
+              ><button
+                type="button"
+                (click)="removeCalculated(field.key)"
+                [attr.aria-label]="('ANALYTICS_STUDIO.REMOVE' | translate) + ': ' + field.label"
+              >
+                ×
+              </button></span
+            >
+          </div>
+        }
+      </div>
+    }
+    <button
+      nz-button
+      type="button"
+      (click)="calcOpen.set(true)"
+      [disabled]="state().values.length === 0"
+      data-testid="add-calculated"
+    >
+      + {{ 'ANALYTICS_STUDIO.CALC_BUTTON' | translate }}
+    </button>
+  </aside>
+
+  <!-- Shelves and workspace -->
+  <section class="workspace">
+    <div class="shelves">
+      <div
+        class="shelf"
+        [attr.aria-label]="'ANALYTICS_STUDIO.SHELF_FILTERS' | translate"
+        role="group"
+      >
+        <div class="shelf-head">
+          <h3>{{ 'ANALYTICS_STUDIO.SHELF_FILTERS' | translate }}</h3>
+          @if (dataset(); as current) {
+            @if (current.supports_period) {
+              <nz-select
+                class="period"
+                nzAllowClear
+                nzSize="small"
+                [ngModel]="state().periodPreset"
+                (ngModelChange)="patch({ periodPreset: $event })"
+                [nzPlaceHolder]="'ANALYTICS_STUDIO.PERIOD' | translate"
+                [attr.aria-label]="'ANALYTICS_STUDIO.PERIOD' | translate"
+              >
+                @for (preset of catalog()?.options?.period_presets ?? []; track preset) {
+                  <nz-option
+                    [nzValue]="preset"
+                    [nzLabel]="keys.period[preset] | translate"
+                  ></nz-option>
+                }
+              </nz-select>
+            }
+          }
+        </div>
+        <div
+          class="drop"
+          cdkDropList
+          id="studio-filters"
+          [cdkDropListData]="'filters'"
+          [cdkDropListEnterPredicate]="acceptsDimension"
+          (cdkDropListDropped)="onDrop($event, 'filters')"
+          data-testid="shelf-filters"
+        >
+          @for (chip of filterChips(); track $index) {
+            <button
+              type="button"
+              class="chip filter"
+              nz-popover
+              [nzPopoverContent]="filterEditor"
+              nzPopoverTrigger="click"
+              nzPopoverPlacement="bottomLeft"
+              [nzPopoverVisible]="filtersOpen()"
+              (nzPopoverVisibleChange)="filtersOpen.set($event)"
+            >
+              {{ chip }}
+            </button>
+          }
+          @if (filterChips().length === 0) {
+            <span class="hint">{{ 'ANALYTICS_STUDIO.DROP_FILTERS' | translate }}</span>
+          }
+          @if (dataset()) {
+            <button
+              nz-button
+              nzSize="small"
+              type="button"
+              nz-popover
+              [nzPopoverContent]="filterEditor"
+              nzPopoverTrigger="click"
+              nzPopoverPlacement="bottomLeft"
+              [nzPopoverVisible]="filtersOpen()"
+              (nzPopoverVisibleChange)="filtersOpen.set($event)"
+              data-testid="edit-filters"
+            >
+              {{ 'ANALYTICS_STUDIO.EDIT_FILTERS' | translate }}
+            </button>
+          }
+        </div>
+        <ng-template #filterEditor>
+          @if (dataset(); as current) {
+            <app-filter-group
+              [root]="state().filters"
+              [path]="[]"
+              [dataset]="current"
+              (rootChange)="patch({ filters: $event })"
+            />
+          }
+        </ng-template>
+      </div>
+
+      <div
+        class="shelf"
+        role="group"
+        [attr.aria-label]="'ANALYTICS_STUDIO.SHELF_COLUMNS' | translate"
+      >
+        <div class="shelf-head">
+          <h3>{{ 'ANALYTICS_STUDIO.SHELF_COLUMNS' | translate }}</h3>
+        </div>
+        <div
+          class="drop"
+          cdkDropList
+          id="studio-columns"
+          [cdkDropListData]="'columns'"
+          [cdkDropListEnterPredicate]="acceptsDimension"
+          [cdkDropListConnectedTo]="shelfIds"
+          (cdkDropListDropped)="onDrop($event, 'columns')"
+          data-testid="shelf-columns"
+        >
+          @for (token of state().columns; track token; let index = $index) {
+            <div
+              class="chip dimension"
+              cdkDrag
+              [cdkDragData]="{ key: token, kind: 'dimension', shelf: 'columns', index: index }"
+            >
+              <span>{{ labelOf(token) }}</span>
+              @if (granularityOf(token); as granularity) {
+                <nz-select
+                  nzSize="small"
+                  class="gran"
+                  [ngModel]="granularity"
+                  (ngModelChange)="changeGranularity('columns', token, $event)"
+                  [attr.aria-label]="'ANALYTICS_STUDIO.GRANULARITY' | translate"
+                >
+                  @for (item of granularities(); track item) {
+                    <nz-option
+                      [nzValue]="item"
+                      [nzLabel]="keys.granularity[item] | translate"
+                    ></nz-option>
+                  }
+                </nz-select>
+              }
+              <button
+                type="button"
+                (click)="remove('columns', token)"
+                [attr.aria-label]="('ANALYTICS_STUDIO.REMOVE' | translate) + ': ' + labelOf(token)"
+              >
+                ×
+              </button>
+            </div>
+          }
+          @if (state().columns.length === 0) {
+            <span class="hint">{{ 'ANALYTICS_STUDIO.DROP_COLUMNS' | translate }}</span>
+          }
+        </div>
+      </div>
+
+      <div class="shelf" role="group" [attr.aria-label]="'ANALYTICS_STUDIO.SHELF_ROWS' | translate">
+        <div class="shelf-head">
+          <h3>{{ 'ANALYTICS_STUDIO.SHELF_ROWS' | translate }}</h3>
+          <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+          <label
+            nz-checkbox
+            [ngModel]="state().subtotals"
+            (ngModelChange)="patch({ subtotals: $event })"
+            data-testid="toggle-subtotals"
+            >{{ 'ANALYTICS_STUDIO.SUBTOTALS' | translate }}</label
+          >
+          <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+          <label
+            nz-checkbox
+            [ngModel]="state().grandTotals"
+            (ngModelChange)="patch({ grandTotals: $event })"
+            >{{ 'ANALYTICS_STUDIO.GRAND_TOTALS' | translate }}</label
+          >
+        </div>
+        <div
+          class="drop"
+          cdkDropList
+          id="studio-rows"
+          [cdkDropListData]="'rows'"
+          [cdkDropListEnterPredicate]="acceptsDimension"
+          [cdkDropListConnectedTo]="shelfIds"
+          (cdkDropListDropped)="onDrop($event, 'rows')"
+          data-testid="shelf-rows"
+        >
+          @for (token of state().rows; track token; let index = $index) {
+            <div
+              class="chip dimension"
+              cdkDrag
+              [cdkDragData]="{ key: token, kind: 'dimension', shelf: 'rows', index: index }"
+            >
+              <span>{{ labelOf(token) }}</span>
+              @if (granularityOf(token); as granularity) {
+                <nz-select
+                  nzSize="small"
+                  class="gran"
+                  [ngModel]="granularity"
+                  (ngModelChange)="changeGranularity('rows', token, $event)"
+                  [attr.aria-label]="'ANALYTICS_STUDIO.GRANULARITY' | translate"
+                >
+                  @for (item of granularities(); track item) {
+                    <nz-option
+                      [nzValue]="item"
+                      [nzLabel]="keys.granularity[item] | translate"
+                    ></nz-option>
+                  }
+                </nz-select>
+              }
+              <button
+                type="button"
+                (click)="remove('rows', token)"
+                [attr.aria-label]="('ANALYTICS_STUDIO.REMOVE' | translate) + ': ' + labelOf(token)"
+              >
+                ×
+              </button>
+            </div>
+          }
+          @if (state().rows.length === 0) {
+            <span class="hint">{{ 'ANALYTICS_STUDIO.DROP_ROWS' | translate }}</span>
+          }
+        </div>
+      </div>
+
+      <div
+        class="shelf"
+        role="group"
+        [attr.aria-label]="'ANALYTICS_STUDIO.SHELF_VALUES' | translate"
+      >
+        <div class="shelf-head">
+          <h3>{{ 'ANALYTICS_STUDIO.SHELF_VALUES' | translate }}</h3>
+        </div>
+        <div
+          class="drop"
+          cdkDropList
+          id="studio-values"
+          [cdkDropListData]="'values'"
+          [cdkDropListEnterPredicate]="acceptsMeasure"
+          [cdkDropListConnectedTo]="shelfIds"
+          (cdkDropListDropped)="onDrop($event, 'values')"
+          data-testid="shelf-values"
+        >
+          @for (key of state().values; track key; let index = $index) {
+            <div
+              class="chip measure"
+              cdkDrag
+              [cdkDragData]="{ key: key, kind: 'measure', shelf: 'values', index: index }"
+            >
+              <span>{{ labelOf(key) }}</span>
+              <button
+                type="button"
+                (click)="remove('values', key)"
+                [attr.aria-label]="('ANALYTICS_STUDIO.REMOVE' | translate) + ': ' + labelOf(key)"
+              >
+                ×
+              </button>
+            </div>
+          }
+          @for (field of state().calculated; track field.key) {
+            <div class="chip measure calculated">
+              <span>{{ field.label }}</span>
+              <small>{{ keys.valueFormat[field.format] | translate }}</small>
+            </div>
+          }
+          @if (state().values.length === 0) {
+            <span class="hint">{{ 'ANALYTICS_STUDIO.DROP_VALUES' | translate }}</span>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Conditional formatting -->
+    @if (valueKeys().length > 0) {
+      <details class="formatting">
+        <summary>
+          {{ 'ANALYTICS_STUDIO.FORMATTING' | translate }} ({{ state().formatting.length }})
+        </summary>
+        @for (rule of state().formatting; track $index; let index = $index) {
+          <div class="rule">
+            <nz-select
+              nzSize="small"
+              [ngModel]="rule.target"
+              (ngModelChange)="updateRule(index, { target: $event })"
+              [attr.aria-label]="'ANALYTICS_STUDIO.RULE_TARGET' | translate"
+            >
+              @for (key of valueKeys(); track key) {
+                <nz-option [nzValue]="key" [nzLabel]="valueLabels().get(key) ?? key"></nz-option>
+              }
+            </nz-select>
+            <nz-select
+              nzSize="small"
+              [ngModel]="rule.operator"
+              (ngModelChange)="updateRule(index, { operator: $event })"
+              [attr.aria-label]="'ANALYTICS_STUDIO.FILTER_OPERATOR' | translate"
+            >
+              @for (operator of catalog()?.options?.formatting_operators ?? []; track operator) {
+                <nz-option
+                  [nzValue]="operator"
+                  [nzLabel]="keys.operator[operator] | translate"
+                ></nz-option>
+              }
+            </nz-select>
+            <input
+              nz-input
+              nzSize="small"
+              class="num"
+              inputmode="decimal"
+              [ngModel]="rule.value"
+              (ngModelChange)="updateRule(index, { value: $event })"
+              [attr.aria-label]="'ANALYTICS_STUDIO.FILTER_VALUE' | translate"
+            />
+            @if (rule.operator === 'between') {
+              <input
+                nz-input
+                nzSize="small"
+                class="num"
+                inputmode="decimal"
+                [ngModel]="rule.value2"
+                (ngModelChange)="updateRule(index, { value2: $event })"
+                [attr.aria-label]="'ANALYTICS_STUDIO.RULE_VALUE_TO' | translate"
+              />
+            }
+            <nz-select
+              nzSize="small"
+              [ngModel]="rule.background"
+              (ngModelChange)="updateRule(index, { background: $event })"
+              [attr.aria-label]="'ANALYTICS_STUDIO.RULE_BACKGROUND' | translate"
+            >
+              @for (token of catalog()?.options?.background_tokens ?? []; track token) {
+                <nz-option [nzValue]="token" [nzLabel]="keys.color[token] | translate"></nz-option>
+              }
+            </nz-select>
+            <nz-select
+              nzSize="small"
+              [ngModel]="rule.text"
+              (ngModelChange)="updateRule(index, { text: $event })"
+              [attr.aria-label]="'ANALYTICS_STUDIO.RULE_TEXT' | translate"
+            >
+              @for (token of catalog()?.options?.text_tokens ?? []; track token) {
+                <nz-option [nzValue]="token" [nzLabel]="keys.color[token] | translate"></nz-option>
+              }
+            </nz-select>
+            <button
+              nz-button
+              nzSize="small"
+              nzDanger
+              type="button"
+              (click)="removeRule(index)"
+              [attr.aria-label]="'ANALYTICS_STUDIO.REMOVE' | translate"
+            >
+              ×
+            </button>
+          </div>
+        }
+        <button nz-button nzSize="small" type="button" (click)="addRule()" data-testid="add-rule">
+          {{ 'ANALYTICS_STUDIO.ADD_RULE' | translate }}
+        </button>
+      </details>
+    }
+
+    <!-- Chart settings -->
+    @if (view() !== 'grid') {
+      <div
+        class="chart-settings"
+        role="group"
+        [attr.aria-label]="'ANALYTICS_STUDIO.CHART_SETTINGS' | translate"
+      >
+        <nz-select
+          nzSize="small"
+          [ngModel]="state().chart.chartType"
+          (ngModelChange)="patchChart({ chartType: $event })"
+          [attr.aria-label]="'ANALYTICS_STUDIO.CHART_TYPE' | translate"
+          data-testid="chart-type"
+        >
+          @for (type of catalog()?.options?.chart_types ?? []; track type) {
+            <nz-option [nzValue]="type" [nzLabel]="keys.chart[type] | translate"></nz-option>
+          }
+        </nz-select>
+        <nz-select
+          nzSize="small"
+          nzAllowClear
+          [ngModel]="state().chart.xAxis"
+          (ngModelChange)="patchChart({ xAxis: $event })"
+          [nzPlaceHolder]="'ANALYTICS_STUDIO.CHART_X_AXIS' | translate"
+          [attr.aria-label]="'ANALYTICS_STUDIO.CHART_X_AXIS' | translate"
+        >
+          @for (key of dimensionOptions(); track key) {
+            <nz-option [nzValue]="key" [nzLabel]="labelOf(key)"></nz-option>
+          }
+        </nz-select>
+        <nz-select
+          nzSize="small"
+          nzMode="multiple"
+          [ngModel]="state().chart.series"
+          (ngModelChange)="patchChart({ series: $event })"
+          [nzPlaceHolder]="'ANALYTICS_STUDIO.CHART_SERIES' | translate"
+          [attr.aria-label]="'ANALYTICS_STUDIO.CHART_SERIES' | translate"
+          class="series"
+        >
+          @for (key of valueKeys(); track key) {
+            <nz-option [nzValue]="key" [nzLabel]="valueLabels().get(key) ?? key"></nz-option>
+          }
+        </nz-select>
+        <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+        <label
+          nz-checkbox
+          [ngModel]="state().chart.showLegend"
+          (ngModelChange)="patchChart({ showLegend: $event })"
+          >{{ 'ANALYTICS_STUDIO.CHART_LEGEND' | translate }}</label
+        >
+        <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+        <label
+          nz-checkbox
+          [ngModel]="state().chart.showDataLabels"
+          (ngModelChange)="patchChart({ showDataLabels: $event })"
+          >{{ 'ANALYTICS_STUDIO.CHART_LABELS' | translate }}</label
+        >
+      </div>
+    }
+
+    <!-- Result -->
+    <div class="result" [class.split]="view() === 'split'" [attr.aria-busy]="loading()">
+      @if (!runnable()) {
+        <p class="empty" role="status">{{ 'ANALYTICS_STUDIO.EMPTY' | translate }}</p>
+      } @else {
+        @if (view() !== 'chart') {
+          <app-pivot-grid [result]="result()" />
+        }
+        @if (view() !== 'grid') {
+          <app-pivot-chart
+            [chart]="result()?.chart ?? null"
+            [label]="'ANALYTICS_STUDIO.CHART_LABEL' | translate"
+          />
+        }
+      }
+    </div>
+  </section>
+</div>
+
+@if (state().dataset) {
+  <app-calculated-measure-modal
+    [(visible)]="calcOpen"
+    [references]="valueKeys()"
+    [functions]="catalog()?.options?.calculated?.functions ?? []"
+    [formats]="catalog()?.options?.calculated?.formats ?? []"
+    [existingKeys]="valueKeys()"
+    [definition]="definition()"
+    (saved)="addCalculated($event)"
+  />
+}
+
+<app-save-report-modal
+  [(visible)]="saveOpen"
+  [initial]="saveChoice()"
+  [visibilities]="catalog()?.options?.visibilities ?? []"
+  [saving]="saving()"
+  [errorText]="saveError()"
+  (confirmed)="save($event)"
+/>
+
+<app-schedule-drawer
+  [(visible)]="scheduleOpen"
+  [reportId]="saved()?.id ?? null"
+  [schedule]="schedule()"
+  (saved)="schedule.set($event)"
+/>
