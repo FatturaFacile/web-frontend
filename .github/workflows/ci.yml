@@ -38,8 +38,8 @@ jobs:
 
       - name: Run unit tests with coverage
         env:
-          NODE_OPTIONS: --max-old-space-size=6144
-        run: pnpm test --watch=false --coverage
+          NODE_OPTIONS: --max-old-space-size=3072
+        run: pnpm test --watch=false --coverage --maxWorkers=2
 
   build:
     needs: validate

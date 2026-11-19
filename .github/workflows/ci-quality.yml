@@ -52,8 +52,8 @@ jobs:
 
       - name: Run Vitest Unit & Component Tests with Coverage Gate (>=80%)
         env:
-          NODE_OPTIONS: --max-old-space-size=6144
-        run: pnpm run test:ci
+          NODE_OPTIONS: --max-old-space-size=3072
+        run: pnpm run test:ci --maxWorkers=2
 
   e2e-critical-flows:
     name: Playwright Critical E2E Test Suite
