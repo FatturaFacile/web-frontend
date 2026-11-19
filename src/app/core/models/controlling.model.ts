@@ -229,7 +229,7 @@ export const BUDGET_PLAN_STATUSES = ['draft', 'submitted', 'approved', 'locked',
 export type BudgetPlanStatus = (typeof BUDGET_PLAN_STATUSES)[number];
 export type BudgetPlanType = 'annual_budget' | 'rolling_forecast' | 'what_if_scenario';
 
-export interface BudgetPlanLine {
+export interface ControllingBudgetLine {
   id: string;
   nature_type: string;
   cost_center_id: string | null;
@@ -253,7 +253,7 @@ export interface BudgetPlan {
   status: BudgetPlanStatus;
   currency_code: string;
   lines_count?: number;
-  lines?: BudgetPlanLine[];
+  lines?: ControllingBudgetLine[];
 }
 
 export interface VarianceTotals {

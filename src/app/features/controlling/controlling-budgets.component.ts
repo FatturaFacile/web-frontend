@@ -9,7 +9,7 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
-import { BudgetPlan, BudgetPlanLine, ControllingApiService, TranslateService } from '@core';
+import { BudgetPlan, ControllingBudgetLine, ControllingApiService, TranslateService } from '@core';
 import { TranslatePipe } from '@shared';
 import { ControllingFilters } from './controlling-filters.service';
 
@@ -144,15 +144,15 @@ export class ControllingBudgetsComponent implements OnInit {
     return p?.plan_type === 'rolling_forecast' && p.cutoff_month !== null && month <= p.cutoff_month;
   }
 
-  protected cellValue(line: BudgetPlanLine, month: number): number {
+  protected cellValue(line: ControllingBudgetLine, month: number): number {
     return Number(this.dirty().get(line.id)?.[monthKey(month)] ?? line[monthKey(month)]);
   }
 
-  protected total(line: BudgetPlanLine): number {
+  protected total(line: ControllingBudgetLine): number {
     return MONTHS.reduce((sum, month) => sum + this.cellValue(line, month), 0);
   }
 
-  protected edit(line: BudgetPlanLine, month: number, value: number | string): void {
+  protected edit(line: ControllingBudgetLine, month: number, value: number | string): void {
     this.setCell(line, month, String(value ?? 0));
   }
 
@@ -169,7 +169,7 @@ export class ControllingBudgetsComponent implements OnInit {
     const p = this.plan();
     if (!p) return;
     const payload = this.lines().map((line) => ({ id: line.id, annual_total: this.total(line).toFixed(4) as unknown as string, distribution_driver: 'prior_year_seasonality' }));
-    this.api.saveBudgetLines(p.id, payload as unknown as Partial<BudgetPlanLine>[]).subscribe({
+    this.api.saveBudgetLines(p.id, payload as unknown as Partial<ControllingBudgetLine>[]).subscribe({
       next: (response) => this.afterSave(response.data),
       error: (error) => this.message.error(errorText(error) ?? this.translate.instant('CONTROLLING.ACTION_FAILED')),
     });
@@ -184,7 +184,7 @@ export class ControllingBudgetsComponent implements OnInit {
     const p = this.plan();
     if (!p) return;
     const payload = [...this.dirty().entries()].map(([id, months]) => ({ id, ...months }));
-    this.api.saveBudgetLines(p.id, payload as unknown as Partial<BudgetPlanLine>[]).subscribe({
+    this.api.saveBudgetLines(p.id, payload as unknown as Partial<ControllingBudgetLine>[]).subscribe({
       next: (response) => this.afterSave(response.data),
       error: (error) => this.message.error(errorText(error) ?? this.translate.instant('CONTROLLING.ACTION_FAILED')),
     });
@@ -217,7 +217,7 @@ export class ControllingBudgetsComponent implements OnInit {
     });
   }
 
-  private setCell(line: BudgetPlanLine, month: number, value: string): void {
+  private setCell(line: ControllingBudgetLine, month: number, value: string): void {
     this.dirty.update((map) => {
       const next = new Map(map);
       next.set(line.id, { ...(next.get(line.id) ?? {}), [monthKey(month)]: value });

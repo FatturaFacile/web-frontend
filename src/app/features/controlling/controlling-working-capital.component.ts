@@ -3,7 +3,7 @@ import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
-import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
+import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { catchError, of, switchMap } from 'rxjs';
 import { ControllingApiService, FinancialKpis } from '@core';
 import { TranslatePipe } from '@shared';
@@ -27,7 +27,7 @@ function polyline(values: number[], max: number, min = 0): string {
 @Component({
   selector: 'app-controlling-working-capital',
   styleUrl: './controlling.scss',
-  imports: [DecimalPipe, TranslatePipe, NzCardModule, NzEmptyModule, NzToolTipModule],
+  imports: [DecimalPipe, TranslatePipe, NzCardModule, NzEmptyModule, NzTooltipModule],
   template: `
     @if (kpis(); as k) {
       @if (k.current; as c) {

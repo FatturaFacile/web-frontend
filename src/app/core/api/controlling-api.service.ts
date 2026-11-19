@@ -8,7 +8,7 @@ import {
   AllocationRun,
   AnalyticalJob,
   BudgetPlan,
-  BudgetPlanLine,
+  ControllingBudgetLine,
   CostCenterNode,
   ControllingResponse,
   FinancialKpis,
@@ -119,7 +119,7 @@ export class ControllingApiService {
     return this.http.post<ControllingResponse<BudgetPlan>>(`${this.budgets}/${id}/${action}`, {});
   }
 
-  saveBudgetLines(id: string, lines: Partial<BudgetPlanLine>[]): Observable<ControllingResponse<BudgetPlan>> {
+  saveBudgetLines(id: string, lines: Partial<ControllingBudgetLine>[]): Observable<ControllingResponse<BudgetPlan>> {
     return this.http.put<ControllingResponse<BudgetPlan>>(`${this.budgets}/${id}/lines/bulk`, { lines });
   }
 
