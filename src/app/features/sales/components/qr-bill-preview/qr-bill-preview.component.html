@@ -3,7 +3,13 @@
     <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
     <label>
       <span>{{ 'qrBill.preview.language' | translate }}</span>
-      <nz-select [ngModel]="language()" (ngModelChange)="language.set($event)" class="qr-preview__select" data-testid="qr-language">
+      <nz-select
+        nzId="qr-1"
+        [ngModel]="language()"
+        (ngModelChange)="language.set($event)"
+        class="qr-preview__select"
+        data-testid="qr-language"
+      >
         @for (lang of languages; track lang) {
           <nz-option [nzValue]="lang" [nzLabel]="lang.toUpperCase()" />
         }
@@ -12,7 +18,13 @@
     <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
     <label>
       <span>{{ 'qrBill.preview.mode' | translate }}</span>
-      <nz-select [ngModel]="mode()" (ngModelChange)="mode.set($event)" class="qr-preview__select qr-preview__select--wide" data-testid="qr-mode">
+      <nz-select
+        nzId="qr-2"
+        [ngModel]="mode()"
+        (ngModelChange)="mode.set($event)"
+        class="qr-preview__select qr-preview__select--wide"
+        data-testid="qr-mode"
+      >
         <nz-option nzValue="A4_ATTACHED" [nzLabel]="'qrBill.preview.modeA4' | translate" />
         <nz-option nzValue="STANDALONE" [nzLabel]="'qrBill.preview.modeStandalone' | translate" />
       </nz-select>
@@ -20,13 +32,29 @@
     <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
     <label>
       <span>{{ 'qrBill.preview.perforation' | translate }}</span>
-      <nz-select [ngModel]="effectivePerforation()" (ngModelChange)="perforation.set($event)" class="qr-preview__select qr-preview__select--wide" data-testid="qr-perforation">
+      <nz-select
+        nzId="qr-3"
+        [ngModel]="effectivePerforation()"
+        (ngModelChange)="perforation.set($event)"
+        class="qr-preview__select qr-preview__select--wide"
+        data-testid="qr-perforation"
+      >
         <nz-option nzValue="NONE" [nzLabel]="'settings.options.perfNone' | translate" />
         <nz-option nzValue="DASHED_LINE" [nzLabel]="'settings.options.perfDashed' | translate" />
-        <nz-option nzValue="DASHED_LINE_WITH_SCISSORS" [nzLabel]="'settings.options.perfDashedScissors' | translate" />
+        <nz-option
+          nzValue="DASHED_LINE_WITH_SCISSORS"
+          [nzLabel]="'settings.options.perfDashedScissors' | translate"
+        />
       </nz-select>
     </label>
-    <button nz-button nzType="primary" [nzLoading]="downloading()" [disabled]="!bill()" (click)="download()" data-testid="qr-download">
+    <button
+      nz-button
+      nzType="primary"
+      [nzLoading]="downloading()"
+      [disabled]="!bill()"
+      (click)="download()"
+      data-testid="qr-download"
+    >
       {{ 'qrBill.preview.download' | translate }}
     </button>
   </div>
@@ -68,8 +96,14 @@
               <div class="slip__blank-box"></div>
             }
             <div class="slip__amount-row">
-              <div><h5>{{ labels().currency }}</h5><p>{{ qr.currency }}</p></div>
-              <div><h5>{{ labels().amount }}</h5><p>{{ qr.formatted_amount ?? qr.amount }}</p></div>
+              <div>
+                <h5>{{ labels().currency }}</h5>
+                <p>{{ qr.currency }}</p>
+              </div>
+              <div>
+                <h5>{{ labels().amount }}</h5>
+                <p>{{ qr.formatted_amount ?? qr.amount }}</p>
+              </div>
             </div>
             <p class="slip__acceptance">{{ labels().acceptancePoint }}</p>
           </section>
@@ -82,8 +116,14 @@
                   <img [src]="qr.png" alt="Swiss QR code" width="138" height="138" />
                 }
                 <div class="slip__amount-row">
-                  <div><h5>{{ labels().currency }}</h5><p>{{ qr.currency }}</p></div>
-                  <div><h5>{{ labels().amount }}</h5><p>{{ qr.formatted_amount ?? qr.amount }}</p></div>
+                  <div>
+                    <h5>{{ labels().currency }}</h5>
+                    <p>{{ qr.currency }}</p>
+                  </div>
+                  <div>
+                    <h5>{{ labels().amount }}</h5>
+                    <p>{{ qr.formatted_amount ?? qr.amount }}</p>
+                  </div>
                 </div>
               </div>
               <div class="slip__info">

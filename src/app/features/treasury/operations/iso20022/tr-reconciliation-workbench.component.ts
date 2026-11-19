@@ -46,17 +46,43 @@ interface MatchCandidate {
   template: `
     <nz-card [nzTitle]="'iso20022.workbench.title' | translate">
       <div class="filters">
-        <nz-select [ngModel]="status()" (ngModelChange)="setStatus($event)" class="select" data-testid="status-filter">
-          <nz-option nzValue="unmatched" [nzLabel]="'iso20022.workbench.status.unmatched' | translate" />
-          <nz-option nzValue="matched" [nzLabel]="'iso20022.workbench.status.matched' | translate" />
+        <nz-select
+          [ngModel]="status()"
+          (ngModelChange)="setStatus($event)"
+          class="select"
+          data-testid="status-filter"
+        >
+          <nz-option
+            nzValue="unmatched"
+            [nzLabel]="'iso20022.workbench.status.unmatched' | translate"
+          />
+          <nz-option
+            nzValue="matched"
+            [nzLabel]="'iso20022.workbench.status.matched' | translate"
+          />
           <nz-option nzValue="all" [nzLabel]="'iso20022.workbench.status.all' | translate" />
         </nz-select>
-        <nz-select [ngModel]="direction()" (ngModelChange)="setDirection($event)" class="select" data-testid="direction-filter">
+        <nz-select
+          [ngModel]="direction()"
+          (ngModelChange)="setDirection($event)"
+          class="select"
+          data-testid="direction-filter"
+        >
           <nz-option nzValue="" [nzLabel]="'iso20022.workbench.direction.all' | translate" />
-          <nz-option nzValue="credit" [nzLabel]="'iso20022.workbench.direction.credit' | translate" />
+          <nz-option
+            nzValue="credit"
+            [nzLabel]="'iso20022.workbench.direction.credit' | translate"
+          />
           <nz-option nzValue="debit" [nzLabel]="'iso20022.workbench.direction.debit' | translate" />
         </nz-select>
-        <input nz-input class="search" [ngModel]="search()" (ngModelChange)="search.set($event)" (keyup.enter)="reload()" [placeholder]="'iso20022.workbench.search' | translate" />
+        <input
+          nz-input
+          class="search"
+          [ngModel]="search()"
+          (ngModelChange)="search.set($event)"
+          (keyup.enter)="reload()"
+          [placeholder]="'iso20022.workbench.search' | translate"
+        />
         <button nz-button (click)="reload()">{{ 'iso20022.workbench.refresh' | translate }}</button>
       </div>
 
@@ -90,12 +116,19 @@ interface MatchCandidate {
               <td>{{ row.description ?? '-' }}</td>
               <td class="num">
                 <nz-tag [nzColor]="row.direction === 'credit' ? 'green' : 'volcano'">
-                  {{ row.direction === 'credit' ? '+' : '-' }}{{ row.gross_amount | money: row.currency }}
+                  {{ row.direction === 'credit' ? '+' : '-'
+                  }}{{ row.gross_amount | money: row.currency }}
                 </nz-tag>
               </td>
               <td>
                 @if (!row.reconciled) {
-                  <button nz-button nzSize="small" nzType="primary" (click)="openMatch(row)" data-testid="match-button">
+                  <button
+                    nz-button
+                    nzSize="small"
+                    nzType="primary"
+                    (click)="openMatch(row)"
+                    data-testid="match-button"
+                  >
                     {{ 'iso20022.workbench.match' | translate }}
                   </button>
                 } @else {
@@ -120,7 +153,14 @@ interface MatchCandidate {
         <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
         <label class="field">
           <span>{{ 'iso20022.workbench.invoice' | translate }}</span>
-          <nz-select [ngModel]="selectedInvoice()" (ngModelChange)="selectedInvoice.set($event)" nzShowSearch class="full" data-testid="invoice-select">
+          <nz-select
+            nzId="wb-1"
+            [ngModel]="selectedInvoice()"
+            (ngModelChange)="selectedInvoice.set($event)"
+            nzShowSearch
+            class="full"
+            data-testid="invoice-select"
+          >
             @for (candidate of candidates(); track candidate.id) {
               <nz-option [nzValue]="candidate.id" [nzLabel]="candidate.label" />
             }
@@ -129,10 +169,21 @@ interface MatchCandidate {
         <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
         <label class="field">
           <span>{{ 'iso20022.workbench.difference' | translate }}</span>
-          <nz-select [ngModel]="difference()" (ngModelChange)="difference.set($event)" class="full">
+          <nz-select
+            nzId="wb-2"
+            [ngModel]="difference()"
+            (ngModelChange)="difference.set($event)"
+            class="full"
+          >
             <nz-option nzValue="none" [nzLabel]="'iso20022.workbench.diff.none' | translate" />
-            <nz-option nzValue="write_off" [nzLabel]="'iso20022.workbench.diff.write_off' | translate" />
-            <nz-option nzValue="partial" [nzLabel]="'iso20022.workbench.diff.partial' | translate" />
+            <nz-option
+              nzValue="write_off"
+              [nzLabel]="'iso20022.workbench.diff.write_off' | translate"
+            />
+            <nz-option
+              nzValue="partial"
+              [nzLabel]="'iso20022.workbench.diff.partial' | translate"
+            />
           </nz-select>
         </label>
       </ng-container>
@@ -291,7 +342,9 @@ export class TrReconciliationWorkbenchComponent implements OnInit {
         },
         error: (err) => {
           this.saving.set(false);
-          this.message.error(err?.error?.message ?? this.translate.instant('iso20022.workbench.matchFailed'));
+          this.message.error(
+            err?.error?.message ?? this.translate.instant('iso20022.workbench.matchFailed'),
+          );
         },
       });
   }
