@@ -112,6 +112,9 @@
           <li nz-menu-item tabindex="0" (click)="confirmSdi(inv)" (keydown.enter)="confirmSdi(inv)">
             <nz-icon nzType="send" /> {{ "SALES.INVOICES.ACTIONS.SEND_SDI" | translate }}
           </li>
+          <li nz-menu-item tabindex="0" (click)="preflightInvoiceId.set(inv.id)" (keydown.enter)="preflightInvoiceId.set(inv.id)" data-testid="sdi-preflight">
+            <nz-icon nzType="safety-certificate" /> {{ 'sdiPreflight.menu' | translate }}
+          </li>
           <li nz-menu-item tabindex="0" (click)="generateSdiXml(inv)" (keydown.enter)="generateSdiXml(inv)">
             <nz-icon nzType="file-text" /> {{ 'SALES.LBL_GENERA_FATTURAPA_XML' | translate }}
           </li>
@@ -370,3 +373,9 @@
     <button nz-button appIconAction="close" nzType="primary" (click)="installmentsModalVisible.set(false)"></button>
   </ng-template>
 </nz-modal>
+
+<app-sdi-preflight-drawer
+  [invoiceId]="preflightInvoiceId()"
+  (closed)="preflightInvoiceId.set(null)"
+  (sent)="facade.reload()"
+/>

@@ -6,12 +6,38 @@ import { toHttpParams } from '../http/laravel-http.utils';
 import { ApiResponse } from '../models';
 
 export type FpaStatus =
-  | 'draft' | 'validated' | 'validation_failed' | 'signed' | 'queued' | 'transmitted' | 'delivered' | 'undelivered' | 'rejected'
-  | 'pa_accepted' | 'pa_rejected' | 'deadline_passed' | 'transmitted_attested' | 'inbound_received' | 'inbound_processed';
+  | 'draft'
+  | 'validated'
+  | 'validation_failed'
+  | 'signed'
+  | 'queued'
+  | 'transmitted'
+  | 'delivered'
+  | 'undelivered'
+  | 'rejected'
+  | 'pa_accepted'
+  | 'pa_rejected'
+  | 'deadline_passed'
+  | 'transmitted_attested'
+  | 'inbound_received'
+  | 'inbound_processed';
 
 export const FPA_STATUSES: readonly FpaStatus[] = [
-  'draft', 'validated', 'validation_failed', 'signed', 'queued', 'transmitted', 'delivered', 'undelivered', 'rejected',
-  'pa_accepted', 'pa_rejected', 'deadline_passed', 'transmitted_attested', 'inbound_received', 'inbound_processed',
+  'draft',
+  'validated',
+  'validation_failed',
+  'signed',
+  'queued',
+  'transmitted',
+  'delivered',
+  'undelivered',
+  'rejected',
+  'pa_accepted',
+  'pa_rejected',
+  'deadline_passed',
+  'transmitted_attested',
+  'inbound_received',
+  'inbound_processed',
 ];
 
 export interface FpaDocument {
@@ -98,38 +124,85 @@ export class FpaDocumentsApiService {
   private readonly base = environment.apiBaseUrl;
 
   list(query?: FpaQuery): Observable<FpaListResponse> {
-    return this.http.get<FpaListResponse>(`${this.base}/fpa-documents`, { params: query ? toHttpParams(query) : undefined });
+    return this.http.get<FpaListResponse>(`${this.base}/fpa-documents`, {
+      params: query ? toHttpParams(query) : undefined,
+    });
   }
 
   show(id: string): Observable<ApiResponse<FpaDocument & { notifications: FpaNotification[] }>> {
-    return this.http.get<ApiResponse<FpaDocument & { notifications: FpaNotification[] }>>(`${this.base}/fpa-documents/${id}`);
+    return this.http.get<ApiResponse<FpaDocument & { notifications: FpaNotification[] }>>(
+      `${this.base}/fpa-documents/${id}`,
+    );
   }
 
-  /** Readable HTML of the envelope's XML, for an iframe. */
-  render(id: string): Observable<Blob> {
-    return this.http.get(`${this.base}/fpa-documents/${id}/render`, { responseType: 'blob' });
+  /** Readable HTML of the envelope's XML, for an iframe, in the ministerial or AssoSoftware layout. */
+  render(id: string, style: 'ministerial' | 'assosoftware' = 'ministerial'): Observable<Blob> {
+    return this.http.get(`${this.base}/fpa-documents/${id}/render`, {
+      params: { style },
+      responseType: 'blob',
+    });
+  }
+
+  /** Hands the invoice to SDI (the same send the invoice list uses). */
+  send(invoiceId: string): Observable<ApiResponse<unknown>> {
+    return this.http.post<ApiResponse<unknown>>(`${this.base}/sdi/invoices/${invoiceId}/send`, {});
+  }
+
+  /** Saves the settings and, when given, the PKCS#12 certificate (multipart; the method is spoofed as PUT). */
+  saveSettingsWithCertificate(
+    body: Partial<Record<string, string | boolean | null>>,
+    certificate: File,
+    password: string,
+  ): Observable<ApiResponse<SdiConfiguration>> {
+    const form = new FormData();
+    form.append('_method', 'PUT');
+    for (const [key, value] of Object.entries(body)) {
+      if (value !== null && value !== undefined) {
+        form.append(key, typeof value === 'boolean' ? (value ? '1' : '0') : value);
+      }
+    }
+    form.append('certificate', certificate, certificate.name);
+    form.append('certificate_password', password);
+
+    return this.http.post<ApiResponse<SdiConfiguration>>(`${this.base}/settings/sdi`, form);
   }
 
   /** "Fix & resubmit": creates the linked revision of a rejected envelope, keeping the original number and date. */
   resubmit(id: string): Observable<ApiResponse<FpaDocument>> {
-    return this.http.post<ApiResponse<FpaDocument>>(`${this.base}/fpa-documents/${id}/resubmit`, {});
+    return this.http.post<ApiResponse<FpaDocument>>(
+      `${this.base}/fpa-documents/${id}/resubmit`,
+      {},
+    );
   }
 
   /** Sandbox only: applies a simulated SDI receipt. */
-  simulate(id: string, body: { type: string; outcome?: 'EC01' | 'EC02'; error_code?: string }): Observable<ApiResponse<FpaDocument>> {
-    return this.http.post<ApiResponse<FpaDocument>>(`${this.base}/fpa-documents/${id}/simulate`, body);
+  simulate(
+    id: string,
+    body: { type: string; outcome?: 'EC01' | 'EC02'; error_code?: string },
+  ): Observable<ApiResponse<FpaDocument>> {
+    return this.http.post<ApiResponse<FpaDocument>>(
+      `${this.base}/fpa-documents/${id}/simulate`,
+      body,
+    );
   }
 
   /** Generates the XML and runs the XSD and Sogei checks without sending anything. */
   preflight(invoiceId: string): Observable<ApiResponse<PreflightResult>> {
-    return this.http.post<ApiResponse<PreflightResult>>(`${this.base}/sdi/invoices/${invoiceId}/preflight`, {});
+    return this.http.post<ApiResponse<PreflightResult>>(
+      `${this.base}/sdi/invoices/${invoiceId}/preflight`,
+      {},
+    );
   }
 
   settings(): Observable<ApiResponse<SdiConfiguration>> {
     return this.http.get<ApiResponse<SdiConfiguration>>(`${this.base}/settings/sdi`);
   }
 
-  saveSettings(body: Partial<Omit<SdiConfiguration, 'has_credentials' | 'has_certificate' | 'progressivo_invio_counter'>>): Observable<ApiResponse<SdiConfiguration>> {
+  saveSettings(
+    body: Partial<
+      Omit<SdiConfiguration, 'has_credentials' | 'has_certificate' | 'progressivo_invio_counter'>
+    >,
+  ): Observable<ApiResponse<SdiConfiguration>> {
     return this.http.put<ApiResponse<SdiConfiguration>>(`${this.base}/settings/sdi`, body);
   }
 }
