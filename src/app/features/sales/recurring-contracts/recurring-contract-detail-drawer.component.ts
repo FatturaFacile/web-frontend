@@ -70,226 +70,237 @@ import {
     >
       <ng-container *nzDrawerContent>
         <nz-spin [nzSpinning]="loading()">
-          <div *ngIf="contract() as c">
-            <!-- Header actions -->
-            <div class="detail-actions mb-4">
-              <button
-                *ngIf="c.status === 'draft' || c.status === 'suspended'"
-                nz-button
-                nzType="primary"
-                (click)="activateContract()"
-                [nzLoading]="actionLoading()"
-              >
-                <i class="fa-solid fa-play me-1"></i> {{ 'RC.DETAIL.ACTIVATE' | translate }}
-              </button>
+          @if (contract(); as c) {
+            <div>
+              <!-- Header actions -->
+              <div class="detail-actions mb-4">
+                @if (c.status === 'draft' || c.status === 'suspended') {
+                  <button
+                    nz-button
+                    nzType="primary"
+                    (click)="activateContract()"
+                    [nzLoading]="actionLoading()"
+                  >
+                    <i class="fa-solid fa-play me-1"></i> {{ 'RC.DETAIL.ACTIVATE' | translate }}
+                  </button>
+                }
 
-              <button
-                *ngIf="c.status === 'active'"
-                nz-button
-                nzType="default"
-                (click)="suspendContract()"
-                [nzLoading]="actionLoading()"
-              >
-                <i class="fa-solid fa-pause me-1"></i> {{ 'RC.DETAIL.SUSPEND' | translate }}
-              </button>
+                @if (c.status === 'active') {
+                  <button
+                    nz-button
+                    nzType="default"
+                    (click)="suspendContract()"
+                    [nzLoading]="actionLoading()"
+                  >
+                    <i class="fa-solid fa-pause me-1"></i> {{ 'RC.DETAIL.SUSPEND' | translate }}
+                  </button>
 
-              <button
-                *ngIf="c.status === 'active'"
-                nz-button
-                nzType="default"
-                (click)="showBillNowModal()"
-              >
-                <i class="fa-solid fa-bolt me-1"></i> {{ 'RC.DETAIL.BILL_NOW' | translate }}
-              </button>
+                  <button
+                    nz-button
+                    nzType="default"
+                    (click)="showBillNowModal()"
+                  >
+                    <i class="fa-solid fa-bolt me-1"></i> {{ 'RC.DETAIL.BILL_NOW' | translate }}
+                  </button>
 
-              <button
-                *ngIf="c.status === 'active' && c.indexation_clause"
-                nz-button
-                nzType="default"
-                (click)="showIndexationModal()"
-              >
-                <i class="fa-solid fa-arrow-trend-up me-1"></i> {{ 'RC.DETAIL.APPLY_INDEX' | translate }}
-              </button>
+                  @if (c.indexation_clause) {
+                    <button
+                      nz-button
+                      nzType="default"
+                      (click)="showIndexationModal()"
+                    >
+                      <i class="fa-solid fa-arrow-trend-up me-1"></i> {{ 'RC.DETAIL.APPLY_INDEX' | translate }}
+                    </button>
+                  }
 
-              <button
-                *ngIf="c.status === 'active'"
-                nz-button
-                nzType="dashed"
-                (click)="renewContract()"
-              >
-                <i class="fa-solid fa-arrows-rotate me-1"></i> {{ 'RC.DETAIL.RENEW' | translate }}
-              </button>
+                  <button
+                    nz-button
+                    nzType="dashed"
+                    (click)="renewContract()"
+                  >
+                    <i class="fa-solid fa-arrows-rotate me-1"></i> {{ 'RC.DETAIL.RENEW' | translate }}
+                  </button>
+                }
 
-              <button
-                *ngIf="c.status !== 'cancelled' && c.status !== 'expired'"
-                nz-button
-                nzDanger
-                (click)="showCancelModal()"
-              >
-                <i class="fa-solid fa-ban me-1"></i> {{ 'RC.DETAIL.CANCEL' | translate }}
-              </button>
-            </div>
+                @if (c.status !== 'cancelled' && c.status !== 'expired') {
+                  <button
+                    nz-button
+                    nzDanger
+                    (click)="showCancelModal()"
+                  >
+                    <i class="fa-solid fa-ban me-1"></i> {{ 'RC.DETAIL.CANCEL' | translate }}
+                  </button>
+                }
+              </div>
 
-            <nz-tabs>
-              <!-- TAB 1: Overview -->
-              <nz-tab [nzTitle]="'RC.DETAIL.TAB_OVERVIEW' | translate">
-                <nz-descriptions nzBordered [nzColumn]="2" nzSize="small">
-                  <nz-descriptions-item [nzTitle]="'RC.DETAIL.CONTRACT_NUMBER' | translate">
-                    <strong>{{ c.contract_number }}</strong>
-                  </nz-descriptions-item>
-                  <nz-descriptions-item [nzTitle]="'RC.DETAIL.STATUS' | translate">
-                    <nz-tag [nzColor]="statusColor(c.status)">{{ c.status.toUpperCase() }}</nz-tag>
-                  </nz-descriptions-item>
-                  <nz-descriptions-item [nzTitle]="'RC.DETAIL.TITLE_FIELD' | translate">
-                    {{ c.title }}
-                  </nz-descriptions-item>
-                  <nz-descriptions-item [nzTitle]="'RC.DETAIL.TYPE' | translate">
-                    {{ formatContractType(c.contract_type) }}
-                  </nz-descriptions-item>
-                  <nz-descriptions-item [nzTitle]="'RC.DETAIL.CUSTOMER' | translate">
-                    {{ c.customer?.company_name || 'N/A' }}
-                  </nz-descriptions-item>
-                  <nz-descriptions-item [nzTitle]="'RC.DETAIL.CURRENCY' | translate">
-                    {{ c.currency }}
-                  </nz-descriptions-item>
-                  <nz-descriptions-item [nzTitle]="'RC.DETAIL.FREQUENCY' | translate">
-                    {{ c.billing_frequency }} ({{ c.billing_timing }})
-                  </nz-descriptions-item>
-                  <nz-descriptions-item [nzTitle]="'RC.DETAIL.NEXT_BILLING' | translate">
-                    <strong>{{ c.next_billing_date }}</strong>
-                  </nz-descriptions-item>
-                  <nz-descriptions-item [nzTitle]="'RC.DETAIL.START_DATE' | translate">
-                    {{ c.start_date }}
-                  </nz-descriptions-item>
-                  <nz-descriptions-item [nzTitle]="'RC.DETAIL.END_DATE' | translate">
-                    {{ c.end_date || ('RC.DETAIL.OPEN_ENDED' | translate) }}
-                  </nz-descriptions-item>
-                  <nz-descriptions-item [nzTitle]="'RC.DETAIL.AUTO_RENEW' | translate">
-                    {{ c.auto_renew ? (('COMMON.YES' | translate) + ' (' + (c.renewal_period_months || 12) + 'm)') : ('COMMON.NO' | translate) }}
-                  </nz-descriptions-item>
-                  <nz-descriptions-item [nzTitle]="'RC.DETAIL.LAST_BILLED' | translate">
-                    {{ c.last_billed_date || ('COMMON.NONE' | translate) }}
-                  </nz-descriptions-item>
-                  <nz-descriptions-item [nzTitle]="'RC.DETAIL.SUBTOTAL' | translate">
-                    {{ c.subtotal }} {{ c.currency }}
-                  </nz-descriptions-item>
-                  <nz-descriptions-item [nzTitle]="'RC.DETAIL.TOTAL' | translate">
-                    <strong>{{ c.total }} {{ c.currency }}</strong>
-                  </nz-descriptions-item>
-                </nz-descriptions>
+              <nz-tabs>
+                <!-- TAB 1: Overview -->
+                <nz-tab [nzTitle]="'RC.DETAIL.TAB_OVERVIEW' | translate">
+                  <nz-descriptions nzBordered [nzColumn]="2" nzSize="small">
+                    <nz-descriptions-item [nzTitle]="'RC.DETAIL.CONTRACT_NUMBER' | translate">
+                      <strong>{{ c.contract_number }}</strong>
+                    </nz-descriptions-item>
+                    <nz-descriptions-item [nzTitle]="'RC.DETAIL.STATUS' | translate">
+                      <nz-tag [nzColor]="statusColor(c.status)">{{ c.status.toUpperCase() }}</nz-tag>
+                    </nz-descriptions-item>
+                    <nz-descriptions-item [nzTitle]="'RC.DETAIL.TITLE_FIELD' | translate">
+                      {{ c.title }}
+                    </nz-descriptions-item>
+                    <nz-descriptions-item [nzTitle]="'RC.DETAIL.TYPE' | translate">
+                      {{ formatContractType(c.contract_type) }}
+                    </nz-descriptions-item>
+                    <nz-descriptions-item [nzTitle]="'RC.DETAIL.CUSTOMER' | translate">
+                      {{ c.customer?.company_name || 'N/A' }}
+                    </nz-descriptions-item>
+                    <nz-descriptions-item [nzTitle]="'RC.DETAIL.CURRENCY' | translate">
+                      {{ c.currency }}
+                    </nz-descriptions-item>
+                    <nz-descriptions-item [nzTitle]="'RC.DETAIL.FREQUENCY' | translate">
+                      {{ c.billing_frequency }} ({{ c.billing_timing }})
+                    </nz-descriptions-item>
+                    <nz-descriptions-item [nzTitle]="'RC.DETAIL.NEXT_BILLING' | translate">
+                      <strong>{{ c.next_billing_date }}</strong>
+                    </nz-descriptions-item>
+                    <nz-descriptions-item [nzTitle]="'RC.DETAIL.START_DATE' | translate">
+                      {{ c.start_date }}
+                    </nz-descriptions-item>
+                    <nz-descriptions-item [nzTitle]="'RC.DETAIL.END_DATE' | translate">
+                      {{ c.end_date || ('RC.DETAIL.OPEN_ENDED' | translate) }}
+                    </nz-descriptions-item>
+                    <nz-descriptions-item [nzTitle]="'RC.DETAIL.AUTO_RENEW' | translate">
+                      {{ c.auto_renew ? (('COMMON.YES' | translate) + ' (' + (c.renewal_period_months || 12) + 'm)') : ('COMMON.NO' | translate) }}
+                    </nz-descriptions-item>
+                    <nz-descriptions-item [nzTitle]="'RC.DETAIL.LAST_BILLED' | translate">
+                      {{ c.last_billed_date || ('COMMON.NONE' | translate) }}
+                    </nz-descriptions-item>
+                    <nz-descriptions-item [nzTitle]="'RC.DETAIL.SUBTOTAL' | translate">
+                      {{ c.subtotal }} {{ c.currency }}
+                    </nz-descriptions-item>
+                    <nz-descriptions-item [nzTitle]="'RC.DETAIL.TOTAL' | translate">
+                      <strong>{{ c.total }} {{ c.currency }}</strong>
+                    </nz-descriptions-item>
+                  </nz-descriptions>
 
-                <div *ngIf="c.cancellation_reason" class="mt-4">
-                  <nz-alert
-                    nzType="error"
-                    nzShowIcon
-                    [nzMessage]="('RC.DETAIL.CANCELLED_ON' | translate) + ' ' + (c.cancelled_at || '')"
-                    [nzDescription]="('RC.DETAIL.REASON' | translate) + ': ' + c.cancellation_reason"
-                  ></nz-alert>
-                </div>
-              </nz-tab>
+                  @if (c.cancellation_reason) {
+                    <div class="mt-4">
+                      <nz-alert
+                        nzType="error"
+                        nzShowIcon
+                        [nzMessage]="('RC.DETAIL.CANCELLED_ON' | translate) + ' ' + (c.cancelled_at || '')"
+                        [nzDescription]="('RC.DETAIL.REASON' | translate) + ': ' + c.cancellation_reason"
+                      ></nz-alert>
+                    </div>
+                  }
+                </nz-tab>
 
-              <!-- TAB 2: Lines -->
-              <nz-tab [nzTitle]="'RC.DETAIL.TAB_LINES' | translate">
-                <nz-table
-                  #linesTable
-                  [nzData]="c.lines || []"
-                  [nzShowPagination]="false"
-                  nzBordered
-                  nzSize="small"
-                >
-                  <thead>
-                    <tr>
-                      <th>{{ 'RC.LINES.DESCRIPTION' | translate }}</th>
-                      <th>{{ 'RC.LINES.QUANTITY' | translate }}</th>
-                      <th>{{ 'RC.LINES.UNIT_PRICE' | translate }}</th>
-                      <th>{{ 'RC.LINES.DISCOUNT' | translate }}</th>
-                      <th>{{ 'RC.LINES.TAX_RATE' | translate }}</th>
-                      <th>{{ 'RC.LINES.PRORATION' | translate }}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let line of linesTable.data">
-                      <td>{{ line.description }}</td>
-                      <td>{{ line.quantity }}</td>
-                      <td>{{ line.unit_price }} {{ c.currency }}</td>
-                      <td>{{ line.discount_percent }}%</td>
-                      <td>{{ line.tax_rate }}%</td>
-                      <td>
-                        <nz-tag>{{ line.proration_mode }}</nz-tag>
-                      </td>
-                    </tr>
-                  </tbody>
-                </nz-table>
-              </nz-tab>
-
-              <!-- TAB 3: Indexation Clause & History -->
-              <nz-tab [nzTitle]="'RC.DETAIL.TAB_INDEXATION' | translate">
-                <div *ngIf="c.indexation_clause as clause; else noClause">
-                  <nz-card [nzTitle]="'RC.INDEXATION.ACTIVE_CLAUSE' | translate" nzType="inner" class="mb-4">
-                    <nz-descriptions nzBordered [nzColumn]="2" nzSize="small">
-                      <nz-descriptions-item [nzTitle]="'RC.INDEXATION.INDEX_TYPE' | translate">
-                        <nz-tag [nzColor]="clause.index_type === 'swiss_ipc' ? 'red' : 'blue'">
-                          {{ clause.index_type === 'swiss_ipc' ? 'Swiss IPC' : 'ISTAT FOI' }}
-                        </nz-tag>
-                      </nz-descriptions-item>
-                      <nz-descriptions-item [nzTitle]="'RC.INDEXATION.BASE_PERIOD' | translate">
-                        {{ clause.base_index_period }}
-                      </nz-descriptions-item>
-                      <nz-descriptions-item [nzTitle]="'RC.INDEXATION.BASE_VALUE' | translate">
-                        {{ clause.base_index_value }}
-                      </nz-descriptions-item>
-                      <nz-descriptions-item [nzTitle]="'RC.INDEXATION.PASS_THROUGH' | translate">
-                        {{ clause.pass_through_percent }}%
-                      </nz-descriptions-item>
-                      <nz-descriptions-item [nzTitle]="'RC.INDEXATION.FLOOR_CAP' | translate">
-                        {{ clause.floor_percent || '—' }}% / {{ clause.cap_percent || '—' }}%
-                      </nz-descriptions-item>
-                      <nz-descriptions-item [nzTitle]="'RC.INDEXATION.NEXT_ADJUSTMENT' | translate">
-                        {{ clause.next_adjustment_date || '—' }}
-                      </nz-descriptions-item>
-                    </nz-descriptions>
-                  </nz-card>
-
-                  <h6>{{ 'RC.INDEXATION.HISTORY' | translate }}</h6>
+                <!-- TAB 2: Lines -->
+                <nz-tab [nzTitle]="'RC.DETAIL.TAB_LINES' | translate">
                   <nz-table
-                    #logsTable
-                    [nzData]="c.indexation_logs || []"
+                    #linesTable
+                    [nzData]="c.lines || []"
                     [nzShowPagination]="false"
                     nzBordered
                     nzSize="small"
                   >
                     <thead>
                       <tr>
-                        <th>{{ 'RC.INDEXATION.APPLIED_AT' | translate }}</th>
-                        <th>{{ 'RC.INDEXATION.PERIOD' | translate }}</th>
-                        <th>{{ 'RC.INDEXATION.OLD_NEW_INDEX' | translate }}</th>
-                        <th>{{ 'RC.INDEXATION.DELTA' | translate }}</th>
-                        <th>{{ 'RC.INDEXATION.UPDATED_FEE' | translate }}</th>
+                        <th>{{ 'RC.LINES.DESCRIPTION' | translate }}</th>
+                        <th>{{ 'RC.LINES.QUANTITY' | translate }}</th>
+                        <th>{{ 'RC.LINES.UNIT_PRICE' | translate }}</th>
+                        <th>{{ 'RC.LINES.DISCOUNT' | translate }}</th>
+                        <th>{{ 'RC.LINES.TAX_RATE' | translate }}</th>
+                        <th>{{ 'RC.LINES.PRORATION' | translate }}</th>
                       </tr>
                     </thead>
                     <tbody>
-                      <tr *ngFor="let log of logsTable.data">
-                        <td>{{ log.applied_at | date: 'short' }}</td>
-                        <td>{{ log.period_from }} &rarr; {{ log.period_to }}</td>
-                        <td>{{ log.old_index_value }} &rarr; {{ log.new_index_value }}</td>
-                        <td>
-                          <strong>+{{ log.applied_delta_percent }}%</strong>
-                          <span class="text-muted ms-1">({{ log.raw_delta_percent }}%)</span>
-                        </td>
-                        <td>
-                          {{ log.old_recurring_total }} &rarr;
-                          <strong>{{ log.new_recurring_total }} {{ c.currency }}</strong>
-                        </td>
-                      </tr>
+                      @for (line of linesTable.data; track line.id ?? $index) {
+                        <tr>
+                          <td>{{ line.description }}</td>
+                          <td>{{ line.quantity }}</td>
+                          <td>{{ line.unit_price }} {{ c.currency }}</td>
+                          <td>{{ line.discount_percent }}%</td>
+                          <td>{{ line.tax_rate }}%</td>
+                          <td>
+                            <nz-tag>{{ line.proration_mode }}</nz-tag>
+                          </td>
+                        </tr>
+                      }
                     </tbody>
                   </nz-table>
-                </div>
-                <ng-template #noClause>
-                  <nz-empty [nzNotFoundContent]="'RC.INDEXATION.NO_CLAUSE' | translate"></nz-empty>
-                </ng-template>
-              </nz-tab>
-            </nz-tabs>
-          </div>
+                </nz-tab>
+
+                <!-- TAB 3: Indexation Clause & History -->
+                <nz-tab [nzTitle]="'RC.DETAIL.TAB_INDEXATION' | translate">
+                  @if (c.indexation_clause; as clause) {
+                    <div>
+                      <nz-card [nzTitle]="'RC.INDEXATION.ACTIVE_CLAUSE' | translate" nzType="inner" class="mb-4">
+                        <nz-descriptions nzBordered [nzColumn]="2" nzSize="small">
+                          <nz-descriptions-item [nzTitle]="'RC.INDEXATION.INDEX_TYPE' | translate">
+                            <nz-tag [nzColor]="clause.index_type === 'swiss_ipc' ? 'red' : 'blue'">
+                              {{ clause.index_type === 'swiss_ipc' ? 'Swiss IPC' : 'ISTAT FOI' }}
+                            </nz-tag>
+                          </nz-descriptions-item>
+                          <nz-descriptions-item [nzTitle]="'RC.INDEXATION.BASE_PERIOD' | translate">
+                            {{ clause.base_index_period }}
+                          </nz-descriptions-item>
+                          <nz-descriptions-item [nzTitle]="'RC.INDEXATION.BASE_VALUE' | translate">
+                            {{ clause.base_index_value }}
+                          </nz-descriptions-item>
+                          <nz-descriptions-item [nzTitle]="'RC.INDEXATION.PASS_THROUGH' | translate">
+                            {{ clause.pass_through_percent }}%
+                          </nz-descriptions-item>
+                          <nz-descriptions-item [nzTitle]="'RC.INDEXATION.FLOOR_CAP' | translate">
+                            {{ clause.floor_percent || '—' }}% / {{ clause.cap_percent || '—' }}%
+                          </nz-descriptions-item>
+                          <nz-descriptions-item [nzTitle]="'RC.INDEXATION.NEXT_ADJUSTMENT' | translate">
+                            {{ clause.next_adjustment_date || '—' }}
+                          </nz-descriptions-item>
+                        </nz-descriptions>
+                      </nz-card>
+
+                      <h6>{{ 'RC.INDEXATION.HISTORY' | translate }}</h6>
+                      <nz-table
+                        #logsTable
+                        [nzData]="c.indexation_logs || []"
+                        [nzShowPagination]="false"
+                        nzBordered
+                        nzSize="small"
+                      >
+                        <thead>
+                          <tr>
+                            <th>{{ 'RC.INDEXATION.APPLIED_AT' | translate }}</th>
+                            <th>{{ 'RC.INDEXATION.PERIOD' | translate }}</th>
+                            <th>{{ 'RC.INDEXATION.OLD_NEW_INDEX' | translate }}</th>
+                            <th>{{ 'RC.INDEXATION.DELTA' | translate }}</th>
+                            <th>{{ 'RC.INDEXATION.UPDATED_FEE' | translate }}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @for (log of logsTable.data; track log.id) {
+                            <tr>
+                              <td>{{ log.applied_at | date: 'short' }}</td>
+                              <td>{{ log.period_from }} &rarr; {{ log.period_to }}</td>
+                              <td>{{ log.old_index_value }} &rarr; {{ log.new_index_value }}</td>
+                              <td>
+                                <strong>+{{ log.applied_delta_percent }}%</strong>
+                                <span class="text-muted ms-1">({{ log.raw_delta_percent }}%)</span>
+                              </td>
+                              <td>
+                                {{ log.old_recurring_total }} &rarr;
+                                <strong>{{ log.new_recurring_total }} {{ c.currency }}</strong>
+                              </td>
+                            </tr>
+                          }
+                        </tbody>
+                      </nz-table>
+                    </div>
+                  } @else {
+                    <nz-empty [nzNotFoundContent]="'RC.INDEXATION.NO_CLAUSE' | translate"></nz-empty>
+                  }
+                </nz-tab>
+              </nz-tabs>
+            </div>
+          }
         </nz-spin>
 
         <!-- Modals for specific actions -->
@@ -320,25 +331,26 @@ import {
         >
           <ng-container *nzModalContent>
             <p>{{ 'RC.MODAL.INDEXATION_PROMPT' | translate }}</p>
-            <nz-select
-              *ngIf="availableIndexRates().length > 0; else manualIndexInput"
-              [(ngModel)]="selectedPriceIndexRateId"
-              [nzPlaceHolder]="'RC.MODAL.INDEXATION_SELECT_PLACEHOLDER' | translate"
-              style="width: 100%"
-            >
-              <nz-option
-                *ngFor="let r of availableIndexRates()"
-                [nzValue]="r.id"
-                [nzLabel]="r.index_type.toUpperCase() + ' — ' + r.period + ' (' + r.index_value + ')'"
-              ></nz-option>
-            </nz-select>
-            <ng-template #manualIndexInput>
+            @if (availableIndexRates().length > 0) {
+              <nz-select
+                [(ngModel)]="selectedPriceIndexRateId"
+                [nzPlaceHolder]="'RC.MODAL.INDEXATION_SELECT_PLACEHOLDER' | translate"
+                style="width: 100%"
+              >
+                @for (r of availableIndexRates(); track r.id ?? r.period) {
+                  <nz-option
+                    [nzValue]="r.id"
+                    [nzLabel]="r.index_type.toUpperCase() + ' — ' + r.period + ' (' + r.index_value + ')'"
+                  ></nz-option>
+                }
+              </nz-select>
+            } @else {
               <input
                 nz-input
                 [placeholder]="'RC.MODAL.INDEXATION_SELECT_PLACEHOLDER' | translate"
                 [(ngModel)]="selectedPriceIndexRateId"
               />
-            </ng-template>
+            }
           </ng-container>
         </nz-modal>
       </ng-container>

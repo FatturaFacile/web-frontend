@@ -186,13 +186,29 @@ async function authenticateAgainstLiveBackend(page: Page, tenantId: string = IT_
   });
 }
 
+interface ApiEntityRecord {
+  id?: string;
+  phone?: string;
+  notes?: string;
+  title?: string;
+  total_net?: string | number;
+  totals?: { net?: string; vat?: string; gross?: string };
+  [key: string]: unknown;
+}
+
+interface ApiResponsePayload {
+  data?: ApiEntityRecord;
+  contract?: ApiEntityRecord;
+  [key: string]: unknown;
+}
+
 async function apiRequestInBrowser(
   page: Page,
   method: string,
   path: string,
   body?: unknown,
   tenantId: string = IT_TENANT_ID,
-): Promise<{ status: number; data: any }> {
+): Promise<{ status: number; data: ApiResponsePayload | null }> {
   return page.evaluate(
     async ({ m, p, b, tid, uid }) => {
       const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/);
@@ -210,9 +226,9 @@ async function apiRequestInBrowser(
         },
         body: b !== undefined ? JSON.stringify(b) : undefined,
       });
-      let json: any = null;
+      let json: ApiResponsePayload | null = null;
       try {
-        json = await res.json();
+        json = (await res.json()) as ApiResponsePayload;
       } catch {
         json = null;
       }
@@ -416,7 +432,8 @@ test.describe('Part 2: Full End-to-End UI CRUD Lifecycle Suite', () => {
       country: 'IT',
     });
     expect([200, 201]).toContain(contactRes.status);
-    const contactId = contactRes.data.data.id;
+    const contactId = contactRes.data?.data?.id;
+    expect(contactId).toBeTruthy();
 
     // Verify Italian Fiscal Preview endpoint (/api/v1/tax/preview) works end-to-end
     const previewRes = await apiRequestInBrowser(page, 'POST', '/api/v1/tax/preview', {
@@ -456,7 +473,7 @@ test.describe('Part 2: Full End-to-End UI CRUD Lifecycle Suite', () => {
       ],
     });
     expect([200, 201]).toContain(invCreateRes.status);
-    const invoiceId = invCreateRes.data.data.id;
+    const invoiceId = invCreateRes.data?.data?.id;
     expect(invoiceId).toBeTruthy();
 
     // Update Invoice notes and verify persistence
@@ -469,8 +486,8 @@ test.describe('Part 2: Full End-to-End UI CRUD Lifecycle Suite', () => {
 
     const invReadRes = await apiRequestInBrowser(page, 'GET', `/api/v1/sales/invoices/${invoiceId}`);
     expect(invReadRes.status).toBe(200);
-    expect(invReadRes.data.data.notes).toBe(updatedNotes);
-    expect(Number(invReadRes.data.data.total_net)).toBe(1000);
+    expect(invReadRes.data?.data?.notes).toBe(updatedNotes);
+    expect(Number(invReadRes.data?.data?.total_net)).toBe(1000);
 
     // Navigate to Swiss QR-Bill view (/sales/qr-bill) and verify zero mock 'Helvetia Tech SA' text
     await navigateInCrudSpa(page, '/sales/qr-bill');
@@ -502,7 +519,8 @@ test.describe('Part 2: Full End-to-End UI CRUD Lifecycle Suite', () => {
       country: 'IT',
     });
     expect([200, 201]).toContain(contactRes.status);
-    const contactId = contactRes.data.data.id;
+    const contactId = contactRes.data?.data?.id;
+    expect(contactId).toBeTruthy();
 
     // Create Recurring Contract
     const today = new Date().toISOString().slice(0, 10);

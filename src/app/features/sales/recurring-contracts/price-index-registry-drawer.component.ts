@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
@@ -72,17 +72,19 @@ import { PriceIndexRate } from '@core/models/recurring-contracts.model';
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let rate of indicesTable.data">
-              <td>
-                <nz-tag [nzColor]="rate.index_type === 'swiss_ipc' ? 'red' : 'blue'">
-                  {{ rate.index_type === 'swiss_ipc' ? 'Swiss IPC' : 'ISTAT FOI' }}
-                </nz-tag>
-              </td>
-              <td><strong>{{ rate.period }}</strong></td>
-              <td>{{ rate.index_value }}</td>
-              <td>{{ rate.published_at || '—' }}</td>
-              <td>{{ rate.source_reference || '—' }}</td>
-            </tr>
+            @for (rate of indicesTable.data; track rate.id ?? rate.period) {
+              <tr>
+                <td>
+                  <nz-tag [nzColor]="rate.index_type === 'swiss_ipc' ? 'red' : 'blue'">
+                    {{ rate.index_type === 'swiss_ipc' ? 'Swiss IPC' : 'ISTAT FOI' }}
+                  </nz-tag>
+                </td>
+                <td><strong>{{ rate.period }}</strong></td>
+                <td>{{ rate.index_value }}</td>
+                <td>{{ rate.published_at || '—' }}</td>
+                <td>{{ rate.source_reference || '—' }}</td>
+              </tr>
+            }
           </tbody>
         </nz-table>
 
@@ -175,7 +177,7 @@ import { PriceIndexRate } from '@core/models/recurring-contracts.model';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PriceIndexRegistryDrawerComponent implements OnInit {
+export class PriceIndexRegistryDrawerComponent {
   private readonly api = inject(RecurringContractsApiService);
   private readonly message = inject(NzMessageService);
   private readonly i18n = inject(I18nService);
@@ -193,10 +195,6 @@ export class PriceIndexRegistryDrawerComponent implements OnInit {
     published_at: null,
     source_reference: '',
   };
-
-  ngOnInit(): void {
-    // Loaded on open
-  }
 
   open(): void {
     this.visible.set(true);

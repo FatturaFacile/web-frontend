@@ -66,14 +66,15 @@ import { BillingPreviewItem } from '@core/models/recurring-contracts.model';
           </form>
         </div>
 
-        <nz-alert
-          *ngIf="previewItems().length > 0"
-          nzType="info"
-          nzShowIcon
-          [nzMessage]="('RC.BATCH.FOUND_PREFIX' | translate) + ' ' + previewItems().length + ' ' + ('RC.BATCH.FOUND_SUFFIX' | translate)"
-          [nzDescription]="'RC.BATCH.ALERT_DESC' | translate"
-          class="mb-4"
-        ></nz-alert>
+        @if (previewItems().length > 0) {
+          <nz-alert
+            nzType="info"
+            nzShowIcon
+            [nzMessage]="('RC.BATCH.FOUND_PREFIX' | translate) + ' ' + previewItems().length + ' ' + ('RC.BATCH.FOUND_SUFFIX' | translate)"
+            [nzDescription]="'RC.BATCH.ALERT_DESC' | translate"
+            class="mb-4"
+          ></nz-alert>
+        }
 
         <nz-table
           #previewTable
@@ -101,28 +102,30 @@ import { BillingPreviewItem } from '@core/models/recurring-contracts.model';
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let item of previewTable.data">
-              <td
-                [nzChecked]="selectedContractIds.has(item.contract_id)"
-                [nzDisabled]="item.is_already_billed"
-                (nzCheckedChange)="toggleSelect(item.contract_id, $event)"
-              ></td>
-              <td><strong>{{ item.contract_number }}</strong></td>
-              <td>{{ item.customer_name }}</td>
-              <td>
-                <span class="badge-period">
-                  {{ item.period_start }} &rarr; {{ item.period_end }}
-                </span>
-              </td>
-              <td>{{ item.next_billing_date }}</td>
-              <td>{{ item.subtotal }} {{ item.currency }}</td>
-              <td><strong>{{ item.total }} {{ item.currency }}</strong></td>
-              <td>
-                <nz-tag [nzColor]="item.is_already_billed ? 'orange' : 'green'">
-                  {{ (item.is_already_billed ? 'RC.BATCH.ALREADY_BILLED' : 'RC.BATCH.TO_ISSUE') | translate }}
-                </nz-tag>
-              </td>
-            </tr>
+            @for (item of previewTable.data; track item.contract_id) {
+              <tr>
+                <td
+                  [nzChecked]="selectedContractIds.has(item.contract_id)"
+                  [nzDisabled]="item.is_already_billed"
+                  (nzCheckedChange)="toggleSelect(item.contract_id, $event)"
+                ></td>
+                <td><strong>{{ item.contract_number }}</strong></td>
+                <td>{{ item.customer_name }}</td>
+                <td>
+                  <span class="badge-period">
+                    {{ item.period_start }} &rarr; {{ item.period_end }}
+                  </span>
+                </td>
+                <td>{{ item.next_billing_date }}</td>
+                <td>{{ item.subtotal }} {{ item.currency }}</td>
+                <td><strong>{{ item.total }} {{ item.currency }}</strong></td>
+                <td>
+                  <nz-tag [nzColor]="item.is_already_billed ? 'orange' : 'green'">
+                    {{ (item.is_already_billed ? 'RC.BATCH.ALREADY_BILLED' : 'RC.BATCH.TO_ISSUE') | translate }}
+                  </nz-tag>
+                </td>
+              </tr>
+            }
           </tbody>
         </nz-table>
 

@@ -4,7 +4,6 @@ import {
   Component,
   EventEmitter,
   inject,
-  Input,
   OnInit,
   Output,
   signal,
@@ -202,14 +201,16 @@ import { RecurringContract } from '@core/models/recurring-contracts.model';
                       </nz-form-control>
                     </nz-form-item>
                   </div>
-                  <div nz-col [nzSpan]="8" *ngIf="form.get('auto_renew')?.value">
-                    <nz-form-item>
-                      <nz-form-label>{{ 'RC.FORM.RENEWAL_MONTHS_LABEL' | translate }}</nz-form-label>
-                      <nz-form-control>
-                        <input nz-input type="number" formControlName="renewal_period_months" placeholder="12" />
-                      </nz-form-control>
-                    </nz-form-item>
-                  </div>
+                  @if (form.get('auto_renew')?.value) {
+                    <div nz-col [nzSpan]="8">
+                      <nz-form-item>
+                        <nz-form-label>{{ 'RC.FORM.RENEWAL_MONTHS_LABEL' | translate }}</nz-form-label>
+                        <nz-form-control>
+                          <input nz-input type="number" formControlName="renewal_period_months" placeholder="12" />
+                        </nz-form-control>
+                      </nz-form-item>
+                    </div>
+                  }
                 </div>
               </nz-tab>
 
@@ -223,11 +224,11 @@ import { RecurringContract } from '@core/models/recurring-contracts.model';
                 </div>
 
                 <div formArrayName="lines">
-                  <div
-                    *ngFor="let lineCtrl of linesArray.controls; let i = index"
-                    [formGroupName]="i"
-                    class="line-row-card mb-3 p-3 border rounded"
-                  >
+                  @for (lineCtrl of linesArray.controls; track lineCtrl; let i = $index) {
+                    <div
+                      [formGroupName]="i"
+                      class="line-row-card mb-3 p-3 border rounded"
+                    >
                     <div nz-row [nzGutter]="12">
                       <div nz-col [nzSpan]="8">
                         <nz-form-item>
@@ -298,6 +299,7 @@ import { RecurringContract } from '@core/models/recurring-contracts.model';
                       </div>
                     </div>
                   </div>
+                  }
                 </div>
               </nz-tab>
 

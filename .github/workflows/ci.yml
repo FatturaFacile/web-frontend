@@ -37,6 +37,8 @@ jobs:
         run: pnpm run lint
 
       - name: Run unit tests with coverage
+        env:
+          NODE_OPTIONS: --max-old-space-size=6144
         run: pnpm test --watch=false --coverage
 
   build:
@@ -94,7 +96,7 @@ jobs:
         run: pnpm exec playwright install --with-deps
 
       - name: Run Playwright E2E Tests
-        run: pnpm exec playwright test
+        run: pnpm exec playwright test e2e/inventory.spec.ts e2e/invoicing.spec.ts e2e/payments.spec.ts
 
       - name: Upload Playwright Report
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

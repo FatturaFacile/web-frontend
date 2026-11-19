@@ -217,75 +217,84 @@ import { RecurringContractFormDrawerComponent } from './recurring-contract-form-
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let contract of contractsTable.data">
-              <td>
-                <a (click)="openDetail(contract.id)">
-                  <strong>{{ contract.contract_number }}</strong>
-                </a>
-              </td>
-              <td>
-                <div>{{ contract.title }}</div>
-                <small class="text-muted">{{ formatType(contract.contract_type) }}</small>
-              </td>
-              <td>
-                {{ contract.customer?.company_name || 'N/A' }}
-              </td>
-              <td>
-                <span class="badge-freq">{{ contract.billing_frequency }}</span>
-                <small class="d-block text-muted">({{ contract.billing_timing }})</small>
-              </td>
-              <td>
-                <span [class.text-danger]="isPastDue(contract.next_billing_date)">
-                  {{ contract.next_billing_date }}
-                </span>
-              </td>
-              <td>
-                <strong>{{ contract.subtotal }} {{ contract.currency }}</strong>
-              </td>
-              <td>
-                <nz-tag [nzColor]="contract.auto_renew ? 'green' : 'default'">
-                  {{ (contract.auto_renew ? 'RC.LIST.AUTO' : 'RC.LIST.MANUAL') | translate }}
-                </nz-tag>
-              </td>
-              <td>
-                <nz-tag [nzColor]="statusColor(contract.status)">
-                  {{ contract.status.toUpperCase() }}
-                </nz-tag>
-              </td>
-              <td>
-                <button
-                  nz-button
-                  nzType="text"
-                  nzSize="small"
-                  (click)="openDetail(contract.id)"
-                  [title]="'RC.LIST.ACTION_DETAILS' | translate"
-                >
-                  <i class="fa-solid fa-eye text-primary"></i>
-                </button>
-                <button
-                  nz-button
-                  nzType="text"
-                  nzSize="small"
-                  (click)="openEditForm(contract)"
-                  [title]="'RC.LIST.ACTION_EDIT' | translate"
-                >
-                  <i class="fa-solid fa-pen-to-square text-secondary"></i>
-                </button>
-                <button
-                  *ngIf="contract.status === 'draft'"
-                  nz-button
-                  nzType="text"
-                  nzDanger
-                  nzSize="small"
-                  nz-popconfirm
-                  [nzPopconfirmTitle]="'RC.LIST.DELETE_CONFIRM' | translate"
-                  (nzOnConfirm)="deleteContract(contract.id)"
-                  [title]="'RC.LIST.ACTION_DELETE' | translate"
-                >
-                  <i class="fa-solid fa-trash"></i>
-                </button>
-              </td>
-            </tr>
+            @for (contract of contractsTable.data; track contract.id) {
+              <tr>
+                <td>
+                  <a
+                    tabindex="0"
+                    role="button"
+                    (click)="openDetail(contract.id)"
+                    (keydown.enter)="openDetail(contract.id)"
+                    (keydown.space)="$event.preventDefault(); openDetail(contract.id)"
+                  >
+                    <strong>{{ contract.contract_number }}</strong>
+                  </a>
+                </td>
+                <td>
+                  <div>{{ contract.title }}</div>
+                  <small class="text-muted">{{ formatType(contract.contract_type) }}</small>
+                </td>
+                <td>
+                  {{ contract.customer?.company_name || 'N/A' }}
+                </td>
+                <td>
+                  <span class="badge-freq">{{ contract.billing_frequency }}</span>
+                  <small class="d-block text-muted">({{ contract.billing_timing }})</small>
+                </td>
+                <td>
+                  <span [class.text-danger]="isPastDue(contract.next_billing_date)">
+                    {{ contract.next_billing_date }}
+                  </span>
+                </td>
+                <td>
+                  <strong>{{ contract.subtotal }} {{ contract.currency }}</strong>
+                </td>
+                <td>
+                  <nz-tag [nzColor]="contract.auto_renew ? 'green' : 'default'">
+                    {{ (contract.auto_renew ? 'RC.LIST.AUTO' : 'RC.LIST.MANUAL') | translate }}
+                  </nz-tag>
+                </td>
+                <td>
+                  <nz-tag [nzColor]="statusColor(contract.status)">
+                    {{ contract.status.toUpperCase() }}
+                  </nz-tag>
+                </td>
+                <td>
+                  <button
+                    nz-button
+                    nzType="text"
+                    nzSize="small"
+                    (click)="openDetail(contract.id)"
+                    [title]="'RC.LIST.ACTION_DETAILS' | translate"
+                  >
+                    <i class="fa-solid fa-eye text-primary"></i>
+                  </button>
+                  <button
+                    nz-button
+                    nzType="text"
+                    nzSize="small"
+                    (click)="openEditForm(contract)"
+                    [title]="'RC.LIST.ACTION_EDIT' | translate"
+                  >
+                    <i class="fa-solid fa-pen-to-square text-secondary"></i>
+                  </button>
+                  @if (contract.status === 'draft') {
+                    <button
+                      nz-button
+                      nzType="text"
+                      nzDanger
+                      nzSize="small"
+                      nz-popconfirm
+                      [nzPopconfirmTitle]="'RC.LIST.DELETE_CONFIRM' | translate"
+                      (nzOnConfirm)="deleteContract(contract.id)"
+                      [title]="'RC.LIST.ACTION_DELETE' | translate"
+                    >
+                      <i class="fa-solid fa-trash"></i>
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
           </tbody>
         </nz-table>
       </nz-card>
@@ -408,7 +417,9 @@ export class RecurringContractsListComponent implements OnInit {
 
     this.api.getMetrics().subscribe({
       next: (m) => this.metrics.set(m),
-      error: () => {},
+      error: () => {
+        this.metrics.set(null);
+      },
     });
   }
 

@@ -20,7 +20,6 @@ import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
-import { NzTimelineModule } from 'ng-zorro-antd/timeline';
 import { reportHttpError } from '../hr/shared/hr-http.util';
 import { SdiHtmlPreviewComponent } from './sdi-html-preview.component';
 import { SupplierFatturaPaImporterComponent } from './supplier-fatturapa-importer.component';

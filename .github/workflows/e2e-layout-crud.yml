@@ -77,7 +77,10 @@ jobs:
         env:
           APP_ENV: testing
           APP_DEBUG: 'true'
-          APP_URL: http://127.0.0.1:8000
+          APP_URL: https://localhost:4200
+          FRONTEND_URL: https://localhost:4200
+          SANCTUM_STATEFUL_DOMAINS: localhost,localhost:4200,127.0.0.1,127.0.0.1:8000
+          SESSION_SECURE_COOKIE: 'false'
           DB_CONNECTION: pgsql
           DB_HOST: 127.0.0.1
           DB_PORT: 5432
@@ -105,39 +108,41 @@ jobs:
           cat /tmp/laravel-e2e.log
           exit 1
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 12.18.0
+
       - name: Setup Node.js 22
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'npm'
-          cache-dependency-path: web-frontend/package-lock.json
+          cache: 'pnpm'
+          cache-dependency-path: web-frontend/pnpm-lock.yaml
 
       - name: Install Frontend Dependencies & Playwright Browsers
         working-directory: web-frontend
         run: |
-          npm ci
-          npx playwright install --with-deps chromium
+          pnpm install --frozen-lockfile
+          pnpm exec playwright install --with-deps chromium
+
+      - name: Generate local HTTPS certificate
+        working-directory: web-frontend
+        run: >-
+          openssl req -x509 -newkey rsa:2048 -nodes -days 1 -subj "/CN=localhost"
+          -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
+          -keyout certs/localhost.key -out certs/localhost.crt
 
       - name: Build Angular 22 Production Bundle
         working-directory: web-frontend
-        run: npm run build -- --configuration production
+        run: pnpm run build --configuration production
 
       - name: Run Playwright Layout Crawler & Full UI CRUD Suites
         working-directory: web-frontend
         env:
-          BASE_URL: http://127.0.0.1:4200
-          API_URL: http://127.0.0.1:8000
+          API_PROXY_TARGET: http://127.0.0.1:8000
           CI: 'true'
-        run: |
-          npx ng serve --host 127.0.0.1 --port 4200 --configuration production > /tmp/angular-e2e.log 2>&1 &
-          for i in $(seq 1 45); do
-            if curl -fsS http://127.0.0.1:4200 > /dev/null; then
-              echo "Angular frontend ready on :4200"
-              break
-            fi
-            sleep 1
-          done
-          npx playwright test e2e/layout-full-audit.spec.ts e2e/crud-full-lifecycle.spec.ts --project=chromium --reporter=list,html
+        run: pnpm exec playwright test e2e/layout-full-audit.spec.ts e2e/crud-full-lifecycle.spec.ts --project=chromium --reporter=list,html
 
       - name: Upload Playwright Report & Failure Screenshots
         if: failure()
@@ -148,5 +153,4 @@ jobs:
             web-frontend/playwright-report/
             web-frontend/test-results/
             /tmp/laravel-e2e.log
-            /tmp/angular-e2e.log
           retention-days: 14

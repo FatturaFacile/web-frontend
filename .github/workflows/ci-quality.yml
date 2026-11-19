@@ -51,6 +51,8 @@ jobs:
         run: pnpm run build
 
       - name: Run Vitest Unit & Component Tests with Coverage Gate (>=80%)
+        env:
+          NODE_OPTIONS: --max-old-space-size=6144
         run: pnpm run test:ci
 
   e2e-critical-flows:
@@ -83,7 +85,7 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
 
       - name: Run Playwright E2E Tests
-        run: pnpm exec playwright test
+        run: pnpm exec playwright test e2e/inventory.spec.ts e2e/invoicing.spec.ts e2e/payments.spec.ts e2e/layout-full-audit.spec.ts --project=chromium
 
       - name: Upload Playwright Report on Failure
         if: failure()
