@@ -49,6 +49,7 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/automotive/tire-hotel',
   '/automotive/warranty',
   '/automotive/workshop',
+  '/security/audit-trail',
   '/controlling',
   '/controlling/margins',
   '/controlling/working-capital',

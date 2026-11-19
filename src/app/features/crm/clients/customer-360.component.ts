@@ -13,6 +13,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzTimelineModule } from 'ng-zorro-antd/timeline';
 import { catchError, forkJoin, of } from 'rxjs';
 import { PageHeaderComponent } from '@shared';
+import { EntityAuditTimelineComponent } from '../../security/audit-trail/entity-audit-timeline.component';
 
 interface TimelineEntry {
   kind: string;
@@ -37,6 +38,7 @@ interface TimelineEntry {
     NzTagModule,
     NzTimelineModule,
     PageHeaderComponent,
+    EntityAuditTimelineComponent,
   ],
   template: `
     <app-page-header [title]="name()" [subtitle]="label('CRM.CUSTOMER360.SUBTITLE')" />
@@ -184,6 +186,10 @@ interface TimelineEntry {
           }
         </nz-collapse>
       </nz-card>
+
+      <nz-card class="c360-card">
+        <app-entity-audit-timeline entityType="Contact" [entityId]="id" />
+      </nz-card>
     }
   `,
   styles: `
@@ -203,7 +209,7 @@ export class Customer360Component {
   private readonly api = inject(ResourceApiService);
   private readonly i18n = inject(I18nService);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly id = inject(ActivatedRoute).snapshot.paramMap.get('id') ?? '';
+  protected readonly id = inject(ActivatedRoute).snapshot.paramMap.get('id') ?? '';
 
   protected readonly loading = signal(true);
   protected readonly contact = signal<ResourceRow>({});

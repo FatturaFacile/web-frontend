@@ -9,6 +9,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { catchError, map, of } from 'rxjs';
 import { AuthStore, CatalogApiService, DocumentEmailRecord, InvoiceApiService, InvoiceDetailResource } from '@core';
 import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { EntityAuditTimelineComponent } from '../../../security/audit-trail/entity-audit-timeline.component';
 import { CrossBorderReadinessComponent } from '../../../customs/cross-border/cross-border-readiness.component';
 import { InvoiceOriginDeclarationComponent, isCrossBorderInvoice } from './invoice-origin-declaration.component';
 
@@ -34,6 +35,7 @@ import { InvoiceOriginDeclarationComponent, isCrossBorderInvoice } from './invoi
     TranslatePipe,
     InvoiceOriginDeclarationComponent,
     CrossBorderReadinessComponent,
+    EntityAuditTimelineComponent,
   ],
   template: `
     <nz-modal
@@ -147,6 +149,7 @@ import { InvoiceOriginDeclarationComponent, isCrossBorderInvoice } from './invoi
               }
             </tbody>
           </nz-table>
+          <app-entity-audit-timeline entityType="Invoice" [entityId]="inv.id" />
         }
       </ng-container>
       <ng-template #footer>

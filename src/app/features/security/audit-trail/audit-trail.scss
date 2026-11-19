@@ -1,0 +1,167 @@
+:host {
+  display: block;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.banner {
+  margin-bottom: 12px;
+}
+
+.banner-body {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.banner-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  font-size: 13px;
+}
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  word-break: break-all;
+}
+
+.actor {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.actor-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.actor-role {
+  font-size: 12px;
+  opacity: 0.65;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+
+.ts {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.notice {
+  margin: 0 0 12px;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.diff {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+
+  th,
+  td {
+    padding: 6px 8px;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--ant-border-color-split, rgba(128, 128, 128, 0.25));
+    word-break: break-word;
+  }
+
+  .field {
+    width: 26%;
+    font-weight: 600;
+  }
+
+  .added td.after {
+    background: rgba(82, 196, 26, 0.18);
+  }
+
+  .removed td.before {
+    background: rgba(255, 77, 79, 0.18);
+    text-decoration: line-through;
+  }
+
+  .modified td.before {
+    background: rgba(255, 77, 79, 0.14);
+  }
+
+  .modified td.after {
+    background: rgba(250, 173, 20, 0.2);
+  }
+
+  .kind {
+    width: 1%;
+    white-space: nowrap;
+  }
+}
+
+.proof {
+  margin-top: 16px;
+}
+
+.proof-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.timeline-meta {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.timeline-event {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  align-items: center;
+}
+
+.link-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ant-primary-color, #1677ff);
+  cursor: pointer;
+}
+
+tr.clickable {
+  cursor: pointer;
+}
+
+.table-scroll {
+  max-height: 62vh;
+  overflow: auto;
+
+  ::ng-deep table {
+    min-width: 1100px;
+  }
+
+  ::ng-deep .ant-table-thead > tr > th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+}

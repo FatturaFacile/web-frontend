@@ -5,7 +5,7 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { of, throwError } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { AccessApiService, AuthStore, SettingsApiService } from '@core';
+import { AccessApiService, AuthStore, PermissionsService, SettingsApiService } from '@core';
 import { icons } from '../../../../icons-provider';
 import { TenantUsersComponent } from './users.component';
 
@@ -52,6 +52,8 @@ describe('TenantUsersComponent', () => {
         { provide: AccessApiService, useValue: accessApi },
         { provide: NzMessageService, useValue: message },
         { provide: AuthStore, useValue: { user: () => ({ id: 'me', is_platform_admin: platformAdmin }) } },
+        // The audit history button needs the audit trail permission: these tests are about the member list itself.
+        { provide: PermissionsService, useValue: { canRead: () => false, canWrite: () => false } },
       ],
     });
     const fixture = TestBed.createComponent(TenantUsersComponent);
