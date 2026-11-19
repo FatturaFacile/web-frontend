@@ -409,6 +409,13 @@ export const routes: Routes = [
       import('./features/planning/planning.routes').then((m) => m.PLANNING_ROUTES),
   },
   {
+    path: 'controlling',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'NAV.CONTROLLING', title: 'PAGE_TITLE.CONTROLLING' },
+    loadChildren: () =>
+      import('./features/controlling/controlling.routes').then((m) => m.CONTROLLING_ROUTES),
+  },
+  {
     path: 'budgeting',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.BUDGETING', title: 'PAGE_TITLE.BUDGETING' },
