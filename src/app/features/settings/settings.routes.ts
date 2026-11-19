@@ -63,6 +63,12 @@ export const SETTINGS_ROUTES: Routes = [
       import('./pages/recycle-bin/recycle-bin.component').then((m) => m.RecycleBinComponent),
   },
   {
+    path: 'sdi',
+    canActivate: [moduleGuard('system', 'read')],
+    data: { breadcrumb: 'NAV.SDI_SETTINGS', title: 'NAV.SDI_SETTINGS' },
+    loadComponent: () => import('../sdi-cockpit/sdi-settings.component').then((m) => m.SdiSettingsComponent),
+  },
+  {
     path: 'sdi-channel',
     canActivate: [moduleGuard('system', 'read')],
     data: { breadcrumb: 'BREADCRUMB.CANALE_SDI', title: 'PAGE_TITLE.CANALE_DI_FATTURAZIONE_ELETTRONICA', page: SDI_CHANNEL_PAGE },

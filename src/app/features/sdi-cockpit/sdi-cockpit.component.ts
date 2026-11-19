@@ -1,7 +1,16 @@
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { FPA_STATUSES, FpaDocument, FpaDocumentsApiService, FpaKpi, FpaNotification, FpaStatus, I18nService, PermissionsService } from '@core';
+import {
+  FPA_STATUSES,
+  FpaDocument,
+  FpaDocumentsApiService,
+  FpaKpi,
+  FpaNotification,
+  FpaStatus,
+  I18nService,
+  PermissionsService,
+} from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -32,24 +41,60 @@ const STATUS_COLORS: Record<string, string> = {
   inbound_processed: 'default',
 };
 
-const NOTIFICATION_COLORS: Record<string, string> = { RC: 'green', NE: 'green', DT: 'green', AT: 'orange', MC: 'orange', NS: 'red', MT: 'blue' };
+const NOTIFICATION_COLORS: Record<string, string> = {
+  RC: 'green',
+  NE: 'green',
+  DT: 'green',
+  AT: 'orange',
+  MC: 'orange',
+  NS: 'red',
+  MT: 'blue',
+};
 
-const KPI_KEYS: readonly (keyof FpaKpi)[] = ['ready', 'transmitted', 'delivered', 'undelivered', 'rejected', 'inbound_to_process'];
+const KPI_KEYS: readonly (keyof FpaKpi)[] = [
+  'ready',
+  'transmitted',
+  'delivered',
+  'undelivered',
+  'rejected',
+  'inbound_to_process',
+];
 
 /** Electronic invoicing cockpit: KPI cards, envelopes, SDI timeline and the 5-day rejection recovery. */
 @Component({
   selector: 'app-sdi-cockpit',
-  imports: [DatePipe, FormsModule, NzButtonModule, NzCardModule, NzDrawerModule, NzEmptyModule, NzSelectModule, NzTableModule, NzTagModule, NzTimelineModule, PageHeaderComponent, TranslatePipe],
+  imports: [
+    DatePipe,
+    FormsModule,
+    NzButtonModule,
+    NzCardModule,
+    NzDrawerModule,
+    NzEmptyModule,
+    NzSelectModule,
+    NzTableModule,
+    NzTagModule,
+    NzTimelineModule,
+    PageHeaderComponent,
+    TranslatePipe,
+  ],
   styles: [
     '.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: var(--space-3); margin-bottom: var(--space-3); }',
     '.kpi { text-align: center; cursor: pointer; } .kpi strong { display: block; font-size: 1.75rem; }',
     '.toolbar { display: flex; gap: var(--space-2); margin-bottom: var(--space-3); } .muted { color: var(--text-secondary); }',
   ],
   template: `
-    <app-page-header [title]="'sdiCockpit.title' | translate" [subtitle]="'sdiCockpit.subtitle' | translate" />
+    <app-page-header
+      [title]="'sdiCockpit.title' | translate"
+      [subtitle]="'sdiCockpit.subtitle' | translate"
+    />
     <div class="kpis">
       @for (key of kpiKeys; track key) {
-        <nz-card class="kpi" nzSize="small" (click)="filterByKpi(key)" [attr.data-testid]="'kpi-' + key">
+        <nz-card
+          class="kpi"
+          nzSize="small"
+          (click)="filterByKpi(key)"
+          [attr.data-testid]="'kpi-' + key"
+        >
           <strong>{{ kpi()[key] }}</strong>
           <span class="muted">{{ 'sdiCockpit.kpi.' + key | translate }}</span>
         </nz-card>
@@ -57,18 +102,53 @@ const KPI_KEYS: readonly (keyof FpaKpi)[] = ['ready', 'transmitted', 'delivered'
     </div>
     <nz-card>
       <div class="toolbar">
-        <nz-select style="width: 220px" nzAllowClear [ngModel]="status()" (ngModelChange)="status.set($event); reload()" [nzPlaceHolder]="'sdiCockpit.allStatuses' | translate" [attr.aria-label]="'sdiCockpit.status' | translate">
+        <nz-select
+          style="width: 220px"
+          nzAllowClear
+          [ngModel]="status()"
+          (ngModelChange)="status.set($event); reload()"
+          [nzPlaceHolder]="'sdiCockpit.allStatuses' | translate"
+          [attr.aria-label]="'sdiCockpit.status' | translate"
+        >
           @for (value of statuses; track value) {
-            <nz-option [nzValue]="value" [nzLabel]="'sdiCockpit.statuses.' + value | translate"></nz-option>
+            <nz-option
+              [nzValue]="value"
+              [nzLabel]="'sdiCockpit.statuses.' + value | translate"
+            ></nz-option>
           }
         </nz-select>
-        <nz-select style="width: 160px" nzAllowClear [ngModel]="direction()" (ngModelChange)="direction.set($event); reload()" [nzPlaceHolder]="'sdiCockpit.allDirections' | translate" [attr.aria-label]="'sdiCockpit.direction' | translate">
-          <nz-option nzValue="outbound" [nzLabel]="'sdiCockpit.directions.outbound' | translate"></nz-option>
-          <nz-option nzValue="inbound" [nzLabel]="'sdiCockpit.directions.inbound' | translate"></nz-option>
+        <nz-select
+          style="width: 160px"
+          nzAllowClear
+          [ngModel]="direction()"
+          (ngModelChange)="direction.set($event); reload()"
+          [nzPlaceHolder]="'sdiCockpit.allDirections' | translate"
+          [attr.aria-label]="'sdiCockpit.direction' | translate"
+        >
+          <nz-option
+            nzValue="outbound"
+            [nzLabel]="'sdiCockpit.directions.outbound' | translate"
+          ></nz-option>
+          <nz-option
+            nzValue="inbound"
+            [nzLabel]="'sdiCockpit.directions.inbound' | translate"
+          ></nz-option>
         </nz-select>
-        <button nz-button type="button" (click)="reload()">{{ 'sdiCockpit.refresh' | translate }}</button>
+        <button nz-button type="button" (click)="reload()">
+          {{ 'sdiCockpit.refresh' | translate }}
+        </button>
       </div>
-      <nz-table #table nzSize="small" [nzFrontPagination]="false" [nzData]="rows()" [nzLoading]="loading()" [nzTotal]="total()" [nzPageIndex]="page()" [nzPageSize]="25" (nzPageIndexChange)="goTo($event)">
+      <nz-table
+        #table
+        nzSize="small"
+        [nzFrontPagination]="false"
+        [nzData]="rows()"
+        [nzLoading]="loading()"
+        [nzTotal]="total()"
+        [nzPageIndex]="page()"
+        [nzPageSize]="25"
+        (nzPageIndexChange)="goTo($event)"
+      >
         <thead>
           <tr>
             <th>{{ 'sdiCockpit.document' | translate }}</th>
@@ -82,17 +162,32 @@ const KPI_KEYS: readonly (keyof FpaKpi)[] = ['ready', 'transmitted', 'delivered'
         <tbody>
           @for (row of table.data; track row.id) {
             <tr>
-              <td>{{ row.document_type }} {{ row.document_number }} <span class="muted">{{ row.document_date }}</span></td>
+              <td>
+                {{ row.document_type }} {{ row.document_number }}
+                <span class="muted">{{ row.document_date }}</span>
+              </td>
               <td>{{ row.format_transmission }}</td>
               <td>
-                <nz-tag [nzColor]="color(row.status)">{{ 'sdiCockpit.statuses.' + row.status | translate }}</nz-tag>
+                <nz-tag [nzColor]="color(row.status)">{{
+                  'sdiCockpit.statuses.' + row.status | translate
+                }}</nz-tag>
                 @if (row.status === 'rejected' && row.resubmission_deadline_at) {
                   <nz-tag nzColor="red" data-testid="countdown-badge">{{ countdown(row) }}</nz-tag>
                 }
               </td>
               <td>{{ row.sdi_identifier ?? '-' }}</td>
               <td>{{ row.transmission_progressive ?? '-' }}</td>
-              <td><button nz-button nzSize="small" type="button" (click)="open(row)" data-testid="open-timeline">{{ 'sdiCockpit.timeline' | translate }}</button></td>
+              <td>
+                <button
+                  nz-button
+                  nzSize="small"
+                  type="button"
+                  (click)="open(row)"
+                  data-testid="open-timeline"
+                >
+                  {{ 'sdiCockpit.timeline' | translate }}
+                </button>
+              </td>
             </tr>
           }
         </tbody>
@@ -101,31 +196,62 @@ const KPI_KEYS: readonly (keyof FpaKpi)[] = ['ready', 'transmitted', 'delivered'
         <nz-empty [nzNotFoundContent]="'sdiCockpit.empty' | translate"></nz-empty>
       }
     </nz-card>
-    <nz-drawer [nzVisible]="selected() !== null" nzWidth="480" [nzTitle]="'sdiCockpit.timeline' | translate" (nzOnClose)="close()">
+    <nz-drawer
+      [nzVisible]="selected() !== null"
+      nzWidth="480"
+      [nzTitle]="'sdiCockpit.timeline' | translate"
+      (nzOnClose)="close()"
+    >
       <ng-container *nzDrawerContent>
         @if (selected(); as doc) {
           @if (doc.status === 'rejected') {
-            <nz-card nzSize="small" [nzTitle]="'sdiCockpit.recovery.title' | translate" data-testid="recovery">
-              <p>{{ 'sdiCockpit.recovery.remaining' | translate }}: <strong>{{ countdown(doc) }}</strong></p>
+            <nz-card
+              nzSize="small"
+              [nzTitle]="'sdiCockpit.recovery.title' | translate"
+              data-testid="recovery"
+            >
+              <p>
+                {{ 'sdiCockpit.recovery.remaining' | translate }}:
+                <strong>{{ countdown(doc) }}</strong>
+              </p>
               @for (error of doc.validation_errors ?? []; track error.code) {
-                <p><nz-tag nzColor="red">{{ error.code }}</nz-tag>{{ error.description }}</p>
+                <p>
+                  <nz-tag nzColor="red">{{ error.code }}</nz-tag>{{ error.description }}
+                </p>
               }
               @if (canWrite()) {
-                <button nz-button nzType="primary" type="button" (click)="resubmit(doc)" data-testid="resubmit">{{ 'sdiCockpit.recovery.fixAndResubmit' | translate }}</button>
+                <button
+                  nz-button
+                  nzType="primary"
+                  type="button"
+                  (click)="resubmit(doc)"
+                  data-testid="resubmit"
+                >
+                  {{ 'sdiCockpit.recovery.fixAndResubmit' | translate }}
+                </button>
               }
             </nz-card>
           }
           <nz-timeline>
-            <nz-timeline-item nzColor="blue">{{ 'sdiCockpit.step.generated' | translate }}</nz-timeline-item>
+            <nz-timeline-item nzColor="blue">{{
+              'sdiCockpit.step.generated' | translate
+            }}</nz-timeline-item>
             @if (doc.transmitted_at) {
-              <nz-timeline-item nzColor="blue">{{ 'sdiCockpit.step.transmitted' | translate }} — {{ doc.transmitted_at | date: 'short' }}</nz-timeline-item>
+              <nz-timeline-item nzColor="blue"
+                >{{ 'sdiCockpit.step.transmitted' | translate }} —
+                {{ doc.transmitted_at | date: 'short' }}</nz-timeline-item
+              >
             }
             @for (n of notifications(); track n.id) {
               <nz-timeline-item [nzColor]="notificationColor(n.type)">
                 <strong>{{ n.type }}</strong> {{ 'sdiCockpit.notification.' + n.type | translate }}
-                @if (n.outcome_code) { <nz-tag>{{ n.outcome_code }}</nz-tag> }
+                @if (n.outcome_code) {
+                  <nz-tag>{{ n.outcome_code }}</nz-tag>
+                }
                 @for (error of n.error_codes ?? []; track error.code) {
-                  <div><nz-tag nzColor="red">{{ error.code }}</nz-tag>{{ error.description }}</div>
+                  <div>
+                    <nz-tag nzColor="red">{{ error.code }}</nz-tag>{{ error.description }}
+                  </div>
                 }
                 <div class="muted">{{ n.received_at ? (n.received_at | date: 'short') : '' }}</div>
               </nz-timeline-item>
@@ -145,7 +271,14 @@ export class SdiCockpitComponent implements OnInit {
   protected readonly statuses = FPA_STATUSES;
   protected readonly kpiKeys = KPI_KEYS;
   protected readonly rows = signal<FpaDocument[]>([]);
-  protected readonly kpi = signal<FpaKpi>({ ready: 0, transmitted: 0, delivered: 0, undelivered: 0, rejected: 0, inbound_to_process: 0 });
+  protected readonly kpi = signal<FpaKpi>({
+    ready: 0,
+    transmitted: 0,
+    delivered: 0,
+    undelivered: 0,
+    rejected: 0,
+    inbound_to_process: 0,
+  });
   protected readonly loading = signal(false);
   protected readonly total = signal(0);
   protected readonly page = signal(1);
@@ -183,7 +316,14 @@ export class SdiCockpitComponent implements OnInit {
   }
 
   protected filterByKpi(key: keyof FpaKpi): void {
-    const map: Partial<Record<keyof FpaKpi, FpaStatus>> = { ready: 'validated', transmitted: 'transmitted', delivered: 'delivered', undelivered: 'undelivered', rejected: 'rejected', inbound_to_process: 'inbound_received' };
+    const map: Partial<Record<keyof FpaKpi, FpaStatus>> = {
+      ready: 'validated',
+      transmitted: 'transmitted',
+      delivered: 'delivered',
+      undelivered: 'undelivered',
+      rejected: 'rejected',
+      inbound_to_process: 'inbound_received',
+    };
     this.status.set(map[key] ?? null);
     this.reload();
   }
@@ -225,7 +365,12 @@ export class SdiCockpitComponent implements OnInit {
   private load(): void {
     this.loading.set(true);
     this.api
-      .list({ status: this.status() ?? undefined, direction: this.direction() ?? undefined, page: this.page(), per_page: 25 })
+      .list({
+        status: this.status() ?? undefined,
+        direction: this.direction() ?? undefined,
+        page: this.page(),
+        per_page: 25,
+      })
       .subscribe({
         next: (res) => {
           this.rows.set(res.data);

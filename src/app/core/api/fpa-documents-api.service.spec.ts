@@ -11,7 +11,9 @@ describe('FpaDocumentsApiService', () => {
   const base = environment.apiBaseUrl;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [FpaDocumentsApiService, provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.configureTestingModule({
+      providers: [FpaDocumentsApiService, provideHttpClient(), provideHttpClientTesting()],
+    });
     service = TestBed.inject(FpaDocumentsApiService);
     httpMock = TestBed.inject(HttpTestingController);
   });

@@ -14,6 +14,11 @@ export const PURCHASES_ROUTES: Routes = [
       import('./purchases.component').then((m) => m.PurchasesComponent),
   },
   {
+    path: 'sdi-documents',
+    data: { breadcrumb: 'NAV.SDI_INBOX_DOCUMENTS', title: 'NAV.SDI_INBOX_DOCUMENTS' },
+    loadComponent: () => import('../sdi-cockpit/sdi-inbox.component').then((m) => m.SdiInboxComponent),
+  },
+  {
     path: 'qr-scanner',
     data: { breadcrumb: 'BREADCRUMB.SCANNER_QR_AND_PAIN_001', title: 'PAGE_TITLE.SCANNER_QR_PAIN_001' },
     loadComponent: () =>
