@@ -14,6 +14,26 @@ export const routes: Routes = [
     redirectTo: 'login',
   },
   {
+    path: 'pages/auth/login',
+    pathMatch: 'full',
+    redirectTo: 'login',
+  },
+  {
+    path: 'pages/auth/register',
+    pathMatch: 'full',
+    redirectTo: 'register',
+  },
+  {
+    path: 'pages/auth/forgot-password',
+    pathMatch: 'full',
+    redirectTo: 'forgot-password',
+  },
+  {
+    path: 'pages/auth/reset-password',
+    pathMatch: 'full',
+    redirectTo: 'reset-password',
+  },
+  {
     path: 'login',
     canActivate: [guestGuard],
     data: { title: 'PAGE_TITLE.ACCEDI_A_FATTURA_FACILE' },
@@ -116,7 +136,7 @@ export const routes: Routes = [
   {
     path: 'logistics',
     canActivate: [authGuard, menuEnabledGuard],
-    data: { breadcrumb: 'Logistica & DDT', title: 'Logistica' },
+    data: { breadcrumb: 'BREADCRUMB.LOGISTICA_DDT', title: 'PAGE_TITLE.LOGISTICA' },
     loadChildren: () =>
       import('./features/logistics/logistics.routes').then((m) => m.LOGISTICS_ROUTES),
   },
@@ -341,6 +361,13 @@ export const routes: Routes = [
       import('./features/plm/plm.routes').then((m) => m.PLM_ROUTES),
   },
   {
+    path: 'pricing',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'NAV.PRICING_MANAGEMENT', title: 'PAGE_TITLE.PRICING' },
+    loadChildren: () =>
+      import('./features/pricing/pricing.routes').then((m) => m.PRICING_ROUTES),
+  },
+  {
     path: 'rebates',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.REBATES_MANAGEMENT', title: 'PAGE_TITLE.REBATES' },
@@ -454,7 +481,7 @@ export const routes: Routes = [
   {
     path: 'warranty-rma',
     canActivate: [authGuard, menuEnabledGuard],
-    data: { breadcrumb: 'Garanzie & RMA', title: 'Garanzie & RMA' },
+    data: { breadcrumb: 'NAV.WARRANTY_RMA', title: 'PAGE_TITLE.WARRANTY_RMA' },
     loadChildren: () =>
       import('./features/warranty-rma/warranty-rma.routes').then((m) => m.WARRANTY_RMA_ROUTES),
   },
@@ -499,6 +526,12 @@ export const routes: Routes = [
     data: { breadcrumb: 'BREADCRUMB.RISTORAZIONE_AND_HOSPITALITY', title: 'PAGE_TITLE.HOSPITALITY_COMANDE' },
     loadChildren: () =>
       import('./features/hospitality/hospitality.routes').then((m) => m.HOSPITALITY_ROUTES),
+  },
+  {
+    path: 'mobile',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'RES.PAGE.MOBILE_ADMIN', title: 'RES.PAGE.MOBILE_ADMIN' },
+    loadChildren: () => import('./features/mobile/mobile.routes').then((m) => m.MOBILE_ROUTES),
   },
   {
     path: 'retail',
@@ -591,13 +624,13 @@ export const routes: Routes = [
   // Customer-facing RMA pages: no guard, rendered without the application shell (`data.publicPage`).
   {
     path: 'rma-estimate/:token',
-    data: { publicPage: true, title: 'Preventivo riparazione' },
+    data: { publicPage: true, title: 'RMA.ESTIMATE.TITLE' },
     loadComponent: () =>
       import('./features/warranty-rma/public/rma-estimate.component').then((m) => m.RmaEstimateComponent),
   },
   {
     path: 'rma-tracking',
-    data: { publicPage: true, title: 'Stato riparazione' },
+    data: { publicPage: true, title: 'RMA.TRACKING.TITLE' },
     loadComponent: () =>
       import('./features/warranty-rma/public/rma-tracking.component').then((m) => m.RmaTrackingComponent),
   },
@@ -656,6 +689,7 @@ export const routes: Routes = [
   {
     // Public careers portal (Recruiting & ATS): no auth guard, embeddable.
     path: 'careers',
+    data: { publicPage: true, title: 'CAREERS.TITLE' },
     loadChildren: () =>
       import('./features/careers/careers.routes').then((m) => m.CAREERS_ROUTES),
   },

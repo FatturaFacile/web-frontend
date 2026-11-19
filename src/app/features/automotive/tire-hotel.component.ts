@@ -8,6 +8,7 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { AutomotiveApiService, FetchGridModel, GridValue, TireHotelRecord, TranslateService } from '@core';
+import { TireCheckInComponent } from './tire-check-in.component';
 import { BaseTableComponent, PageHeaderComponent, TableColumnDef, TranslatePipe } from '@shared';
 
 /** Translation keys of the tire seasons (the API stores summer, winter or all_season). */
@@ -30,6 +31,7 @@ const SEASON_KEYS: Record<string, string> = {
     NzEmptyModule,
     PageHeaderComponent,
     TranslatePipe,
+    TireCheckInComponent,
   ],
   templateUrl: './tire-hotel.component.html',
 })
@@ -40,6 +42,7 @@ export class TireHotelComponent {
 
   /** Stored tire sets: paging, sorting, column filters and grouping run on the API. */
   readonly grid = new FetchGridModel<TireHotelRecord>((query) => this.api.listSeasonalSwitchPlan(query));
+  readonly checkInOpen = signal(false);
   readonly checkingOutId = signal<string | null>(null);
 
   /** Sets per season over the whole stored dataset (not only the loaded page). */

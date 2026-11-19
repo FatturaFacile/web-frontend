@@ -30,11 +30,11 @@ describe('SubscriptionsExtraApiService', () => {
     ['createPlan', 'POST', '/subscriptions/plans', () => service.createPlan({})],
     ['getMetrics', 'GET', '/subscriptions/metrics', () => service.getMetrics()],
     ['saveDunningPolicy', 'PUT', '/subscriptions/dunning-policy', () => service.saveDunningPolicy({})],
-    ['activateSubscription', 'POST', '/subscriptions/subscr-1/activate', () => service.activateSubscription('subscr-1', {})],
-    ['suspendSubscription', 'POST', '/subscriptions/subscr-1/suspend', () => service.suspendSubscription('subscr-1', {})],
-    ['reactivateSubscription', 'POST', '/subscriptions/subscr-1/reactivate', () => service.reactivateSubscription('subscr-1', {})],
-    ['upgradeSubscription', 'POST', '/subscriptions/subscr-1/upgrade', () => service.upgradeSubscription('subscr-1', {})],
-    ['downgradeSubscription', 'POST', '/subscriptions/subscr-1/downgrade', () => service.downgradeSubscription('subscr-1', {})],
+    ['activateSubscription', 'POST', '/sub/contracts/subscr-1/activate', () => service.activateSubscription('subscr-1', {})],
+    ['suspendSubscription', 'POST', '/sub/contracts/subscr-1/suspend', () => service.suspendSubscription('subscr-1', {})],
+    ['reactivateSubscription', 'POST', '/sub/contracts/subscr-1/reactivate', () => service.reactivateSubscription('subscr-1', {})],
+    ['upgradeSubscription', 'POST', '/sub/contracts/subscr-1/upgrade', () => service.upgradeSubscription('subscr-1', {})],
+    ['downgradeSubscription', 'POST', '/sub/contracts/subscr-1/downgrade', () => service.downgradeSubscription('subscr-1', {})],
   ];
 
   it.each(cases)('%s sends %s %s', (_name, method, url, call) => {

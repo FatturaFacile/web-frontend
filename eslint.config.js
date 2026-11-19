@@ -8,6 +8,8 @@ export default tseslint.config(
       'dist/**',
       'coverage/**',
       '.angular/**',
+      '.claude/**',
+      'storybook-static/**',
       'node_modules/**',
       'public/**',
       '**/*.d.ts',

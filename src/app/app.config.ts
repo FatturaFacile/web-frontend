@@ -1,6 +1,7 @@
 import {
   ApplicationConfig,
   inject,
+  isDevMode,
   LOCALE_ID,
   provideAppInitializer,
   provideBrowserGlobalErrorListeners,
@@ -77,7 +78,7 @@ export const appConfig: ApplicationConfig = {
       inject(PwaUpdateService).start();
     }),
     provideServiceWorker('ngsw-worker.js', {
-      enabled: true,
+      enabled: !isDevMode(),
       registrationStrategy: 'registerWhenStable:30000',
     }),
   ],

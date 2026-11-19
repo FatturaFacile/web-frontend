@@ -1,4 +1,7 @@
 import { DatePipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ParsedQrBill } from '@core/models/swiss-qr-bill.model';
+import { SupplierQrUploadComponent } from './components/supplier-qr-upload/supplier-qr-upload.component';
 import { Component, computed, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
 import {
   AbstractControl,
@@ -34,6 +37,7 @@ import {
   GoodsReceipt,
   GridValue,
   InspectGoodsReceiptPayload,
+  IntegrationSupplyKind,
   ProcessGoodsReceiptPayload,
   ProcurementApiService,
   ProcurementSupplier,
@@ -93,6 +97,7 @@ function inspectLineGroup(fb: NonNullableFormBuilder, lineId: string, quantity: 
   selector: 'app-purchases',
   styleUrl: './purchases.component.scss',
   imports: [
+    SupplierQrUploadComponent,
     BaseTableComponent,
     GridExportDirective,
     GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
@@ -179,6 +184,12 @@ export class PurchasesComponent implements OnInit {
   // --- Supplier Invoices State ---
   protected readonly invoiceGrid = new FetchGridModel<SupplierInvoice>((query) => this.procurementApi.getSupplierInvoices(query));
   readonly importSdiModalVisible = signal(false);
+  /** Invoice waiting for the goods/services answer of the integration self-invoice dialog. */
+  readonly integrationInvoice = signal<SupplierInvoice | null>(null);
+  readonly integrationSupplyKind = signal<IntegrationSupplyKind>('goods');
+  readonly integrationBusy = signal(false);
+  readonly qrBillModalVisible = signal(false);
+  readonly qrBillDraft = signal<ParsedQrBill | null>(null);
   readonly selectedXmlFile = signal<File | null>(null);
 
   // --- Reason dialog (reject an order, approve a match variance) ---
@@ -695,6 +706,43 @@ export class PurchasesComponent implements OnInit {
     });
   }
 
+  /** Foreign or reverse-charge supplier invoices need an integration self-invoice (TD17/TD18/TD19). */
+  canGenerateIntegration(invoice: SupplierInvoice): boolean {
+    const isIntegrationDoc = ['TD16', 'TD17', 'TD18', 'TD19'].includes(invoice.document_type ?? '');
+    const foreign = !!invoice.supplier_country && invoice.supplier_country.toUpperCase() !== 'IT';
+    return !isIntegrationDoc && (!!invoice.reverse_charge || !!invoice.is_foreign || foreign);
+  }
+
+  /** One click: generate the integration invoice; the API may ask first whether goods or services were supplied. */
+  generateIntegration(invoice: SupplierInvoice, supplyKind?: IntegrationSupplyKind): void {
+    this.integrationBusy.set(true);
+    this.procurementApi.generateIntegrationInvoice(invoice.id, supplyKind ? { supply_kind: supplyKind } : {}).subscribe({
+      next: () => {
+        this.integrationBusy.set(false);
+        this.integrationInvoice.set(null);
+        this.message.success(this.translate.instant('PURCHASES.INTEGRATION_SUCCESS', { number: invoice.invoice_number }));
+        this.loadSupplierInvoices();
+      },
+      error: (err) => {
+        this.integrationBusy.set(false);
+        if (!supplyKind && err instanceof HttpErrorResponse && err.status === 422 && err.error?.errors?.supply_kind) {
+          this.integrationSupplyKind.set('goods');
+          this.integrationInvoice.set(invoice);
+          return;
+        }
+        this.integrationInvoice.set(null);
+        this.message.error(apiErrorText(err) || this.translate.instant('PURCHASES.INTEGRATION_FAILURE'));
+      },
+    });
+  }
+
+  confirmIntegrationSupplyKind(): void {
+    const invoice = this.integrationInvoice();
+    if (invoice) {
+      this.generateIntegration(invoice, this.integrationSupplyKind());
+    }
+  }
+
   markInvoicePaid(invoice: SupplierInvoice): void {
     this.modal.confirm({
       nzTitle: this.translate.instant('PURCHASES.DLG_SEGNARE_LA_FATTURA_FORNITORE_COME_PAGATA', { invoice_number: invoice.invoice_number }),
@@ -708,6 +756,33 @@ export class PurchasesComponent implements OnInit {
           },
           error: (err) => this.message.error(apiErrorText(err) || this.translate.instant('common.errors.generic')),
         });
+      },
+    });
+  }
+
+  openQrBillModal(): void {
+    this.qrBillDraft.set(null);
+    this.qrBillModalVisible.set(true);
+  }
+
+  /** Records the supplier invoice draft decoded from the uploaded QR-bill (no manual re-typing of the payment data). */
+  submitQrBillDraft(): void {
+    const draft = this.qrBillDraft();
+    if (!draft) {
+      return;
+    }
+
+    this.saving.set(true);
+    this.procurementApi.scanPassiveInvoiceQrBill({ qr_payload: draft.payload }).subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.qrBillModalVisible.set(false);
+        this.message.success(this.translate.instant('qrBill.upload.success'));
+        this.loadSupplierInvoices();
+      },
+      error: (err) => {
+        this.saving.set(false);
+        this.message.error(apiErrorText(err) || this.translate.instant('qrBill.upload.failure'));
       },
     });
   }

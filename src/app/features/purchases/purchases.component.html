@@ -85,6 +85,9 @@
     <nz-tab [nzTitle]="'PURCHASES.LBL_FATTURE_FORNITORE_CICLO_PASSIVO_AP' | translate">
       <div class="tab-header">
         <span class="muted">{{ 'PURCHASES.LBL_FATTURE_PASSIVE_REGISTRATE_IMPORTAZIONE_SDI_FATTURAPA' | translate }}</span>
+        <button nz-button nzType="default" (click)="openQrBillModal()" data-testid="open-qr-bill-upload">
+          <nz-icon nzType="qrcode" /> {{ 'qrBill.upload.title' | translate }}
+        </button>
         <button nz-button nzType="default" (click)="openImportSdiModal()">
           <nz-icon nzType="upload" /> {{ 'PURCHASES.LBL_IMPORTA_XML_SDI_PASSIVO' | translate }}
         </button>
@@ -196,6 +199,18 @@
     @if (canSubmitInvoiceApproval(inv)) {
       <button nz-button nzSize="small" nzType="default" (click)="submitInvoiceApproval(inv)">
         {{ 'PURCHASES.SUBMIT_INVOICE_APPROVAL' | translate }}
+      </button>
+    }
+    @if (canGenerateIntegration(inv)) {
+      <button
+        nz-button
+        nzSize="small"
+        nzType="default"
+        data-testid="generate-integration"
+        [disabled]="integrationBusy()"
+        (click)="generateIntegration(inv)"
+      >
+        {{ 'PURCHASES.GENERATE_INTEGRATION' | translate }}
       </button>
     }
     @if (inv.payment_status !== 'paid') {
@@ -430,6 +445,44 @@
         </nz-form-control>
       </nz-form-item>
     </form>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal: goods or services for the integration self-invoice -->
+<nz-modal
+  [nzVisible]="integrationInvoice() !== null"
+  [nzTitle]="'PURCHASES.INTEGRATION_SUPPLY_KIND_TITLE' | translate"
+  [nzOkLoading]="integrationBusy()"
+  (nzOnCancel)="integrationInvoice.set(null)"
+  okAction="confirm"
+  (nzOnOk)="confirmIntegrationSupplyKind()"
+>
+  <ng-container *nzModalContent>
+    <p>{{ 'PURCHASES.INTEGRATION_SUPPLY_KIND_HINT' | translate }}</p>
+    <nz-select
+      class="full-width"
+      data-testid="integration-supply-kind"
+      [ngModel]="integrationSupplyKind()"
+      (ngModelChange)="integrationSupplyKind.set($event)"
+    >
+      <nz-option nzValue="goods" [nzLabel]="'PURCHASES.INTEGRATION_GOODS' | translate" />
+      <nz-option nzValue="services" [nzLabel]="'PURCHASES.INTEGRATION_SERVICES' | translate" />
+    </nz-select>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal: Swiss QR-bill supplier invoice (PDF / image / camera) -->
+<nz-modal
+  [nzVisible]="qrBillModalVisible()"
+  [nzTitle]="'qrBill.upload.title' | translate"
+  [nzOkLoading]="saving()"
+  [nzOkDisabled]="!qrBillDraft()"
+  (nzOnCancel)="qrBillModalVisible.set(false)"
+  okAction="confirm"
+  (nzOnOk)="submitQrBillDraft()"
+>
+  <ng-container *nzModalContent>
+    <app-supplier-qr-upload (parsed)="qrBillDraft.set($event)" />
   </ng-container>
 </nz-modal>
 

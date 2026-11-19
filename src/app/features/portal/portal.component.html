@@ -558,6 +558,37 @@
           </tbody>
         </nz-table>
       </nz-card>
+
+      <nz-card [nzTitle]="'PORTAL.SHIPMENT_REQUESTS_SENT' | translate" class="mt-3">
+        <nz-table #requestsTable [nzData]="customsRequests()" [nzFrontPagination]="false" [nzShowPagination]="false">
+          <thead>
+            <tr>
+              <th>{{ 'PORTAL.SERVICE_TYPE' | translate }}</th>
+              <th>{{ 'PORTAL.DIRECTION' | translate }}</th>
+              <th>{{ 'PORTAL.ORIGIN' | translate }}</th>
+              <th>{{ 'PORTAL.DESTINATION' | translate }}</th>
+              <th>{{ 'PORTAL.PACKAGES' | translate }}</th>
+              <th>{{ 'PORTAL.GROSS_WEIGHT' | translate }}</th>
+              <th>{{ 'PORTAL.PICKUP_DATE' | translate }}</th>
+              <th>{{ 'PORTAL.STATUS' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of requestsTable.data; track r.id ?? $index) {
+              <tr>
+                <td>{{ r.service_type }}</td>
+                <td>{{ r.direction | uppercase }}</td>
+                <td>{{ r.origin_country }}</td>
+                <td>{{ r.destination_country }}</td>
+                <td>{{ r.packages }}</td>
+                <td>{{ r.gross_weight_kg }} kg</td>
+                <td>{{ r.pickup_on }}</td>
+                <td><nz-tag>{{ r.status | uppercase }}</nz-tag></td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </nz-card>
     </nz-tab>
   </nz-tabs>
 

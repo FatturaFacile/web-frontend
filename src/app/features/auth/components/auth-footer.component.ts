@@ -31,6 +31,6 @@ import { TranslatePipe } from '@shared';
 export class AuthFooterComponent {
   protected readonly year = new Date().getFullYear();
   protected readonly version = environment.appVersion;
-  protected readonly privacyUrl = environment.privacyUrl;
-  protected readonly termsUrl = environment.termsUrl;
+  protected readonly privacyUrl = environment.privacyUrl || '/privacy';
+  protected readonly termsUrl = environment.termsUrl || '/terms';
 }

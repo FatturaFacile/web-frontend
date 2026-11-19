@@ -1,11 +1,15 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, input, output, signal } from '@angular/core';
+import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzFormModule } from 'ng-zorro-antd/form';
+import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { GovAction, GovernanceApiService, TranslateService } from '@core';
-import { TranslatePipe } from '@shared';
+import { ModalActionsDirective, TranslatePipe } from '@shared';
 import { GovernanceAccess } from './governance-access.service';
 import { GovTransitionChoice, GovTransitionModalComponent } from './gov-transition-modal.component';
 import { GOV_ACTION_TRANSITIONS, GOV_NOTES_REQUIRED, govSeverityColor, govStatusColor } from './governance.shared';
@@ -29,7 +33,19 @@ export function govActionTargets(
 @Component({
   selector: 'app-gov-action-list',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DatePipe, NzButtonModule, NzTableModule, NzTagModule, TranslatePipe, GovTransitionModalComponent],
+  imports: [
+    DatePipe,
+    ReactiveFormsModule,
+    NzButtonModule,
+    NzFormModule,
+    NzInputModule,
+    NzModalModule,
+    NzTableModule,
+    NzTagModule,
+    ModalActionsDirective,
+    TranslatePipe,
+    GovTransitionModalComponent,
+  ],
   styles: `
     .overdue {
       color: var(--ff-color-danger);
@@ -79,6 +95,11 @@ export function govActionTargets(
             </td>
             <td><nz-tag [nzColor]="statusColor(action.status)">{{ 'GOVERNANCE.ACTION_STATUS.' + action.status.toUpperCase() | translate }}</nz-tag></td>
             <td>
+              @if (canEdit(action)) {
+                <button nz-button nzSize="small" [title]="'GOVERNANCE.ACTIONS.EDIT' | translate" (click)="openEdit(action)">
+                  <i class="fa-solid fa-pen"></i>
+                </button>
+              }
               @if (targetsOf(action).length > 0) {
                 <button nz-button nzSize="small" [title]="'GOVERNANCE.TRANSITION.TITLE' | translate" (click)="open(action)">
                   <i class="fa-solid fa-right-left"></i>
@@ -89,6 +110,25 @@ export function govActionTargets(
         }
       </tbody>
     </nz-table>
+
+    <nz-modal [nzVisible]="editVisible()" [nzTitle]="'GOVERNANCE.ACTIONS.EDIT' | translate" okAction="save" [nzOkDisabled]="editForm.invalid" (nzOnCancel)="editVisible.set(false)" (nzOnOk)="saveEdit()">
+      <ng-container *nzModalContent>
+        <form nz-form nzLayout="vertical" [formGroup]="editForm">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'GOVERNANCE.COMMON.TITLE' | translate }}</nz-form-label>
+            <nz-form-control><input nz-input formControlName="title" maxlength="255" /></nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label>{{ 'GOVERNANCE.COMMON.DESCRIPTION' | translate }}</nz-form-label>
+            <nz-form-control><textarea nz-input rows="3" formControlName="description"></textarea></nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'GOVERNANCE.ACTIONS.DUE_DATE' | translate }}</nz-form-label>
+            <nz-form-control><input nz-input type="date" formControlName="due_date" /></nz-form-control>
+          </nz-form-item>
+        </form>
+      </ng-container>
+    </nz-modal>
 
     <app-gov-transition-modal
       [(visible)]="visible"
@@ -121,6 +161,47 @@ export class GovActionListComponent {
     const action = this.selected();
     return action === null ? [] : govActionTargets(action, this.access);
   });
+
+  protected readonly editVisible = signal(false);
+  private readonly editing = signal<GovAction | null>(null);
+  private readonly fb = inject(NonNullableFormBuilder);
+  protected readonly editForm = this.fb.group({
+    title: ['', [Validators.required, Validators.maxLength(255)]],
+    description: [''],
+    due_date: ['', Validators.required],
+  });
+
+  /** Title, description and due date can be changed by a manager while the action is still open. */
+  protected canEdit(action: GovAction): boolean {
+    return this.access.canManage() && (action.status === 'open' || action.status === 'in_progress');
+  }
+
+  protected openEdit(action: GovAction): void {
+    this.editing.set(action);
+    this.editForm.reset({ title: action.title, description: action.description ?? '', due_date: action.due_date.slice(0, 10) });
+    this.editVisible.set(true);
+  }
+
+  protected saveEdit(): void {
+    const action = this.editing();
+    if (action === null || this.editForm.invalid) {
+      return;
+    }
+    const value = this.editForm.getRawValue();
+    this.api.updateAction(action.id, { title: value.title, description: value.description || null, due_date: value.due_date }).subscribe({
+      next: () => {
+        this.editVisible.set(false);
+        this.message.success(this.translate.instant('GOVERNANCE.COMMON.SAVED'));
+        this.changed.emit();
+      },
+      error: (error: { error?: { message?: string; errors?: Record<string, string[]> } }) => {
+        const first = Object.values(error.error?.errors ?? {})[0]?.[0] ?? error.error?.message;
+        if (first) {
+          this.message.error(first);
+        }
+      },
+    });
+  }
 
   protected targetsOf(action: GovAction): readonly string[] {
     return govActionTargets(action, this.access);

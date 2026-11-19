@@ -1,0 +1,115 @@
+:host {
+  display: block;
+}
+
+.qr-preview {
+  display: grid;
+  gap: 16px;
+
+  &__controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-end;
+
+    label {
+      display: grid;
+      gap: 4px;
+      font-size: 12px;
+    }
+  }
+
+  &__select {
+    width: 90px;
+
+    &--wide {
+      width: 220px;
+    }
+  }
+}
+
+/* Proportions of the SIX slip: 210 x 105 mm, receipt 62 mm, payment part 148 mm. */
+.slip {
+  --slip-width: 840px;
+  width: min(100%, var(--slip-width));
+  background: #fff;
+  color: #000;
+  border: 1px solid var(--ant-color-border, #d9d9d9);
+  font-family: Helvetica, Arial, sans-serif;
+
+  &__perforation {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 2px 8px;
+    border-bottom: 1px dashed #000;
+    font-size: 9px;
+  }
+
+  &__scissors {
+    font-size: 14px;
+  }
+
+  &__body {
+    display: grid;
+    grid-template-columns: 62fr 148fr;
+    min-height: calc(var(--slip-width) / 2);
+  }
+
+  &__receipt {
+    padding: 12px;
+    border-right: 1px dashed #000;
+    font-size: 9px;
+  }
+
+  &__payment {
+    padding: 12px;
+    font-size: 11px;
+  }
+
+  &__payment-grid {
+    display: grid;
+    grid-template-columns: 56fr 87fr;
+    gap: 12px;
+  }
+
+  h4 {
+    margin: 0 0 8px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  h5 {
+    margin: 8px 0 1px;
+    font-size: 6.5pt;
+    font-weight: 700;
+  }
+
+  p {
+    margin: 0;
+    line-height: 1.3;
+  }
+
+  &__blank-box {
+    height: 40px;
+    border: 1px solid #000;
+  }
+
+  &__amount-row {
+    display: flex;
+    gap: 16px;
+  }
+
+  &__acceptance {
+    margin-top: 16px;
+    text-align: right;
+    font-size: 6.5pt;
+    font-weight: 700;
+  }
+
+  img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+}

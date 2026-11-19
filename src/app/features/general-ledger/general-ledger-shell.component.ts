@@ -43,9 +43,14 @@ export class GeneralLedgerShellComponent {
     { path: 'consolidation', labelKey: 'GL.NAV_CONSOLIDATION' },
     { path: 'localization', labelKey: 'GL.NAV_LOCALIZATION' },
     { path: 'country-returns', labelKey: 'GL.NAV_COUNTRY_RETURNS' },
+    { path: 'vat-settlement', labelKey: 'GL.NAV_VAT_SETTLEMENT' },
+    { path: 'vat-settings', labelKey: 'GL.NAV_VAT_SETTINGS' },
     { path: 'lettering', labelKey: 'GL.NAV_LETTERING' },
     { path: 'us-sales-tax', labelKey: 'GL.NAV_US_SALES_TAX' },
     { path: 'us-1099', labelKey: 'GL.NAV_US_1099' },
+    { path: 'fiscal', labelKey: 'GL.NAV_FISCAL' },
+    { path: 'statements-extra', labelKey: 'GL.NAV_STATEMENTS_EXTRA' },
+    { path: 'controls', labelKey: 'GL.NAV_CONTROLS' },
     { path: 'settings', labelKey: 'GL.NAV_SETTINGS' },
   ];
 }

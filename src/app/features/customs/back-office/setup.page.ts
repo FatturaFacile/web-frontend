@@ -15,7 +15,7 @@ const MASTER_DATA_FIELDS: readonly ResourceField[] = [
 ];
 
 const SETTINGS_FIELDS: readonly ResourceField[] = [
-  rf.select('channel', ['local', 'edec']),
+  rf.select('channel', ['local', 'edec', 'passar', 'aida']),
   rf.bool('auto_retrieve'),
   rf.text('trader_identification_number', { maxLength: 17 }),
   rf.integer('declarant_number'),

@@ -1,10 +1,11 @@
 import { DatePipe } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   I18nService,
   PermissionsService,
   SDI_TRANSMISSION_STATUSES,
+  SdiNotificationLogs,
   SdiTransmission,
   SdiTransmissionsApiService,
   SdiTransmissionStatus,
@@ -15,13 +16,17 @@ import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { reportHttpError } from '../hr/shared/hr-http.util';
+import { SdiHtmlPreviewComponent } from './sdi-html-preview.component';
+import { SupplierFatturaPaImporterComponent } from './supplier-fatturapa-importer.component';
 
 const STATUS_COLORS: Record<string, string> = {
   draft: 'default',
+  generated: 'cyan',
   sending: 'processing',
   sent: 'blue',
   delivered: 'success',
@@ -31,13 +36,30 @@ const STATUS_COLORS: Record<string, string> = {
   failed: 'error',
 };
 
+interface SdiTimelineEntry {
+  id: string;
+  direction: 'in' | 'out';
+  label: string;
+  status: string | null;
+  error: string | null;
+  at: string;
+}
+
 /** History of the invoices handed to SDI: status, identifier, the last provider error and a retry for a failed transmission. */
 @Component({
   selector: 'app-sdi-transmissions',
-  imports: [DatePipe, FormsModule, NzButtonModule, NzCardModule, NzEmptyModule, NzInputModule, NzSelectModule, NzTableModule, NzTagModule, PageHeaderComponent, TranslatePipe],
+  imports: [
+    DatePipe, FormsModule, NzButtonModule, NzCardModule, NzEmptyModule, NzInputModule, NzModalModule, NzSelectModule, NzTableModule, NzTagModule,
+    PageHeaderComponent, SdiHtmlPreviewComponent, SupplierFatturaPaImporterComponent, TranslatePipe,
+  ],
   styles: ['.toolbar { display: flex; gap: var(--space-2); margin-bottom: var(--space-3); } .sdi-error { display: block; color: var(--text-secondary); }'],
   template: `
     <app-page-header [title]="'sdiTransmissions.title' | translate" [subtitle]="'sdiTransmissions.subtitle' | translate" />
+    @if (canWrite()) {
+      <nz-card [nzTitle]="'sdiTransmissions.import.title' | translate">
+        <app-supplier-fatturapa-importer (imported)="reload()" />
+      </nz-card>
+    }
     <nz-card>
       <div class="toolbar">
         <input nz-input style="width: 240px" [ngModel]="search()" (ngModelChange)="search.set($event)" (keyup.enter)="reload()" [placeholder]="'sdiTransmissions.search' | translate" [attr.aria-label]="'sdiTransmissions.search' | translate" />
@@ -71,6 +93,8 @@ const STATUS_COLORS: Record<string, string> = {
               <td>{{ row.sdi_identifier ?? '-' }}</td>
               <td>{{ row.sent_at ? (row.sent_at | date: 'short') : '-' }}</td>
               <td>
+                <button nz-button nzSize="small" type="button" (click)="openPreview(row)" data-testid="sdi-preview">{{ 'sdiTransmissions.preview' | translate }}</button>
+                <button nz-button nzSize="small" type="button" (click)="openHistory(row)" data-testid="sdi-history">{{ 'sdiTransmissions.history' | translate }}</button>
                 @if (row.can_retry && canWrite()) {
                   <button nz-button nzSize="small" type="button" (click)="retry(row)">{{ 'sdiTransmissions.retry' | translate }}</button>
                 }
@@ -83,6 +107,11 @@ const STATUS_COLORS: Record<string, string> = {
         <nz-empty [nzNotFoundContent]="'sdiTransmissions.empty' | translate"></nz-empty>
       }
     </nz-card>
+    <nz-modal [nzVisible]="previewVisible()" [nzTitle]="'sdiTransmissions.preview' | translate" nzWidth="900px" [nzFooter]="null" (nzOnCancel)="closePreview()">
+      <ng-container *nzModalContent>
+        <app-sdi-html-preview [content]="previewContent()" />
+      </ng-container>
+    </nz-modal>
   `,
 })
 export class SdiTransmissionsComponent implements OnInit {
@@ -98,6 +127,53 @@ export class SdiTransmissionsComponent implements OnInit {
   protected readonly page = signal(1);
   protected readonly status = signal<SdiTransmissionStatus | null>(null);
   protected readonly search = signal('');
+
+  protected readonly previewVisible = signal(false);
+  protected readonly previewContent = signal<Blob | null>(null);
+
+  protected readonly historyVisible = signal(false);
+  private readonly logs = signal<SdiNotificationLogs>({ outbound: [], inbound: [] });
+
+  /** Outbound sends and inbound SDI notifications merged, oldest first. */
+  protected readonly timeline = computed<SdiTimelineEntry[]>(() => {
+    const { outbound, inbound } = this.logs();
+    const entries: SdiTimelineEntry[] = [
+      ...outbound.map((log) => ({ id: `o-${log.id}`, direction: 'out' as const, label: log.action ?? log.provider ?? '', status: log.status, error: log.error, at: log.created_at })),
+      ...inbound.map((log) => ({ id: `i-${log.id}`, direction: 'in' as const, label: log.event_type ?? log.provider ?? '', status: log.status, error: log.error, at: log.processed_at ?? log.created_at })),
+    ];
+
+    return entries.sort((a, b) => a.at.localeCompare(b.at));
+  });
+
+  openHistory(row: SdiTransmission): void {
+    this.api.notifications(row.invoice_id).subscribe({
+      next: (response) => {
+        this.logs.set({ outbound: response.data?.outbound ?? [], inbound: response.data?.inbound ?? [] });
+        this.historyVisible.set(true);
+      },
+      error: (error: unknown) => reportHttpError(error, this.message, this.i18n),
+    });
+  }
+
+  closeHistory(): void {
+    this.historyVisible.set(false);
+    this.logs.set({ outbound: [], inbound: [] });
+  }
+
+  openPreview(row: SdiTransmission): void {
+    this.api.previewHtml(row.invoice_id).subscribe({
+      next: (html) => {
+        this.previewContent.set(html);
+        this.previewVisible.set(true);
+      },
+      error: (error: unknown) => reportHttpError(error, this.message, this.i18n),
+    });
+  }
+
+  closePreview(): void {
+    this.previewVisible.set(false);
+    this.previewContent.set(null);
+  }
 
   protected canWrite(): boolean {
     return this.permissions.canWrite('invoicing');

@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { icons } from '../../icons-provider';
-import { QualityApiService, QualityComplaint, QualityInstrument, SpcCharacteristic, SpcChart, TranslateService } from '@core';
+import { QualityApiService, QualityComplaint, QualityExtraApiService, QualityInstrument, SpcCharacteristic, SpcChart, TranslateService } from '@core';
 import { QualityComplaintsComponent } from './quality-complaints.component';
 import { QualityKpisComponent } from './quality-kpis.component';
 import { QualityInstrumentsComponent } from './quality-instruments.component';
@@ -14,11 +14,14 @@ import { QualitySpcComponent } from './quality-spc.component';
 const messageSpy = { success: vi.fn(), error: vi.fn(), warning: vi.fn(), info: vi.fn() };
 const translateSpy = { instant: vi.fn().mockImplementation((key: string) => key), translate: vi.fn().mockImplementation((key: string) => key) };
 
+const extraApi = { updateComplaint: vi.fn(), linkComplaint: vi.fn(), updateCharacteristic: vi.fn() };
+
 function configure(api: Record<string, unknown>): void {
   TestBed.configureTestingModule({
     providers: [
       provideRouter([]),
       { provide: QualityApiService, useValue: api },
+      { provide: QualityExtraApiService, useValue: extraApi },
       { provide: NzMessageService, useValue: messageSpy },
       { provide: TranslateService, useValue: translateSpy },
       provideNzIcons(icons),
@@ -260,5 +263,56 @@ describe('QualitySpcComponent sample deletion', () => {
 
     expect(api.deleteSpcSample).toHaveBeenCalledWith('s1');
     expect(api.getSpcChart).toHaveBeenCalledWith('c1');
+  });
+});
+
+describe('quality edit and link actions', () => {
+  const api = { getComplaints: vi.fn(), getInstruments: vi.fn(), updateInstrument: vi.fn(), getCharacteristics: vi.fn() };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    api.getComplaints.mockReturnValue(of({ data: [complaint] }));
+    api.getInstruments.mockReturnValue(of({ data: [instrument] }));
+    api.getCharacteristics.mockReturnValue(of({ data: [] }));
+    api.updateInstrument.mockReturnValue(of({ data: instrument }));
+    extraApi.updateComplaint.mockReturnValue(of({ data: complaint }));
+    extraApi.linkComplaint.mockReturnValue(of({ data: complaint }));
+    extraApi.updateCharacteristic.mockReturnValue(of({ data: {} }));
+    configure(api);
+  });
+
+  it('updates an existing complaint instead of creating one', () => {
+    const component = TestBed.createComponent(QualityComplaintsComponent).componentInstance;
+    component.openEditModal(complaint);
+    component.form.patchValue({ description: 'Burrs and scratches' });
+    component.create();
+    expect(extraApi.updateComplaint).toHaveBeenCalledWith('cmp-1', expect.objectContaining({ description: 'Burrs and scratches' }));
+  });
+
+  it('links a complaint to a nonconformity and requires a target', () => {
+    const component = TestBed.createComponent(QualityComplaintsComponent).componentInstance;
+    component.openLinkModal(complaint);
+    expect(component.linkForm.invalid).toBe(true);
+    component.linkForm.patchValue({ nonconformity_id: ' nc-1 ' });
+    component.submitLink();
+    expect(extraApi.linkComplaint).toHaveBeenCalledWith('cmp-1', { nonconformity_id: 'nc-1', capa_action_id: null });
+  });
+
+  it('updates an instrument through PUT', () => {
+    const component = TestBed.createComponent(QualityInstrumentsComponent).componentInstance;
+    component.openEditInstrument(instrument);
+    component.instrumentForm.patchValue({ name: 'Micrometer 2' });
+    component.saveInstrument();
+    expect(api.updateInstrument).toHaveBeenCalledWith('ins-1', expect.objectContaining({ name: 'Micrometer 2', tolerance: '0.05' }));
+  });
+
+  it('updates a characteristic through PUT', () => {
+    const component = TestBed.createComponent(QualitySpcComponent).componentInstance;
+    component.openEditCharacteristic({
+      id: 'ch-1', code: 'DIA', name: 'Diameter', unit: 'mm', lower_spec_limit: '9.00000', upper_spec_limit: null, target: null,
+      subgroup_size: 2, instrument_id: null, status: 'active', notes: null,
+    });
+    component.saveCharacteristic();
+    expect(extraApi.updateCharacteristic).toHaveBeenCalledWith('ch-1', expect.objectContaining({ code: 'DIA', lower_spec_limit: '9', subgroup_size: 2 }));
   });
 });

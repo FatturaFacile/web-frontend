@@ -1,5 +1,5 @@
 import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { I18nService } from '@core';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
@@ -10,14 +10,23 @@ import { rf, req } from './resource-config.helpers';
 import { ResourceFormComponent } from './resource-form.component';
 
 interface FormInternals {
-  form: { get: (path: string) => { setValue: (v: unknown) => void; errors: Record<string, unknown> | null } };
+  form: {
+    get: (path: string) => {
+      setValue: (v: unknown) => void;
+      errors: Record<string, unknown> | null;
+    };
+  };
   submit: () => void;
   addLine: (field: unknown) => void;
 }
 
 describe('ResourceFormComponent', () => {
   let fixture: ComponentFixture<ResourceFormComponent>;
-  const fields = [req(rf.decimal('quantity')), rf.text('notes'), rf.lines('lines', [rf.decimal('quantity')])];
+  const fields = [
+    req(rf.decimal('quantity')),
+    rf.text('notes'),
+    rf.lines('lines', [rf.decimal('quantity')]),
+  ];
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -48,7 +57,9 @@ describe('ResourceFormComponent', () => {
     fixture.detectChanges();
     const internals = fixture.componentInstance as unknown as FormInternals;
     internals.form.get('lines.0.quantity').setValue('1');
-    (internals.form as unknown as { get: (p: string) => { removeAt: (i: number) => void } }).get('lines').removeAt(0);
+    (internals.form as unknown as { get: (p: string) => { removeAt: (i: number) => void } })
+      .get('lines')
+      .removeAt(0);
     internals.submit();
     expect(saveFn).not.toHaveBeenCalled();
   });
@@ -66,7 +77,10 @@ describe('ResourceFormComponent', () => {
   });
 
   it('binds a 422 error to the field', () => {
-    const error = new HttpErrorResponse({ status: 422, error: { message: 'x', errors: { quantity: ['Too high'] } } });
+    const error = new HttpErrorResponse({
+      status: 422,
+      error: { message: 'x', errors: { quantity: ['Too high'] } },
+    });
     fixture.componentRef.setInput('saveFn', () => throwError(() => error));
     fixture.detectChanges();
     const internals = fixture.componentInstance as unknown as FormInternals;
@@ -116,7 +130,10 @@ describe('ResourceFormComponent', () => {
     });
 
     it('requires the end time to be after the start time on HH:mm fields', () => {
-      const { internals } = setup([rf.time('starts_at'), rf.time('ends_at', { notBefore: 'starts_at', strictlyAfter: true })]);
+      const { internals } = setup([
+        rf.time('starts_at'),
+        rf.time('ends_at', { notBefore: 'starts_at', strictlyAfter: true }),
+      ]);
       internals.form.get('starts_at').setValue('10:00');
       internals.form.get('ends_at').setValue('10:00');
       expect(internals.form.get('ends_at').errors).toEqual({ endsBeforeStart: true });
@@ -129,7 +146,11 @@ describe('ResourceFormComponent', () => {
     it('requires a field while a sibling holds the value (required_if) and bounds integers with max', () => {
       const { internals } = setup([
         rf.select('pattern', ['weekday', 'date']),
-        rf.integer('weekday', { min: 1, max: 7, requiredIf: { field: 'pattern', value: 'weekday' } }),
+        rf.integer('weekday', {
+          min: 1,
+          max: 7,
+          requiredIf: { field: 'pattern', value: 'weekday' },
+        }),
       ]);
       internals.form.get('pattern').setValue('weekday');
       expect(internals.form.get('weekday').errors).toEqual({ required: true });
@@ -152,6 +173,22 @@ describe('ResourceFormComponent', () => {
       expect(internals.form.get('cost_center_id').errors).toEqual({ prohibited: true });
       internals.form.get('scheme').setValue('B');
       expect(internals.form.get('cost_center_id').errors).toBeNull();
+    });
+
+    it('offers the installed assets as a multi-select list and submits their ids', () => {
+      const http = TestBed.inject(HttpTestingController);
+      const field = rf.multiLookup('asset_ids', 'equipmentPassports');
+      const { saveFn, internals } = setup([field]);
+      http
+        .expectOne((r) => r.url.endsWith('/esm/equipment-passports'))
+        .flush({ data: [{ id: 'p1', serial_number: 'SN-1', installation_site: 'Lugano' }] });
+      expect(field.type).toBe('multiselect');
+      expect((internals as unknown as { options: (f: unknown) => unknown }).options(field)).toEqual(
+        [{ value: 'p1', label: 'SN-1 - Lugano' }],
+      );
+      internals.form.get('asset_ids').setValue(['p1']);
+      internals.submit();
+      expect(saveFn).toHaveBeenCalledWith(expect.objectContaining({ asset_ids: ['p1'] }));
     });
 
     it('checks the shape of a json field with jsonCheck', () => {

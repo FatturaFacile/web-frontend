@@ -74,6 +74,11 @@ src/**/*.css.map
 .claude/worktrees/
 .sandbox/
 *.tmp
+.tmp-*
+ed[0-9]*.php
+ed[0-9]*.cjs
+_r.php
+plm[0-9]*.json
 
 # Agent skills installed by `npx skills` (copies/symlinks per tool): regenerated, never committed
 /skills/
@@ -86,29 +91,6 @@ src/**/*.css.map
 /.cursor/skills/
 /.gemini/skills/
 /.agy/skills/
-
-# Editor / assistant tool configuration (local only)
-/CLAUDE.md
-/AGENTS.md
-/.claude/
-/.claudeignore
-/.agy
-/.agyignore
-/.ai
-/.aiignore
-/.antigravity
-/.codex
-/.copilotignore
-/.github/copilot-instructions.md
-/.github/instructions/
-/.github/prompts/
-/.github/chatmodes/
-/.cursor/
-/.cursorignore
-/.cursorrules
-/.gemini/
-/.geminiignore
-/.windsurfrules
 
 # Storybook
 /storybook-static

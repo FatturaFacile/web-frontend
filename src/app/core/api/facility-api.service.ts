@@ -148,6 +148,11 @@ export class FacilityApiService {
     return this.http.post<FacilityResponse<FacilityServiceRequest>>(`${this.base}/service-requests`, payload);
   }
 
+  /** PUT /facility/service-requests/{id}: edits the details of a request that is still open. */
+  updateServiceRequest(id: string, payload: Partial<FacilityServiceRequestRequest>): Observable<FacilityResponse<FacilityServiceRequest>> {
+    return this.http.put<FacilityResponse<FacilityServiceRequest>>(`${this.base}/service-requests/${id}`, payload);
+  }
+
   /** A status action of a request: assign, start, hold, resolve, close, reopen, cancel, link-work-order or raise-work-order. */
   actOnServiceRequest(id: string, action: 'assign' | 'start' | 'hold' | 'resolve' | 'close' | 'reopen' | 'cancel' | 'link-work-order' | 'raise-work-order', payload: Record<string, unknown> = {}): Observable<FacilityResponse<FacilityServiceRequest>> {
     return this.http.post<FacilityResponse<FacilityServiceRequest>>(`${this.base}/service-requests/${id}/${action}`, payload);

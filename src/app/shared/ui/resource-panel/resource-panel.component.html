@@ -108,6 +108,14 @@
                       <nz-tag>{{ labels.value(cellValue(row, column)) }}</nz-tag>
                     }
                   }
+                  @case ('progress') {
+                    <nz-progress
+                      nzSize="small"
+                      [nzPercent]="progressPercent(row, column)"
+                      [nzStatus]="progressPercent(row, column) >= 80 ? 'exception' : 'normal'"
+                      [nzFormat]="progressFormat"
+                    />
+                  }
                   @case ('bool') {
                     <nz-tag [nzColor]="cellValue(row, column) ? 'success' : 'default'">{{ (cellValue(row, column) ? 'RES.YES' : 'RES.NO') | translate }}</nz-tag>
                   }

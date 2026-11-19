@@ -85,6 +85,10 @@ export const CONTRACT_AUTHORING_PAGE: ResourcePageConfig = {
         act('POST', 'RES.A.assemble_from_template', '/contract-authoring/contracts/{kind}/{id}/versions/from-template', {
           fields: [req(rf.uuid('template_id')), rf.json('variables')],
         }),
+        act('GET', 'RES.A.view_text_version', '/contract-authoring/document-versions/{versionId}', {
+          fields: [req(rf.uuid('versionId', { labelKey: 'RES.F.version_id' }))],
+          showResult: true,
+        }),
         act('GET', 'RES.A.compare_text_versions', '/contract-authoring/contracts/{kind}/{id}/versions/compare', {
           fields: [req(rf.integer('from')), req(rf.integer('to'))],
           showResult: true,

@@ -5,7 +5,7 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { icons } from '../../../icons-provider';
-import { FieldServiceApiService, I18nService, PermissionsService } from '@core';
+import { AttachmentsApiService, FieldServiceApiService, I18nService, ServiceReportsApiService, PermissionsService } from '@core';
 import { ServiceReportsComponent } from './service-reports.component';
 
 interface ReportsHarness {
@@ -51,6 +51,8 @@ describe('ServiceReportsComponent', () => {
       providers: [
         provideNzIcons(icons),
         { provide: FieldServiceApiService, useValue: api },
+        { provide: ServiceReportsApiService, useValue: { patchServiceReport: vi.fn(), deleteServiceReport: vi.fn() } },
+        { provide: AttachmentsApiService, useValue: { list: vi.fn(() => of({ data: [] })) } },
         { provide: PermissionsService, useValue: { canWrite: () => true } },
         { provide: I18nService, useValue: { currentLanguage: () => 'it', translate: (key: string) => key } },
         { provide: NzMessageService, useValue: message },

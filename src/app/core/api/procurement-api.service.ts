@@ -8,6 +8,7 @@ import {
   CreatePurchaseOrderPayload,
   CreateRequisitionPayload,
   ExecuteThreeWayMatchPayload,
+  GenerateIntegrationPayload,
   GoodsReceipt,
   InspectGoodsReceiptPayload,
   PaginatedResponse,
@@ -156,8 +157,16 @@ export class ProcurementApiService {
     return this.http.get<ApiResponse<SupplierInvoiceApproval>>(`${this.baseUrl}/supplier-invoices/${id}/approval`);
   }
 
-  scanPassiveInvoiceQrBill(payload: { qr_text: string }): Observable<ApiResponse<SupplierInvoice>> {
+  scanPassiveInvoiceQrBill(payload: { qr_payload: string; total_tax?: number | null }): Observable<ApiResponse<SupplierInvoice>> {
     return this.http.post<ApiResponse<SupplierInvoice>>(`${this.purchasesUrl}/passive-invoices/scan-qr-bill`, payload);
+  }
+
+  /**
+   * Generates the integration / self-invoice (TD17, TD18, TD19) for a foreign or reverse-charge supplier invoice.
+   * Answers 422 with `errors.supply_kind` when goods vs services must be chosen first.
+   */
+  generateIntegrationInvoice(invoiceId: string, payload: GenerateIntegrationPayload = {}): Observable<ApiResponse<unknown>> {
+    return this.http.post<ApiResponse<unknown>>(`${environment.apiBaseUrl}/sdi/supplier-invoices/${invoiceId}/generate-integration`, payload);
   }
 
   // --- Requisitions ---

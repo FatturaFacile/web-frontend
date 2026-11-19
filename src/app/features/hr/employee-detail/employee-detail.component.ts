@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
 import { EmployeeResource, HrApiService, I18nService, PermissionsService } from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
@@ -13,6 +13,7 @@ import { NzSkeletonModule } from 'ng-zorro-antd/skeleton';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { HrStatusTagComponent } from '../shared/hr-status-tag.component';
 import { reportHttpError } from '../shared/hr-http.util';
+import { EmployeeEditComponent } from './employee-edit.component';
 import { EmployeeContractsComponent } from './employee-contracts.component';
 import { EmployeeDocumentsComponent } from './employee-documents.component';
 import { EmployeeTransferComponent } from './employee-transfer.component';
@@ -35,6 +36,7 @@ import { EmployeeTransferComponent } from './employee-transfer.component';
     EmployeeContractsComponent,
     EmployeeDocumentsComponent,
     EmployeeTransferComponent,
+    EmployeeEditComponent,
   ],
   template: `
     <app-page-header [title]="employee()?.full_name ?? ('hrmEmp.title' | translate)" />
@@ -54,6 +56,7 @@ import { EmployeeTransferComponent } from './employee-transfer.component';
           </nz-descriptions>
           @if (canWrite()) {
             <app-employee-transfer class="ml-3" [employeeId]="e.id" (transferred)="load()" />
+            <app-employee-edit class="ml-3" [employee]="e" (saved)="load()" (archived)="backToList()" />
           }
         </div>
         <nz-tabs>
@@ -74,6 +77,7 @@ export class EmployeeDetailComponent {
     initialValue: '',
   });
 
+  private readonly router = inject(Router);
   private readonly api = inject(HrApiService);
   private readonly message = inject(NzMessageService);
   private readonly i18n = inject(I18nService);
@@ -89,6 +93,10 @@ export class EmployeeDetailComponent {
         this.load();
       }
     });
+  }
+
+  protected backToList(): void {
+    void this.router.navigate(['/hr/employees']);
   }
 
   protected load(): void {

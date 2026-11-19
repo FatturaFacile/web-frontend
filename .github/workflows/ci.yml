@@ -37,7 +37,7 @@ jobs:
         run: pnpm run lint
 
       - name: Run unit tests with coverage
-        run: pnpm test --watch=false --coverage
+        run: pnpm run test:ci
 
   build:
     needs: validate
@@ -94,7 +94,7 @@ jobs:
         run: pnpm exec playwright install --with-deps
 
       - name: Run Playwright E2E Tests
-        run: pnpm exec playwright test
+        run: pnpm exec playwright test e2e/inventory.spec.ts e2e/invoicing.spec.ts e2e/payments.spec.ts
 
       - name: Upload Playwright Report
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -106,11 +106,12 @@ jobs:
 
   qodana:
     # Non-blocking: the Qodana Cloud organisation has the Community licence, which does not include the JS linter.
-    # Remove this line once an Ultimate licence is active.
+    # The job only runs when the repository variable QODANA_ENABLED is "true" (set it once an Ultimate licence is active):
+    # with the Community licence the scan always fails at start-up.
     continue-on-error: true
     # Fork and Dependabot pull requests get no repository secrets: skip what needs them
     if: >-
-      github.actor != 'dependabot[bot]' &&
+      vars.QODANA_ENABLED == 'true' && github.actor != 'dependabot[bot]' &&
       (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     permissions:

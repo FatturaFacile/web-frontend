@@ -58,6 +58,10 @@ export class I18nService {
   // Cache in memoria dei dizionari per lingua
   private readonly dictionaries = signal<Record<string, TranslationDictionary>>({});
 
+  // Tracciamento chiavi di traduzione mancanti e catena di fallback configurabile
+  readonly missingKeys = new Set<string>();
+  readonly fallbackChain: SupportedLanguage[] = ['en', 'it'];
+
   // Richieste HTTP in corso per deduplicare chiamate concorrenti dello stesso tenant
   private readonly inFlightRequests = new Map<string, Promise<TranslationDictionary>>();
 
@@ -225,8 +229,23 @@ export class I18nService {
     if (!key) return '';
 
     const dict = this.currentDictionary();
-    const fallbackDict = this.dictionaries()['en'] ?? {};
-    let text = resolveTranslation(dict, key) ?? resolveTranslation(fallbackDict, key) ?? key;
+    let resolved = resolveTranslation(dict, key);
+    if (resolved === undefined) {
+      for (const fallbackLang of this.fallbackChain) {
+        if (fallbackLang === this.currentLanguage()) {
+          continue;
+        }
+        const fallbackDict = this.dictionaries()[fallbackLang];
+        resolved = resolveTranslation(fallbackDict, key);
+        if (resolved !== undefined) {
+          break;
+        }
+      }
+    }
+    if (resolved === undefined) {
+      this.missingKeys.add(key);
+    }
+    let text = resolved ?? key;
 
     if (params) {
       for (const [paramKey, paramVal] of Object.entries(params)) {

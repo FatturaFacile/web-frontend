@@ -10,6 +10,10 @@ export interface TenantSettings {
   default_currency: string;
   iban?: string | null;
   qr_iban?: string | null;
+  /** 6-digit prefix of the 27-digit QR reference derived for invoices. */
+  qrr_prefix?: string | null;
+  default_reference_type?: 'QRR' | 'SCOR' | 'NON' | null;
+  qr_bill_perforation?: 'NONE' | 'DASHED_LINE' | 'DASHED_LINE_WITH_SCISSORS' | null;
   sdi_code?: string | null;
   pec_email?: string | null;
   /** Customs approved exporter authorisation number (max 50 characters). */

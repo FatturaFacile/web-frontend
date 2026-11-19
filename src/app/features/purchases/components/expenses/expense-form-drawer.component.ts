@@ -10,6 +10,7 @@ import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import {
   CreateExpensePayload,
+  ExpenseAttachment,
   ExpensesApiService,
   ExpenseResource,
   ExpenseStatus,
@@ -17,7 +18,7 @@ import {
   LookupService,
   TranslateService,
 } from '@core';
-import { IconActionDirective, ModalActionsDirective, TranslatePipe } from '@shared';
+import { downloadBlob, IconActionDirective, ModalActionsDirective, TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-expense-form-drawer',
@@ -50,6 +51,8 @@ export class ExpenseFormDrawerComponent {
 
   protected readonly isSaving = signal(false);
   protected readonly categories = signal<LookupItemDto[]>([]);
+  protected readonly attachments = signal<ExpenseAttachment[]>([]);
+  protected readonly isUploading = signal(false);
 
   protected readonly form = this.fb.group({
     category_id: this.fb.control<string>('', [Validators.required]),
@@ -66,6 +69,7 @@ export class ExpenseFormDrawerComponent {
     effect(() => {
       const exp = this.expense();
       if (exp) {
+        this.loadAttachments(exp.id);
         this.form.patchValue({
           category_id: exp.category_id ?? '',
           date: exp.date ? new Date(exp.date) : new Date(),
@@ -76,6 +80,7 @@ export class ExpenseFormDrawerComponent {
           status: exp.status || 'draft',
         });
       } else {
+        this.attachments.set([]);
         this.form.reset({
           category_id: '',
           date: new Date(),
@@ -86,6 +91,39 @@ export class ExpenseFormDrawerComponent {
           status: 'draft',
         });
       }
+    });
+  }
+
+  /** Receipts of the expense come with the detail of the expense. */
+  private loadAttachments(expenseId: string): void {
+    this.api.getExpense(expenseId).subscribe({ next: (res) => this.attachments.set(res.data.attachments ?? []) });
+  }
+
+  protected upload(event: Event): void {
+    const exp = this.expense();
+    const input = event.target as HTMLInputElement;
+    const files = Array.from(input.files ?? []);
+    if (!exp || files.length === 0) {
+      return;
+    }
+    const body = new FormData();
+    files.forEach((file) => body.append('files[]', file));
+    this.isUploading.set(true);
+    this.api.uploadExpenseAttachment(exp.id, body).subscribe({
+      next: () => {
+        this.isUploading.set(false);
+        input.value = '';
+        this.message.success(this.translate.instant('expenses.messages.attachmentUploaded'));
+        this.loadAttachments(exp.id);
+        this.saved.emit();
+      },
+      error: () => this.isUploading.set(false),
+    });
+  }
+
+  protected download(attachment: ExpenseAttachment): void {
+    this.api.downloadExpenseAttachment(attachment.expense_id, attachment.id).subscribe({
+      next: (blob) => downloadBlob(blob, attachment.original_name),
     });
   }
 

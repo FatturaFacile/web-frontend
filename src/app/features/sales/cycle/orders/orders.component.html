@@ -101,12 +101,15 @@
         }
       </nz-descriptions>
       <app-document-lines-view [lines]="o.items ?? []" [currency]="o.currency" [showProgress]="true" />
+      @if (o.status === 'draft') {
+        <app-document-margin-guard documentType="sales_order" [documentId]="o.id" (blockedChange)="marginBlocked.set($event)" />
+      }
 
       @if (canWrite()) {
         <div class="actions">
           @if (o.status === 'draft') {
             <button nz-button appIconAction="edit" type="button" (click)="edit(o)"></button>
-            <button nz-button appIconAction="confirm" nzType="primary" type="button" [nzLoading]="working()" (click)="confirm(o)"></button>
+            <button nz-button appIconAction="confirm" nzType="primary" type="button" [nzLoading]="working()" [disabled]="marginBlocked()" (click)="confirm(o)"></button>
             <button
               nz-button appIconAction="delete"
               nzDanger

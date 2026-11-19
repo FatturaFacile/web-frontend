@@ -5,3 +5,5 @@ allowBuilds:
   msgpackr-extract: true
 minimumReleaseAgeExclude:
   - '@analogjs/vite-plugin-angular@2.9.5'
+overrides:
+  webpack-dev-middleware: '>=7.4.5'

@@ -1,0 +1,16 @@
+---
+description: Project architecture, coding standards, and quality gate commands
+globs: **/*
+alwaysApply: true
+---
+
+# Cursor AI Rules
+
+Refer to `AGENTS.md` at repository root as the canonical source of truth for all coding standards, architecture, commands, and project conventions.
+
+## Key Rules
+- Angular 22 standalone architecture (`bootstrapApplication`).
+- Native control flow (`@if`, `@for`, `@switch`) and Angular signals (`input()`, `output()`, `model()`, `computed()`).
+- `@ngrx/signals` for feature state stores.
+- Strict WCAG AA accessibility compliance.
+- Run `pnpm run lint` and `pnpm test` before finalizing tasks.

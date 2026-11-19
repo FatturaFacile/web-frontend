@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideHttpClient } from '@angular/common/http';
+import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalRef } from 'ng-zorro-antd/modal';
@@ -360,6 +360,55 @@ describe('PurchasesComponent', () => {
 
     component.submitInvoiceApproval(mockInvoice);
     expect(procurementApiMock.submitSupplierInvoiceApproval).toHaveBeenCalledWith('si-1');
+  });
+
+  describe('integration self-invoice (TD17/TD18/TD19)', () => {
+    const foreignInvoice: SupplierInvoice = { ...mockInvoice, reverse_charge: true };
+
+    it('offers the action only on foreign or reverse-charge invoices', () => {
+      expect(component.canGenerateIntegration(mockInvoice)).toBe(false);
+      expect(component.canGenerateIntegration(foreignInvoice)).toBe(true);
+      expect(component.canGenerateIntegration({ ...mockInvoice, supplier_country: 'DE' })).toBe(true);
+      expect(component.canGenerateIntegration({ ...foreignInvoice, document_type: 'TD17' })).toBe(false);
+    });
+
+    it('generates the integration invoice in one click and reports success', () => {
+      procurementApiMock.generateIntegrationInvoice = vi.fn().mockReturnValue(of({ data: { id: 'td17-1' } }));
+      component.generateIntegration(foreignInvoice);
+      expect(procurementApiMock.generateIntegrationInvoice).toHaveBeenCalledWith('si-1', {});
+      expect(messageMock.success).toHaveBeenCalled();
+      expect(component.integrationInvoice()).toBeNull();
+    });
+
+    it('asks goods vs services on a supply_kind 422 and retries with the answer', () => {
+      const unprocessable = new HttpErrorResponse({
+        status: 422,
+        error: { message: 'invalid', errors: { supply_kind: ['required'] } },
+      });
+      procurementApiMock.generateIntegrationInvoice = vi
+        .fn()
+        .mockReturnValueOnce(throwError(() => unprocessable))
+        .mockReturnValueOnce(of({ data: { id: 'td17-1' } }));
+
+      component.generateIntegration(foreignInvoice);
+      expect(component.integrationInvoice()).toBe(foreignInvoice);
+      expect(messageMock.error).not.toHaveBeenCalled();
+
+      component.integrationSupplyKind.set('services');
+      component.confirmIntegrationSupplyKind();
+      expect(procurementApiMock.generateIntegrationInvoice).toHaveBeenLastCalledWith('si-1', { supply_kind: 'services' });
+      expect(messageMock.success).toHaveBeenCalled();
+      expect(component.integrationInvoice()).toBeNull();
+    });
+
+    it('shows a failure message on other errors', () => {
+      procurementApiMock.generateIntegrationInvoice = vi
+        .fn()
+        .mockReturnValue(throwError(() => new HttpErrorResponse({ status: 500, error: { message: 'boom' } })));
+      component.generateIntegration(foreignInvoice);
+      expect(messageMock.error).toHaveBeenCalledWith('boom');
+      expect(component.integrationInvoice()).toBeNull();
+    });
   });
 
   it('marks supplier invoice as paid and uploads a received XML file', () => {

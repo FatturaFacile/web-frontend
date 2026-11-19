@@ -1,3 +1,8 @@
+import {
+  isFeatureFlagEnabled,
+  PREMATURE_OPEN_ISSUE_MODULES,
+} from '../../core/auth/feature-flag.guard';
+
 /**
  * Routes of the menu entries that have been tested and can be opened from the menu.
  *
@@ -17,6 +22,7 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/analytics/snapshots',
   '/appointments',
   '/assets/operations',
+  '/assets/lifecycle',
   '/associations',
   '/associations/access',
   '/associations/compliance',
@@ -47,6 +53,7 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/budgeting/versions',
   '/business-intelligence',
   '/business-intelligence/explorer',
+  '/business-intelligence/library',
   '/business-intelligence/measures',
   '/business-intelligence/queries',
   '/catalog',
@@ -60,7 +67,9 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/construction',
   '/construction/back-office',
   '/contract-register',
+  '/contract-register/authoring',
   '/contract-register/documents',
+  '/contract-register/operations',
   '/credit-management',
   '/credit-management/cases',
   '/credit-management/exposures',
@@ -79,21 +88,26 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/crm/engagement/reports',
   '/crm/engagement/scoring',
   '/crm/engagement/segments',
+  '/crm/lead-routing',
+  '/crm/lead-scoring',
+  '/crm/lead-sources',
+  '/crm/leads',
   '/crm/partners',
+  '/crm/prm-config',
   '/crm/suppliers',
+  '/crm/territory-accounts',
   '/crm/territories',
   '/customs/assessments',
   '/customs/free-trade-agreements',
   '/customs/operations',
   '/customs/setup',
   '/customs/taric-codes',
+  '/customs/trade-compliance',
   '/dashboard',
   '/dms',
   '/dms/workflows',
-  '/docs/intro',
-  '/docs/labels',
-  '/docs/use-cases',
   '/document-trust',
+  '/document-trust/preservation',
   '/ecommerce-integrations',
   '/exports',
   '/logistics/consignment',
@@ -143,16 +157,20 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/hr/payroll',
   '/hr/payroll-compliance',
   '/hr/payroll-data',
+  '/hr/payroll-tools',
   '/hr/recruiting',
   '/hr/shifts',
   '/hr/short-time',
   '/hr/talent',
   '/hr/time',
   '/intrastat',
+  '/inventory/book',
+  '/inventory/cost-layers',
   '/inventory/counting',
   '/inventory/customs',
   '/inventory/ddt',
   '/inventory/items',
+  '/inventory/landed-costs',
   '/inventory/lots',
   '/inventory/outbound',
   '/inventory/replenishment',
@@ -161,6 +179,7 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/inventory/stock',
   '/inventory/terminal',
   '/inventory/transfers',
+  '/inventory/valuation',
   '/inventory/warehouse',
   '/leases',
   '/leases/maturity',
@@ -172,18 +191,19 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/marketplace',
   '/marketplace/installations',
   '/marketplace/runs',
+  '/mobile',
   '/events',
   '/events/check-in',
+  '/events/admin',
   '/plm',
   '/plm/revisions',
+  '/pricing',
+  '/pricing/commercial',
   '/rebates',
   '/rebates/agreements',
   '/rebates/promotions',
-  '/modules/agenda',
-  '/modules/forms',
-  '/modules/marketing',
-  '/modules/products',
   '/planning',
+  '/planning/admin',
   '/planning/compare',
   '/planning/resources',
   '/planning/scenarios',
@@ -194,6 +214,7 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/professionals',
   '/professionals/conflicts',
   '/professionals/expenses',
+  '/professionals/manual-fee-note',
   '/professionals/proposals',
   '/professionals/trust',
   '/purchases/expenses',
@@ -219,10 +240,13 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/returns/supplier-returns',
   '/returns/warranties',
   '/sales/billing/approvals',
+  '/sales/billing/collections',
+  '/sales/billing/commissions',
   '/sales/billing/debit-notes',
   '/sales/billing/deferred',
   '/sales/billing/plans',
   '/sales/billing/reports',
+  '/sales/billing/tax-data',
   '/sales/cycle/credit',
   '/sales/cycle/delivery-notes',
   '/sales/cycle/orders',
@@ -233,25 +257,28 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/sales/invoices',
   '/sales/orders',
   '/sales/qr-bill',
+  '/sales/recurring-contracts',
   '/sales/sdi',
-  '/sectors/craft-lab',
-  '/sectors/mechanic',
-  '/sectors/sme',
   '/settings/access/audit',
   '/settings/access/delegations',
   '/settings/access/invitations',
   '/settings/access/matrix',
   '/settings/access/roles',
   '/settings/access/teams',
+  '/settings/admin/tenant-plan',
   '/settings/admin/user-tenants',
+  '/settings/corporate-group',
   '/settings/document-templates',
   '/settings/lookups',
+  '/settings/notifications',
   '/settings/sdi-channel',
   '/settings/security/enterprise',
   '/settings/tenant',
   '/settings/users',
   '/subscriptions/billing',
+  '/subscriptions/catalog',
   '/supplier-portal',
+  '/supplier-portal/self-service',
   '/supplier-portal/bank-changes',
   '/supplier-portal/documents',
   '/supplier-portal/onboardings',
@@ -274,15 +301,8 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/talent-learning/succession',
   '/talent-learning/surveys',
   '/tessera-sanitaria',
-  '/tools/camt-statement',
-  '/tools/commercial-letter',
   '/tools/margin-calculator',
-  '/tools/pdf-editor',
-  '/tools/qr-generator',
-  '/tools/qr-invoice',
   '/tools/vat-calculator',
-  '/tools/vcard-qr',
-  '/tools/working-hours',
   '/transportation',
   '/transportation/audit',
   '/transportation/carriers',
@@ -303,6 +323,7 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/wms/slotting',
   '/wms/tasks',
   '/workflows',
+  '/workflows/designer',
   '/workspace',
   // Still disabled (smoke test 2026-11-14, Enterprise Administrator of the demo tenant):
   // '/settings/admin/access-requests': needs a platform administrator (403 for the tenant admin)
@@ -310,13 +331,47 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   // '/portal': token page, not testable from the menu (demo token 404)
   // '/portal/family': token page, not testable from the menu ("Invalid or expired portal link")
   // '/visitors': kiosk page, needs a kiosk session (401)
+  // Unfinished / coming-soon placeholder pages disabled for release:
+  // '/docs/intro', '/docs/labels', '/docs/use-cases'
+  // '/modules/agenda', '/modules/forms', '/modules/marketing', '/modules/products'
+  // '/sectors/craft-lab', '/sectors/mechanic', '/sectors/sme'
+  // '/tools/camt-statement', '/tools/commercial-letter', '/tools/pdf-editor', '/tools/qr-generator', '/tools/qr-invoice', '/tools/vcard-qr', '/tools/working-hours'
+];
+
+export const DISABLED_PLACEHOLDER_ROUTES: readonly string[] = [
+  '/docs/intro',
+  '/docs/labels',
+  '/docs/use-cases',
+  '/modules/agenda',
+  '/modules/forms',
+  '/modules/marketing',
+  '/modules/products',
+  '/sectors/craft-lab',
+  '/sectors/mechanic',
+  '/sectors/sme',
+  '/tools/camt-statement',
+  '/tools/commercial-letter',
+  '/tools/pdf-editor',
+  '/tools/qr-generator',
+  '/tools/qr-invoice',
+  '/tools/vcard-qr',
+  '/tools/working-hours',
 ];
 
 export function isMenuRouteTested(
   route: string | undefined,
   tested: readonly string[] = TESTED_MENU_ROUTES,
 ): boolean {
-  return route !== undefined && tested.includes(route);
+  if (route === undefined || !tested.includes(route)) {
+    return false;
+  }
+  const prematureEntry = Object.entries(PREMATURE_OPEN_ISSUE_MODULES).find(
+    ([, meta]) => route === meta.routePrefix || route.startsWith(`${meta.routePrefix}/`),
+  );
+  if (prematureEntry && !isFeatureFlagEnabled(prematureEntry[0])) {
+    return false;
+  }
+  return true;
 }
 
 /** Lower case without accents, so that "contabilita" finds "Contabilità". */

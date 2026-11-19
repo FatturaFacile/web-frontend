@@ -189,6 +189,7 @@
 <nz-modal
   [nzVisible]="qrModalVisible()"
   [nzTitle]="'SALES.LBL_SWISS_QR_BILL_POLIZZA_DI_VERSAMENTO' | translate"
+  nzWidth="920px"
   [nzFooter]="qrModalFooter"
   (nzOnCancel)="qrModalVisible.set(false)"
 >
@@ -203,6 +204,9 @@
           <div><strong>{{ 'SALES.LBL_RIFERIMENTO' | translate }}</strong> {{ qr.reference || 'N/A' }}</div>
         </div>
       </div>
+    }
+    @if (qrModalVisible() && qrInvoiceId(); as invoiceId) {
+      <app-qr-bill-preview [invoiceId]="invoiceId" />
     }
   </ng-container>
   <ng-template #qrModalFooter>

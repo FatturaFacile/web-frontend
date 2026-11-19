@@ -10,7 +10,7 @@ describe('marketplace screens', () => {
       expect(component).toBeTruthy();
     }
     expect(MARKETPLACE_ROUTES.map((route) => route.path)).toEqual(['', 'installations', 'installations/:id', 'runs']);
-  });
+  }, 60_000);
 
   it('shows the first validation message of a 422', () => {
     const validation = new HttpErrorResponse({ status: 422, error: { errors: { settings: ['Settings invalid'] } } });

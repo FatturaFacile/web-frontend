@@ -80,11 +80,11 @@
             <nz-card class="webhook-card" [nzTitle]="ch.name">
               <div class="webhook-row">
                 <span class="label"><strong>{{ 'ECOMMERCE_INTEGRATIONS.LBL_URL_ENDPOINT' | translate }}</strong></span>
-                <code>https://api.fatturafacile.eu/api/v1/webhooks/ecommerce/{{ ch.uuid || ch.id }}</code>
+                <code>{{ apiBaseUrl }}/webhooks/ecommerce/{{ ch.uuid || ch.id }}</code>
                 <button
                   nz-button
                   nzSize="small"
-                  (click)="copyToClipboard('https://api.fatturafacile.eu/api/v1/webhooks/ecommerce/' + (ch.uuid || ch.id))"
+                  (click)="copyToClipboard(apiBaseUrl + '/webhooks/ecommerce/' + (ch.uuid || ch.id))"
                 >
                   <span nz-icon nzType="copy"></span>
                   {{ 'ECOMMERCE_INTEGRATIONS.COPY' | translate }}

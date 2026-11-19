@@ -188,6 +188,14 @@ describe('ProcurementApiService', () => {
     reqGet.flush({ success: true, message: 'OK', data: { invoice_id: 'si-1', approval_status: 'match_blocked', steps: [] } });
   });
 
+  it('generates the integration self-invoice of a supplier invoice', () => {
+    service.generateIntegrationInvoice('si-1', { supply_kind: 'services' }).subscribe();
+    const req = httpTesting.expectOne(`${environment.apiBaseUrl}/sdi/supplier-invoices/si-1/generate-integration`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ supply_kind: 'services' });
+    req.flush({ data: { id: 'td17-1' } }, { status: 201, statusText: 'Created' });
+  });
+
   it('records the inspection per receipt line and lists suppliers', () => {
     service.inspectGoodsReceipt('grn-1', { results: [{ purchase_receipt_line_id: 'l-1', quantity_released: 8 }] }).subscribe();
     const reqInspect = httpTesting.expectOne(`${baseUrl}/goods-receipts/grn-1/inspection`);

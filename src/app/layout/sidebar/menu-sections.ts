@@ -120,6 +120,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             module: 'crm',
           },
           {
+            key: 'NAV.CRM_PRM_CONFIG',
+            route: '/crm/prm-config',
+            icon: 'fa-solid fa-sliders',
+            module: 'crm',
+          },
+          {
             key: 'NAV.CRMEXT_PARTNERS',
             route: '/crm/partners',
             icon: 'fa-solid fa-handshake',
@@ -166,6 +172,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             key: 'NAV.QR_BILL',
             route: '/sales/qr-bill',
             icon: 'fa-solid fa-qrcode',
+            module: 'invoicing',
+          },
+          {
+            key: 'NAV.RECURRING_CONTRACTS',
+            route: '/sales/recurring-contracts',
+            icon: 'fa-solid fa-arrows-spin',
             module: 'invoicing',
           },
           {
@@ -241,6 +253,24 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             module: 'invoicing',
           },
           {
+            key: 'NAV.SC_COLLECTIONS',
+            route: '/sales/billing/collections',
+            icon: 'fa-solid fa-hand-holding-dollar',
+            module: 'invoicing',
+          },
+          {
+            key: 'NAV.SC_TAX_DATA',
+            route: '/sales/billing/tax-data',
+            icon: 'fa-solid fa-file-shield',
+            module: 'invoicing',
+          },
+          {
+            key: 'NAV.SC_COMMISSIONS',
+            route: '/sales/billing/commissions',
+            icon: 'fa-solid fa-percent',
+            module: 'invoicing',
+          },
+          {
             key: 'NAV.CAT_MASTER_DATA',
             route: '/catalog',
             icon: 'fa-solid fa-boxes-stacked',
@@ -250,6 +280,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             key: 'NAV.SUBX_BILLING',
             route: '/subscriptions/billing',
             icon: 'fa-solid fa-arrows-rotate',
+            module: 'subscriptions',
+          },
+          {
+            key: 'NAV.SUBX_CATALOG',
+            route: '/subscriptions/catalog',
+            icon: 'fa-solid fa-boxes-packing',
             module: 'subscriptions',
           },
         ],
@@ -357,6 +393,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         module: 'assets',
       },
       {
+        key: 'NAV.ASSET_LIFECYCLE',
+        icon: 'fa-solid fa-arrows-rotate',
+        route: '/assets/lifecycle',
+        module: 'assets',
+      },
+      {
         key: 'NAV.EXPORTS',
         icon: 'fa-solid fa-file-export',
         route: '/exports',
@@ -405,6 +447,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             module: 'payroll',
           },
           {
+            key: 'NAV.HR_PAYROLL_TOOLS',
+            route: '/hr/payroll-tools',
+            icon: 'fa-solid fa-calculator',
+            module: 'payroll',
+          },
+          {
             key: 'NAV.HR_PAYROLL_COMPLIANCE',
             route: '/hr/payroll-compliance',
             icon: 'fa-solid fa-scale-balanced',
@@ -415,6 +463,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             route: '/hr/short-time',
             icon: 'fa-solid fa-helmet-safety',
             module: 'payroll',
+          },
+          {
+            key: 'NAV.HR_MOBILE',
+            route: '/mobile',
+            icon: 'fa-solid fa-mobile-screen',
+            module: 'hr',
           },
           {
             key: 'NAV.HR_TALENT',
@@ -523,6 +577,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             key: 'NAV.CUSTOMS',
             route: '/inventory/customs',
             icon: 'fa-solid fa-passport',
+            module: 'customs',
+          },
+          {
+            key: 'NAV.CUSTOMS_TRADE_COMPLIANCE',
+            route: '/customs/trade-compliance',
+            icon: 'fa-solid fa-earth-europe',
             module: 'customs',
           },
           {
@@ -679,6 +739,7 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
           { key: 'NAV.SUPPLIER_PORTAL_DOCUMENTS', route: '/supplier-portal/documents', icon: 'fa-solid fa-file-circle-check', module: 'supplier_portal' },
           { key: 'NAV.SUPPLIER_PORTAL_QUALIFICATION', route: '/supplier-portal/qualification', icon: 'fa-solid fa-ranking-star', module: 'supplier_portal' },
           { key: 'NAV.SUPPLIER_PORTAL_BANK_CHANGES', route: '/supplier-portal/bank-changes', icon: 'fa-solid fa-building-columns', module: 'supplier_portal' },
+          { key: 'NAV.SUPPLIER_PORTAL_BACK_OFFICE', route: '/supplier-portal/back-office', icon: 'fa-solid fa-sliders', module: 'supplier_portal' },
           { key: 'NAV.SUPPLIER_PORTAL_SELF_SERVICE', route: '/supplier-portal/self-service', icon: 'fa-solid fa-store', module: 'supplier_portal' },
           { key: 'NAV.SUPPLIER_PORTAL_RFQ_RESPONSES', route: '/supplier-portal/rfq-responses', icon: 'fa-solid fa-scale-balanced', module: 'supplier_portal' },
         ],
@@ -810,6 +871,7 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
           { key: 'NAV.BI_EXPLORER', route: '/business-intelligence/explorer', icon: 'fa-solid fa-table-cells', module: 'business_intelligence' },
           { key: 'NAV.BI_QUERIES', route: '/business-intelligence/queries', icon: 'fa-solid fa-bookmark', module: 'business_intelligence' },
           { key: 'NAV.BI_MEASURES', route: '/business-intelligence/measures', icon: 'fa-solid fa-square-root-variable', module: 'business_intelligence' },
+          { key: 'NAV.BI_LIBRARY', route: '/business-intelligence/library', icon: 'fa-solid fa-folder-tree', module: 'business_intelligence' },
         ],
       },
       {
@@ -829,6 +891,7 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         children: [
           { key: 'NAV.EVENTS_LIST', route: '/events', icon: 'fa-solid fa-ticket', module: 'events' },
           { key: 'NAV.EVENTS_CHECKIN', route: '/events/check-in', icon: 'fa-solid fa-qrcode', module: 'events' },
+          { key: 'NAV.EVENTS_ADMIN', route: '/events/admin', icon: 'fa-solid fa-list-check', module: 'events' },
         ],
       },
       {
@@ -838,6 +901,15 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         children: [
           { key: 'NAV.PLM_CHANGE_ORDERS', route: '/plm', icon: 'fa-solid fa-file-pen', module: 'plm' },
           { key: 'NAV.PLM_REVISIONS', route: '/plm/revisions', icon: 'fa-solid fa-layer-group', module: 'plm' },
+        ],
+      },
+      {
+        key: 'NAV.PRICING_MANAGEMENT',
+        icon: 'fa-solid fa-money-bill-trend-up',
+        module: 'pricing',
+        children: [
+          { key: 'NAV.PRICING_LISTS', route: '/pricing', icon: 'fa-solid fa-list-ol', module: 'pricing' },
+          { key: 'NAV.PRICING_COMMERCIAL', route: '/pricing/commercial', icon: 'fa-solid fa-tags', module: 'pricing' },
         ],
       },
       {
@@ -887,6 +959,7 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
           { key: 'NAV.PLANNING_SCENARIOS', route: '/planning/scenarios', icon: 'fa-solid fa-layer-group', module: 'planning' },
           { key: 'NAV.PLANNING_COMPARE', route: '/planning/compare', icon: 'fa-solid fa-code-compare', module: 'planning' },
           { key: 'NAV.PLANNING_RESOURCES', route: '/planning/resources', icon: 'fa-solid fa-industry', module: 'planning' },
+          { key: 'NAV.PLANNING_ADMIN', route: '/planning/admin', icon: 'fa-solid fa-screwdriver-wrench', module: 'planning' },
         ],
       },
       {
@@ -1043,6 +1116,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         module: 'workflow',
       },
       {
+        key: 'NAV.WORKFLOW_DESIGN',
+        icon: 'fa-solid fa-code-branch',
+        route: '/workflows/designer',
+        module: 'workflow_design',
+      },
+      {
         key: 'NAV.DMS',
         icon: 'fa-solid fa-folder-tree',
         module: 'documents',
@@ -1066,6 +1145,18 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             key: 'NAV.CONTRACT_DOCUMENTS',
             route: '/contract-register/documents',
             icon: 'fa-solid fa-paperclip',
+            module: 'contracts',
+          },
+          {
+            key: 'RES.PAGE.CONTRACT_AUTHORING',
+            route: '/contract-register/authoring',
+            icon: 'fa-solid fa-feather-pointed',
+            module: 'contracts',
+          },
+          {
+            key: 'RES.PAGE.CONTRACT_OPERATIONS',
+            route: '/contract-register/operations',
+            icon: 'fa-solid fa-sliders',
             module: 'contracts',
           },
         ],
@@ -1325,6 +1416,7 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
           { key: 'NAV.PRACTICE_CONFLICTS', route: '/professionals/conflicts', icon: 'fa-solid fa-user-shield', module: 'professionals' },
           { key: 'NAV.PRACTICE_EXPENSES', route: '/professionals/expenses', icon: 'fa-solid fa-receipt', module: 'professionals' },
           { key: 'NAV.PRACTICE_TRUST', route: '/professionals/trust', icon: 'fa-solid fa-vault', module: 'professionals' },
+          { key: 'Parcella manuale', route: '/professionals/manual-fee-note', icon: 'fa-solid fa-file-invoice-dollar', module: 'professionals' },
         ],
       },
       {
@@ -1541,6 +1633,8 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
           { key: 'NAV.ACCESS_AUDIT', route: '/settings/access/audit', icon: 'fa-solid fa-clock-rotate-left', module: 'system' },
           { key: 'NAV.PRIVACY_COMPLIANCE', route: '/settings/privacy/compliance', icon: 'fa-solid fa-user-shield', module: 'system' },
           { key: 'NAV.ENTERPRISE_SECURITY', route: '/settings/security/enterprise', icon: 'fa-solid fa-shield-halved', module: 'system' },
+          { key: 'Webhook', route: '/settings/webhooks', icon: 'fa-solid fa-satellite-dish', module: 'system' },
+          { key: 'Tag condivisi', route: '/settings/tags', icon: 'fa-solid fa-tags', module: 'system' },
         ],
       },
     ],

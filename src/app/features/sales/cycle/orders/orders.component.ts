@@ -33,6 +33,7 @@ import {
   PageHeaderComponent,
   TableColumnDef,
   TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { DocumentMarginGuardComponent } from '../../../pricing/document-margin-guard.component';
 import { CycleOrdersFacade } from '../cycle.facades';
 import { DeliveryNoteFormModalComponent, DeliveryNoteSource } from '../shared/delivery-note-form-modal.component';
 import { DocumentFormModalComponent } from '../shared/document-form-modal.component';
@@ -51,6 +52,7 @@ const FULFILLABLE = ['confirmed', 'approved', 'in_production', 'shipped'];
   imports: [
     GridExportDirective,
     GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    DocumentMarginGuardComponent,
     ModalActionsDirective,
     IconActionDirective,
     DatePipe,
@@ -105,6 +107,7 @@ export class CycleOrdersComponent {
   protected readonly billingMode = signal<OrderBillingMode>('partial');
   protected readonly cancelOpen = signal(false);
   protected readonly working = signal(false);
+  protected readonly marginBlocked = signal(false);
   protected readonly availability = signal<OrderAvailability | null>(null);
   protected cancelReason = '';
   protected warehouseId: string | null = null;

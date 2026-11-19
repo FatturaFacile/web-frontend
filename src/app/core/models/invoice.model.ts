@@ -155,6 +155,12 @@ export interface SwissQrBillData {
   iban: string;
   currency: string;
   amount: number;
+  formatted_iban?: string;
+  formatted_reference?: string | null;
+  formatted_amount?: string;
+  creditor_lines?: string[];
+  debtor_lines?: string[] | null;
+  message?: string | null;
 }
 
 export interface BulkSdiResult {

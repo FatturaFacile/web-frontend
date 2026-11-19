@@ -10,6 +10,7 @@ import { PcBudgetComponent } from './pc-budget.component';
 import { PcChangeOrdersComponent } from './pc-change-orders.component';
 import { PcCostsComponent } from './pc-costs.component';
 import { PcMilestonesComponent } from './pc-milestones.component';
+import { PcToolsComponent } from './pc-tools.component';
 
 @Component({
   selector: 'app-project-control',
@@ -25,6 +26,7 @@ import { PcMilestonesComponent } from './pc-milestones.component';
     PcChangeOrdersComponent,
     PcCostsComponent,
     PcMilestonesComponent,
+    PcToolsComponent,
   ],
   template: `
     <app-page-header [title]="'PRJ.CONTROL_TITLE' | translate" [subtitle]="'PRJ.CONTROL_SUBTITLE' | translate" />
@@ -37,6 +39,8 @@ import { PcMilestonesComponent } from './pc-milestones.component';
         <nz-tab [nzTitle]="'PRJ.TAB_COSTS' | translate"><app-pc-costs [projectId]="id" /></nz-tab>
         <nz-tab [nzTitle]="'PRJ.TAB_BILLING' | translate"><app-pc-billing [projectId]="id" /></nz-tab>
         <nz-tab [nzTitle]="'PRJ.TAB_ANALYSIS' | translate"><app-pc-analysis [projectId]="id" /></nz-tab>
+        <nz-tab [nzTitle]="'PRJ.TAB_TOOLS' | translate"><app-pc-tools [projectId]="id" /></nz-tab>
+        <nz-tab [nzTitle]="'PRJ.TAB_TOOLS' | translate"><app-pc-tools [projectId]="id" /></nz-tab>
       </nz-tabs>
     }
   `,
