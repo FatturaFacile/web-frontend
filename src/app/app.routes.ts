@@ -298,6 +298,13 @@ export const routes: Routes = [
       import('./features/configurator/configurator.routes').then((m) => m.CONFIGURATOR_ROUTES),
   },
   {
+    path: 'privacy-governance',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'PRIVACY.NAV.TITLE', title: 'PRIVACY.NAV.TITLE' },
+    loadChildren: () =>
+      import('./features/privacy-governance/privacy-governance.routes').then((m) => m.PRIVACY_GOVERNANCE_ROUTES),
+  },
+  {
     path: 'governance',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.GOVERNANCE', title: 'PAGE_TITLE.GOVERNANCE_RISK_COMPLIANCE' },

@@ -1666,6 +1666,18 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
     key: 'NAV.SECTION_SYSTEM',
     items: [
       {
+        key: 'PRIVACY.NAV.TITLE',
+        icon: 'fa-solid fa-user-shield',
+        module: 'system',
+        children: [
+          { key: 'PRIVACY.NAV.DASHBOARD', route: '/privacy-governance/dashboard', icon: 'fa-solid fa-gauge-high', module: 'system' },
+          { key: 'PRIVACY.NAV.ROPA', route: '/privacy-governance/ropa', icon: 'fa-solid fa-book', module: 'system' },
+          { key: 'PRIVACY.NAV.DSAR', route: '/privacy-governance/dsar', icon: 'fa-solid fa-inbox', module: 'system' },
+          { key: 'PRIVACY.NAV.BREACHES', route: '/privacy-governance/breaches', icon: 'fa-solid fa-triangle-exclamation', module: 'system' },
+          { key: 'PRIVACY.NAV.CONSENT_RETENTION', route: '/privacy-governance/consent-retention', icon: 'fa-solid fa-clock-rotate-left', module: 'system' },
+        ],
+      },
+      {
         key: 'NAV.SETTINGS',
         icon: 'fa-solid fa-gears',
         module: 'system',
