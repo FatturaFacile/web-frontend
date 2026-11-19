@@ -963,6 +963,18 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         ],
       },
       {
+        key: 'NAV.CONTROLLING',
+        icon: 'fa-solid fa-chart-pie',
+        module: 'controlling',
+        children: [
+          { key: 'NAV.CONTROLLING_MARGINS', route: '/controlling/margins', icon: 'fa-solid fa-chart-pie', module: 'controlling' },
+          { key: 'NAV.CONTROLLING_WORKING_CAPITAL', route: '/controlling/working-capital', icon: 'fa-solid fa-coins', module: 'controlling' },
+          { key: 'NAV.CONTROLLING_COST_CENTERS', route: '/controlling/cost-centers', icon: 'fa-solid fa-sitemap', module: 'controlling' },
+          { key: 'NAV.CONTROLLING_VARIANCE', route: '/controlling/variance', icon: 'fa-solid fa-scale-unbalanced', module: 'controlling' },
+          { key: 'NAV.CONTROLLING_BUDGETS', route: '/controlling/budgets', icon: 'fa-solid fa-table-cells', module: 'controlling' },
+        ],
+      },
+      {
         key: 'NAV.BUDGETING',
         icon: 'fa-solid fa-scale-balanced',
         module: 'budgeting',

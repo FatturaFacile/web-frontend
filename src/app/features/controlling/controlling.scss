@@ -1,0 +1,126 @@
+.control-bar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--border-color, #f0f0f0);
+  border-radius: 8px;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 16px;
+
+  a {
+    padding: 8px 14px;
+    border-radius: 6px;
+    color: var(--text-secondary);
+    text-decoration: none;
+
+    &.active {
+      background: var(--primary-color, #1677ff);
+      color: #fff;
+    }
+  }
+}
+
+.kpi-ribbon {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.kpi {
+  padding: 12px 14px;
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--border-color, #f0f0f0);
+  border-radius: 8px;
+
+  .label {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  .value {
+    font-size: 20px;
+    font-weight: 600;
+  }
+}
+
+.badge-up {
+  color: #389e0d;
+}
+
+.badge-down {
+  color: #cf1322;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.chart {
+  width: 100%;
+  height: auto;
+  font-size: 11px;
+}
+
+.chart text {
+  fill: var(--text-secondary, #666);
+}
+
+.bar-track {
+  height: 8px;
+  border-radius: 4px;
+  background: #f0f0f0;
+  overflow: hidden;
+
+  > span {
+    display: block;
+    height: 100%;
+    background: var(--primary-color, #1677ff);
+  }
+}
+
+.heat-cell {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.banner {
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  border-radius: 8px;
+  background: var(--primary-color, #1677ff);
+  color: #fff;
+  font-size: 16px;
+}
+
+.grid-input {
+  width: 92px;
+  text-align: right;
+}
+
+.locked-month {
+  background: #fafafa;
+  color: var(--text-secondary);
+}
