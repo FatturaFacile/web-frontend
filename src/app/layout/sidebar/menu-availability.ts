@@ -104,6 +104,7 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/crm/territory-accounts',
   '/crm/territories',
   '/customs/assessments',
+  '/customs/foreign-trade',
   '/customs/free-trade-agreements',
   '/customs/operations',
   '/customs/setup',
