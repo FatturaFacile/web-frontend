@@ -1,9 +1,9 @@
 import { test, expect, type Page, type Cookie } from '@playwright/test';
 
 const RUN_ID = `E2E-${Date.now()}`;
-const IT_TENANT_ID = '01a1f065-ffff-7ed4-b8c7-fb13a43a5b71';
-const CH_TENANT_ID = '01a1f066-0002-7364-a19d-6ed940ef06a6';
-const ADMIN_USER_ID = '01a1f066-0248-7856-9103-fc137cc6e401';
+let resolvedItTenantId = '01a1f065-ffff-7ed4-b8c7-fb13a43a5b71';
+let resolvedChTenantId = '01a1f066-0002-7364-a19d-6ed940ef06a6';
+let resolvedAdminUserId = '01a1f066-0248-7856-9103-fc137cc6e401';
 
 let cachedCrudCookies: Cookie[] | null = null;
 const cachedCrudGetResponses = new Map<string, { status: number; body: string }>();
@@ -18,41 +18,10 @@ function enqueueCrudApiFetch<T>(task: () => Promise<T>): Promise<T> {
   return next;
 }
 
-async function authenticateAgainstLiveBackend(page: Page, tenantId: string = IT_TENANT_ID): Promise<void> {
-  const adminUser = {
-    id: ADMIN_USER_ID,
-    name: 'Enterprise Administrator',
-    email: 'admin@demo-group.com',
-    role: 'owner',
-    roles: ['owner', 'admin'],
-    permissions: ['*'],
-    is_platform_admin: true,
-    two_factor_enabled: true,
-    locale: 'it',
-    active_tenant: {
-      id: tenantId,
-      name: tenantId === CH_TENANT_ID ? 'Fattura Facile Schweiz AG' : 'Fattura Facile Italia S.r.l.',
-      country: tenantId === CH_TENANT_ID ? 'CH' : 'IT',
-      role: 'owner',
-    },
-    tenants: [
-      {
-        id: IT_TENANT_ID,
-        name: 'Fattura Facile Italia S.r.l.',
-        country: 'IT',
-        role: 'owner',
-        permissions: ['*'],
-      },
-      {
-        id: CH_TENANT_ID,
-        name: 'Fattura Facile Schweiz AG',
-        country: 'CH',
-        role: 'owner',
-        permissions: ['*'],
-      },
-    ],
-  };
-
+async function authenticateAgainstLiveBackend(
+  page: Page,
+  targetCountry: 'IT' | 'CH' = 'IT',
+): Promise<void> {
   if (!cachedCrudCookies) {
     const csrfRes = await page.request.get('/sanctum/csrf-cookie');
     const setCookies = csrfRes.headersArray().filter((h) => h.name.toLowerCase() === 'set-cookie');
@@ -63,7 +32,7 @@ async function authenticateAgainstLiveBackend(page: Page, tenantId: string = IT_
         xsrf = decodeURIComponent(m[1]);
       }
     }
-    await page.request.post('/api/v1/auth/login', {
+    const loginRes = await page.request.post('/api/v1/auth/login', {
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
@@ -71,18 +40,78 @@ async function authenticateAgainstLiveBackend(page: Page, tenantId: string = IT_
         Referer: 'https://localhost:4200/login',
         'X-Requested-With': 'XMLHttpRequest',
         'X-XSRF-TOKEN': xsrf,
-        'X-Tenant-Id': tenantId,
       },
       data: {
         email: 'admin@demo-group.com',
         password: 'Password123!',
-        tenant_id: tenantId,
       },
     });
+    expect(loginRes.ok()).toBeTruthy();
+    const loginJson = (await loginRes.json()) as {
+      data?: {
+        user?: { id?: string };
+        active_tenant?: { id?: string; name?: string; country?: string };
+        available_tenants?: { id?: string; name?: string; country?: string }[];
+      };
+    };
+    if (loginJson?.data?.user?.id) {
+      resolvedAdminUserId = String(loginJson.data.user.id);
+    }
+    const available = Array.isArray(loginJson?.data?.available_tenants)
+      ? loginJson.data.available_tenants
+      : [];
+    const itTenant =
+      available.find((t) => t.name === 'Fattura Facile Italia S.r.l.') ??
+      available.find((t) => t.country === 'IT') ??
+      loginJson?.data?.active_tenant;
+    const chTenant =
+      available.find((t) => t.name === 'Fattura Facile Schweiz AG') ??
+      available.find((t) => t.country === 'CH');
+    if (itTenant?.id) {
+      resolvedItTenantId = String(itTenant.id);
+    }
+    if (chTenant?.id) {
+      resolvedChTenantId = String(chTenant.id);
+    }
     cachedCrudCookies = await page.context().cookies();
   } else {
     await page.context().addCookies(cachedCrudCookies);
   }
+
+  const tenantId = targetCountry === 'CH' ? resolvedChTenantId : resolvedItTenantId;
+  const adminUser = {
+    id: resolvedAdminUserId,
+    name: 'Enterprise Administrator',
+    email: 'admin@demo-group.com',
+    role: 'owner',
+    roles: ['owner', 'admin'],
+    permissions: ['*'],
+    is_platform_admin: true,
+    two_factor_enabled: true,
+    locale: 'it',
+    active_tenant: {
+      id: tenantId,
+      name: targetCountry === 'CH' ? 'Fattura Facile Schweiz AG' : 'Fattura Facile Italia S.r.l.',
+      country: targetCountry,
+      role: 'owner',
+    },
+    tenants: [
+      {
+        id: resolvedItTenantId,
+        name: 'Fattura Facile Italia S.r.l.',
+        country: 'IT',
+        role: 'owner',
+        permissions: ['*'],
+      },
+      {
+        id: resolvedChTenantId,
+        name: 'Fattura Facile Schweiz AG',
+        country: 'CH',
+        role: 'owner',
+        permissions: ['*'],
+      },
+    ],
+  };
 
   await page.addInitScript(
     ({ user, tid }) => {
@@ -207,8 +236,9 @@ async function apiRequestInBrowser(
   method: string,
   path: string,
   body?: unknown,
-  tenantId: string = IT_TENANT_ID,
+  tenantId?: string,
 ): Promise<{ status: number; data: ApiResponsePayload | null }> {
+  const activeTenantId = tenantId ?? resolvedItTenantId;
   return page.evaluate(
     async ({ m, p, b, tid, uid }) => {
       const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/);
@@ -234,7 +264,7 @@ async function apiRequestInBrowser(
       }
       return { status: res.status, data: json };
     },
-    { m: method, p: path, b: body, tid: tenantId, uid: ADMIN_USER_ID },
+    { m: method, p: path, b: body, tid: activeTenantId, uid: resolvedAdminUserId },
   );
 }
 
@@ -293,7 +323,7 @@ test.describe('Part 2: Full End-to-End UI CRUD Lifecycle Suite', () => {
 
   test('1. CRM Contacts & Customer 360 (#80, #194): UI Create -> Read/Search -> Customer 360 -> Update -> Reload -> Delete', async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 });
-    await authenticateAgainstLiveBackend(page, IT_TENANT_ID);
+    await authenticateAgainstLiveBackend(page);
 
     await navigateInCrudSpa(page, '/crm/clients');
     await expect(page).toHaveURL(/\/crm\/clients/);
@@ -364,7 +394,7 @@ test.describe('Part 2: Full End-to-End UI CRUD Lifecycle Suite', () => {
 
   test('2. Catalog Products & Inventory/DDT (#84, #142, #144, #158): UI Create Product -> Read/Update -> Reload -> Delete', async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 });
-    await authenticateAgainstLiveBackend(page, IT_TENANT_ID);
+    await authenticateAgainstLiveBackend(page);
 
     await navigateInCrudSpa(page, '/inventory/stock');
     await expect(page).toHaveURL(/\/inventory\/stock/);
@@ -419,7 +449,7 @@ test.describe('Part 2: Full End-to-End UI CRUD Lifecycle Suite', () => {
 
   test('3. Sales Invoices, Italian Fiscal Preview (#286) & Swiss QR-Bill (#87): Create -> Preview -> Update -> Reload -> Delete', async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 });
-    await authenticateAgainstLiveBackend(page, IT_TENANT_ID);
+    await authenticateAgainstLiveBackend(page);
 
     await navigateInCrudSpa(page, '/sales/invoices');
     await expect(page).toHaveURL(/\/sales\/invoices/);
@@ -503,7 +533,7 @@ test.describe('Part 2: Full End-to-End UI CRUD Lifecycle Suite', () => {
 
   test('4. Recurring Contracts & Subscriptions (#88, #138): KPI format check + Create -> Update -> Reload -> Delete', async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 });
-    await authenticateAgainstLiveBackend(page, IT_TENANT_ID);
+    await authenticateAgainstLiveBackend(page);
 
     await navigateInCrudSpa(page, '/sales/recurring-contracts');
     await expect(page).toHaveURL(/\/sales\/recurring-contracts/);
@@ -568,7 +598,7 @@ test.describe('Part 2: Full End-to-End UI CRUD Lifecycle Suite', () => {
 
   test('5. HR Recruiting ATS (#273): Verify route resolution (/hr/recruiting -> /hr/recruiting/openings) & Opening CRUD', async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 });
-    await authenticateAgainstLiveBackend(page, IT_TENANT_ID);
+    await authenticateAgainstLiveBackend(page);
 
     await navigateInCrudSpa(page, '/hr/recruiting');
     await expect(page).toHaveURL(/\/hr\/recruiting\/openings/);
@@ -587,7 +617,7 @@ test.describe('Part 2: Full End-to-End UI CRUD Lifecycle Suite', () => {
 
   test('6. Support Tickets (#43) & Intrastat (#145): Ticket lifecycle & Intrastat periodicity/declarations layout', async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 });
-    await authenticateAgainstLiveBackend(page, IT_TENANT_ID);
+    await authenticateAgainstLiveBackend(page);
 
     await navigateInCrudSpa(page, '/field-service/tickets');
     await expect(page).toHaveURL(/\/field-service\/tickets/);
@@ -613,7 +643,7 @@ test.describe('Part 2: Full End-to-End UI CRUD Lifecycle Suite', () => {
 
   test('7. Form Validation & Error State Layout Check (Contacts, Products, Invoices)', async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 });
-    await authenticateAgainstLiveBackend(page, IT_TENANT_ID);
+    await authenticateAgainstLiveBackend(page);
 
     // A) Contacts Form Validation & Button Bounds
     await navigateInCrudSpa(page, '/crm/clients');
