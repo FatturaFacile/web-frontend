@@ -9,7 +9,16 @@ import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
-import { AllocationPreview, AllocationRule, AllocationRun, AnalyticalJob, ControllingApiService, CostCenterNode, JobPnl, TranslateService } from '@core';
+import {
+  AllocationPreview,
+  AllocationRule,
+  AllocationRun,
+  AnalyticalJob,
+  ControllingApiService,
+  CostCenterNode,
+  JobPnl,
+  TranslateService,
+} from '@core';
 import { TranslatePipe } from '@shared';
 import { ControllingFilters } from './controlling-filters.service';
 
@@ -19,7 +28,8 @@ interface TreeRow {
 }
 
 function errorText(error: unknown): string | null {
-  const body = (error as { error?: { message?: unknown; errors?: Record<string, unknown> } })?.error;
+  const body = (error as { error?: { message?: unknown; errors?: Record<string, unknown> } })
+    ?.error;
   const first = Object.values(body?.errors ?? {})[0];
   if (Array.isArray(first) && typeof first[0] === 'string') return first[0];
   return typeof body?.message === 'string' ? body.message : null;
@@ -29,10 +39,26 @@ function errorText(error: unknown): string | null {
 @Component({
   selector: 'app-controlling-cost-centers',
   styleUrl: './controlling.scss',
-  imports: [DecimalPipe, FormsModule, TranslatePipe, NzButtonModule, NzCardModule, NzEmptyModule, NzPopconfirmModule, NzSelectModule, NzTableModule, NzTagModule],
+  imports: [
+    DecimalPipe,
+    FormsModule,
+    TranslatePipe,
+    NzButtonModule,
+    NzCardModule,
+    NzEmptyModule,
+    NzPopconfirmModule,
+    NzSelectModule,
+    NzTableModule,
+    NzTagModule,
+  ],
   template: `
     <nz-card [nzTitle]="'CONTROLLING.CC_TREE' | translate" class="main-card">
-      <nz-table [nzData]="visibleRows()" [nzLoading]="loading()" nzSize="small" [nzShowPagination]="false">
+      <nz-table
+        [nzData]="visibleRows()"
+        [nzLoading]="loading()"
+        nzSize="small"
+        [nzShowPagination]="false"
+      >
         <thead>
           <tr>
             <th>{{ 'CONTROLLING.COST_CENTER' | translate }}</th>
@@ -48,15 +74,24 @@ function errorText(error: unknown): string | null {
             <tr>
               <td [style.padding-left.px]="12 + row.depth * 20">
                 @if (row.node.children.length) {
-                  <a (click)="toggle(row.node.id)" (keydown.enter)="toggle(row.node.id)" tabindex="0" [attr.aria-expanded]="expanded().has(row.node.id)">{{ expanded().has(row.node.id) ? '▾' : '▸' }}</a>
+                  <a
+                    (click)="toggle(row.node.id)"
+                    (keydown.enter)="toggle(row.node.id)"
+                    tabindex="0"
+                    [attr.aria-expanded]="expanded().has(row.node.id)"
+                    >{{ expanded().has(row.node.id) ? '▾' : '▸' }}</a
+                  >
                 }
-                <strong>{{ row.node.code }}</strong> {{ row.node.name }} <nz-tag>{{ row.node.center_type }}</nz-tag>
+                <strong>{{ row.node.code }}</strong> {{ row.node.name }}
+                <nz-tag>{{ row.node.center_type }}</nz-tag>
               </td>
               <td class="num">{{ figures(row).revenue | number: '1.0-0' }}</td>
               <td class="num">{{ figures(row).direct_costs | number: '1.0-0' }}</td>
               <td class="num">{{ figures(row).allocations_in | number: '1.0-0' }}</td>
               <td class="num">{{ figures(row).allocations_out | number: '1.0-0' }}</td>
-              <td class="num" [class]="+figures(row).net_result < 0 ? 'badge-down' : 'badge-up'">{{ figures(row).net_result | number: '1.0-0' }}</td>
+              <td class="num" [class]="+figures(row).net_result < 0 ? 'badge-down' : 'badge-up'">
+                {{ figures(row).net_result | number: '1.0-0' }}
+              </td>
             </tr>
           }
         </tbody>
@@ -67,11 +102,22 @@ function errorText(error: unknown): string | null {
       @for (pnl of jobPnls(); track pnl.job_id) {
         <div class="kpi" style="margin-bottom: 12px">
           <div class="label">{{ pnl.code }} — {{ pnl.name }}</div>
-          <div class="bar-track"><span [style.width.%]="clamp(+pnl.cost_consumed_percent)" [style.background]="+pnl.cost_consumed_percent > 100 ? '#cf1322' : '#1677ff'"></span></div>
+          <div class="bar-track">
+            <span
+              [style.width.%]="clamp(+pnl.cost_consumed_percent)"
+              [style.background]="+pnl.cost_consumed_percent > 100 ? '#cf1322' : '#1677ff'"
+            ></span>
+          </div>
           <div class="muted">
-            {{ 'CONTROLLING.COST_CONSUMED' | translate }} {{ pnl.cost_consumed_percent | number: '1.0-1' }} % · {{ 'CONTROLLING.CONTRACT_VALUE' | translate }} {{ pnl.contract_value | number: '1.0-0' }} ·
-            {{ 'CONTROLLING.BILLED' | translate }} {{ pnl.invoiced_to_date | number: '1.0-0' }} · {{ 'CONTROLLING.OPEN_COMMITMENTS' | translate }} {{ pnl.open_commitments | number: '1.0-0' }} ·
-            {{ 'CONTROLLING.PROJECTED_MARGIN' | translate }} {{ pnl.projected_final_margin | number: '1.0-0' }}
+            {{ 'CONTROLLING.COST_CONSUMED' | translate }}
+            {{ pnl.cost_consumed_percent | number: '1.0-1' }} % ·
+            {{ 'CONTROLLING.CONTRACT_VALUE' | translate }}
+            {{ pnl.contract_value | number: '1.0-0' }} · {{ 'CONTROLLING.BILLED' | translate }}
+            {{ pnl.invoiced_to_date | number: '1.0-0' }} ·
+            {{ 'CONTROLLING.OPEN_COMMITMENTS' | translate }}
+            {{ pnl.open_commitments | number: '1.0-0' }} ·
+            {{ 'CONTROLLING.PROJECTED_MARGIN' | translate }}
+            {{ pnl.projected_final_margin | number: '1.0-0' }}
           </div>
         </div>
       } @empty {
@@ -81,15 +127,34 @@ function errorText(error: unknown): string | null {
 
     <nz-card [nzTitle]="'CONTROLLING.ALLOC_WIZARD' | translate" class="main-card">
       <div class="toolbar">
-        <nz-select style="width: 160px" [ngModel]="month()" (ngModelChange)="month.set($event); preview.set(null)" [attr.aria-label]="'CONTROLLING.MONTH' | translate">
+        <nz-select
+          style="width: 160px"
+          [ngModel]="month()"
+          (ngModelChange)="month.set($event); preview.set(null)"
+          [attr.aria-label]="'CONTROLLING.MONTH' | translate"
+        >
           @for (m of months; track m) {
             <nz-option [nzValue]="m" [nzLabel]="'' + m"></nz-option>
           }
         </nz-select>
         <button nz-button (click)="runPreview()">{{ 'CONTROLLING.PREVIEW' | translate }}</button>
-        <button nz-button nzType="primary" [disabled]="!preview()?.transfers?.length" nz-popconfirm [nzPopconfirmTitle]="'CONTROLLING.CONFIRM_POST' | translate" (nzOnConfirm)="post()">{{ 'CONTROLLING.POST_RUN' | translate }}</button>
+        <button
+          nz-button
+          nzType="primary"
+          [disabled]="!preview()?.transfers?.length"
+          nz-popconfirm
+          [nzPopconfirmTitle]="'CONTROLLING.CONFIRM_POST' | translate"
+          (nzOnConfirm)="post()"
+        >
+          {{ 'CONTROLLING.POST_RUN' | translate }}
+        </button>
       </div>
-      <p class="muted">{{ 'CONTROLLING.RULES' | translate }}: @for (rule of rules(); track rule.id) { <nz-tag>{{ rule.step_order }}. {{ rule.name }} ({{ rule.driver_type }})</nz-tag> }</p>
+      <p class="muted">
+        {{ 'CONTROLLING.RULES' | translate }}:
+        @for (rule of rules(); track rule.id) {
+          <nz-tag>{{ rule.step_order }}. {{ rule.name }} ({{ rule.driver_type }})</nz-tag>
+        }
+      </p>
       @if (preview(); as p) {
         <nz-table [nzData]="p.transfers" nzSize="small" [nzPageSize]="20">
           <thead>
@@ -111,7 +176,12 @@ function errorText(error: unknown): string | null {
             }
           </tbody>
         </nz-table>
-        <p class="num"><strong>{{ 'CONTROLLING.TOTAL' | translate }}: {{ p.total_allocated | number: '1.2-2' }}</strong></p>
+        <p class="num">
+          <strong
+            >{{ 'CONTROLLING.TOTAL' | translate }}:
+            {{ p.total_allocated | number: '1.2-2' }}</strong
+          >
+        </p>
       }
       <nz-table [nzData]="runs()" nzSize="small" [nzPageSize]="10">
         <thead>
@@ -126,11 +196,23 @@ function errorText(error: unknown): string | null {
           @for (run of runs(); track run.id) {
             <tr>
               <td>{{ run.fiscal_year }}-{{ run.fiscal_month }}</td>
-              <td><nz-tag [nzColor]="run.status === 'posted' ? 'green' : 'default'">{{ run.status }}</nz-tag></td>
+              <td>
+                <nz-tag [nzColor]="run.status === 'posted' ? 'green' : 'default'">{{
+                  run.status
+                }}</nz-tag>
+              </td>
               <td class="num">{{ run.total_allocated_amount | number: '1.2-2' }}</td>
               <td>
                 @if (run.status === 'posted') {
-                  <button nz-button nzDanger nz-popconfirm [nzPopconfirmTitle]="'CONTROLLING.CONFIRM_REVERSE' | translate" (nzOnConfirm)="reverse(run.id)">{{ 'CONTROLLING.REVERSE' | translate }}</button>
+                  <button
+                    nz-button
+                    nzDanger
+                    nz-popconfirm
+                    [nzPopconfirmTitle]="'CONTROLLING.CONFIRM_REVERSE' | translate"
+                    (nzOnConfirm)="reverse(run.id)"
+                  >
+                    {{ 'CONTROLLING.REVERSE' | translate }}
+                  </button>
                 }
               </td>
             </tr>
@@ -159,13 +241,21 @@ export class ControllingCostCentersComponent implements OnInit {
 
   protected readonly visibleRows = computed<TreeRow[]>(() => {
     const open = this.expanded();
-    const walk = (nodes: CostCenterNode[], depth: number): TreeRow[] => nodes.flatMap((node) => [{ node, depth }, ...(open.has(node.id) ? walk(node.children, depth + 1) : [])]);
+    const walk = (nodes: CostCenterNode[], depth: number): TreeRow[] =>
+      nodes.flatMap((node) => [
+        { node, depth },
+        ...(open.has(node.id) ? walk(node.children, depth + 1) : []),
+      ]);
     return walk(this.tree(), 0);
   });
 
   private readonly names = computed(() => {
     const map = new Map<string, string>();
-    const walk = (nodes: CostCenterNode[]): void => nodes.forEach((node) => { map.set(node.id, node.code); walk(node.children); });
+    const walk = (nodes: CostCenterNode[]): void =>
+      nodes.forEach((node) => {
+        map.set(node.id, node.code);
+        walk(node.children);
+      });
     walk(this.tree());
     this.jobs().forEach((job) => map.set(job.id, job.code));
     return map;
@@ -176,7 +266,9 @@ export class ControllingCostCentersComponent implements OnInit {
   }
 
   protected figures(row: TreeRow) {
-    return this.expanded().has(row.node.id) || !row.node.children.length ? row.node.own : row.node.rollup;
+    return this.expanded().has(row.node.id) || !row.node.children.length
+      ? row.node.own
+      : row.node.rollup;
   }
 
   protected name(id: string): string {
@@ -198,7 +290,8 @@ export class ControllingCostCentersComponent implements OnInit {
   protected runPreview(): void {
     this.api.previewAllocation(this.filters.fiscalYear(), this.month()).subscribe({
       next: (response) => this.preview.set(response.data),
-      error: (error) => this.message.error(errorText(error) ?? this.translate.instant('CONTROLLING.ACTION_FAILED')),
+      error: (error) =>
+        this.message.error(errorText(error) ?? this.translate.instant('CONTROLLING.ACTION_FAILED')),
     });
   }
 
@@ -209,7 +302,8 @@ export class ControllingCostCentersComponent implements OnInit {
         this.preview.set(null);
         this.load();
       },
-      error: (error) => this.message.error(errorText(error) ?? this.translate.instant('CONTROLLING.ACTION_FAILED')),
+      error: (error) =>
+        this.message.error(errorText(error) ?? this.translate.instant('CONTROLLING.ACTION_FAILED')),
     });
   }
 
@@ -219,7 +313,8 @@ export class ControllingCostCentersComponent implements OnInit {
         this.message.success(this.translate.instant('CONTROLLING.RUN_REVERSED'));
         this.load();
       },
-      error: (error) => this.message.error(errorText(error) ?? this.translate.instant('CONTROLLING.ACTION_FAILED')),
+      error: (error) =>
+        this.message.error(errorText(error) ?? this.translate.instant('CONTROLLING.ACTION_FAILED')),
     });
   }
 
@@ -237,7 +332,11 @@ export class ControllingCostCentersComponent implements OnInit {
       next: (response) => {
         this.jobs.set(response.data);
         this.jobPnls.set([]);
-        response.data.forEach((job) => this.api.getJobPnl(job.id).subscribe({ next: (pnl) => this.jobPnls.update((list) => [...list, pnl.data]) }));
+        response.data.forEach((job) =>
+          this.api
+            .getJobPnl(job.id)
+            .subscribe({ next: (pnl) => this.jobPnls.update((list) => [...list, pnl.data]) }),
+        );
       },
     });
     this.api.getAllocationRules().subscribe({ next: (response) => this.rules.set(response.data) });

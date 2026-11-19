@@ -11,7 +11,16 @@ import { BudgetPlan, ControllingApiService, VarianceReport, WaterfallStep } from
 import { TranslatePipe } from '@shared';
 import { ControllingFilters } from './controlling-filters.service';
 
-const GROUPS = ['nature', 'cost_center', 'job', 'product_family', 'customer', 'agent', 'department', 'geography'] as const;
+const GROUPS = [
+  'nature',
+  'cost_center',
+  'job',
+  'product_family',
+  'customer',
+  'agent',
+  'department',
+  'geography',
+] as const;
 const MODES = ['monthly', 'ytd', 'full_year_eac'] as const;
 
 interface Bar {
@@ -26,31 +35,69 @@ interface Bar {
 @Component({
   selector: 'app-controlling-variance',
   styleUrl: './controlling.scss',
-  imports: [DecimalPipe, FormsModule, TranslatePipe, NzCardModule, NzEmptyModule, NzSelectModule, NzTableModule],
+  imports: [
+    DecimalPipe,
+    FormsModule,
+    TranslatePipe,
+    NzCardModule,
+    NzEmptyModule,
+    NzSelectModule,
+    NzTableModule,
+  ],
   template: `
     <div class="toolbar">
-      <nz-select style="width: 240px" nzAllowClear [ngModel]="budgetId()" (ngModelChange)="budgetId.set($event)" [nzPlaceHolder]="'CONTROLLING.BUDGET' | translate" [attr.aria-label]="'CONTROLLING.BUDGET' | translate">
+      <nz-select
+        style="width: 240px"
+        nzAllowClear
+        [ngModel]="budgetId()"
+        (ngModelChange)="budgetId.set($event)"
+        [nzPlaceHolder]="'CONTROLLING.BUDGET' | translate"
+        [attr.aria-label]="'CONTROLLING.BUDGET' | translate"
+      >
         @for (plan of budgets(); track plan.id) {
           @if (plan.plan_type !== 'rolling_forecast') {
             <nz-option [nzValue]="plan.id" [nzLabel]="plan.code + ' · ' + plan.name"></nz-option>
           }
         }
       </nz-select>
-      <nz-select style="width: 240px" nzAllowClear [ngModel]="forecastId()" (ngModelChange)="forecastId.set($event)" [nzPlaceHolder]="'CONTROLLING.FORECAST' | translate" [attr.aria-label]="'CONTROLLING.FORECAST' | translate">
+      <nz-select
+        style="width: 240px"
+        nzAllowClear
+        [ngModel]="forecastId()"
+        (ngModelChange)="forecastId.set($event)"
+        [nzPlaceHolder]="'CONTROLLING.FORECAST' | translate"
+        [attr.aria-label]="'CONTROLLING.FORECAST' | translate"
+      >
         @for (plan of budgets(); track plan.id) {
           @if (plan.plan_type === 'rolling_forecast') {
             <nz-option [nzValue]="plan.id" [nzLabel]="plan.code + ' · ' + plan.name"></nz-option>
           }
         }
       </nz-select>
-      <nz-select style="width: 180px" [ngModel]="groupBy()" (ngModelChange)="groupBy.set($event)" [attr.aria-label]="'CONTROLLING.GROUP_BY' | translate">
+      <nz-select
+        style="width: 180px"
+        [ngModel]="groupBy()"
+        (ngModelChange)="groupBy.set($event)"
+        [attr.aria-label]="'CONTROLLING.GROUP_BY' | translate"
+      >
         @for (group of groups; track group) {
-          <nz-option [nzValue]="group" [nzLabel]="'CONTROLLING.VAR_GROUP_' + group.toUpperCase() | translate"></nz-option>
+          <nz-option
+            [nzValue]="group"
+            [nzLabel]="'CONTROLLING.VAR_GROUP_' + group.toUpperCase() | translate"
+          ></nz-option>
         }
       </nz-select>
-      <nz-select style="width: 180px" [ngModel]="mode()" (ngModelChange)="mode.set($event)" [attr.aria-label]="'CONTROLLING.PERIOD_MODE' | translate">
+      <nz-select
+        style="width: 180px"
+        [ngModel]="mode()"
+        (ngModelChange)="mode.set($event)"
+        [attr.aria-label]="'CONTROLLING.PERIOD_MODE' | translate"
+      >
         @for (m of modes; track m) {
-          <nz-option [nzValue]="m" [nzLabel]="'CONTROLLING.MODE_' + m.toUpperCase() | translate"></nz-option>
+          <nz-option
+            [nzValue]="m"
+            [nzLabel]="'CONTROLLING.MODE_' + m.toUpperCase() | translate"
+          ></nz-option>
         }
       </nz-select>
     </div>
@@ -59,11 +106,26 @@ interface Bar {
       <nz-empty [nzNotFoundContent]="'CONTROLLING.PICK_BUDGET' | translate"></nz-empty>
     } @else {
       <nz-card [nzTitle]="'CONTROLLING.BRIDGE' | translate" class="main-card">
-        <svg class="chart" viewBox="0 0 600 280" role="img" [attr.aria-label]="'CONTROLLING.BRIDGE' | translate">
+        <svg
+          class="chart"
+          viewBox="0 0 600 280"
+          role="img"
+          [attr.aria-label]="'CONTROLLING.BRIDGE' | translate"
+        >
           @for (bar of bars(); track bar.step.key) {
-            <rect [attr.x]="bar.x" [attr.y]="bar.y" width="70" [attr.height]="bar.h" [attr.fill]="bar.color"><title>{{ bar.step.label }}: {{ bar.step.value }}</title></rect>
+            <rect
+              [attr.x]="bar.x"
+              [attr.y]="bar.y"
+              width="70"
+              [attr.height]="bar.h"
+              [attr.fill]="bar.color"
+            >
+              <title>{{ bar.step.label }}: {{ bar.step.value }}</title>
+            </rect>
             <text [attr.x]="bar.x + 35" y="270" text-anchor="middle">{{ bar.step.label }}</text>
-            <text [attr.x]="bar.x + 35" [attr.y]="bar.y - 4" text-anchor="middle">{{ bar.step.value | number: '1.0-0' }}</text>
+            <text [attr.x]="bar.x + 35" [attr.y]="bar.y - 4" text-anchor="middle">
+              {{ bar.step.value | number: '1.0-0' }}
+            </text>
           }
         </svg>
       </nz-card>
@@ -90,8 +152,12 @@ interface Bar {
                 <td class="num">{{ row.budget.margin | number: '1.0-0' }}</td>
                 <td class="num">{{ row.forecast.margin | number: '1.0-0' }}</td>
                 <td class="num">{{ row.prior_year.margin | number: '1.0-0' }}</td>
-                <td class="num" [class]="row.favorable ? 'badge-up' : 'badge-down'">{{ row.variance | number: '1.0-0' }}</td>
-                <td class="num" [class]="row.favorable ? 'badge-up' : 'badge-down'">{{ row.variance_percent | number: '1.1-1' }} %</td>
+                <td class="num" [class]="row.favorable ? 'badge-up' : 'badge-down'">
+                  {{ row.variance | number: '1.0-0' }}
+                </td>
+                <td class="num" [class]="row.favorable ? 'badge-up' : 'badge-down'">
+                  {{ row.variance_percent | number: '1.1-1' }} %
+                </td>
                 <td class="num">{{ row.eac.margin | number: '1.0-0' }}</td>
               </tr>
             }
@@ -147,15 +213,29 @@ export class ControllingVarianceComponent implements OnInit {
     });
   });
 
-  private readonly request = computed(() => ({ budget: this.budgetId(), forecast: this.forecastId(), group: this.groupBy(), mode: this.mode(), month: this.filters.lastMonth() }));
+  private readonly request = computed(() => ({
+    budget: this.budgetId(),
+    forecast: this.forecastId(),
+    group: this.groupBy(),
+    mode: this.mode(),
+    month: this.filters.lastMonth(),
+  }));
 
   constructor() {
     toObservable(this.request)
       .pipe(
         switchMap((request) => {
           if (!request.budget) return of(null);
-          const query = { budget_id: request.budget, forecast_id: request.forecast ?? undefined, period_mode: request.mode, month: request.month };
-          return forkJoin({ variance: this.api.getVariance({ ...query, group_by: request.group }), waterfall: this.api.getWaterfall(query) }).pipe(catchError(() => of(null)));
+          const query = {
+            budget_id: request.budget,
+            forecast_id: request.forecast ?? undefined,
+            period_mode: request.mode,
+            month: request.month,
+          };
+          return forkJoin({
+            variance: this.api.getVariance({ ...query, group_by: request.group }),
+            waterfall: this.api.getWaterfall(query),
+          }).pipe(catchError(() => of(null)));
         }),
         takeUntilDestroyed(inject(DestroyRef)),
       )
@@ -169,7 +249,11 @@ export class ControllingVarianceComponent implements OnInit {
     this.api.getBudgets(this.filters.fiscalYear()).subscribe({
       next: (response) => {
         this.budgets.set(response.data);
-        const budget = response.data.find((plan) => plan.plan_type === 'annual_budget' && ['approved', 'locked'].includes(plan.status)) ?? response.data.find((plan) => plan.plan_type === 'annual_budget');
+        const budget =
+          response.data.find(
+            (plan) =>
+              plan.plan_type === 'annual_budget' && ['approved', 'locked'].includes(plan.status),
+          ) ?? response.data.find((plan) => plan.plan_type === 'annual_budget');
         if (budget && !this.budgetId()) this.budgetId.set(budget.id);
       },
     });

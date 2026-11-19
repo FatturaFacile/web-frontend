@@ -1,12 +1,27 @@
 /** Controlling and corporate performance management (cost accounting, margins, working capital, budgets). */
 
-export const MARGIN_DIMENSIONS = ['product', 'product_family', 'customer', 'geography', 'agent', 'production_department', 'cost_center', 'job'] as const;
+export const MARGIN_DIMENSIONS = [
+  'product',
+  'product_family',
+  'customer',
+  'geography',
+  'agent',
+  'production_department',
+  'cost_center',
+  'job',
+] as const;
 export type MarginDimension = (typeof MARGIN_DIMENSIONS)[number];
 
 export const MARGIN_TIERS = ['gross', 'commercial', 'full_industrial'] as const;
 export type MarginTier = (typeof MARGIN_TIERS)[number];
 
-export const COMPARE_MODES = ['none', 'prior_period', 'prior_year', 'active_budget', 'rolling_forecast'] as const;
+export const COMPARE_MODES = [
+  'none',
+  'prior_period',
+  'prior_year',
+  'active_budget',
+  'rolling_forecast',
+] as const;
 export type CompareMode = (typeof COMPARE_MODES)[number];
 
 export type AbcClass = 'A' | 'B' | 'C';
@@ -91,8 +106,20 @@ export interface MarginMatrix {
 
 export interface MarginPareto {
   class_counts: Record<AbcClass, number>;
-  curve: { key: string; label: string; net_revenue: string; cumulative_share: string; abc_class: AbcClass }[];
-  outliers: { key: string; label: string; net_revenue: string; margin: string; margin_percent: string }[];
+  curve: {
+    key: string;
+    label: string;
+    net_revenue: string;
+    cumulative_share: string;
+    abc_class: AbcClass;
+  }[];
+  outliers: {
+    key: string;
+    label: string;
+    net_revenue: string;
+    margin: string;
+    margin_percent: string;
+  }[];
 }
 
 export interface MarginQuery {
@@ -225,7 +252,13 @@ export interface AllocationRule {
   step_order: number;
 }
 
-export const BUDGET_PLAN_STATUSES = ['draft', 'submitted', 'approved', 'locked', 'archived'] as const;
+export const BUDGET_PLAN_STATUSES = [
+  'draft',
+  'submitted',
+  'approved',
+  'locked',
+  'archived',
+] as const;
 export type BudgetPlanStatus = (typeof BUDGET_PLAN_STATUSES)[number];
 export type BudgetPlanType = 'annual_budget' | 'rolling_forecast' | 'what_if_scenario';
 
@@ -279,7 +312,13 @@ export interface VarianceReport {
   group_by: string;
   period_mode: string;
   data: VarianceRow[];
-  totals: { actual_margin: string; budget_margin: string; forecast_margin: string; prior_year_margin: string; eac_margin: string };
+  totals: {
+    actual_margin: string;
+    budget_margin: string;
+    forecast_margin: string;
+    prior_year_margin: string;
+    eac_margin: string;
+  };
 }
 
 export interface WaterfallStep {
@@ -296,4 +335,53 @@ export interface VarianceQuery {
   group_by?: string;
   period_mode?: 'monthly' | 'ytd' | 'full_year_eac';
   month?: number;
+}
+
+export const LEDGER_NATURES = [
+  'revenue',
+  'direct_material',
+  'direct_labor',
+  'variable_overhead',
+  'fixed_overhead',
+  'opex',
+] as const;
+export type LedgerNature = (typeof LEDGER_NATURES)[number];
+
+export interface AnalyticalLedgerEntry {
+  id: string;
+  posting_date: string;
+  fiscal_year: number;
+  fiscal_month: number;
+  source_type: string;
+  account_code: string | null;
+  nature_type: LedgerNature;
+  cost_center_id: string | null;
+  job_id: string | null;
+  amount: string;
+  quantity: string;
+  description: string | null;
+  is_allocated: boolean;
+  allocation_run_id: string | null;
+}
+
+export interface AnalyticalLedgerPayload {
+  posting_date: string;
+  nature_type: LedgerNature;
+  amount: number;
+  account_code?: string | null;
+  cost_center_id?: string | null;
+  job_id?: string | null;
+  description?: string | null;
+}
+
+export interface AnalyticalLedgerQuery {
+  date_from?: string;
+  date_to?: string;
+  nature_type?: LedgerNature;
+  page?: number;
+}
+
+export interface AnalyticalLedgerPage {
+  data: AnalyticalLedgerEntry[];
+  meta?: { total?: number; current_page?: number; per_page?: number };
 }

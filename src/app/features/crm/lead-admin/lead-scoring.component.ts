@@ -9,10 +9,13 @@ import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { I18nService, LeadApiService, LeadScoringRule } from '@core';
-import { PageHeaderComponent } from '@shared';
-import { httpStatus, humanize, translateOr, TranslateOrPipe } from '../leads/lead-i18n';
+import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { httpStatus } from '../leads/lead-i18n';
 import { LeadScorePreviewComponent } from './lead-score-preview.component';
-import { formatRuleValue, LeadScoringRuleModalComponent } from './lead-scoring-rule-modal.component';
+import {
+  formatRuleValue,
+  LeadScoringRuleModalComponent,
+} from './lead-scoring-rule-modal.component';
 import { LeadSettingsFormComponent } from './lead-settings-form.component';
 
 @Component({
@@ -27,7 +30,7 @@ import { LeadSettingsFormComponent } from './lead-settings-form.component';
     NzTableModule,
     NzTagModule,
     PageHeaderComponent,
-    TranslateOrPipe,
+    TranslatePipe,
     LeadScorePreviewComponent,
     LeadScoringRuleModalComponent,
     LeadSettingsFormComponent,
@@ -70,16 +73,16 @@ export class LeadScoringComponent {
 
   protected target(r: LeadScoringRule): string {
     return r.category === 'behavioral'
-      ? translateOr(this.i18n, `CRM.LEADS.EVENTS.TYPES.${(r.event_type ?? '').toUpperCase()}`, humanize(r.event_type))
+      ? this.i18n.translate(`CRM.LEADS.EVENTS.TYPES.${(r.event_type ?? '').toUpperCase()}`)
       : (r.field ?? '-');
   }
 
   protected operatorLabel(op: string): string {
-    return translateOr(this.i18n, `CRM.LEAD_SCORING.OPERATORS.${op.toUpperCase()}`, humanize(op));
+    return this.i18n.translate(`CRM.LEAD_SCORING.OPERATORS.${op.toUpperCase()}`);
   }
 
   protected categoryLabel(c: string): string {
-    return translateOr(this.i18n, `CRM.LEAD_SCORING.RULES.${c.toUpperCase()}`, humanize(c));
+    return this.i18n.translate(`CRM.LEAD_SCORING.RULES.${c.toUpperCase()}`);
   }
 
   protected value(r: LeadScoringRule): string {
@@ -105,7 +108,7 @@ export class LeadScoringComponent {
     } else {
       this.load();
     }
-    this.message.success(translateOr(this.i18n, 'CRM.LEAD_SCORING.RULES.SAVED', 'Rule saved'));
+    this.message.success(this.i18n.translate('CRM.LEAD_SCORING.RULES.SAVED'));
   }
 
   toggle(r: LeadScoringRule): void {
@@ -126,13 +129,16 @@ export class LeadScoringComponent {
         max_applications: r.max_applications ?? null,
         decay_days: r.decay_days ?? null,
         is_active: !r.is_active,
-      }).subscribe({
-      next: () => {
-        this.busyId.set(null);
-        this.rules.update((list) => list.map((x) => (x.id === r.id ? { ...x, is_active: !r.is_active } : x)));
-      },
-      error: () => this.busyId.set(null),
-    });
+      })
+      .subscribe({
+        next: () => {
+          this.busyId.set(null);
+          this.rules.update((list) =>
+            list.map((x) => (x.id === r.id ? { ...x, is_active: !r.is_active } : x)),
+          );
+        },
+        error: () => this.busyId.set(null),
+      });
   }
 
   remove(r: LeadScoringRule): void {
@@ -144,7 +150,7 @@ export class LeadScoringComponent {
       next: () => {
         this.busyId.set(null);
         this.rules.update((list) => list.filter((x) => x.id !== r.id));
-        this.message.success(translateOr(this.i18n, 'CRM.LEAD_SCORING.RULES.DELETED', 'Rule deleted'));
+        this.message.success(this.i18n.translate('CRM.LEAD_SCORING.RULES.DELETED'));
       },
       error: () => this.busyId.set(null),
     });

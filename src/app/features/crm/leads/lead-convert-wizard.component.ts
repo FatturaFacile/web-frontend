@@ -1,4 +1,14 @@
-import { Component, computed, effect, inject, input, model, output, signal, untracked } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  model,
+  output,
+  signal,
+  untracked,
+} from '@angular/core';
 import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
@@ -31,7 +41,9 @@ import {
   serverErrorMessage,
 } from '@core';
 import { LeadAssigneeSelectComponent } from './lead-assignee-select.component';
-import { apiErrorMessage, httpStatus, translateOr, TranslateOrPipe } from './lead-i18n';
+import { apiErrorMessage, httpStatus } from './lead-i18n';
+
+import { TranslatePipe } from '@shared';
 
 export type ContactMode = 'new' | 'existing';
 
@@ -39,7 +51,13 @@ export type ContactMode = 'new' | 'existing';
 const STEP_FIELDS: readonly (readonly string[])[] = [
   ['existing_contact_id', 'contact_role'],
   ['existing_account_id', 'new_account_name', 'account_tier'],
-  ['create_opportunity', 'opportunity_name', 'opportunity_amount', 'expected_close_date', 'owner_user_id'],
+  [
+    'create_opportunity',
+    'opportunity_name',
+    'opportunity_amount',
+    'expected_close_date',
+    'owner_user_id',
+  ],
 ];
 
 function toDateString(d: Date | null): string | null {
@@ -69,7 +87,7 @@ function toDateString(d: Date | null): string | null {
     NzSelectModule,
     NzStepsModule,
     NzSwitchModule,
-    TranslateOrPipe,
+    TranslatePipe,
     LeadAssigneeSelectComponent,
   ],
   templateUrl: './lead-convert-wizard.component.html',
@@ -190,7 +208,10 @@ export class LeadConvertWizardComponent {
       .pipe(catchError(() => of(null)))
       .subscribe((r) => {
         const extra = r?.data ?? [];
-        const merged = [...this.matches(), ...extra.filter((c) => !this.matches().some((m) => m.id === c.id))];
+        const merged = [
+          ...this.matches(),
+          ...extra.filter((c) => !this.matches().some((m) => m.id === c.id)),
+        ];
         this.contactOptions.set(merged);
         this.searching.set(false);
       });
@@ -263,32 +284,30 @@ export class LeadConvertWizardComponent {
       next: (res) => {
         this.submitting.set(false);
         this.result.set(res);
-        this.message.success(translateOr(this.i18n, 'CRM.LEADS.CONVERT.SUCCESS', 'Lead converted'));
+        this.message.success(this.i18n.translate('CRM.LEADS.CONVERT.SUCCESS'));
         this.changed.emit();
       },
       error: (err: unknown) => {
         this.submitting.set(false);
         const status = httpStatus(err);
         if (status === 409) {
-          this.message.warning(
-            translateOr(this.i18n, 'CRM.LEADS.CONVERT.ALREADY_CONVERTED', 'This lead has already been converted.'),
-          );
+          this.message.warning(this.i18n.translate('CRM.LEADS.CONVERT.ALREADY_CONVERTED'));
           this.open.set(false);
           this.changed.emit();
           return;
         }
         if (isValidationError(err)) {
           const unmapped = applyServerErrors(this.form, err);
-          const firstStep = STEP_FIELDS.findIndex((fields) => fields.some((f) => this.form.get(f)?.errors));
+          const firstStep = STEP_FIELDS.findIndex((fields) =>
+            fields.some((f) => this.form.get(f)?.errors),
+          );
           if (firstStep >= 0) {
             this.step.set(firstStep);
           }
           this.formError.set(unmapped.join(' ') || apiErrorMessage(err));
           return;
         }
-        this.formError.set(
-          apiErrorMessage(err) ?? translateOr(this.i18n, 'CRM.LEADS.CONVERT.FAILED', 'Conversion failed. Please retry.'),
-        );
+        this.formError.set(apiErrorMessage(err) ?? this.i18n.translate('CRM.LEADS.CONVERT.FAILED'));
       },
     });
   }
@@ -298,11 +317,11 @@ export class LeadConvertWizardComponent {
   }
 
   protected roleLabel(role: string): string {
-    return translateOr(this.i18n, `CRM.LEADS.CONVERT.ROLES.${role.toUpperCase()}`, role.replace(/_/g, ' '));
+    return this.i18n.translate(`CRM.LEADS.CONVERT.ROLES.${role.toUpperCase()}`);
   }
 
   protected tierLabel(tier: string): string {
-    return translateOr(this.i18n, `CRM.LEADS.CONVERT.TIERS.${tier.toUpperCase()}`, tier.replace(/_/g, ' '));
+    return this.i18n.translate(`CRM.LEADS.CONVERT.TIERS.${tier.toUpperCase()}`);
   }
 
   protected selectedContactLabel(): string {

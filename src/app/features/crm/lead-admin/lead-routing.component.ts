@@ -1,5 +1,11 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
+import {
+  CdkDrag,
+  CdkDragDrop,
+  CdkDragHandle,
+  CdkDropList,
+  moveItemInArray,
+} from '@angular/cdk/drag-drop';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -10,9 +16,9 @@ import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzSkeletonModule } from 'ng-zorro-antd/skeleton';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { I18nService, LeadApiService, LeadRoutingRule } from '@core';
-import { PageHeaderComponent } from '@shared';
+import { PageHeaderComponent, TranslatePipe } from '@shared';
 import { LeadAssigneeDirectory } from '../leads/lead-assignee-directory';
-import { apiErrorMessage, httpStatus, humanize, translateOr, TranslateOrPipe } from '../leads/lead-i18n';
+import { apiErrorMessage, httpStatus } from '../leads/lead-i18n';
 import { LeadRoutingRuleModalComponent } from './lead-routing-rule-modal.component';
 
 /** Returns a reordered copy (the input array is never mutated). */
@@ -44,7 +50,7 @@ function sortByPriority(rules: LeadRoutingRule[]): LeadRoutingRule[] {
     NzSkeletonModule,
     NzTagModule,
     PageHeaderComponent,
-    TranslateOrPipe,
+    TranslatePipe,
     LeadRoutingRuleModalComponent,
   ],
   templateUrl: './lead-routing.component.html',
@@ -94,7 +100,7 @@ export class LeadRoutingComponent {
   }
 
   protected strategyLabel(s: string): string {
-    return translateOr(this.i18n, `CRM.LEAD_ROUTING.${s.toUpperCase()}`, humanize(s));
+    return this.i18n.translate(`CRM.LEAD_ROUTING.${s.toUpperCase()}`);
   }
 
   protected conditionsSummary(r: LeadRoutingRule): string {
@@ -108,10 +114,10 @@ export class LeadRoutingComponent {
     }
     if (c.ratings?.length) {
       parts.push(
-        c.ratings.map((x) => translateOr(this.i18n, `CRM.LEADS.RATING.${x.toUpperCase()}`, humanize(x))).join(', '),
+        c.ratings.map((x) => this.i18n.translate(`CRM.LEADS.RATING.${x.toUpperCase()}`)).join(', '),
       );
     }
-    return parts.join(' · ') || translateOr(this.i18n, 'CRM.LEAD_ROUTING.ANY_LEAD', 'Any lead');
+    return parts.join(' · ') || this.i18n.translate('CRM.LEAD_ROUTING.ANY_LEAD');
   }
 
   protected assigneeNames(r: LeadRoutingRule): string {
@@ -138,7 +144,7 @@ export class LeadRoutingComponent {
     this.reorderError.set(null);
     const moved = next[to];
     this.announcement.set(
-      translateOr(this.i18n, 'CRM.LEAD_ROUTING.MOVED', '{name} moved to position {position}', {
+      this.i18n.translate('CRM.LEAD_ROUTING.MOVED', {
         name: moved.name,
         position: to + 1,
       }),
@@ -148,9 +154,7 @@ export class LeadRoutingComponent {
       error: (err: unknown) => {
         this.reordering.set(false);
         this.rules.set(previous);
-        const msg =
-          apiErrorMessage(err) ??
-          translateOr(this.i18n, 'CRM.LEAD_ROUTING.REORDER_FAILED', 'The new order could not be saved; it was restored.');
+        const msg = apiErrorMessage(err) ?? this.i18n.translate('CRM.LEAD_ROUTING.REORDER_FAILED');
         this.reorderError.set(msg);
         this.announcement.set(msg);
       },
@@ -171,7 +175,9 @@ export class LeadRoutingComponent {
     const editing = this.editing();
     if (saved && typeof saved === 'object' && 'id' in saved) {
       this.rules.update((list) =>
-        sortByPriority(editing ? list.map((r) => (r.id === saved.id ? saved : r)) : [...list, saved]),
+        sortByPriority(
+          editing ? list.map((r) => (r.id === saved.id ? saved : r)) : [...list, saved],
+        ),
       );
       if (saved.is_default) {
         // Only one default rule makes sense: reload to reflect the server's view.
@@ -180,7 +186,7 @@ export class LeadRoutingComponent {
     } else {
       this.load();
     }
-    this.message.success(translateOr(this.i18n, 'CRM.LEAD_ROUTING.SAVED', 'Routing rule saved'));
+    this.message.success(this.i18n.translate('CRM.LEAD_ROUTING.SAVED'));
   }
 
   remove(r: LeadRoutingRule): void {
@@ -192,7 +198,7 @@ export class LeadRoutingComponent {
       next: () => {
         this.busyId.set(null);
         this.rules.update((list) => list.filter((x) => x.id !== r.id));
-        this.message.success(translateOr(this.i18n, 'CRM.LEAD_ROUTING.DELETED', 'Routing rule deleted'));
+        this.message.success(this.i18n.translate('CRM.LEAD_ROUTING.DELETED'));
       },
       error: () => this.busyId.set(null),
     });

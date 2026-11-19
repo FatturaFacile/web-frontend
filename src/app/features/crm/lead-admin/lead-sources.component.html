@@ -1,20 +1,16 @@
 <app-page-header
-  [title]="'CRM.LEAD_SOURCES.TITLE' | translateOr: 'Lead sources'"
-  [subtitle]="'CRM.LEAD_SOURCES.SUBTITLE' | translateOr: 'Web forms and integrations that push leads through signed webhooks'"
+  [title]="'CRM.LEAD_SOURCES.TITLE' | translate"
+  [subtitle]="'CRM.LEAD_SOURCES.SUBTITLE' | translate"
 />
 
 @if (forbidden()) {
-  <nz-alert
-    nzType="info"
-    nzShowIcon
-    [nzMessage]="'CRM.LEADS.FORBIDDEN' | translateOr: 'You do not have permission to manage this section.'"
-  />
+  <nz-alert nzType="info" nzShowIcon [nzMessage]="'CRM.LEADS.FORBIDDEN' | translate" />
 } @else {
   <nz-card>
     <div class="toolbar">
       <span class="spacer"></span>
       <button nz-button nzType="primary" type="button" (click)="openCreate()">
-        <nz-icon nzType="plus" /> {{ 'CRM.LEAD_SOURCES.NEW' | translateOr: 'New source' }}
+        <nz-icon nzType="plus" /> {{ 'CRM.LEAD_SOURCES.NEW' | translate }}
       </button>
     </div>
 
@@ -23,24 +19,35 @@
         class="block"
         nzType="error"
         nzShowIcon
-        [nzMessage]="'CRM.LEAD_SOURCES.LOAD_ERROR' | translateOr: 'Lead sources could not be loaded.'"
+        [nzMessage]="'CRM.LEAD_SOURCES.LOAD_ERROR' | translate"
         [nzAction]="retryTpl"
       />
       <ng-template #retryTpl>
-        <button nz-button nzSize="small" type="button" (click)="load()">{{ 'COMMON.RETRY' | translateOr: 'Retry' }}</button>
+        <button nz-button nzSize="small" type="button" (click)="load()">
+          {{ 'COMMON.RETRY' | translate }}
+        </button>
       </ng-template>
     }
 
-    <nz-table #table [nzData]="sources()" [nzLoading]="loading()" [nzFrontPagination]="false" nzSize="middle" [nzScroll]="{ x: '900px' }">
+    <nz-table
+      #table
+      [nzData]="sources()"
+      [nzLoading]="loading()"
+      [nzFrontPagination]="false"
+      nzSize="middle"
+      [nzScroll]="{ x: '900px' }"
+    >
       <thead>
         <tr>
-          <th scope="col">{{ 'CRM.LEAD_SOURCES.NAME' | translateOr: 'Name' }}</th>
-          <th scope="col">{{ 'CRM.LEAD_SOURCES.TYPE' | translateOr: 'Type' }}</th>
-          <th scope="col">{{ 'CRM.LEAD_SOURCES.WEBHOOK_URL' | translateOr: 'Webhook URL' }}</th>
-          <th scope="col">{{ 'CRM.LEAD_SOURCES.API_KEY_PREFIX' | translateOr: 'API key prefix' }}</th>
-          <th scope="col">{{ 'CRM.LEAD_SOURCES.LAST_RECEIVED' | translateOr: 'Last lead received' }}</th>
-          <th scope="col">{{ 'CRM.LEAD_SOURCES.STATUS' | translateOr: 'Status' }}</th>
-          <th scope="col"><span class="sr-only">{{ 'COMMON.ACTIONS' | translateOr: 'Actions' }}</span></th>
+          <th scope="col">{{ 'CRM.LEAD_SOURCES.NAME' | translate }}</th>
+          <th scope="col">{{ 'CRM.LEAD_SOURCES.TYPE' | translate }}</th>
+          <th scope="col">{{ 'CRM.LEAD_SOURCES.WEBHOOK_URL' | translate }}</th>
+          <th scope="col">{{ 'CRM.LEAD_SOURCES.API_KEY_PREFIX' | translate }}</th>
+          <th scope="col">{{ 'CRM.LEAD_SOURCES.LAST_RECEIVED' | translate }}</th>
+          <th scope="col">{{ 'CRM.LEAD_SOURCES.STATUS' | translate }}</th>
+          <th scope="col">
+            <span class="sr-only">{{ 'COMMON.ACTIONS' | translate }}</span>
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -62,7 +69,11 @@
                     nzType="text"
                     nzSize="small"
                     type="button"
-                    [attr.aria-label]="('COMMON.COPY' | translateOr: 'Copy') + ' ' + ('CRM.LEAD_SOURCES.WEBHOOK_URL' | translateOr: 'Webhook URL')"
+                    [attr.aria-label]="
+                      ('COMMON.COPY' | translate) +
+                      ' ' +
+                      ('CRM.LEAD_SOURCES.WEBHOOK_URL' | translate)
+                    "
                     (click)="copy(s.webhook_url)"
                   >
                     <nz-icon nzType="copy" />
@@ -79,12 +90,18 @@
                 -
               }
             </td>
-            <td>{{ s.last_received_at ? (s.last_received_at | date: 'medium') : ('CRM.LEAD_SOURCES.NEVER' | translateOr: 'Never') }}</td>
+            <td>
+              {{
+                s.last_received_at
+                  ? (s.last_received_at | date: 'medium')
+                  : ('CRM.LEAD_SOURCES.NEVER' | translate)
+              }}
+            </td>
             <td>
               @if (s.is_active === false) {
-                <nz-tag>{{ 'COMMON.INACTIVE' | translateOr: 'Inactive' }}</nz-tag>
+                <nz-tag>{{ 'COMMON.INACTIVE' | translate }}</nz-tag>
               } @else {
-                <nz-tag nzColor="green">{{ 'COMMON.ACTIVE' | translateOr: 'Active' }}</nz-tag>
+                <nz-tag nzColor="green">{{ 'COMMON.ACTIVE' | translate }}</nz-tag>
               }
             </td>
             <td class="row-actions">
@@ -93,7 +110,7 @@
                 nzType="text"
                 nzSize="small"
                 type="button"
-                [attr.aria-label]="('COMMON.EDIT' | translateOr: 'Edit') + ' ' + s.name"
+                [attr.aria-label]="('COMMON.EDIT' | translate) + ' ' + s.name"
                 (click)="openEdit(s)"
               >
                 <nz-icon nzType="edit" />
@@ -105,11 +122,11 @@
                 type="button"
                 nz-popconfirm
                 [nzLoading]="busyId() === s.id"
-                [nzPopconfirmTitle]="'CRM.LEAD_SOURCES.CONFIRM_ROTATE' | translateOr: 'Rotate the secret? Integrations using the old one will stop working.'"
-                [nzOkText]="'COMMON.CONFIRM' | translateOr: 'Confirm'"
-                [nzCancelText]="'COMMON.CANCEL' | translateOr: 'Cancel'"
-                [attr.aria-label]="('CRM.LEAD_SOURCES.ROTATE' | translateOr: 'Rotate secret') + ' ' + s.name"
-                [title]="'CRM.LEAD_SOURCES.ROTATE' | translateOr: 'Rotate secret'"
+                [nzPopconfirmTitle]="'CRM.LEAD_SOURCES.CONFIRM_ROTATE' | translate"
+                [nzOkText]="'COMMON.CONFIRM' | translate"
+                [nzCancelText]="'COMMON.CANCEL' | translate"
+                [attr.aria-label]="('CRM.LEAD_SOURCES.ROTATE' | translate) + ' ' + s.name"
+                [title]="'CRM.LEAD_SOURCES.ROTATE' | translate"
                 (nzOnConfirm)="rotate(s)"
               >
                 <nz-icon nzType="lock" />
@@ -121,10 +138,10 @@
                 nzSize="small"
                 type="button"
                 nz-popconfirm
-                [nzPopconfirmTitle]="'CRM.LEAD_SOURCES.CONFIRM_DELETE' | translateOr: 'Delete this source?'"
-                [nzOkText]="'COMMON.DELETE' | translateOr: 'Delete'"
-                [nzCancelText]="'COMMON.CANCEL' | translateOr: 'Cancel'"
-                [attr.aria-label]="('COMMON.DELETE' | translateOr: 'Delete') + ' ' + s.name"
+                [nzPopconfirmTitle]="'CRM.LEAD_SOURCES.CONFIRM_DELETE' | translate"
+                [nzOkText]="'COMMON.DELETE' | translate"
+                [nzCancelText]="'COMMON.CANCEL' | translate"
+                [attr.aria-label]="('COMMON.DELETE' | translate) + ' ' + s.name"
                 (nzOnConfirm)="remove(s)"
               >
                 <nz-icon nzType="delete" />
@@ -140,12 +157,10 @@
 <nz-modal
   [nzVisible]="formOpen()"
   [nzTitle]="
-    editing()
-      ? ('CRM.LEAD_SOURCES.EDIT' | translateOr: 'Edit source')
-      : ('CRM.LEAD_SOURCES.NEW' | translateOr: 'New source')
+    editing() ? ('CRM.LEAD_SOURCES.EDIT' | translate) : ('CRM.LEAD_SOURCES.NEW' | translate)
   "
-  [nzOkText]="'COMMON.SAVE' | translateOr: 'Save'"
-  [nzCancelText]="'COMMON.CANCEL' | translateOr: 'Cancel'"
+  [nzOkText]="'COMMON.SAVE' | translate"
+  [nzCancelText]="'COMMON.CANCEL' | translate"
   [nzOkLoading]="saving()"
   (nzOnOk)="save()"
   (nzOnCancel)="closeForm()"
@@ -156,26 +171,28 @@
     }
     <form nz-form nzLayout="vertical" [formGroup]="form" (ngSubmit)="save()">
       <nz-form-item>
-        <nz-form-label nzFor="src_name" nzRequired>{{ 'CRM.LEAD_SOURCES.NAME' | translateOr: 'Name' }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="fieldError('name') ?? ('COMMON.REQUIRED' | translateOr: 'Required')">
+        <nz-form-label nzFor="src_name" nzRequired>{{
+          'CRM.LEAD_SOURCES.NAME' | translate
+        }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldError('name') ?? ('COMMON.REQUIRED' | translate)">
           <input nz-input id="src_name" formControlName="name" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
-        <nz-form-label nzFor="src_code">{{ 'CRM.LEAD_SOURCES.CODE' | translateOr: 'Code' }}</nz-form-label>
+        <nz-form-label nzFor="src_code">{{ 'CRM.LEAD_SOURCES.CODE' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="fieldError('code') ?? ''">
           <input nz-input id="src_code" formControlName="code" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
-        <nz-form-label nzFor="src_type">{{ 'CRM.LEAD_SOURCES.TYPE' | translateOr: 'Type' }}</nz-form-label>
+        <nz-form-label nzFor="src_type">{{ 'CRM.LEAD_SOURCES.TYPE' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="fieldError('type') ?? ''">
           <nz-select nzId="src_type" formControlName="type" [nzOptions]="typeOptions()" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzFor="src_origins">{{
-          'CRM.LEAD_SOURCES.ALLOWED_ORIGINS' | translateOr: 'Allowed origins (browser forms)'
+          'CRM.LEAD_SOURCES.ALLOWED_ORIGINS' | translate
         }}</nz-form-label>
         <nz-form-control [nzErrorTip]="fieldError('allowed_origins') ?? ''">
           <nz-select
@@ -188,7 +205,7 @@
       </nz-form-item>
       <nz-form-item>
         <nz-form-label nzFor="src_product">{{
-          'CRM.LEAD_SOURCES.DEFAULT_PRODUCT_LINE' | translateOr: 'Default product line'
+          'CRM.LEAD_SOURCES.DEFAULT_PRODUCT_LINE' | translate
         }}</nz-form-label>
         <nz-form-control [nzErrorTip]="fieldError('default_product_line') ?? ''">
           <input nz-input id="src_product" formControlName="default_product_line" />
@@ -198,7 +215,7 @@
         <nz-form-control>
           <span class="switch">
             <nz-switch nzId="src_is_active" formControlName="is_active" />
-            <label for="src_is_active">{{ 'COMMON.ACTIVE' | translateOr: 'Active' }}</label>
+            <label for="src_is_active">{{ 'COMMON.ACTIVE' | translate }}</label>
           </span>
         </nz-form-control>
       </nz-form-item>

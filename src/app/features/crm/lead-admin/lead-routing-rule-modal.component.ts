@@ -20,7 +20,9 @@ import {
   serverErrorMessage,
 } from '@core';
 import { LeadAssigneeSelectComponent } from '../leads/lead-assignee-select.component';
-import { apiErrorMessage, humanize, translateOr, TranslateOrPipe } from '../leads/lead-i18n';
+import { apiErrorMessage } from '../leads/lead-i18n';
+
+import { TranslatePipe } from '@shared';
 
 @Component({
   selector: 'app-lead-routing-rule-modal',
@@ -34,7 +36,7 @@ import { apiErrorMessage, humanize, translateOr, TranslateOrPipe } from '../lead
     NzModalModule,
     NzSelectModule,
     NzSwitchModule,
-    TranslateOrPipe,
+    TranslatePipe,
     LeadAssigneeSelectComponent,
   ],
   templateUrl: './lead-routing-rule-modal.component.html',
@@ -71,7 +73,6 @@ export class LeadRoutingRuleModalComponent {
   protected readonly ratingOptions = (['cold', 'warm', 'hot'] as const).map((r) => ({
     value: r,
     key: `CRM.LEADS.RATING.${r.toUpperCase()}`,
-    fallback: humanize(r),
   }));
 
   constructor() {
@@ -131,9 +132,7 @@ export class LeadRoutingRuleModalComponent {
       return;
     }
     if (!this.assigneeIds().length) {
-      this.formError.set(
-        translateOr(this.i18n, 'CRM.LEAD_ROUTING.ASSIGNEES_REQUIRED', 'Select at least one assignee.'),
-      );
+      this.formError.set(this.i18n.translate('CRM.LEAD_ROUTING.ASSIGNEES_REQUIRED'));
       return;
     }
     if (this.saving()) {
@@ -141,7 +140,9 @@ export class LeadRoutingRuleModalComponent {
     }
     const rule = this.rule();
     const payload = this.buildPayload();
-    const call = rule ? this.api.updateRoutingRule(rule.id, payload) : this.api.createRoutingRule(payload);
+    const call = rule
+      ? this.api.updateRoutingRule(rule.id, payload)
+      : this.api.createRoutingRule(payload);
     this.saving.set(true);
     this.formError.set(null);
     call.subscribe({

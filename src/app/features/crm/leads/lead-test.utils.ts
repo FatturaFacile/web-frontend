@@ -19,6 +19,9 @@ export function messageStub() {
   return { success: vi.fn(), warning: vi.fn(), error: vi.fn(), info: vi.fn() };
 }
 
-export function httpError(status: number, body: unknown = { message: `HTTP ${status}` }): HttpErrorResponse {
+export function httpError(
+  status: number,
+  body: unknown = { message: `HTTP ${status}` },
+): HttpErrorResponse {
   return new HttpErrorResponse({ status, error: body, statusText: String(status) });
 }

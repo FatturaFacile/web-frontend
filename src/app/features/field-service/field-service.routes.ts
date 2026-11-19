@@ -24,4 +24,10 @@ export const FIELD_SERVICE_ROUTES: Routes = [
     loadComponent: () =>
       import('./work-orders/field-work-orders.component').then((m) => m.FieldWorkOrdersComponent),
   },
+  {
+    path: 'contracts',
+    data: { breadcrumb: 'NAV.FS_CONTRACTS', title: 'NAV.FS_CONTRACTS' },
+    loadComponent: () =>
+      import('./contracts/maintenance-contracts.component').then((m) => m.MaintenanceContractsComponent),
+  },
 ];

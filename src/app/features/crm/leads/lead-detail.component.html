@@ -3,18 +3,18 @@
 } @else if (notFound()) {
   <nz-result
     nzStatus="404"
-    [nzTitle]="'CRM.LEADS.NOT_FOUND' | translateOr: 'Lead not found'"
-    [nzSubTitle]="'CRM.LEADS.NOT_FOUND_HINT' | translateOr: 'It may have been merged or deleted.'"
+    [nzTitle]="'CRM.LEADS.NOT_FOUND' | translate"
+    [nzSubTitle]="'CRM.LEADS.NOT_FOUND_HINT' | translate"
   >
     <div nz-result-extra>
-      <a nz-button nzType="primary" routerLink="/crm/leads">{{ 'CRM.LEADS.BACK' | translateOr: 'Back to leads' }}</a>
+      <a nz-button nzType="primary" routerLink="/crm/leads">{{ 'CRM.LEADS.BACK' | translate }}</a>
     </div>
   </nz-result>
 } @else if (loadError() && !lead()) {
-  <nz-result nzStatus="error" [nzTitle]="'CRM.LEADS.ERRORS.LOAD_ONE' | translateOr: 'The lead could not be loaded.'">
+  <nz-result nzStatus="error" [nzTitle]="'CRM.LEADS.ERRORS.LOAD_ONE' | translate">
     <div nz-result-extra>
       <button nz-button nzType="primary" type="button" (click)="load()">
-        <nz-icon nzType="reload" /> {{ 'COMMON.RETRY' | translateOr: 'Retry' }}
+        <nz-icon nzType="reload" /> {{ 'COMMON.RETRY' | translate }}
       </button>
     </div>
   </nz-result>
@@ -22,16 +22,34 @@
   <app-page-header [title]="name()" [subtitle]="l.company_name ?? ''" />
 
   <div class="actions">
-    <a nz-button routerLink="/crm/leads">{{ 'CRM.LEADS.BACK' | translateOr: 'Back to leads' }}</a>
+    <a nz-button routerLink="/crm/leads">{{ 'CRM.LEADS.BACK' | translate }}</a>
     <span class="spacer"></span>
-    <button nz-button type="button" [nzLoading]="busy() === 'rescore'" [disabled]="!!busy()" (click)="rescore()">
-      <nz-icon nzType="sync" /> {{ 'CRM.LEADS.ACTIONS.RESCORE' | translateOr: 'Rescore' }}
+    <button
+      nz-button
+      type="button"
+      [nzLoading]="busy() === 'rescore'"
+      [disabled]="!!busy()"
+      (click)="rescore()"
+    >
+      <nz-icon nzType="sync" /> {{ 'CRM.LEADS.ACTIONS.RESCORE' | translate }}
     </button>
-    <button nz-button type="button" [nzLoading]="busy() === 'route'" [disabled]="!!busy()" (click)="reroute()">
-      <nz-icon nzType="team" /> {{ 'CRM.LEADS.ACTIONS.ROUTE' | translateOr: 'Re-route' }}
+    <button
+      nz-button
+      type="button"
+      [nzLoading]="busy() === 'route'"
+      [disabled]="!!busy()"
+      (click)="reroute()"
+    >
+      <nz-icon nzType="team" /> {{ 'CRM.LEADS.ACTIONS.ROUTE' | translate }}
     </button>
-    <button nz-button nzType="primary" type="button" [disabled]="isConverted()" (click)="wizardOpen.set(true)">
-      <nz-icon nzType="check" /> {{ 'CRM.LEADS.ACTIONS.CONVERT' | translateOr: 'Convert' }}
+    <button
+      nz-button
+      nzType="primary"
+      type="button"
+      [disabled]="isConverted()"
+      (click)="wizardOpen.set(true)"
+    >
+      <nz-icon nzType="check" /> {{ 'CRM.LEADS.ACTIONS.CONVERT' | translate }}
     </button>
   </div>
 
@@ -40,69 +58,79 @@
       class="block"
       nzType="success"
       nzShowIcon
-      [nzMessage]="'CRM.LEADS.CONVERTED' | translateOr: 'This lead has been converted.'"
+      [nzMessage]="'CRM.LEADS.CONVERTED' | translate"
     />
   }
   @if (l.merged_into_lead_id) {
     <nz-alert class="block" nzType="warning" nzShowIcon [nzMessage]="mergedTpl" />
     <ng-template #mergedTpl>
-      {{ 'CRM.LEADS.MERGED_INTO' | translateOr: 'This lead was merged into another lead.' }}
-      <a [routerLink]="['/crm/leads', l.merged_into_lead_id]">{{ 'CRM.LEADS.ACTIONS.OPEN' | translateOr: 'Open lead' }}</a>
+      {{ 'CRM.LEADS.MERGED_INTO' | translate }}
+      <a [routerLink]="['/crm/leads', l.merged_into_lead_id]">{{
+        'CRM.LEADS.ACTIONS.OPEN' | translate
+      }}</a>
     </ng-template>
   }
 
   <div nz-row [nzGutter]="[16, 16]">
     <div nz-col [nzXs]="24" [nzLg]="14">
-      <nz-card [nzTitle]="'CRM.LEADS.DETAIL.INFO' | translateOr: 'Lead details'">
+      <nz-card [nzTitle]="'CRM.LEADS.DETAIL.INFO' | translate">
         <nz-descriptions [nzColumn]="{ xxl: 2, xl: 2, lg: 2, md: 2, sm: 1, xs: 1 }" nzSize="small">
-          <nz-descriptions-item [nzTitle]="'CRM.LEADS.COLUMNS.SCORE' | translateOr: 'Score'">
+          <nz-descriptions-item [nzTitle]="'CRM.LEADS.COLUMNS.SCORE' | translate">
             <app-lead-score-badge [score]="l.score" [rating]="l.rating" />
           </nz-descriptions-item>
-          <nz-descriptions-item [nzTitle]="'CRM.LEADS.COLUMNS.RATING' | translateOr: 'Rating'">
+          <nz-descriptions-item [nzTitle]="'CRM.LEADS.COLUMNS.RATING' | translate">
             <app-lead-rating-tag [rating]="l.rating" />
           </nz-descriptions-item>
-          <nz-descriptions-item [nzTitle]="'CRM.LEADS.COLUMNS.STATUS' | translateOr: 'Status'">{{
+          <nz-descriptions-item [nzTitle]="'CRM.LEADS.COLUMNS.STATUS' | translate">{{
             statusLabel(l.status)
           }}</nz-descriptions-item>
-          <nz-descriptions-item [nzTitle]="'CRM.LEADS.COLUMNS.ASSIGNEE' | translateOr: 'Assignee'">{{
-            l.assigned_user_id ? assignees.nameOf(l.assigned_user_id) : ('CRM.LEADS.UNASSIGNED' | translateOr: 'Unassigned')
+          <nz-descriptions-item [nzTitle]="'CRM.LEADS.COLUMNS.ASSIGNEE' | translate">{{
+            l.assigned_user_id
+              ? assignees.nameOf(l.assigned_user_id)
+              : ('CRM.LEADS.UNASSIGNED' | translate)
           }}</nz-descriptions-item>
-          <nz-descriptions-item [nzTitle]="'CRM.LEADS.FIELDS.EMAIL' | translateOr: 'Email'">{{ l.email || '-' }}</nz-descriptions-item>
-          <nz-descriptions-item [nzTitle]="'CRM.LEADS.FIELDS.PHONE' | translateOr: 'Phone'">{{
+          <nz-descriptions-item [nzTitle]="'CRM.LEADS.FIELDS.EMAIL' | translate">{{
+            l.email || '-'
+          }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'CRM.LEADS.FIELDS.PHONE' | translate">{{
             l.phone_e164 || l.phone || '-'
           }}</nz-descriptions-item>
-          <nz-descriptions-item [nzTitle]="'CRM.LEADS.FIELDS.VAT' | translateOr: 'VAT number'">{{
+          <nz-descriptions-item [nzTitle]="'CRM.LEADS.FIELDS.VAT' | translate">{{
             l.vat_number || '-'
           }}</nz-descriptions-item>
-          <nz-descriptions-item [nzTitle]="'CRM.LEADS.FIELDS.INDUSTRY' | translateOr: 'Industry'">{{
+          <nz-descriptions-item [nzTitle]="'CRM.LEADS.FIELDS.INDUSTRY' | translate">{{
             l.industry || '-'
           }}</nz-descriptions-item>
-          <nz-descriptions-item [nzTitle]="'CRM.LEADS.FIELDS.EMPLOYEES' | translateOr: 'Employees'">{{
+          <nz-descriptions-item [nzTitle]="'CRM.LEADS.FIELDS.EMPLOYEES' | translate">{{
             l.employee_count ?? '-'
           }}</nz-descriptions-item>
-          <nz-descriptions-item [nzTitle]="'CRM.LEADS.FIELDS.REGION' | translateOr: 'Region'">{{
+          <nz-descriptions-item [nzTitle]="'CRM.LEADS.FIELDS.REGION' | translate">{{
             [l.state_region, l.country].join(' ').trim() || '-'
           }}</nz-descriptions-item>
-          <nz-descriptions-item [nzTitle]="'CRM.LEADS.FIELDS.PRODUCT_LINE' | translateOr: 'Product line'">{{
+          <nz-descriptions-item [nzTitle]="'CRM.LEADS.FIELDS.PRODUCT_LINE' | translate">{{
             l.product_line || '-'
           }}</nz-descriptions-item>
-          <nz-descriptions-item [nzTitle]="'CRM.LEADS.COLUMNS.SOURCE' | translateOr: 'Source'">{{
+          <nz-descriptions-item [nzTitle]="'CRM.LEADS.COLUMNS.SOURCE' | translate">{{
             l.lead_source?.name || '-'
           }}</nz-descriptions-item>
-          <nz-descriptions-item [nzTitle]="'CRM.LEADS.FIELDS.LAST_ACTIVITY' | translateOr: 'Last activity'">{{
+          <nz-descriptions-item [nzTitle]="'CRM.LEADS.FIELDS.LAST_ACTIVITY' | translate">{{
             l.last_activity_at ? (l.last_activity_at | date: 'medium') : '-'
           }}</nz-descriptions-item>
         </nz-descriptions>
       </nz-card>
 
-      <nz-card class="block-top" [nzTitle]="'CRM.LEADS.DETAIL.BREAKDOWN' | translateOr: 'Score breakdown'">
+      <nz-card class="block-top" [nzTitle]="'CRM.LEADS.DETAIL.BREAKDOWN' | translate">
         @if (breakdown().length) {
           <table class="breakdown">
-            <caption class="sr-only">{{ 'CRM.LEADS.DETAIL.BREAKDOWN' | translateOr: 'Score breakdown' }}</caption>
+            <caption class="sr-only">
+              {{
+                'CRM.LEADS.DETAIL.BREAKDOWN' | translate
+              }}
+            </caption>
             <thead>
               <tr>
-                <th scope="col">{{ 'CRM.LEADS.DETAIL.RULE' | translateOr: 'Rule' }}</th>
-                <th scope="col" class="num">{{ 'CRM.LEADS.DETAIL.POINTS' | translateOr: 'Points' }}</th>
+                <th scope="col">{{ 'CRM.LEADS.DETAIL.RULE' | translate }}</th>
+                <th scope="col" class="num">{{ 'CRM.LEADS.DETAIL.POINTS' | translate }}</th>
               </tr>
             </thead>
             <tbody>
@@ -114,32 +142,43 @@
                       <span class="sub-text"> {{ b.name }}</span>
                     }
                   </td>
-                  <td class="num" [class.neg]="b.points < 0">{{ b.points > 0 ? '+' : '' }}{{ b.points }}</td>
+                  <td class="num" [class.neg]="b.points < 0">
+                    {{ b.points > 0 ? '+' : '' }}{{ b.points }}
+                  </td>
                 </tr>
               }
             </tbody>
           </table>
         } @else {
-          <nz-empty nzNotFoundImage="simple" [nzNotFoundContent]="'CRM.LEADS.DETAIL.NO_BREAKDOWN' | translateOr: 'No scoring rule applied'" />
+          <nz-empty
+            nzNotFoundImage="simple"
+            [nzNotFoundContent]="'CRM.LEADS.DETAIL.NO_BREAKDOWN' | translate"
+          />
         }
       </nz-card>
     </div>
 
     <div nz-col [nzXs]="24" [nzLg]="10">
-      <nz-card [nzTitle]="'CRM.LEADS.EVENTS.ADD' | translateOr: 'Record activity'">
+      <nz-card [nzTitle]="'CRM.LEADS.EVENTS.ADD' | translate">
         @if (eventError()) {
           <nz-alert class="block" nzType="error" nzShowIcon [nzMessage]="eventError()!" />
         }
         <form nz-form nzLayout="vertical" [formGroup]="eventForm" (ngSubmit)="addEvent()">
           <nz-form-item>
-            <nz-form-label nzFor="event_type">{{ 'CRM.LEADS.EVENTS.TYPE' | translateOr: 'Type' }}</nz-form-label>
+            <nz-form-label nzFor="event_type">{{
+              'CRM.LEADS.EVENTS.TYPE' | translate
+            }}</nz-form-label>
             <nz-form-control [nzErrorTip]="eventFieldError('type') ?? ''">
-              <nz-select nzId="event_type" formControlName="type" [nzOptions]="eventTypeOptions()" />
+              <nz-select
+                nzId="event_type"
+                formControlName="type"
+                [nzOptions]="eventTypeOptions()"
+              />
             </nz-form-control>
           </nz-form-item>
           <nz-form-item>
             <nz-form-label nzFor="event_occurred_at">{{
-              'CRM.LEADS.EVENTS.OCCURRED_AT' | translateOr: 'Occurred at (optional)'
+              'CRM.LEADS.EVENTS.OCCURRED_AT' | translate
             }}</nz-form-label>
             <nz-form-control [nzErrorTip]="eventFieldError('occurred_at') ?? ''">
               <nz-date-picker nzId="event_occurred_at" nzShowTime formControlName="occurred_at" />
@@ -147,7 +186,7 @@
           </nz-form-item>
           <nz-form-item>
             <nz-form-label nzFor="event_metadata">{{
-              'CRM.LEADS.EVENTS.METADATA' | translateOr: 'Metadata (JSON, optional)'
+              'CRM.LEADS.EVENTS.METADATA' | translate
             }}</nz-form-label>
             <nz-form-control [nzErrorTip]="eventFieldError('metadata') ?? ''">
               <textarea
@@ -159,13 +198,19 @@
               ></textarea>
             </nz-form-control>
           </nz-form-item>
-          <button nz-button nzType="primary" type="submit" [nzLoading]="busy() === 'event'" [disabled]="!!busy()">
-            <nz-icon nzType="plus" /> {{ 'CRM.LEADS.EVENTS.SUBMIT' | translateOr: 'Add activity' }}
+          <button
+            nz-button
+            nzType="primary"
+            type="submit"
+            [nzLoading]="busy() === 'event'"
+            [disabled]="!!busy()"
+          >
+            <nz-icon nzType="plus" /> {{ 'CRM.LEADS.EVENTS.SUBMIT' | translate }}
           </button>
         </form>
       </nz-card>
 
-      <nz-card class="block-top" [nzTitle]="'CRM.LEADS.EVENTS.TITLE' | translateOr: 'Activity timeline'">
+      <nz-card class="block-top" [nzTitle]="'CRM.LEADS.EVENTS.TITLE' | translate">
         @if (events().length) {
           <nz-timeline>
             @for (e of events(); track e.id) {
@@ -179,7 +224,10 @@
             }
           </nz-timeline>
         } @else {
-          <nz-empty nzNotFoundImage="simple" [nzNotFoundContent]="'CRM.LEADS.EVENTS.EMPTY' | translateOr: 'No activity yet'" />
+          <nz-empty
+            nzNotFoundImage="simple"
+            [nzNotFoundContent]="'CRM.LEADS.EVENTS.EMPTY' | translate"
+          />
         }
       </nz-card>
     </div>

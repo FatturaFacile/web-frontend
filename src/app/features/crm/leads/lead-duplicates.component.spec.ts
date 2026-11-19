@@ -25,14 +25,24 @@ const DUP: LeadDuplicateCandidate = {
   candidate: {
     type: 'lead',
     id: 'lead-old',
-    summary: { first_name: 'Anna', last_name: 'Rossi', company_name: 'Rossi Impianti', email: 'anna@rossi.it' },
+    summary: {
+      first_name: 'Anna',
+      last_name: 'Rossi',
+      company_name: 'Rossi Impianti',
+      email: 'anna@rossi.it',
+    },
   },
   match_type: 'email',
   confidence: 0.98,
   status: 'pending',
 };
 
-const OTHER: LeadDuplicateCandidate = { ...DUP, id: 'dup-2', match_type: 'company_fuzzy', confidence: 0.86 };
+const OTHER: LeadDuplicateCandidate = {
+  ...DUP,
+  id: 'dup-2',
+  match_type: 'company_fuzzy',
+  confidence: 0.86,
+};
 
 describe('LeadDuplicatesComponent', () => {
   let api: {
@@ -43,9 +53,9 @@ describe('LeadDuplicatesComponent', () => {
 
   beforeEach(() => {
     api = {
-      listDuplicates: vi.fn().mockReturnValue(
-        of({ data: [DUP, OTHER], meta: { total: 2, current_page: 1 } }),
-      ),
+      listDuplicates: vi
+        .fn()
+        .mockReturnValue(of({ data: [DUP, OTHER], meta: { total: 2, current_page: 1 } })),
       mergeDuplicate: vi.fn().mockReturnValue(of({})),
       dismissDuplicate: vi.fn().mockReturnValue(of({})),
     };
@@ -71,7 +81,7 @@ describe('LeadDuplicatesComponent', () => {
     expect(api.listDuplicates).toHaveBeenCalledWith(expect.objectContaining({ status: 'pending' }));
     const el = fixture.nativeElement as HTMLElement;
     expect(el.querySelectorAll('.side-by-side')).toHaveLength(2);
-    expect(el.textContent).toContain('Confidence: 98%');
+    expect(el.textContent).toContain('CRM.LEADS.DUPLICATES.CONFIDENCE: 98%');
     expect(el.textContent).toContain('Rossi Impianti SRL');
   });
 
@@ -93,7 +103,10 @@ describe('LeadDuplicatesComponent', () => {
     cmp.pickFields.set(true);
     cmp['setChoice']('company_name', 'candidate');
 
-    expect(cmp.buildMergePayload()).toEqual({ survivor: 'lead', field_choices: { company_name: 'candidate' } });
+    expect(cmp.buildMergePayload()).toEqual({
+      survivor: 'lead',
+      field_choices: { company_name: 'candidate' },
+    });
   });
 
   it('dismiss removes the row', () => {
@@ -104,7 +117,9 @@ describe('LeadDuplicatesComponent', () => {
   });
 
   it('a failed merge keeps the row and shows a message on it', () => {
-    api.mergeDuplicate.mockReturnValue(throwError(() => httpError(500, { message: 'Merge failed' })));
+    api.mergeDuplicate.mockReturnValue(
+      throwError(() => httpError(500, { message: 'Merge failed' })),
+    );
     const fixture = render();
     const cmp = fixture.componentInstance;
     cmp.openMerge(DUP);

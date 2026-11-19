@@ -59,7 +59,9 @@ export class LeadAssigneeSelectComponent implements OnInit {
 
   protected readonly single = computed(() => this.value() ?? null);
 
-  protected readonly text = computed(() => (this.multiple() ? this.ids().join(', ') : (this.value() ?? '')));
+  protected readonly text = computed(() =>
+    this.multiple() ? this.ids().join(', ') : (this.value() ?? ''),
+  );
 
   ngOnInit(): void {
     this.directory.load();

@@ -61,7 +61,7 @@ describe('LeadSettingsFormComponent', () => {
 
     expect(api.updateSettings).not.toHaveBeenCalled();
     expect((fixture.nativeElement as HTMLElement).textContent).toContain(
-      'The warm threshold must be lower than the hot threshold.',
+      'CRM.LEAD_SCORING.SETTINGS.THRESHOLD_ORDER',
     );
   });
 
@@ -70,7 +70,11 @@ describe('LeadSettingsFormComponent', () => {
     const cmp = TestBed.createComponent(LeadSettingsFormComponent).componentInstance;
     cmp.form.patchValue({ warm_threshold: 30, default_country: 'ch' });
     cmp.save();
-    expect(api.updateSettings).toHaveBeenCalledWith({ ...SETTINGS, warm_threshold: 30, default_country: 'CH' });
+    expect(api.updateSettings).toHaveBeenCalledWith({
+      ...SETTINGS,
+      warm_threshold: 30,
+      default_country: 'CH',
+    });
   });
 
   it('does not offer to save defaults over settings that failed to load', () => {
@@ -91,11 +95,16 @@ describe('LeadSettingsFormComponent', () => {
   it('shows server 422 errors inline', () => {
     api.updateSettings.mockReturnValue(
       throwError(() =>
-        httpError(422, { message: 'Invalid', errors: { hot_threshold: ['Hot must be greater than warm.'] } }),
+        httpError(422, {
+          message: 'Invalid',
+          errors: { hot_threshold: ['Hot must be greater than warm.'] },
+        }),
       ),
     );
     const cmp = TestBed.createComponent(LeadSettingsFormComponent).componentInstance;
     cmp.save();
-    expect(cmp.form.controls.hot_threshold.errors).toEqual({ serverError: 'Hot must be greater than warm.' });
+    expect(cmp.form.controls.hot_threshold.errors).toEqual({
+      serverError: 'Hot must be greater than warm.',
+    });
   });
 });

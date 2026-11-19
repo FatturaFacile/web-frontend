@@ -1,38 +1,36 @@
 <app-page-header
-  [title]="'CRM.LEAD_SCORING.TITLE' | translateOr: 'Lead scoring'"
-  [subtitle]="'CRM.LEAD_SCORING.SUBTITLE' | translateOr: 'Rules, cold/warm/hot thresholds and duplicate handling'"
+  [title]="'CRM.LEAD_SCORING.TITLE' | translate"
+  [subtitle]="'CRM.LEAD_SCORING.SUBTITLE' | translate"
 />
 
 <app-lead-settings-form />
 
 <div nz-row [nzGutter]="[16, 16]" class="block-top">
   <div nz-col [nzXs]="24" [nzXl]="16">
-    <nz-card [nzTitle]="'CRM.LEAD_SCORING.RULES.TITLE' | translateOr: 'Scoring rules'" [nzExtra]="newTpl">
+    <nz-card [nzTitle]="'CRM.LEAD_SCORING.RULES.TITLE' | translate" [nzExtra]="newTpl">
       <ng-template #newTpl>
         @if (!forbidden()) {
           <button nz-button nzType="primary" type="button" (click)="openCreate()">
-            <nz-icon nzType="plus" /> {{ 'CRM.LEAD_SCORING.RULES.NEW' | translateOr: 'New scoring rule' }}
+            <nz-icon nzType="plus" /> {{ 'CRM.LEAD_SCORING.RULES.NEW' | translate }}
           </button>
         }
       </ng-template>
 
       @if (forbidden()) {
-        <nz-alert
-          nzType="info"
-          nzShowIcon
-          [nzMessage]="'CRM.LEADS.FORBIDDEN' | translateOr: 'You do not have permission to manage this section.'"
-        />
+        <nz-alert nzType="info" nzShowIcon [nzMessage]="'CRM.LEADS.FORBIDDEN' | translate" />
       } @else {
         @if (loadError()) {
           <nz-alert
             class="block"
             nzType="error"
             nzShowIcon
-            [nzMessage]="'CRM.LEAD_SCORING.RULES.LOAD_ERROR' | translateOr: 'Scoring rules could not be loaded.'"
+            [nzMessage]="'CRM.LEAD_SCORING.RULES.LOAD_ERROR' | translate"
             [nzAction]="retryTpl"
           />
           <ng-template #retryTpl>
-            <button nz-button nzSize="small" type="button" (click)="load()">{{ 'COMMON.RETRY' | translateOr: 'Retry' }}</button>
+            <button nz-button nzSize="small" type="button" (click)="load()">
+              {{ 'COMMON.RETRY' | translate }}
+            </button>
           </ng-template>
         }
         <nz-table
@@ -45,12 +43,14 @@
         >
           <thead>
             <tr>
-              <th scope="col">{{ 'CRM.LEAD_SCORING.RULES.NAME' | translateOr: 'Name' }}</th>
-              <th scope="col">{{ 'CRM.LEAD_SCORING.RULES.CATEGORY' | translateOr: 'Category' }}</th>
-              <th scope="col">{{ 'CRM.LEAD_SCORING.RULES.CONDITION' | translateOr: 'Condition' }}</th>
-              <th scope="col" class="num">{{ 'CRM.LEADS.DETAIL.POINTS' | translateOr: 'Points' }}</th>
-              <th scope="col">{{ 'CRM.LEAD_SOURCES.STATUS' | translateOr: 'Status' }}</th>
-              <th scope="col"><span class="sr-only">{{ 'COMMON.ACTIONS' | translateOr: 'Actions' }}</span></th>
+              <th scope="col">{{ 'CRM.LEAD_SCORING.RULES.NAME' | translate }}</th>
+              <th scope="col">{{ 'CRM.LEAD_SCORING.RULES.CATEGORY' | translate }}</th>
+              <th scope="col">{{ 'CRM.LEAD_SCORING.RULES.CONDITION' | translate }}</th>
+              <th scope="col" class="num">{{ 'CRM.LEADS.DETAIL.POINTS' | translate }}</th>
+              <th scope="col">{{ 'CRM.LEAD_SOURCES.STATUS' | translate }}</th>
+              <th scope="col">
+                <span class="sr-only">{{ 'COMMON.ACTIONS' | translate }}</span>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -58,16 +58,18 @@
               <tr>
                 <td>
                   <strong>{{ r.name }}</strong>
-                  <div class="sub-text"><code>{{ r.code }}</code></div>
+                  <div class="sub-text">
+                    <code>{{ r.code }}</code>
+                  </div>
                 </td>
                 <td>{{ categoryLabel(r.category) }}</td>
                 <td>{{ target(r) }} {{ operatorLabel(r.operator) }} {{ value(r) }}</td>
                 <td class="num">{{ r.points > 0 ? '+' : '' }}{{ r.points }}</td>
                 <td>
                   @if (r.is_active) {
-                    <nz-tag nzColor="green">{{ 'COMMON.ACTIVE' | translateOr: 'Active' }}</nz-tag>
+                    <nz-tag nzColor="green">{{ 'COMMON.ACTIVE' | translate }}</nz-tag>
                   } @else {
-                    <nz-tag>{{ 'COMMON.INACTIVE' | translateOr: 'Inactive' }}</nz-tag>
+                    <nz-tag>{{ 'COMMON.INACTIVE' | translate }}</nz-tag>
                   }
                 </td>
                 <td class="row-actions">
@@ -79,14 +81,16 @@
                     [disabled]="busyId() === r.id"
                     (click)="toggle(r)"
                   >
-                    {{ r.is_active ? ('COMMON.DISABLE' | translateOr: 'Disable') : ('COMMON.ENABLE' | translateOr: 'Enable') }}
+                    {{
+                      r.is_active ? ('COMMON.DISABLE' | translate) : ('COMMON.ENABLE' | translate)
+                    }}
                   </button>
                   <button
                     nz-button
                     nzType="text"
                     nzSize="small"
                     type="button"
-                    [attr.aria-label]="('COMMON.EDIT' | translateOr: 'Edit') + ' ' + r.name"
+                    [attr.aria-label]="('COMMON.EDIT' | translate) + ' ' + r.name"
                     (click)="openEdit(r)"
                   >
                     <nz-icon nzType="edit" />
@@ -98,10 +102,10 @@
                     nzSize="small"
                     type="button"
                     nz-popconfirm
-                    [nzPopconfirmTitle]="'CRM.LEAD_SCORING.RULES.CONFIRM_DELETE' | translateOr: 'Delete this rule?'"
-                    [nzOkText]="'COMMON.DELETE' | translateOr: 'Delete'"
-                    [nzCancelText]="'COMMON.CANCEL' | translateOr: 'Cancel'"
-                    [attr.aria-label]="('COMMON.DELETE' | translateOr: 'Delete') + ' ' + r.name"
+                    [nzPopconfirmTitle]="'CRM.LEAD_SCORING.RULES.CONFIRM_DELETE' | translate"
+                    [nzOkText]="'COMMON.DELETE' | translate"
+                    [nzCancelText]="'COMMON.CANCEL' | translate"
+                    [attr.aria-label]="('COMMON.DELETE' | translate) + ' ' + r.name"
                     (nzOnConfirm)="remove(r)"
                   >
                     <nz-icon nzType="delete" />
