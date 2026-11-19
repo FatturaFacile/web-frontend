@@ -60,6 +60,7 @@ export * from './api/short-time-api.service';
 export * from './api/admin-api.service';
 export * from './api/exports-api.service';
 export * from './api/sdi-transmissions-api.service';
+export * from './api/fpa-documents-api.service';
 export * from './api/hr-talent-api.service';
 export * from './api/hr-extra-api.service';
 export * from './api/hr-recruiting-ats.types';
