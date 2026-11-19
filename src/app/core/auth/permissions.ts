@@ -96,6 +96,7 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
   analytics: { read: FINANCE_READERS, write: FINANCE },
   communication: { read: FINANCE_READERS, write: ['owner', 'admin', 'accountant', 'sales'] },
   document_trust: { read: FINANCE_READERS, write: FINANCE },
+  digital_preservation: { read: FINANCE_READERS, write: FINANCE },
   integrations: { read: MANAGERS, write: MANAGERS },
   payment_links: { read: FINANCE_READERS, write: ['owner', 'admin', 'accountant', 'sales'] },
   associations: {

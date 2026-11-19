@@ -1,0 +1,67 @@
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.muted {
+  color: var(--text-secondary, #595959);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.xml-viewer {
+  max-height: 60vh;
+  overflow: auto;
+  padding: 12px;
+  background: var(--bg-card, #fafafa);
+  border: 1px solid var(--border-color, #f0f0f0);
+  border-radius: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  white-space: pre;
+
+  :host ::ng-deep .x-tag {
+    color: #0b5394;
+  }
+  :host ::ng-deep .x-attr {
+    color: #8a3b00;
+  }
+  :host ::ng-deep .x-value {
+    color: #0b6b2e;
+  }
+  :host ::ng-deep .x-comment {
+    color: #6b6b6b;
+    font-style: italic;
+  }
+}
+
+.hash-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 2px 0;
+}
