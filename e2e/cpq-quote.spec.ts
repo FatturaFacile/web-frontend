@@ -17,9 +17,21 @@ const tid = (page: Page, id: string) => page.locator(`[data-test="${id}"]`);
 
 const json = (data: unknown, status = 200) => ({ status, contentType: 'application/json', body: JSON.stringify({ success: true, message: 'ok', data }) });
 
+/** The app waits for its translations before it starts: serve a minimal dictionary for every language. */
+async function mockTranslations(page: Page): Promise<void> {
+  await page.route('**/api/v1/translations/*', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ translations: { 'CPQ.SIGN.TITLE': 'Quote signature', 'CPQ.BUILDER.TITLE': 'Quote' } }),
+    }),
+  );
+}
+
 async function mockSigningApi(page: Page): Promise<{ signBody: () => unknown }> {
   let signed: unknown = null;
 
+  await mockTranslations(page);
   await page.route('**/api/v1/public/quote-signatures/tok-e2e', (route) =>
     route.fulfill(
       json({
@@ -96,6 +108,7 @@ test.describe('Critical Flow: CPQ quote — customer e-signature', () => {
   });
 
   test('an unusable link shows the unavailable message', async ({ page }) => {
+    await mockTranslations(page);
     await page.route('**/api/v1/public/quote-signatures/expired', (route) => route.fulfill({ status: 422, contentType: 'application/json', body: JSON.stringify({ message: 'This signature link has expired.' }) }));
 
     await page.goto('/quote-signature/expired');
