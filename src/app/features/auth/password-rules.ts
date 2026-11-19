@@ -22,6 +22,24 @@ export function passwordsMatch(group: AbstractControl): ValidationErrors | null 
   return null;
 }
 
+/** Mirrors the backend defaults (`auth.registration.password`): 10+ characters, upper and lower case, a number and a symbol. */
+export const PASSWORD_MIN_LENGTH = 10;
+
+export function passwordPolicy(control: AbstractControl): ValidationErrors | null {
+  const value = control.value;
+  if (typeof value !== 'string' || value === '') {
+    return null;
+  }
+  const failed = {
+    minlength: value.length < PASSWORD_MIN_LENGTH,
+    mixedCase: !(/\p{Ll}/u.test(value) && /\p{Lu}/u.test(value)),
+    number: !/\p{N}/u.test(value),
+    symbol: !/[^\p{L}\p{N}\s]/u.test(value),
+  };
+  const errors = Object.fromEntries(Object.entries(failed).filter(([, bad]) => bad));
+  return Object.keys(errors).length ? { passwordPolicy: errors } : null;
+}
+
 /** Indicative only: the backend applies the configured policy. 0 (empty) to 4 (strong). */
 export function passwordStrength(password: string): number {
   if (!password) {

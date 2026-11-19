@@ -7,6 +7,7 @@ import { toHttpParams } from '../http/laravel-http.utils';
 import {
   PortalBranding,
   PortalCheckout,
+  PortalCheckoutMethod,
   PortalDashboard,
   PortalDeliveryNote,
   PortalEnvelope,
@@ -127,10 +128,14 @@ export class PortalAreaApiService {
     });
   }
 
-  checkout(invoiceId: string): Observable<PortalEnvelope<PortalCheckout>> {
+  /** `paymentMethod` is the backend value (card, twint, sepa, paypal, qr); omitted, the gateway offers its default page. */
+  checkout(
+    invoiceId: string,
+    paymentMethod?: PortalCheckoutMethod,
+  ): Observable<PortalEnvelope<PortalCheckout>> {
     return this.http.post<PortalEnvelope<PortalCheckout>>(
       `${this.base}/invoices/${invoiceId}/checkout`,
-      {},
+      paymentMethod ? { payment_method: paymentMethod } : {},
       { context: PORTAL_ERRORS() },
     );
   }

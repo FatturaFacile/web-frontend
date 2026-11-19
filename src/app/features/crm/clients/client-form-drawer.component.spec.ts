@@ -114,8 +114,38 @@ describe('ClientFormDrawerComponent validation', () => {
     const drawer = createDrawer();
     drawer.form.patchValue({ company_name: 'Alpha SA', sdi_code: 'ABC', country: 'CHE' });
 
-    expect(drawer.form.controls.sdi_code.hasError('exactLength')).toBe(true);
+    expect(drawer.form.controls.sdi_code.hasError('sdiCode')).toBe(true);
     expect(drawer.form.controls.country.hasError('pattern')).toBe(true);
+  });
+
+  it('blocks saving an Italian contact with a wrong Partita IVA or Codice Fiscale', () => {
+    const drawer = createDrawer();
+    drawer.form.patchValue({ company_name: 'Alpha Srl', country: 'IT', vat_number: 'IT01234567890' });
+
+    drawer.submit();
+    expect(api.create).not.toHaveBeenCalled();
+    expect(drawer.form.controls.vat_number.hasError('itVat')).toBe(true);
+
+    drawer.form.patchValue({ vat_number: 'IT01234567897', fiscal_code: 'RSSMRA85T10A562X' });
+    drawer.submit();
+    expect(api.create).not.toHaveBeenCalled();
+    expect(drawer.form.controls.fiscal_code.hasError('itFiscalCode')).toBe(true);
+
+    drawer.form.patchValue({ fiscal_code: 'RSSMRA85T10A562S' });
+    drawer.submit();
+    expect(api.create).toHaveBeenCalledTimes(1);
+  });
+
+  it('checks the Swiss UID and re-checks the VAT number when the country changes', () => {
+    const drawer = createDrawer();
+    drawer.form.patchValue({ company_name: 'Alpha SA', country: 'CH', vat_number: 'CHE-116.281.711' });
+    expect(drawer.form.controls.vat_number.hasError('chUid')).toBe(true);
+
+    drawer.form.patchValue({ vat_number: 'CHE-116.281.710' });
+    expect(drawer.form.controls.vat_number.valid).toBe(true);
+
+    drawer.form.patchValue({ country: 'IT' });
+    expect(drawer.form.controls.vat_number.hasError('itVat')).toBe(true);
   });
 
   it('shows the billing address the API returns in `addresses` when editing a contact', () => {

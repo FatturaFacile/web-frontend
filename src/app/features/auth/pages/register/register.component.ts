@@ -16,7 +16,7 @@ import { environment } from '@env';
 import { TranslatePipe } from '@shared';
 import { AuthFooterComponent } from '../../components/auth-footer.component';
 import { AuthToolbarComponent } from '../../components/auth-toolbar.component';
-import { passwordsMatch, passwordStrength, STRENGTH_KEYS } from '../../password-rules';
+import { passwordPolicy, passwordsMatch, passwordStrength, STRENGTH_KEYS } from '../../password-rules';
 
 @Component({
   selector: 'app-register',
@@ -59,7 +59,7 @@ export class RegisterComponent {
       company_name: this.fb.control('', [Validators.required, Validators.maxLength(255)]),
       country: this.fb.control<RegistrationCountry>('IT', [Validators.required]),
       tax_id: this.fb.control('', [Validators.required, Validators.maxLength(30)]),
-      password: this.fb.control('', [Validators.required]),
+      password: this.fb.control('', [Validators.required, passwordPolicy]),
       password_confirmation: this.fb.control('', [Validators.required]),
       terms_accepted: this.fb.control(false, [Validators.requiredTrue]),
       privacy_accepted: this.fb.control(false, [Validators.requiredTrue]),
