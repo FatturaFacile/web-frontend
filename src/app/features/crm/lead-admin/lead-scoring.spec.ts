@@ -7,7 +7,11 @@ import { LeadApiService } from '@core';
 import { icons } from '../../../icons-provider';
 import { httpError, i18nStub, messageStub } from '../leads/lead-test.utils';
 import { LeadScorePreviewComponent } from './lead-score-preview.component';
-import { formatRuleValue, LeadScoringRuleModalComponent, parseRuleValue } from './lead-scoring-rule-modal.component';
+import {
+  formatRuleValue,
+  LeadScoringRuleModalComponent,
+  parseRuleValue,
+} from './lead-scoring-rule-modal.component';
 
 describe('scoring rule values', () => {
   it('parses JSON when possible and keeps plain text otherwise', () => {
@@ -25,10 +29,20 @@ describe('lead scoring admin', () => {
 
   beforeEach(() => {
     api = {
-      listLeads: vi.fn().mockReturnValue(of({ data: [{ id: 'l1', first_name: 'Anna', last_name: 'Rossi' }], meta: {} })),
-      previewScore: vi.fn().mockReturnValue(
-        of({ score: 72, rating: 'hot', breakdown: [{ rule_id: 'r1', code: 'INDUSTRY_IT', points: 25 }] }),
-      ),
+      listLeads: vi
+        .fn()
+        .mockReturnValue(
+          of({ data: [{ id: 'l1', first_name: 'Anna', last_name: 'Rossi' }], meta: {} }),
+        ),
+      previewScore: vi
+        .fn()
+        .mockReturnValue(
+          of({
+            score: 72,
+            rating: 'hot',
+            breakdown: [{ rule_id: 'r1', code: 'INDUSTRY_IT', points: 25 }],
+          }),
+        ),
       createScoringRule: vi.fn().mockReturnValue(of({ id: 'r9' })),
       updateScoringRule: vi.fn(),
     };
@@ -53,12 +67,14 @@ describe('lead scoring admin', () => {
     expect(api['previewScore']).toHaveBeenCalledWith({ lead_id: 'l1' });
     const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
     expect(text).toContain('72');
-    expect(text).toContain('Hot');
+    expect(text).toContain('CRM.LEADS.RATING.HOT');
     expect(text).toContain('INDUSTRY_IT');
   });
 
   it('preview errors are shown inline', () => {
-    api['previewScore'].mockReturnValue(throwError(() => httpError(422, { message: 'Lead not found', errors: {} })));
+    api['previewScore'].mockReturnValue(
+      throwError(() => httpError(422, { message: 'Lead not found', errors: {} })),
+    );
     const fixture = TestBed.createComponent(LeadScorePreviewComponent);
     fixture.componentInstance.leadId.set('l1');
     fixture.componentInstance.run();
@@ -99,6 +115,6 @@ describe('lead scoring admin', () => {
     cmp.form.patchValue({ code: 'X', name: 'X', category: 'demographic', field: '' });
     cmp.save();
     expect(api['createScoringRule']).not.toHaveBeenCalled();
-    expect(cmp.formError()).toBe('Choose the lead field or the event type.');
+    expect(cmp.formError()).toBe('CRM.LEAD_SCORING.RULES.TARGET_REQUIRED');
   });
 });

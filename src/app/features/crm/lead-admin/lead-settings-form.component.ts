@@ -15,10 +15,19 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzSelectModule } from 'ng-zorro-antd/select';
-import { applyServerErrors, I18nService, LeadApiService, LeadDedupMode, LeadSetting, serverErrorMessage } from '@core';
-import { apiErrorMessage, httpStatus, translateOr, TranslateOrPipe } from '../leads/lead-i18n';
+import {
+  applyServerErrors,
+  I18nService,
+  LeadApiService,
+  LeadDedupMode,
+  LeadSetting,
+  serverErrorMessage,
+} from '@core';
+import { apiErrorMessage, httpStatus } from '../leads/lead-i18n';
 
 /** Cross-field rule mirrored from the backend: warm_threshold must stay below hot_threshold. */
+import { TranslatePipe } from '@shared';
+
 export function thresholdOrderValidator(group: AbstractControl): ValidationErrors | null {
   const warm = Number(group.get('warm_threshold')?.value);
   const hot = Number(group.get('hot_threshold')?.value);
@@ -50,7 +59,7 @@ const DEFAULTS: LeadSetting = {
     NzInputModule,
     NzInputNumberModule,
     NzSelectModule,
-    TranslateOrPipe,
+    TranslatePipe,
   ],
   templateUrl: './lead-settings-form.component.html',
   styleUrl: './lead-admin.scss',
@@ -68,28 +77,42 @@ export class LeadSettingsFormComponent {
 
   readonly form = this.fb.group(
     {
-      warm_threshold: this.fb.control(DEFAULTS.warm_threshold, [Validators.required, Validators.min(0), Validators.max(100)]),
-      hot_threshold: this.fb.control(DEFAULTS.hot_threshold, [Validators.required, Validators.min(0), Validators.max(100)]),
+      warm_threshold: this.fb.control(DEFAULTS.warm_threshold, [
+        Validators.required,
+        Validators.min(0),
+        Validators.max(100),
+      ]),
+      hot_threshold: this.fb.control(DEFAULTS.hot_threshold, [
+        Validators.required,
+        Validators.min(0),
+        Validators.max(100),
+      ]),
       auto_qualify_threshold: this.fb.control(DEFAULTS.auto_qualify_threshold, [
         Validators.required,
         Validators.min(0),
         Validators.max(100),
       ]),
       dedup_mode: this.fb.control<LeadDedupMode>(DEFAULTS.dedup_mode),
-      dedup_levenshtein_max: this.fb.control(DEFAULTS.dedup_levenshtein_max, [Validators.required, Validators.min(0)]),
+      dedup_levenshtein_max: this.fb.control(DEFAULTS.dedup_levenshtein_max, [
+        Validators.required,
+        Validators.min(0),
+      ]),
       dedup_similarity_min: this.fb.control(DEFAULTS.dedup_similarity_min, [
         Validators.required,
         Validators.min(0),
         Validators.max(1),
       ]),
-      default_country: this.fb.control(DEFAULTS.default_country, [Validators.required, Validators.pattern(/^[A-Za-z]{2}$/)]),
+      default_country: this.fb.control(DEFAULTS.default_country, [
+        Validators.required,
+        Validators.pattern(/^[A-Za-z]{2}$/),
+      ]),
     },
     { validators: [thresholdOrderValidator] },
   );
 
-  protected readonly dedupModes: { value: LeadDedupMode; key: string; fallback: string }[] = [
-    { value: 'notify', key: 'CRM.LEAD_SCORING.SETTINGS.DEDUP_NOTIFY', fallback: 'Notify (review duplicates)' },
-    { value: 'auto_merge', key: 'CRM.LEAD_SCORING.SETTINGS.DEDUP_AUTO_MERGE', fallback: 'Auto-merge exact matches' },
+  protected readonly dedupModes: { value: LeadDedupMode; key: string }[] = [
+    { value: 'notify', key: 'CRM.LEAD_SCORING.SETTINGS.DEDUP_NOTIFY' },
+    { value: 'auto_merge', key: 'CRM.LEAD_SCORING.SETTINGS.DEDUP_AUTO_MERGE' },
   ];
 
   /** True when the current settings could not be read: saving would overwrite them with defaults. */
@@ -143,7 +166,7 @@ export class LeadSettingsFormComponent {
         if (saved && typeof saved === 'object' && 'warm_threshold' in saved) {
           this.form.reset({ ...v, ...saved });
         }
-        this.message.success(translateOr(this.i18n, 'CRM.LEAD_SCORING.SETTINGS.SAVED', 'Settings saved'));
+        this.message.success(this.i18n.translate('CRM.LEAD_SCORING.SETTINGS.SAVED'));
       },
       error: (err: unknown) => {
         this.saving.set(false);

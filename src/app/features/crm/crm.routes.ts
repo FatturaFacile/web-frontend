@@ -26,37 +26,49 @@ export const CRM_ROUTES: Routes = [
   },
   {
     path: 'leads',
-    data: { breadcrumb: 'Leads', title: 'Leads' },
+    data: { breadcrumb: 'NAV.LEADS', title: 'NAV.LEADS' },
     loadComponent: () => import('./leads/leads.component').then((m) => m.LeadsComponent),
   },
   {
     path: 'leads/duplicates',
-    data: { breadcrumb: 'Lead duplicates', title: 'Lead duplicates' },
+    data: { breadcrumb: 'NAV.LEAD_DUPLICATES', title: 'NAV.LEAD_DUPLICATES' },
     loadComponent: () =>
       import('./leads/lead-duplicates.component').then((m) => m.LeadDuplicatesComponent),
   },
   {
     path: 'leads/:id',
-    data: { breadcrumb: 'Lead', title: 'Lead' },
+    data: { breadcrumb: 'NAV.LEAD_DETAIL', title: 'NAV.LEAD_DETAIL' },
     loadComponent: () => import('./leads/lead-detail.component').then((m) => m.LeadDetailComponent),
   },
   {
     path: 'lead-sources',
-    data: { breadcrumb: 'Lead sources', title: 'Lead sources' },
+    data: { breadcrumb: 'NAV.LEAD_SOURCES', title: 'NAV.LEAD_SOURCES' },
     loadComponent: () =>
       import('./lead-admin/lead-sources.component').then((m) => m.LeadSourcesComponent),
   },
   {
     path: 'lead-scoring',
-    data: { breadcrumb: 'Lead scoring', title: 'Lead scoring' },
+    data: { breadcrumb: 'NAV.LEAD_SCORING', title: 'NAV.LEAD_SCORING' },
     loadComponent: () =>
       import('./lead-admin/lead-scoring.component').then((m) => m.LeadScoringComponent),
   },
   {
     path: 'lead-routing',
-    data: { breadcrumb: 'Lead routing', title: 'Lead routing' },
+    data: { breadcrumb: 'NAV.LEAD_ROUTING', title: 'NAV.LEAD_ROUTING' },
     loadComponent: () =>
       import('./lead-admin/lead-routing.component').then((m) => m.LeadRoutingComponent),
+  },
+  {
+    path: 'lead-webhooks',
+    data: { breadcrumb: 'NAV.LEAD_WEBHOOKS', title: 'NAV.LEAD_WEBHOOKS' },
+    loadComponent: () =>
+      import('./lead-admin/lead-webhooks.component').then((m) => m.LeadWebhooksComponent),
+  },
+  {
+    path: 'portal-settings',
+    data: { breadcrumb: 'NAV.CRM_PORTAL_SETTINGS', title: 'NAV.CRM_PORTAL_SETTINGS' },
+    loadComponent: () =>
+      import('./portal-settings/portal-settings.component').then((m) => m.CrmPortalSettingsComponent),
   },
   {
     path: 'engagement',

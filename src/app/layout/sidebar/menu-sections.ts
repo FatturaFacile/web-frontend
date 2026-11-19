@@ -66,6 +66,18 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             module: 'crm',
           },
           {
+            key: 'NAV.LEAD_WEBHOOKS',
+            route: '/crm/lead-webhooks',
+            icon: 'fa-solid fa-link',
+            module: 'crm',
+          },
+          {
+            key: 'NAV.CRM_PORTAL_SETTINGS',
+            route: '/crm/portal-settings',
+            icon: 'fa-solid fa-palette',
+            module: 'crm',
+          },
+          {
             key: 'NAV.SUPPLIERS',
             route: '/crm/suppliers',
             icon: 'fa-solid fa-truck-field',
@@ -1068,6 +1080,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             key: 'NAV.FS_WORK_ORDERS',
             route: '/field-service/work-orders',
             icon: 'fa-solid fa-clipboard-check',
+            module: 'service',
+          },
+          {
+            key: 'NAV.FS_CONTRACTS',
+            route: '/field-service/contracts',
+            icon: 'fa-solid fa-file-contract',
             module: 'service',
           },
         ],

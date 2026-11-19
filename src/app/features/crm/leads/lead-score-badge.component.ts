@@ -1,6 +1,5 @@
 import { Component, computed, inject, input } from '@angular/core';
 import { I18nService, LeadRating } from '@core';
-import { translateOr } from './lead-i18n';
 
 /**
  * Numeric 0-100 score badge. The tint follows the backend rating; the number
@@ -74,7 +73,7 @@ export class LeadScoreBadgeComponent {
     this.i18n.currentLanguage();
     const v = this.value();
     return v === null
-      ? translateOr(this.i18n, 'CRM.LEADS.SCORE_NONE', 'Not scored')
-      : translateOr(this.i18n, 'CRM.LEADS.SCORE_ARIA', 'Score {score} out of 100', { score: v });
+      ? this.i18n.translate('CRM.LEADS.SCORE_NONE')
+      : this.i18n.translate('CRM.LEADS.SCORE_ARIA', { score: v });
   });
 }

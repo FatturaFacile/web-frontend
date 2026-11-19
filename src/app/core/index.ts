@@ -160,3 +160,4 @@ export * from './realtime/notification-realtime.service';
 export * from './http/error-handling.context';
 export * from './api/recruiting-api.service';
 export * from './api/audit-trail-api.service';
+export * from './api/gap-views-api.service';

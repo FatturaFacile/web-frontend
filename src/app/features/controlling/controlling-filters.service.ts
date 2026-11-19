@@ -1,10 +1,23 @@
 import { computed, Service, signal } from '@angular/core';
 import { CompareMode, MarginQuery, MarginTier } from '@core';
 
-export const PERIOD_PRESETS = ['this_month', 'last_quarter', 'ytd', 'last_12_months', 'custom'] as const;
+export const PERIOD_PRESETS = [
+  'this_month',
+  'last_quarter',
+  'ytd',
+  'last_12_months',
+  'custom',
+] as const;
 export type PeriodPreset = (typeof PERIOD_PRESETS)[number];
 
-export type FacetKey = 'cost_center_id' | 'job_id' | 'country_code' | 'product_family_id' | 'customer_id' | 'sales_agent_id' | 'production_department_id';
+export type FacetKey =
+  | 'cost_center_id'
+  | 'job_id'
+  | 'country_code'
+  | 'product_family_id'
+  | 'customer_id'
+  | 'sales_agent_id'
+  | 'production_department_id';
 
 function iso(date: Date): string {
   const month = `${date.getMonth() + 1}`.padStart(2, '0');
@@ -13,7 +26,10 @@ function iso(date: Date): string {
 }
 
 /** Period of a preset relative to today. */
-export function presetRange(preset: PeriodPreset, today = new Date()): { from: string; to: string } {
+export function presetRange(
+  preset: PeriodPreset,
+  today = new Date(),
+): { from: string; to: string } {
   const year = today.getFullYear();
   const month = today.getMonth();
   switch (preset) {
@@ -21,7 +37,10 @@ export function presetRange(preset: PeriodPreset, today = new Date()): { from: s
       return { from: iso(new Date(year, month, 1)), to: iso(new Date(year, month + 1, 0)) };
     case 'last_quarter': {
       const quarterStart = Math.floor(month / 3) * 3 - 3;
-      return { from: iso(new Date(year, quarterStart, 1)), to: iso(new Date(year, quarterStart + 3, 0)) };
+      return {
+        from: iso(new Date(year, quarterStart, 1)),
+        to: iso(new Date(year, quarterStart + 3, 0)),
+      };
     }
     case 'last_12_months':
       return { from: iso(new Date(year, month - 11, 1)), to: iso(new Date(year, month + 1, 0)) };

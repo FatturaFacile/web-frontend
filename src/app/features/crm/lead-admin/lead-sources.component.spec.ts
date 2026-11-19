@@ -39,9 +39,16 @@ describe('lead source secrets', () => {
       createSource: vi.fn().mockReturnValue(of(CREATED)),
       updateSource: vi.fn(),
       deleteSource: vi.fn().mockReturnValue(of(null)),
-      rotateSourceSecret: vi.fn().mockReturnValue(
-        of({ ...EXISTING, webhook_secret: 'whsec_rotated', api_key: 'ff_new_key', api_key_prefix: 'ff_new' }),
-      ),
+      rotateSourceSecret: vi
+        .fn()
+        .mockReturnValue(
+          of({
+            ...EXISTING,
+            webhook_secret: 'whsec_rotated',
+            api_key: 'ff_new_key',
+            api_key_prefix: 'ff_new',
+          }),
+        ),
     };
     setItem = vi.spyOn(Storage.prototype, 'setItem');
     consoleLog = vi.spyOn(console, 'log');
@@ -83,15 +90,18 @@ describe('lead source secrets', () => {
     cmp.form.patchValue({ name: 'Landing', type: 'wordpress' });
     cmp.save();
 
-    expect(api['createSource']).toHaveBeenCalledWith(expect.objectContaining({ name: 'Landing', type: 'wordpress' }));
+    expect(api['createSource']).toHaveBeenCalledWith(
+      expect.objectContaining({ name: 'Landing', type: 'wordpress' }),
+    );
     expect(cmp.secrets()).toEqual(extractSecrets(CREATED));
     // List state never holds the secrets.
     expect(JSON.stringify(cmp.sources())).not.toContain('whsec_supersecret');
     expect(JSON.stringify(cmp.sources())).not.toContain('ff_cd34_fullkey');
 
     fixture.detectChanges();
-    const modal = fixture.debugElement.query((d) => d.componentInstance instanceof LeadSecretModalComponent)
-      .componentInstance as LeadSecretModalComponent;
+    const modal = fixture.debugElement.query(
+      (d) => d.componentInstance instanceof LeadSecretModalComponent,
+    ).componentInstance as LeadSecretModalComponent;
     modal.close();
     expect(cmp.secrets()).toBeNull();
 
@@ -115,7 +125,9 @@ describe('lead source secrets', () => {
   });
 
   it('a later list response never brings secrets back', () => {
-    api['listSources'].mockReturnValue(of([{ ...EXISTING, webhook_secret: 'leaked', api_key: 'leaked' }]));
+    api['listSources'].mockReturnValue(
+      of([{ ...EXISTING, webhook_secret: 'leaked', api_key: 'leaked' }]),
+    );
     const cmp = TestBed.createComponent(LeadSourcesComponent).componentInstance;
     expect(JSON.stringify(cmp.sources())).not.toContain('leaked');
   });
@@ -125,6 +137,6 @@ describe('lead source secrets', () => {
     const fixture = TestBed.createComponent(LeadSourcesComponent);
     fixture.detectChanges();
     expect(fixture.componentInstance.forbidden()).toBe(true);
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('You do not have permission');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('CRM.LEADS.FORBIDDEN');
   });
 });

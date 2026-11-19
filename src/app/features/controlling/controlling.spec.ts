@@ -18,7 +18,10 @@ describe('presetRange', () => {
   });
 
   it('covers the last full quarter across a year boundary', () => {
-    expect(presetRange('last_quarter', new Date(2026, 1, 10))).toEqual({ from: '2025-10-01', to: '2025-12-31' });
+    expect(presetRange('last_quarter', new Date(2026, 1, 10))).toEqual({
+      from: '2025-10-01',
+      to: '2025-12-31',
+    });
   });
 
   it('covers the last 12 months up to the end of the current month', () => {
@@ -45,7 +48,13 @@ describe('ControllingFilters', () => {
     filters.setFacet('country_code', 'CH');
 
     expect(filters.preset()).toBe('custom');
-    expect(filters.query()).toEqual({ date_from: '2026-01-01', date_to: '2026-06-30', margin_tier: 'full_industrial', compare_mode: 'active_budget', country_code: 'CH' });
+    expect(filters.query()).toEqual({
+      date_from: '2026-01-01',
+      date_to: '2026-06-30',
+      margin_tier: 'full_industrial',
+      compare_mode: 'active_budget',
+      country_code: 'CH',
+    });
     expect(filters.fiscalYear()).toBe(2026);
     expect(filters.lastMonth()).toBe(6);
   });
@@ -70,15 +79,26 @@ describe('ControllingApiService', () => {
   let http: HttpTestingController;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [ControllingApiService, provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.configureTestingModule({
+      providers: [ControllingApiService, provideHttpClient(), provideHttpClientTesting()],
+    });
     api = TestBed.inject(ControllingApiService);
     http = TestBed.inject(HttpTestingController);
   });
 
   it('sends the drill path as indexed query parameters and skips empty values', () => {
-    api.exploreMargins({ group_by: 'geography', date_from: '2026-01-01', drill_path: [{ dimension: 'geography', value: 'CH' }], country_code: '' }).subscribe();
+    api
+      .exploreMargins({
+        group_by: 'geography',
+        date_from: '2026-01-01',
+        drill_path: [{ dimension: 'geography', value: 'CH' }],
+        country_code: '',
+      })
+      .subscribe();
 
-    const request = http.expectOne((r) => r.url === `${environment.apiBaseUrl}/analytics/margins/explore`);
+    const request = http.expectOne(
+      (r) => r.url === `${environment.apiBaseUrl}/analytics/margins/explore`,
+    );
     expect(request.request.params.get('group_by')).toBe('geography');
     expect(request.request.params.get('drill_path[0][dimension]')).toBe('geography');
     expect(request.request.params.get('drill_path[0][value]')).toBe('CH');
@@ -93,7 +113,9 @@ describe('ControllingApiService', () => {
     preview.flush({ data: {} });
 
     api.reverseAllocation('run-1').subscribe();
-    http.expectOne(`${environment.apiBaseUrl}/controlling/allocations/run-1/reverse`).flush({ data: {} });
+    http
+      .expectOne(`${environment.apiBaseUrl}/controlling/allocations/run-1/reverse`)
+      .flush({ data: {} });
   });
 
   it('saves the budget grid in bulk', () => {
@@ -108,7 +130,9 @@ describe('ControllingApiService', () => {
   it('requests the financial KPIs with the 12 month window', () => {
     api.getFinancialKpis('2026-12-31').subscribe();
 
-    const request = http.expectOne((r) => r.url === `${environment.apiBaseUrl}/analytics/financial-kpis`);
+    const request = http.expectOne(
+      (r) => r.url === `${environment.apiBaseUrl}/analytics/financial-kpis`,
+    );
     expect(request.request.params.get('as_of')).toBe('2026-12-31');
     expect(request.request.params.get('months')).toBe('12');
     request.flush({ data: {} });

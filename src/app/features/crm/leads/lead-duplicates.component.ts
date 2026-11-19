@@ -22,13 +22,20 @@ import {
   LeadMergeSurvivor,
   leadDisplayName,
 } from '@core';
-import { PageHeaderComponent } from '@shared';
-import { apiErrorMessage, httpStatus, humanize, translateOr, TranslateOrPipe } from './lead-i18n';
+import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { apiErrorMessage, httpStatus } from './lead-i18n';
 import { LeadRatingTagComponent } from './lead-rating-tag.component';
 import { LeadScoreBadgeComponent } from './lead-score-badge.component';
 
 /** Fields that can be picked individually when merging two records. */
-export const MERGE_FIELDS = ['first_name', 'last_name', 'company_name', 'email', 'phone', 'vat_number'] as const;
+export const MERGE_FIELDS = [
+  'first_name',
+  'last_name',
+  'company_name',
+  'email',
+  'phone',
+  'vat_number',
+] as const;
 type MergeField = (typeof MERGE_FIELDS)[number];
 
 export interface MergeFieldRow {
@@ -51,9 +58,11 @@ export function candidateFields(d: LeadDuplicateCandidate): Record<string, unkno
 export function conflictingFields(d: LeadDuplicateCandidate): MergeFieldRow[] {
   const c = candidateFields(d);
   const lead = d.lead as unknown as Record<string, unknown>;
-  return MERGE_FIELDS.map((field) => ({ field, lead: asText(lead?.[field]), candidate: asText(c[field]) })).filter(
-    (r) => r.candidate !== '' && r.lead !== r.candidate,
-  );
+  return MERGE_FIELDS.map((field) => ({
+    field,
+    lead: asText(lead?.[field]),
+    candidate: asText(c[field]),
+  })).filter((r) => r.candidate !== '' && r.lead !== r.candidate);
 }
 
 @Component({
@@ -74,7 +83,7 @@ export function conflictingFields(d: LeadDuplicateCandidate): MergeFieldRow[] {
     NzSkeletonModule,
     NzTagModule,
     PageHeaderComponent,
-    TranslateOrPipe,
+    TranslatePipe,
     LeadRatingTagComponent,
     LeadScoreBadgeComponent,
   ],
@@ -113,17 +122,19 @@ export class LeadDuplicatesComponent {
   load(): void {
     this.loading.set(true);
     this.loadError.set(false);
-    this.api.listDuplicates({ status: 'pending', page: this.page(), per_page: this.pageSize }).subscribe({
-      next: (res) => {
-        this.items.set(res.data);
-        this.total.set(res.meta.total);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.loading.set(false);
-        this.loadError.set(true);
-      },
-    });
+    this.api
+      .listDuplicates({ status: 'pending', page: this.page(), per_page: this.pageSize })
+      .subscribe({
+        next: (res) => {
+          this.items.set(res.data);
+          this.total.set(res.meta.total);
+          this.loading.set(false);
+        },
+        error: () => {
+          this.loading.set(false);
+          this.loadError.set(true);
+        },
+      });
   }
 
   setPage(page: number): void {
@@ -142,7 +153,13 @@ export class LeadDuplicatesComponent {
     }
     const f = candidateFields(d);
     const person = [f['first_name'], f['last_name']].filter(Boolean).join(' ');
-    return asText(f['name'] ?? f['full_name']) || person || asText(f['company_name']) || asText(f['email']) || d.candidate?.id;
+    return (
+      asText(f['name'] ?? f['full_name']) ||
+      person ||
+      asText(f['company_name']) ||
+      asText(f['email']) ||
+      d.candidate?.id
+    );
   }
 
   protected candidateValue(d: LeadDuplicateCandidate, field: string): string {
@@ -150,15 +167,15 @@ export class LeadDuplicatesComponent {
   }
 
   protected candidateTypeLabel(type: string): string {
-    return translateOr(this.i18n, `CRM.LEADS.DUPLICATES.CANDIDATE_TYPES.${type.toUpperCase()}`, humanize(type));
+    return this.i18n.translate(`CRM.LEADS.DUPLICATES.CANDIDATE_TYPES.${type.toUpperCase()}`);
   }
 
   protected matchLabel(type: string): string {
-    return translateOr(this.i18n, `CRM.LEADS.DUPLICATES.MATCH.${type.toUpperCase()}`, humanize(type));
+    return this.i18n.translate(`CRM.LEADS.DUPLICATES.MATCH.${type.toUpperCase()}`);
   }
 
   protected fieldLabel(field: string): string {
-    return translateOr(this.i18n, `CRM.LEADS.FIELDS.${field.toUpperCase()}`, humanize(field));
+    return this.i18n.translate(`CRM.LEADS.FIELDS.${field.toUpperCase()}`);
   }
 
   /** Confidence as a percentage, accepting both 0-1 and 0-100 scales. */
@@ -205,21 +222,24 @@ export class LeadDuplicatesComponent {
     if (!d || this.pendingId()) {
       return;
     }
-    this.run(d, this.api.mergeDuplicate(d.id, this.buildMergePayload()), 'CRM.LEADS.DUPLICATES.MERGED', 'Records merged');
+    this.run(
+      d,
+      this.api.mergeDuplicate(d.id, this.buildMergePayload()),
+      'CRM.LEADS.DUPLICATES.MERGED',
+    );
   }
 
   dismiss(d: LeadDuplicateCandidate): void {
     if (this.pendingId()) {
       return;
     }
-    this.run(d, this.api.dismissDuplicate(d.id), 'CRM.LEADS.DUPLICATES.DISMISSED', 'Duplicate dismissed');
+    this.run(d, this.api.dismissDuplicate(d.id), 'CRM.LEADS.DUPLICATES.DISMISSED');
   }
 
   private run(
     d: LeadDuplicateCandidate,
     call: ReturnType<LeadApiService['dismissDuplicate']>,
     key: string,
-    fallback: string,
   ): void {
     this.pendingId.set(d.id);
     this.clearRowError(d.id);
@@ -229,7 +249,7 @@ export class LeadDuplicatesComponent {
         this.items.update((list) => list.filter((x) => x.id !== d.id));
         this.total.update((t) => Math.max(0, t - 1));
         this.merging.set(null);
-        this.message.success(translateOr(this.i18n, key, fallback));
+        this.message.success(this.i18n.translate(key));
         if (this.items().length === 0) {
           // Last row of the page resolved: step back (or refetch) instead of showing an empty page.
           if (this.page() > 1) {
@@ -247,9 +267,7 @@ export class LeadDuplicatesComponent {
         }
         this.rowErrors.update((e) => ({
           ...e,
-          [d.id]:
-            apiErrorMessage(err) ??
-            translateOr(this.i18n, 'CRM.LEADS.DUPLICATES.ACTION_FAILED', 'The action failed; the duplicate was kept.'),
+          [d.id]: apiErrorMessage(err) ?? this.i18n.translate('CRM.LEADS.DUPLICATES.ACTION_FAILED'),
         }));
       },
     });

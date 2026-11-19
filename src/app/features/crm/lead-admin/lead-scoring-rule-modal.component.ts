@@ -1,5 +1,21 @@
-import { Component, computed, effect, inject, input, model, output, signal, untracked } from '@angular/core';
-import { AbstractControl, NonNullableFormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  model,
+  output,
+  signal,
+  untracked,
+} from '@angular/core';
+import {
+  AbstractControl,
+  NonNullableFormBuilder,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -20,9 +36,11 @@ import {
   LeadScoringRulePayload,
   serverErrorMessage,
 } from '@core';
-import { apiErrorMessage, humanize, translateOr, TranslateOrPipe } from '../leads/lead-i18n';
+import { apiErrorMessage } from '../leads/lead-i18n';
 
 /** Rule values are typed as JSON when possible ("10", "[\"IT\",\"CH\"]"), plain strings otherwise. */
+import { TranslatePipe } from '@shared';
+
 export function parseRuleValue(raw: string): unknown {
   const text = raw.trim();
   if (!text) {
@@ -61,7 +79,7 @@ function targetValidator(group: AbstractControl): ValidationErrors | null {
     NzModalModule,
     NzSelectModule,
     NzSwitchModule,
-    TranslateOrPipe,
+    TranslatePipe,
   ],
   templateUrl: './lead-scoring-rule-modal.component.html',
   styleUrl: './lead-admin.scss',
@@ -101,7 +119,7 @@ export class LeadScoringRuleModalComponent {
     this.i18n.currentLanguage();
     return LEAD_SCORING_OPERATORS.map((o) => ({
       value: o,
-      label: translateOr(this.i18n, `CRM.LEAD_SCORING.OPERATORS.${o.toUpperCase()}`, humanize(o)),
+      label: this.i18n.translate(`CRM.LEAD_SCORING.OPERATORS.${o.toUpperCase()}`),
     }));
   });
 
@@ -109,7 +127,7 @@ export class LeadScoringRuleModalComponent {
     this.i18n.currentLanguage();
     return LEAD_ACTIVITY_EVENT_TYPES.map((t) => ({
       value: t,
-      label: translateOr(this.i18n, `CRM.LEADS.EVENTS.TYPES.${t.toUpperCase()}`, humanize(t)),
+      label: this.i18n.translate(`CRM.LEADS.EVENTS.TYPES.${t.toUpperCase()}`),
     }));
   });
 
@@ -168,7 +186,7 @@ export class LeadScoringRuleModalComponent {
       this.form.markAllAsDirty();
       this.formError.set(
         this.form.hasError('eventTypeRequired') || this.form.hasError('fieldRequired')
-          ? translateOr(this.i18n, 'CRM.LEAD_SCORING.RULES.TARGET_REQUIRED', 'Choose the lead field or the event type.')
+          ? this.i18n.translate('CRM.LEAD_SCORING.RULES.TARGET_REQUIRED')
           : null,
       );
       return;
@@ -178,7 +196,9 @@ export class LeadScoringRuleModalComponent {
     }
     const rule = this.rule();
     const payload = this.buildPayload();
-    const call = rule ? this.api.updateScoringRule(rule.id, payload) : this.api.createScoringRule(payload);
+    const call = rule
+      ? this.api.updateScoringRule(rule.id, payload)
+      : this.api.createScoringRule(payload);
     this.saving.set(true);
     this.formError.set(null);
     call.subscribe({
