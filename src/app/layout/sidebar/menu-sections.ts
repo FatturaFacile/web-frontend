@@ -199,6 +199,24 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             module: 'invoicing',
           },
           {
+            key: 'NAV.SWK_ORDERS',
+            route: '/sales/workspace/orders',
+            icon: 'fa-solid fa-clipboard-check',
+            module: 'invoicing',
+          },
+          {
+            key: 'NAV.SWK_BLANKET',
+            route: '/sales/blanket-agreements',
+            icon: 'fa-solid fa-file-contract',
+            module: 'invoicing',
+          },
+          {
+            key: 'NAV.SWK_BACKORDERS',
+            route: '/sales/backorders',
+            icon: 'fa-solid fa-boxes-packing',
+            module: 'invoicing',
+          },
+          {
             key: 'NAV.SC_DDT',
             route: '/sales/cycle/delivery-notes',
             icon: 'fa-solid fa-truck-ramp-box',
