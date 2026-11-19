@@ -47,9 +47,9 @@ const FORBIDDEN_TEXT_PATTERNS = [
   /\[object Object\]/,
 ];
 
-const IT_TENANT_ID = '01a1f065-ffff-7ed4-b8c7-fb13a43a5b71';
-const CH_TENANT_ID = '01a1f066-0002-7364-a19d-6ed940ef06a6';
-const ADMIN_USER_ID = '01a1f066-0248-7856-9103-fc137cc6e401';
+let resolvedItTenantId = '01a1f065-ffff-7ed4-b8c7-fb13a43a5b71';
+let resolvedChTenantId = '01a1f066-0002-7364-a19d-6ed940ef06a6';
+let resolvedAdminUserId = '01a1f066-0248-7856-9103-fc137cc6e401';
 
 let cachedCookies: Cookie[] | null = null;
 const cachedGetResponses = new Map<string, { status: number; body: string }>();
@@ -77,8 +77,70 @@ export interface RouteAuditResult {
 }
 
 async function setupLiveAuthenticatedSession(page: Page): Promise<void> {
+  if (!cachedCookies) {
+    try {
+      const csrfRes = await page.request.get('/sanctum/csrf-cookie');
+      const setCookies = csrfRes.headersArray().filter((h) => h.name.toLowerCase() === 'set-cookie');
+      let xsrf = '';
+      for (const sc of setCookies) {
+        const m = sc.value.match(/XSRF-TOKEN=([^;]+)/);
+        if (m) {
+          xsrf = decodeURIComponent(m[1]);
+        }
+      }
+      const loginRes = await page.request.post('/api/v1/auth/login', {
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          Origin: 'https://localhost:4200',
+          Referer: 'https://localhost:4200/login',
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-XSRF-TOKEN': xsrf,
+        },
+        data: {
+          email: 'admin@demo-group.com',
+          password: 'Password123!',
+        },
+      });
+      if (loginRes.ok()) {
+        const loginJson = (await loginRes.json()) as {
+          data?: {
+            user?: { id?: string };
+            active_tenant?: { id?: string; name?: string; country?: string };
+            available_tenants?: { id?: string; name?: string; country?: string }[];
+          };
+        };
+        if (loginJson?.data?.user?.id) {
+          resolvedAdminUserId = String(loginJson.data.user.id);
+        }
+        const available = Array.isArray(loginJson?.data?.available_tenants)
+          ? loginJson.data.available_tenants
+          : [];
+        const itTenant =
+          available.find((t) => t.name === 'Fattura Facile Italia S.r.l.') ??
+          available.find((t) => t.country === 'IT') ??
+          loginJson?.data?.active_tenant;
+        const chTenant =
+          available.find((t) => t.name === 'Fattura Facile Schweiz AG') ??
+          available.find((t) => t.country === 'CH');
+        if (itTenant?.id) {
+          resolvedItTenantId = String(itTenant.id);
+        }
+        if (chTenant?.id) {
+          resolvedChTenantId = String(chTenant.id);
+        }
+      }
+      cachedCookies = await page.context().cookies();
+    } catch {
+      // Allow ci-quality runs without a live backend to proceed with fallback IDs
+      cachedCookies = [];
+    }
+  } else if (cachedCookies.length > 0) {
+    await page.context().addCookies(cachedCookies);
+  }
+
   const adminUser = {
-    id: ADMIN_USER_ID,
+    id: resolvedAdminUserId,
     name: 'Enterprise Administrator',
     email: 'admin@demo-group.com',
     role: 'owner',
@@ -88,21 +150,21 @@ async function setupLiveAuthenticatedSession(page: Page): Promise<void> {
     two_factor_enabled: true,
     locale: 'it',
     active_tenant: {
-      id: IT_TENANT_ID,
+      id: resolvedItTenantId,
       name: 'Fattura Facile Italia S.r.l.',
       country: 'IT',
       role: 'owner',
     },
     tenants: [
       {
-        id: IT_TENANT_ID,
+        id: resolvedItTenantId,
         name: 'Fattura Facile Italia S.r.l.',
         country: 'IT',
         role: 'owner',
         permissions: ['*'],
       },
       {
-        id: CH_TENANT_ID,
+        id: resolvedChTenantId,
         name: 'Fattura Facile Schweiz AG',
         country: 'CH',
         role: 'owner',
@@ -110,37 +172,6 @@ async function setupLiveAuthenticatedSession(page: Page): Promise<void> {
       },
     ],
   };
-
-  if (!cachedCookies) {
-    const csrfRes = await page.request.get('/sanctum/csrf-cookie');
-    const setCookies = csrfRes.headersArray().filter((h) => h.name.toLowerCase() === 'set-cookie');
-    let xsrf = '';
-    for (const sc of setCookies) {
-      const m = sc.value.match(/XSRF-TOKEN=([^;]+)/);
-      if (m) {
-        xsrf = decodeURIComponent(m[1]);
-      }
-    }
-    await page.request.post('/api/v1/auth/login', {
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        Origin: 'https://localhost:4200',
-        Referer: 'https://localhost:4200/login',
-        'X-Requested-With': 'XMLHttpRequest',
-        'X-XSRF-TOKEN': xsrf,
-        'X-Tenant-Id': IT_TENANT_ID,
-      },
-      data: {
-        email: 'admin@demo-group.com',
-        password: 'Password123!',
-        tenant_id: IT_TENANT_ID,
-      },
-    });
-    cachedCookies = await page.context().cookies();
-  } else {
-    await page.context().addCookies(cachedCookies);
-  }
 
   await page.addInitScript((user) => {
     localStorage.setItem('ff_is_authenticated', 'true');
