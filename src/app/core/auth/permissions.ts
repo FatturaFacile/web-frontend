@@ -47,6 +47,15 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
   workflow_design: { read: ANY_MEMBER, write: MANAGERS },
   // Backups hold every record of the company, and a restore replaces them.
   system: { read: MANAGERS, write: MANAGERS },
+  // Immutable audit trail: owners and administrators, or an auditor granted audit.* on the membership.
+  audit_trail: {
+    read: MANAGERS,
+    write: MANAGERS,
+    grants: {
+      read: ['audit.view', 'audit.verify', 'audit.export', 'audit.worm.manage', 'audit.*'],
+      write: ['audit.verify', 'audit.worm.manage', 'audit.*'],
+    },
+  },
   ledger: {
     read: FINANCE_READERS,
     write: FINANCE,
