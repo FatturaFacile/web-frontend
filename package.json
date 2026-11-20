@@ -49,6 +49,7 @@
     "exceljs": "^4.4.0",
     "laravel-echo": "^2.6.3",
     "ng-zorro-antd": "^22.2.0",
+    "pdfjs-dist": "^6.5.438",
     "pusher-js": "^8.6.0",
     "rxjs": "~7.8.2",
     "tslib": "^2.9.1"
