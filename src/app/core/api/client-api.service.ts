@@ -3,6 +3,19 @@ import { inject, Service } from '@angular/core';
 import { environment } from '@env';
 import { map, Observable } from 'rxjs';
 import {
+  ConsentLedger,
+  ConsentPayload,
+  ConsentRecord,
+  ContactAddressPayload,
+  ContactAddressRecord,
+  ContactHierarchy,
+  ContactPersonPayload,
+  ContactPersonRecord,
+  InteractionPage,
+  InteractionPayload,
+  InteractionRecord,
+} from '../models/customer-360.model';
+import {
   ApiResponse,
   ContactFilterParams,
   ContactPayload,
@@ -68,6 +81,72 @@ export class ClientApiService {
 
   delete(id: string): Observable<ApiResponse<null>> {
     return this.http.delete<ApiResponse<null>>(`${this.url}/${id}`);
+  }
+
+  addresses(id: string): Observable<ApiResponse<ContactAddressRecord[]>> {
+    return this.http.get<ApiResponse<ContactAddressRecord[]>>(`${this.url}/${id}/addresses`);
+  }
+
+  createAddress(id: string, payload: ContactAddressPayload): Observable<ApiResponse<ContactAddressRecord>> {
+    return this.http.post<ApiResponse<ContactAddressRecord>>(`${this.url}/${id}/addresses`, payload);
+  }
+
+  /** Makes the address the default one of its type; the API demotes the previous default of that type. */
+  setDefaultAddress(id: string, addressId: string): Observable<ApiResponse<ContactAddressRecord>> {
+    return this.http.post<ApiResponse<ContactAddressRecord>>(
+      `${this.url}/${id}/addresses/${addressId}/default`,
+      {},
+    );
+  }
+
+  deleteAddress(id: string, addressId: string): Observable<ApiResponse<null>> {
+    return this.http.delete<ApiResponse<null>>(`${this.url}/${id}/addresses/${addressId}`);
+  }
+
+  persons(id: string): Observable<ApiResponse<ContactPersonRecord[]>> {
+    return this.http.get<ApiResponse<ContactPersonRecord[]>>(`${this.url}/${id}/persons`);
+  }
+
+  createPerson(id: string, payload: ContactPersonPayload): Observable<ApiResponse<ContactPersonRecord>> {
+    return this.http.post<ApiResponse<ContactPersonRecord>>(`${this.url}/${id}/persons`, payload);
+  }
+
+  updatePerson(
+    id: string,
+    personId: string,
+    payload: ContactPersonPayload,
+  ): Observable<ApiResponse<ContactPersonRecord>> {
+    return this.http.put<ApiResponse<ContactPersonRecord>>(`${this.url}/${id}/persons/${personId}`, payload);
+  }
+
+  deletePerson(id: string, personId: string): Observable<ApiResponse<null>> {
+    return this.http.delete<ApiResponse<null>>(`${this.url}/${id}/persons/${personId}`);
+  }
+
+  hierarchy(id: string): Observable<ApiResponse<ContactHierarchy>> {
+    return this.http.get<ApiResponse<ContactHierarchy>>(`${this.url}/${id}/hierarchy`);
+  }
+
+  /** GDPR / nLPD consent ledger of a contact: the effective state per channel and purpose, and the history. */
+  consents(contactId: string): Observable<ConsentLedger> {
+    return this.http.get<ConsentLedger>(`${environment.apiBaseUrl}/crm/consents`, {
+      params: { contact_id: contactId },
+    });
+  }
+
+  /** Consent records are append-only: a change is a new grant or withdrawal. */
+  recordConsent(payload: ConsentPayload): Observable<ConsentRecord> {
+    return this.http.post<ConsentRecord>(`${environment.apiBaseUrl}/crm/consents`, payload);
+  }
+
+  interactions(id: string, page = 1, perPage = 25): Observable<InteractionPage> {
+    return this.http.get<InteractionPage>(`${this.url}/${id}/interactions`, {
+      params: { page, per_page: perPage },
+    });
+  }
+
+  createInteraction(id: string, payload: InteractionPayload): Observable<{ data: InteractionRecord }> {
+    return this.http.post<{ data: InteractionRecord }>(`${this.url}/${id}/interactions`, payload);
   }
 
   lookupFiscal(payload: {

@@ -1,14 +1,6 @@
 import { Component, DestroyRef, effect, inject, input, model, output, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import {
-  AbstractControl,
-  FormControl,
-  NonNullableFormBuilder,
-  ReactiveFormsModule,
-  ValidationErrors,
-  ValidatorFn,
-  Validators,
-} from '@angular/forms';
+import { FormControl, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -34,6 +26,13 @@ import {
   isEuMemberState,
   serverErrorMessage,
 } from '@core';
+import {
+  FISCAL_ERRORS,
+  fiscalCodeValidator,
+  sdiCodeValidator,
+  swissUidValidator,
+  vatNumberValidator,
+} from './fiscal-validators';
 
 interface TextField {
   key:
@@ -53,14 +52,6 @@ interface TextField {
 }
 
 const nullable = (v: string): string | null => v.trim() || null;
-
-/** A value that is filled must have exactly this length (the SDI code is 7 characters or empty). */
-function exactLengthWhenFilled(length: number): ValidatorFn {
-  return (control: AbstractControl): ValidationErrors | null => {
-    const value = String(control.value ?? '').trim();
-    return value === '' || value.length === length ? null : { exactLength: { requiredLength: length } };
-  };
-}
 
 @Component({
   selector: 'app-client-form-drawer',
@@ -132,6 +123,10 @@ export class ClientFormDrawerComponent {
     { key: 'state_canton', label: 'CRM.CLIENTS.FORM.STATE', required: false },
   ] as const;
 
+  /** The country rules run while the form is still being built, when the control does not exist yet. */
+  private readonly country = (): string =>
+    (this.form as typeof this.form | undefined)?.controls.country.value ?? '';
+
   readonly form = this.fb.group({
     type: this.fb.control<ContactType>('client', Validators.required),
     legal_type: this.fb.control<ContactLegalType>('company', Validators.required),
@@ -141,10 +136,10 @@ export class ClientFormDrawerComponent {
     last_name: this.fb.control('', [Validators.maxLength(100)]),
     email: this.fb.control('', [Validators.email, Validators.maxLength(255)]),
     phone: this.fb.control('', [Validators.maxLength(50)]),
-    vat_number: this.fb.control('', [Validators.maxLength(30)]),
-    fiscal_code: this.fb.control('', [Validators.maxLength(16)]),
-    uid_number: this.fb.control('', [Validators.maxLength(20)]),
-    sdi_code: this.fb.control('', [exactLengthWhenFilled(7)]),
+    vat_number: this.fb.control('', [Validators.maxLength(30), vatNumberValidator(this.country)]),
+    fiscal_code: this.fb.control('', [Validators.maxLength(16), fiscalCodeValidator(this.country)]),
+    uid_number: this.fb.control('', [Validators.maxLength(20), swissUidValidator]),
+    sdi_code: this.fb.control('', [Validators.maxLength(7), sdiCodeValidator]),
     pec: this.fb.control('', [Validators.email, Validators.maxLength(255)]),
     iban: this.fb.control('', [Validators.maxLength(34)]),
     qr_iban: this.fb.control('', [Validators.maxLength(34)]),
@@ -159,6 +154,12 @@ export class ClientFormDrawerComponent {
   });
 
   constructor() {
+    // The VAT number and the fiscal code rules depend on the country.
+    this.form.controls.country.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      this.form.controls.vat_number.updateValueAndValidity({ emitEvent: false });
+      this.form.controls.fiscal_code.updateValueAndValidity({ emitEvent: false });
+    });
+
     this.form.controls.address.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.syncAddressValidators());
@@ -309,7 +310,7 @@ export class ClientFormDrawerComponent {
 
   errorTip(path: string): string {
     const control = this.form.get(path);
-    if (control?.hasError('maxlength') || control?.hasError('exactLength') || control?.hasError('pattern') || control?.hasError('min')) {
+    if (control?.hasError('maxlength') || FISCAL_ERRORS.some((error) => control?.hasError(error)) || control?.hasError('pattern') || control?.hasError('min')) {
       return this.i18n.translate('COMMON.VALIDATION.INVALID_VALUE');
     }
     if (control?.hasError('email')) {

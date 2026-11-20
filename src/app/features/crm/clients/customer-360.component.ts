@@ -2,7 +2,7 @@ import { DatePipe } from '@angular/common';
 import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { I18nService, ResourceApiService, ResourceRow } from '@core';
+import { I18nService, OpenItem, ResourceApiService, ResourceRow } from '@core';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzCollapseModule } from 'ng-zorro-antd/collapse';
@@ -13,6 +13,11 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzTimelineModule } from 'ng-zorro-antd/timeline';
 import { catchError, forkJoin, of } from 'rxjs';
 import { PageHeaderComponent } from '@shared';
+import { Customer360AddressesComponent } from './customer-360/customer-360-addresses.component';
+import { Customer360ConsentsComponent } from './customer-360/customer-360-consents.component';
+import { Customer360HierarchyComponent } from './customer-360/customer-360-hierarchy.component';
+import { Customer360InteractionsComponent } from './customer-360/customer-360-interactions.component';
+import { Customer360PersonsComponent } from './customer-360/customer-360-persons.component';
 import { EntityAuditTimelineComponent } from '../../security/audit-trail/entity-audit-timeline.component';
 
 interface TimelineEntry {
@@ -39,6 +44,11 @@ interface TimelineEntry {
     NzTimelineModule,
     PageHeaderComponent,
     EntityAuditTimelineComponent,
+    Customer360AddressesComponent,
+    Customer360ConsentsComponent,
+    Customer360HierarchyComponent,
+    Customer360InteractionsComponent,
+    Customer360PersonsComponent,
   ],
   template: `
     <app-page-header [title]="name()" [subtitle]="label('CRM.CUSTOMER360.SUBTITLE')" />
@@ -77,6 +87,50 @@ interface TimelineEntry {
             str(privacy()['regime']).toUpperCase() || 'GDPR'
           }}</nz-descriptions-item>
         </nz-descriptions>
+      </nz-card>
+
+      <nz-card [nzTitle]="label('CRM.CUSTOMER360.OPEN_ITEMS')" class="c360-card">
+        @for (item of openItems(); track item.invoice_id) {
+          <div class="c360-row">
+            <strong>{{ item.invoice_number }}</strong>
+            <span>{{ item.date }}</span>
+            <span>{{ label('CRM.CUSTOMER360.DUE_DATE') }}: {{ item.due_date }}</span>
+            @if (item.days_overdue) {
+              <nz-tag nzColor="red">{{ item.days_overdue }} {{ label('CRM.CUSTOMER360.DAYS_OVERDUE') }}</nz-tag>
+            }
+            <span>{{ item.balance }} {{ item.currency }}</span>
+          </div>
+        } @empty {
+          <nz-empty />
+        }
+      </nz-card>
+
+      <nz-card [nzTitle]="label('CRM.CUSTOMER360.ADDRESSES')" class="c360-card">
+        <app-customer-360-addresses [contactId]="id" />
+      </nz-card>
+
+      <nz-card [nzTitle]="label('CRM.CUSTOMER360.PERSONS')" class="c360-card">
+        <app-customer-360-persons [contactId]="id" />
+      </nz-card>
+
+      <nz-card [nzTitle]="label('CRM.CUSTOMER360.HIERARCHY')" class="c360-card">
+        <app-customer-360-hierarchy
+          [contactId]="id"
+          [parentId]="str(contact()['parent_id']) || null"
+          [hierarchyType]="$any(contact()['hierarchy_type'] ?? null)"
+        />
+      </nz-card>
+
+      <nz-card [nzTitle]="label('CRM.CUSTOMER360.CONSENTS')" class="c360-card">
+        <app-customer-360-consents
+          [contactId]="id"
+          [regime]="str(privacy()['regime']) || 'gdpr'"
+          [restricted]="privacy()['processing_restricted'] === true"
+        />
+      </nz-card>
+
+      <nz-card [nzTitle]="label('CRM.CUSTOMER360.INTERACTION_LOG')" class="c360-card">
+        <app-customer-360-interactions [contactId]="id" />
       </nz-card>
 
       @if (quotesList().length || ordersList().length || deliveryNotesList().length || invoicesList().length) {
@@ -226,6 +280,7 @@ export class Customer360Component {
   protected readonly assets = signal<ResourceRow[]>([]);
   protected readonly history = signal<Record<string, TimelineEntry[]>>({});
 
+  protected readonly openItems = computed(() => (this.receivables()['open_items'] ?? []) as OpenItem[]);
   protected readonly name = computed(() => this.str(this.contact()['name']) || '…');
   protected readonly taxId = computed(() => {
     const c = this.contact();
