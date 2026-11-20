@@ -82,7 +82,7 @@
 
         <nz-form-item>
           <nz-form-label nzRequired nzFor="password">{{ "AUTH.PASSWORD" | translate }}</nz-form-label>
-          <nz-form-control [nzErrorTip]="requiredError">
+          <nz-form-control [nzErrorTip]="passwordError">
             <nz-input-wrapper>
               <input
                 nz-input
@@ -179,6 +179,16 @@
             </label>
           </nz-form-control>
         </nz-form-item>
+
+        <ng-template #passwordError let-control>
+          @if (control.hasError("serverError")) {
+            {{ control.getError("serverError") }}
+          } @else if (control.hasError("passwordPolicy")) {
+            {{ "AUTH.PASSWORD_REQUIREMENTS" | translate }}
+          } @else {
+            {{ "COMMON.VALIDATION.REQUIRED" | translate }}
+          }
+        </ng-template>
 
         <ng-template #requiredError let-control>
           @if (control.hasError("serverError")) {

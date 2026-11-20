@@ -8,6 +8,7 @@ import { PortalInvoice } from '@core/models/portal-area.models';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { i18nStub } from '../../hr/recruiting/testing/recruiting-fixtures';
 import {
+  checkoutMethodOf,
   paymentMethodsFor,
   PortalCheckoutDrawerComponent,
 } from './portal-checkout-drawer.component';
@@ -118,6 +119,12 @@ describe('PortalDocumentsComponent', () => {
 });
 
 describe('PortalCheckoutDrawerComponent', () => {
+  it('maps every drawer option to a backend payment_method value', () => {
+    expect(
+      (['card', 'twint', 'qr_transfer', 'sepa_debit', 'paypal'] as const).map(checkoutMethodOf),
+    ).toEqual(['card', 'twint', 'qr', 'sepa', 'paypal']);
+  });
+
   it('offers TWINT, card and the QR transfer in Switzerland', () => {
     expect(paymentMethodsFor('CH', 'CHF')).toEqual(['twint', 'card', 'qr_transfer']);
     expect(paymentMethodsFor(null, 'CHF')).toEqual(['twint', 'card', 'qr_transfer']);
@@ -157,10 +164,15 @@ describe('PortalCheckoutDrawerComponent', () => {
       fixture.detectChanges();
       const http = TestBed.inject(HttpTestingController);
 
-      (fixture.componentInstance as unknown as { pay(): void }).pay();
-      http
-        .expectOne(`${API}/portal/invoices/inv-1/checkout`)
-        .flush(
+      const instance = fixture.componentInstance as unknown as {
+        pay(): void;
+        method: string;
+      };
+      instance.method = 'sepa_debit';
+      instance.pay();
+      const checkout = http.expectOne(`${API}/portal/invoices/inv-1/checkout`);
+      expect(checkout.request.body).toEqual({ payment_method: 'sepa' });
+      checkout.flush(
           envelope({
             invoice_id: 'inv-1',
             provider: 'stripe',

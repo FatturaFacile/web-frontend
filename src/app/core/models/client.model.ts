@@ -1,4 +1,5 @@
 import { QueryFilterParams } from './api.models';
+import { HierarchyType } from './customer-360.model';
 
 export type ContactType = 'client' | 'customer' | 'supplier' | 'both' | 'lead';
 
@@ -31,6 +32,9 @@ export interface ContactResource {
   eori_number?: string | null;
   default_incoterm?: string | null;
   sdi_code: string | null;
+  /** Parent company of the corporate hierarchy. */
+  parent_id?: string | null;
+  hierarchy_type?: HierarchyType | null;
   pec: string | null;
   iban: string | null;
   qr_iban: string | null;

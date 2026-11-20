@@ -6,7 +6,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { of, throwError } from 'rxjs';
 import { AuthApiService } from '@core';
 import { RegisterComponent } from './register.component';
-import { passwordStrength } from '../../password-rules';
+import { passwordPolicy, passwordStrength } from '../../password-rules';
 import { TEST_PASSWORD } from '../../../../../testing/credentials';
 
 const VALID = {
@@ -90,6 +90,25 @@ describe('RegisterComponent', () => {
     component['form'].setValue({ ...VALID, privacy_accepted: false });
     component['onSubmit']();
     expect(register).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['Abcdef1!x', 'too short'],
+    ['abcdefgh1!', 'no upper case'],
+    ['ABCDEFGH1!', 'no lower case'],
+    ['Abcdefghi!', 'no number'],
+    ['Abcdefghi1', 'no symbol'],
+  ])('blocks the password %s (%s) before the API call', (password) => {
+    const component = create();
+    component['form'].setValue({ ...VALID, password, password_confirmation: password });
+    expect(component['form'].controls.password.hasError('passwordPolicy')).toBe(true);
+    component['onSubmit']();
+    expect(register).not.toHaveBeenCalled();
+  });
+
+  it('accepts a password that meets the backend policy', () => {
+    expect(passwordPolicy({ value: 'Abcdefgh1!' } as never)).toBeNull();
+    expect(passwordPolicy({ value: TEST_PASSWORD } as never)).toBeNull();
   });
 
   it('rejects different passwords', () => {
