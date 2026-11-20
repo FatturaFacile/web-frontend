@@ -34,7 +34,16 @@ describe('Customer360Component', () => {
 
     http
       .expectOne((r) => r.url.endsWith('/crm/contacts/c1/overview'))
-      .flush({ data: { contact: { id: 'c1', name: 'ACME SA', vat_number: 'CHE-1' } } });
+      .flush({
+        data: {
+          contact: { id: 'c1', name: 'ACME SA', vat_number: 'CHE-1' },
+          receivables: {
+            open_items: [
+              { invoice_id: 'i1', invoice_number: 'INV-77', date: '2026-10-01', due_date: '2026-10-31', currency: 'CHF', total: 100, paid: 0, balance: 100, days_overdue: 19 },
+            ],
+          },
+        },
+      });
     http
       .expectOne(
         (r) => r.url.endsWith('/esm/service-contracts') && r.params.get('customer_id') === 'c1',
@@ -73,6 +82,7 @@ describe('Customer360Component', () => {
     expect(text).toContain('ACME SA');
     expect(text).toContain('CHE-1');
     expect(text).toContain('MC-1');
+    expect(text).toContain('INV-77');
     expect(text).toContain('SN-1');
 
     (
@@ -95,6 +105,10 @@ describe('Customer360Component', () => {
     fixture.detectChanges();
 
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('WO-9');
+    // The addresses, persons, hierarchy, consents and interaction sections load their own data.
+    http
+      .match((r) => /\/crm\/(contacts\/c1\/(addresses|persons|hierarchy|interactions)|consents)/.test(r.url))
+      .forEach((r) => r.error(new ProgressEvent('error')));
     http.verify();
   });
 });
