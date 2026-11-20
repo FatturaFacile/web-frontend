@@ -417,6 +417,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         module: 'forecasting',
       },
       {
+        key: 'OCR_INBOX.NAV',
+        icon: 'fa-solid fa-file-invoice',
+        route: '/ocr-inbox',
+        module: 'ocr_extraction',
+      },
+      {
         key: 'NAV.TREASURY_OPERATIONS',
         icon: 'fa-solid fa-money-bill-transfer',
         route: '/treasury/operations',
