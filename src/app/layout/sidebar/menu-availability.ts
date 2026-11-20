@@ -119,6 +119,8 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/document-trust',
   '/document-trust/preservation',
   '/digital-preservation',
+  '/academy',
+  '/ai-forecasting',
   '/ecommerce-integrations',
   '/exports',
   '/logistics/consignment',

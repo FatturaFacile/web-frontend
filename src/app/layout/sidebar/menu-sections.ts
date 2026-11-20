@@ -411,6 +411,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         module: 'treasury',
       },
       {
+        key: 'AI_FORECAST.NAV',
+        icon: 'fa-solid fa-chart-line',
+        route: '/ai-forecasting',
+        module: 'forecasting',
+      },
+      {
         key: 'NAV.TREASURY_OPERATIONS',
         icon: 'fa-solid fa-money-bill-transfer',
         route: '/treasury/operations',
@@ -747,6 +753,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         icon: 'fa-solid fa-vault',
         route: '/digital-preservation',
         module: 'digital_preservation',
+      },
+      {
+        key: 'ACADEMY.NAV',
+        icon: 'fa-solid fa-graduation-cap',
+        route: '/academy',
+        module: 'academy',
       },
       {
         key: 'NAV.ECOMMERCE_INTEGRATIONS',
