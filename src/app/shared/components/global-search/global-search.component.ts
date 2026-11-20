@@ -204,7 +204,8 @@ export class GlobalSearchComponent {
   }
 
   onDocumentKeydown(event: KeyboardEvent): void {
-    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+    // Ctrl/Cmd + K belongs to the Copilot drawer; the command palette moved to Ctrl/Cmd + Shift + K.
+    if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === 'k') {
       event.preventDefault();
       this.toggle();
     } else if (event.key === 'Escape' && this.search.isOpen()) {
