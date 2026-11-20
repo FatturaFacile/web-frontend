@@ -1,0 +1,67 @@
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.toolbar .spacer {
+  flex: 1;
+}
+
+.muted {
+  color: var(--text-secondary, #595959);
+  font-size: 12px;
+}
+
+.drivers {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.drivers ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.drivers li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border-color, #f0f0f0);
+}
+
+.what-if .label {
+  display: block;
+  font-weight: 600;
+  margin-top: 16px;
+}
+
+.what-if .value {
+  color: var(--text-secondary, #595959);
+  font-variant-numeric: tabular-nums;
+}
+
+.delta-negative {
+  color: #cf1322;
+}
+
+.delta-positive {
+  color: #389e0d;
+}
+
+.right {
+  text-align: right;
+}
