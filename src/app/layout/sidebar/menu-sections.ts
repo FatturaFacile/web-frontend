@@ -755,6 +755,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         module: 'digital_preservation',
       },
       {
+        key: 'ACADEMY.NAV',
+        icon: 'fa-solid fa-graduation-cap',
+        route: '/academy',
+        module: 'academy',
+      },
+      {
         key: 'NAV.ECOMMERCE_INTEGRATIONS',
         icon: 'fa-solid fa-cart-shopping',
         route: '/ecommerce-integrations',
