@@ -250,6 +250,13 @@ export const routes: Routes = [
       import('./features/document-trust/document-trust.routes').then((m) => m.DOCUMENT_TRUST_ROUTES),
   },
   {
+    path: 'ai-forecasting',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'AI_FORECAST.TITLE', title: 'AI_FORECAST.TITLE' },
+    loadChildren: () =>
+      import('./features/ai-forecasting/ai-forecasting.routes').then((m) => m.AI_FORECASTING_ROUTES),
+  },
+  {
     path: 'digital-preservation',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'PRESERVATION.TITLE', title: 'PRESERVATION.TITLE' },

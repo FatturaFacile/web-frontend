@@ -26,6 +26,7 @@ export const PREMATURE_OPEN_ISSUE_MODULES: Readonly<Record<string, { issue: numb
   marketplace: { issue: 272, routePrefix: '/marketplace' },
   document_trust: { issue: 273, routePrefix: '/document-trust' },
   digital_preservation: { issue: 212, routePrefix: '/digital-preservation' },
+  forecasting: { issue: 221, routePrefix: '/ai-forecasting' },
   leases: { issue: 274, routePrefix: '/leases' },
   retail: { issue: 275, routePrefix: '/retail' },
   hospitality: { issue: 276, routePrefix: '/hospitality' },
