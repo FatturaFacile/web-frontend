@@ -120,6 +120,7 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/document-trust/preservation',
   '/digital-preservation',
   '/ai-forecasting',
+  '/ocr-inbox',
   '/ecommerce-integrations',
   '/exports',
   '/logistics/consignment',
