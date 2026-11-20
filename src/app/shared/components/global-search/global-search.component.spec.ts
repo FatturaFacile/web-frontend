@@ -39,7 +39,7 @@ describe('GlobalSearchComponent', () => {
   it('opens and closes with Ctrl+K and closes with Escape', () => {
     const { fixture, search, element } = setup();
 
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }));
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, shiftKey: true }));
     fixture.detectChanges();
     expect(search.isOpen()).toBe(true);
     expect(element.querySelector('[role="dialog"]')).not.toBeNull();
@@ -49,7 +49,7 @@ describe('GlobalSearchComponent', () => {
     expect(search.isOpen()).toBe(false);
     expect(element.querySelector('[role="dialog"]')).toBeNull();
 
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }));
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, shiftKey: true }));
     expect(search.isOpen()).toBe(true);
   });
 

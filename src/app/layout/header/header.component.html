@@ -48,6 +48,17 @@
       <i class="fa-solid fa-magnifying-glass"></i>
     </button>
 
+    <button
+      type="button"
+      class="sidebar-toggle copilot-trigger"
+      (click)="copilot.toggle()"
+      [title]="'COPILOT.OPEN' | translate"
+      [attr.aria-label]="'COPILOT.OPEN' | translate"
+      data-testid="copilot-trigger"
+    >
+      <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
+    </button>
+
     <!-- Jurisdiction Switcher -->
     <!--    <div class="jurisdiction-toggle">-->
     <!--      <button-->
