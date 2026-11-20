@@ -266,6 +266,12 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'academy',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'ACADEMY.TITLE', title: 'ACADEMY.TITLE' },
+    loadChildren: () => import('./features/academy/academy.routes').then((m) => m.ACADEMY_ROUTES),
+  },
+  {
     path: 'ecommerce-integrations',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.ECOMMERCE_INTEGRATIONS', title: 'PAGE_TITLE.E_COMMERCE_INTEGRAZIONI_API' },
