@@ -162,4 +162,7 @@ export interface PortalTicket {
 }
 
 /** Payment methods the checkout offers for a region; the hosted page of the tenant's gateway completes them. */
+/** Values of `payment_method` accepted by the portal checkout endpoint (backend `PaymentMethods`). */
+export type PortalCheckoutMethod = 'card' | 'twint' | 'sepa' | 'paypal' | 'qr';
+
 export type PortalPaymentMethod = 'card' | 'twint' | 'qr_transfer' | 'sepa_debit' | 'paypal';

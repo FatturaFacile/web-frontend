@@ -8,13 +8,30 @@ import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzRadioModule } from 'ng-zorro-antd/radio';
 import { Subscription, switchMap, takeWhile, timer } from 'rxjs';
 import { PortalAreaApiService } from '@core/api/portal-area-api.service';
-import { PortalInvoice, PortalPaymentMethod } from '@core/models/portal-area.models';
+import {
+  PortalCheckoutMethod,
+  PortalInvoice,
+  PortalPaymentMethod,
+} from '@core/models/portal-area.models';
 import { TranslatePipe } from '@shared';
 import { filenameOf, saveBlob } from './portal-download';
 
 /** Methods offered per region. Switzerland: TWINT, card and the QR-bill transfer; Italy and the EU: card, SEPA debit, PayPal. */
 const CH_METHODS: readonly PortalPaymentMethod[] = ['twint', 'card', 'qr_transfer'];
 const EU_METHODS: readonly PortalPaymentMethod[] = ['card', 'sepa_debit', 'paypal'];
+
+const CHECKOUT_METHOD: Record<PortalPaymentMethod, PortalCheckoutMethod> = {
+  card: 'card',
+  twint: 'twint',
+  qr_transfer: 'qr',
+  sepa_debit: 'sepa',
+  paypal: 'paypal',
+};
+
+/** Maps the drawer's option to the `payment_method` value the backend validates. */
+export function checkoutMethodOf(method: PortalPaymentMethod): PortalCheckoutMethod {
+  return CHECKOUT_METHOD[method];
+}
 
 const POLL_EVERY_MS = 5000;
 const POLL_FOR_MS = 180_000;
@@ -163,7 +180,7 @@ export class PortalCheckoutDrawerComponent {
       return;
     }
 
-    this.api.checkout(inv.id).subscribe({
+    this.api.checkout(inv.id, checkoutMethodOf(this.method)).subscribe({
       next: (response) => {
         window.open(response.data.url, '_blank', 'noopener,noreferrer');
         this.state.set('waiting');
