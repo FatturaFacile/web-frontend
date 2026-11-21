@@ -39,6 +39,11 @@ export class PermissionStore {
   readonly loaded = computed(() => this.state() !== null);
   readonly permissions = computed(() => this.state()?.permissions ?? []);
   readonly fieldPolicies = computed(() => this.state()?.field_policies ?? []);
+  /** The active support impersonation of this access, or null. */
+  readonly impersonation = computed(() => {
+    const info = this.state()?.impersonation;
+    return info?.active ? info : null;
+  });
 
   /** `*` and `module.*` grant, as on the server. Unknown or unloaded: denied. */
   hasPermission(key: string): boolean {

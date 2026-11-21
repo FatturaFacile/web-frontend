@@ -6,3 +6,4 @@ export * from './permission-key.guard';
 export * from './app-can.directive';
 export * from './webauthn.service';
 export * from './masked-value.component';
+export * from './impersonation-banner.component';

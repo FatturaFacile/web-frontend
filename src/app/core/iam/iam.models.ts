@@ -15,6 +15,8 @@ export interface PermissionSnapshot {
   permissions: string[];
   field_policies: FieldPolicyEntry[];
   company_id: string | null;
+  /** Set while the access is a support impersonation (30 minutes at most). */
+  impersonation?: { active: boolean; actor_id: string | null; expires_at: string | null };
 }
 
 /** Permission keys grouped by module, then resource, with the actions of the resource. */
