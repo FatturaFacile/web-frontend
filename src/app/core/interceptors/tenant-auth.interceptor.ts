@@ -35,7 +35,11 @@ export const tenantAuthInterceptor: HttpInterceptorFn = (req, next) => {
   const injector = inject(Injector);
   // Public careers portal endpoints are anonymous and slug-scoped: never leak the
   // session token or a stale tenant id of a logged-in visitor to them.
-  const isPublicPortal = req.url.includes('/public/careers/') || req.url.includes('/portal/');
+  const isPublicPortal =
+    req.url.includes('/public/careers/') ||
+    req.url.includes('/public/rfq-portal/') ||
+    req.url.includes('/procurement/purchase-requisitions/one-click-action') ||
+    req.url.includes('/portal/');
 
   const headersToSet: Record<string, string> = {
     'Accept': 'application/json',
@@ -98,8 +102,10 @@ export const tenantAuthInterceptor: HttpInterceptorFn = (req, next) => {
           req.url.includes('/sanctum/csrf-cookie') ||
           // The reception kiosk authenticates with its own key and secret: a refused kiosk must not end the staff session.
           req.url.includes('/visitor-kiosk/') ||
-          // The supplier self-service endpoints require a supplier account: a 401 for a staff member must not end the staff session.
-          req.url.includes('/supplier-self-service/');
+          // The supplier self-service & public RFQ portal endpoints use token auth: a 401 must not end the staff session.
+          req.url.includes('/supplier-self-service/') ||
+          req.url.includes('/public/rfq-portal/') ||
+          req.url.includes('/procurement/purchase-requisitions/one-click-action');
 
         if (err.status === 401) {
           if (!isAuthEndpoint) {

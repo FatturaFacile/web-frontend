@@ -1,0 +1,48 @@
+.tracker-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ff-space-4);
+}
+
+@media (max-width: 992px) {
+  .tracker-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tracker-card {
+  border: 1px solid var(--ff-color-border);
+}
+
+.log-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.log-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ff-space-2);
+}
+
+.log-actor {
+  font-weight: 600;
+  color: var(--ff-color-text);
+}
+
+.log-timestamp {
+  font-size: var(--ff-font-size-xs);
+  color: var(--ff-color-text-muted);
+}
+
+.log-comment {
+  margin: var(--ff-space-1) 0 0;
+  padding: var(--ff-space-2) var(--ff-space-3);
+  border-left: 3px solid var(--ff-color-border);
+  background: var(--ff-color-surface-alt);
+  color: var(--ff-color-text-secondary);
+  border-radius: 0 var(--ff-radius-sm) var(--ff-radius-sm) 0;
+  font-size: var(--ff-font-size-sm);
+}
