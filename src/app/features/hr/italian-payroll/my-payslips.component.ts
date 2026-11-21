@@ -84,7 +84,7 @@ interface OpenDocument {
                   <nz-tag nzColor="success" data-testid="mine-viewed">
                     {{
                       'itPayroll.mine.viewedOn'
-                        | translate: { date: (row.first_viewed_at | date: 'dd/MM/yyyy HH:mm') }
+                        | translate: { date: (row.first_viewed_at | date: 'dd/MM/yyyy HH:mm') ?? '' }
                     }}
                   </nz-tag>
                 } @else {
