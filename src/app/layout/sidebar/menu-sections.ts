@@ -554,6 +554,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             module: 'italian_payroll',
           },
           {
+            key: 'NAV.HR_MY_PAYSLIPS',
+            route: '/hr/my-payslips',
+            icon: 'fa-solid fa-file-invoice',
+            module: 'italian_payroll_self',
+          },
+          {
             key: 'NAV.HR_SHORT_TIME',
             route: '/hr/short-time',
             icon: 'fa-solid fa-helmet-safety',

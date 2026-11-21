@@ -22,6 +22,20 @@ describe('ItalianPayrollApiService', () => {
 
   afterEach(() => httpMock.verify());
 
+  it('lists the own payslips and opens a document as a blob without biometrics', () => {
+    service.getMyPayslips().subscribe();
+    const list = httpMock.expectOne(`${base}/my-payslips`);
+    expect(list.request.method).toBe('GET');
+    list.flush({ data: [] });
+
+    service.openMyPayslip('d1', 'cu').subscribe();
+    const open = httpMock.expectOne(`${base}/my-payslips/d1/open`);
+    expect(open.request.method).toBe('POST');
+    expect(open.request.responseType).toBe('blob');
+    expect(open.request.body).toEqual({ document_kind: 'cu', biometric_confirmed: false });
+    open.flush(new Blob(['%PDF'], { type: 'application/pdf' }));
+  });
+
   it('opens a period and validates its attendance with the fringe benefits', () => {
     service.createPeriod({ year: 2027, month: 3 }).subscribe();
     const create = httpMock.expectOne(`${base}/periods`);

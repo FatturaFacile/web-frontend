@@ -1,5 +1,20 @@
 /** Italian payroll pre-processing (Mod 077): the monthly closing of the payroll month with the labour consultant. */
 
+/** The two documents an employee can open from their payslip vault. */
+export type PayslipDocumentKind = 'cedolino' | 'cu';
+
+/** One month of the logged-in employee's payslip vault (`GET /italian-payroll/my-payslips`). */
+export interface MyPayslip {
+  distribution_id: string;
+  year: number;
+  month: number;
+  net_amount: number | null;
+  has_cedolino: boolean;
+  has_cu: boolean;
+  /** ISO timestamp of the first opening, null while never opened. */
+  first_viewed_at: string | null;
+}
+
 export type ItalianPayrollStatus =
   'attendance_open' | 'validated' | 'exported_to_cdl' | 'cedolini_imported' | 'paid';
 

@@ -70,6 +70,13 @@ export const HR_ROUTES: Routes = [
       import('./italian-payroll/italian-payroll-closing-hub.component').then((m) => m.ItalianPayrollClosingHubComponent),
   },
   {
+    path: 'my-payslips',
+    canActivate: [moduleGuard('italian_payroll_self', 'read')],
+    data: { breadcrumb: 'NAV.HR_MY_PAYSLIPS', title: 'NAV.HR_MY_PAYSLIPS' },
+    loadComponent: () =>
+      import('./italian-payroll/my-payslips.component').then((m) => m.MyPayslipsComponent),
+  },
+  {
     path: 'short-time',
     canActivate: [moduleGuard('payroll', 'read')],
     data: { breadcrumb: 'NAV.HR_SHORT_TIME', title: 'NAV.HR_SHORT_TIME' },

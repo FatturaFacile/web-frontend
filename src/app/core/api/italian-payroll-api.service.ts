@@ -14,6 +14,8 @@ import {
   GlAccountAssignment,
   ItalianPayrollPeriod,
   ItalianPayrollValidationResult,
+  MyPayslip,
+  PayslipDocumentKind,
   PayslipDownloadAuditRow,
   SepaSalaryPayload,
   TfrLedger,
@@ -24,6 +26,23 @@ import {
 export class ItalianPayrollApiService {
   private readonly http = inject(HttpClient);
   private readonly base = `${environment.apiBaseUrl}/italian-payroll`;
+
+  /** The payslips of the logged-in employee. */
+  getMyPayslips(): Observable<ApiResponse<MyPayslip[]>> {
+    return this.http.get<ApiResponse<MyPayslip[]>>(`${this.base}/my-payslips`);
+  }
+
+  /**
+   * The decrypted PDF of one document. The server writes the access audit on every call, so the blob must be shown
+   * and dropped, never cached. The web has no biometrics, hence `biometric_confirmed: false`.
+   */
+  openMyPayslip(distributionId: string, kind: PayslipDocumentKind): Observable<Blob> {
+    return this.http.post(
+      `${this.base}/my-payslips/${distributionId}/open`,
+      { document_kind: kind, biometric_confirmed: false },
+      { responseType: 'blob' },
+    );
+  }
 
   getPeriods(): Observable<ApiResponse<ItalianPayrollPeriod[]>> {
     return this.http.get<ApiResponse<ItalianPayrollPeriod[]>>(`${this.base}/periods`);
