@@ -39,6 +39,7 @@ export const PREMATURE_OPEN_ISSUE_MODULES: Readonly<Record<string, { issue: numb
   childcare: { issue: 283, routePrefix: '/childcare' },
   tessera_sanitaria: { issue: 299, routePrefix: '/tessera-sanitaria' },
   rent: { issue: 325, routePrefix: '/rent' },
+  shift_planning: { issue: 173, routePrefix: '/shift-planning' },
 };
 
 /**

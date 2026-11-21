@@ -555,6 +555,18 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             module: 'hr',
           },
           {
+            key: 'NAV.SHIFT_PLANNING',
+            route: '/shift-planning',
+            icon: 'fa-solid fa-table-cells',
+            module: 'shift_planning',
+          },
+          {
+            key: 'NAV.SHIFT_PLANNING_TEMPLATES',
+            route: '/shift-planning/templates',
+            icon: 'fa-solid fa-clock',
+            module: 'shift_planning',
+          },
+          {
             key: 'NAV.HR_PAYROLL_DATA',
             route: '/hr/payroll-data',
             icon: 'fa-solid fa-address-card',

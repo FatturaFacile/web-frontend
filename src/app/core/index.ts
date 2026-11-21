@@ -113,6 +113,7 @@ export * from './api/planning-api.service';
 export * from './api/budgeting-api.service';
 export * from './api/controlling-api.service';
 export * from './api/credit-management-api.service';
+export * from './api/shift-planning-api.service';
 export * from './api/talent-learning-api.service';
 export * from './api/returns-api.service';
 export * from './api/tessera-sanitaria-api.service';
