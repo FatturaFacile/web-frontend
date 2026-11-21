@@ -1516,6 +1516,30 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             module: 'manufacturing',
           },
           {
+            key: 'NAV.MFG_BOM_DESIGNER',
+            route: '/manufacturing/bom-designer',
+            icon: 'fa-solid fa-sitemap',
+            module: 'manufacturing',
+          },
+          {
+            key: 'NAV.MFG_WHERE_USED',
+            route: '/manufacturing/where-used',
+            icon: 'fa-solid fa-magnifying-glass-chart',
+            module: 'manufacturing',
+          },
+          {
+            key: 'NAV.MFG_BOM_DIFF',
+            route: '/manufacturing/bom-diff',
+            icon: 'fa-solid fa-code-compare',
+            module: 'manufacturing',
+          },
+          {
+            key: 'NAV.MFG_BOM_IMPORT',
+            route: '/manufacturing/bom-import',
+            icon: 'fa-solid fa-file-import',
+            module: 'manufacturing',
+          },
+          {
             key: 'NAV.MFG_PRODUCTION',
             route: '/manufacturing/production',
             icon: 'fa-solid fa-gears',
