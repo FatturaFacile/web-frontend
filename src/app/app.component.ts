@@ -7,8 +7,10 @@ import { AuthApiService } from '@core/api/auth-api.service';
 import { AuthStore } from '@core/auth/auth.store';
 import { AppStore } from '@core/state/app.store';
 import { DisplayPreferencesService } from '@core/theme/display-preferences.service';
+import { ImpersonationBannerComponent } from '@core/iam/impersonation-banner.component';
 import { HeaderComponent, SidebarComponent, BreadcrumbComponent } from './layout';
 import { TranslatePipe } from '@shared/pipes/translate.pipe';
+import { SpotlightTourOverlayComponent } from './features/academy/spotlight-tour-overlay.component';
 import { ToastHostComponent } from '@shared/ui/toast/toast-host.component';
 import { GlobalSearchComponent } from '@shared/components/global-search/global-search.component';
 import { CopilotDrawerComponent } from '@features/copilot/copilot-drawer.component';
@@ -34,12 +36,14 @@ function isPublicPage(root: ActivatedRouteSnapshot): boolean {
     RouterOutlet,
     NzLayoutModule,
     HeaderComponent,
+    ImpersonationBannerComponent,
     SidebarComponent,
     BreadcrumbComponent,
     GlobalSearchComponent,
     CopilotDrawerComponent,
     TwoFactorSetupModalComponent,
     ToastHostComponent,
+    SpotlightTourOverlayComponent,
     TranslatePipe,
   ],
   templateUrl: './app.component.html',

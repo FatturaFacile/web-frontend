@@ -22,6 +22,7 @@ import {
   UserSession,
 } from '@core';
 import { ModalActionsDirective, PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { PasskeysCardComponent } from './passkeys-card.component';
 import { TwoFactorSetupModalComponent } from '../../../auth/components/two-factor-setup-modal/two-factor-setup-modal.component';
 
 /** Mirrors `required_without:<other>`: the control is required while the sibling is blank. */
@@ -52,6 +53,7 @@ function requiredWithout(other: string): ValidatorFn {
     NzInputModule,
     NzIconModule,
     PageHeaderComponent,
+    PasskeysCardComponent,
     TranslatePipe,
     TwoFactorSetupModalComponent,
   ],
