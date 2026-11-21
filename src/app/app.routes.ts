@@ -258,6 +258,13 @@ export const routes: Routes = [
       import('./features/ocr-inbox/ocr-inbox.routes').then((m) => m.OCR_INBOX_ROUTES),
   },
   {
+    path: 'kpi-dashboards',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'KPI_DASHBOARDS.TITLE', title: 'KPI_DASHBOARDS.TITLE' },
+    loadChildren: () =>
+      import('./features/kpi-dashboards/kpi-dashboards.routes').then((m) => m.KPI_DASHBOARDS_ROUTES),
+  },
+  {
     path: 'ai',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'AI_COG.TITLE', title: 'AI_COG.TITLE' },
