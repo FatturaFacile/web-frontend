@@ -57,35 +57,126 @@ const STATUS_COLORS: Record<MesPhaseStatus, string> = {
     MesLotDialogComponent,
   ],
   styles: `
-    :host { display: block }
-    .toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 16px }
-    .toolbar nz-select { min-width: 280px }
-    .layout { display: grid; grid-template-columns: minmax(280px, 1fr) minmax(0, 2fr); gap: 16px }
-    @media (max-width: 960px) { .layout { grid-template-columns: 1fr } }
-    .rows { display: flex; flex-direction: column; gap: 10px }
-    .row {
-      display: block; width: 100%; min-height: 88px; padding: 10px 14px; text-align: left;
-      border: 3px solid #0b1f33; border-radius: 14px; background: #ffffff; color: #0b1f33;
-      touch-action: manipulation; cursor: pointer;
+    :host {
+      display: block;
     }
-    .row[aria-pressed='true'] { background: #0b1f33; color: #ffffff }
-    .row:focus-visible { outline: 4px solid #ffb000; outline-offset: 2px }
-    .row strong { font-size: 1.15rem }
-    .row small { display: block; opacity: 0.9 }
-    .banner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px }
-    .banner h2 { margin: 0; font-size: 1.5rem }
-    .counters { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 16px }
-    .counter { padding: 10px 14px; border: 2px solid #0b1f33; border-radius: 12px; background: #f4f8fc }
-    .counter.live { border-color: #0a7d2c }
-    .counter.down { border-color: #8c1d18 }
-    .counter span { display: block; font-size: 0.95rem; font-weight: 600 }
-    .counter output { display: block; font-size: 2rem; font-weight: 700; font-variant-numeric: tabular-nums }
-    .pieces { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px }
-    .actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px }
-    .actions button { min-height: 76px; font-size: 1.15rem; font-weight: 700; white-space: normal }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .toolbar nz-select {
+      min-width: 280px;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(280px, 1fr) minmax(0, 2fr);
+      gap: 16px;
+    }
+    @media (max-width: 960px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+    .rows {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .row {
+      display: block;
+      width: 100%;
+      min-height: 88px;
+      padding: 10px 14px;
+      text-align: left;
+      border: 3px solid #0b1f33;
+      border-radius: 14px;
+      background: #ffffff;
+      color: #0b1f33;
+      touch-action: manipulation;
+      cursor: pointer;
+    }
+    .row[aria-pressed='true'] {
+      background: #0b1f33;
+      color: #ffffff;
+    }
+    .row:focus-visible {
+      outline: 4px solid #ffb000;
+      outline-offset: 2px;
+    }
+    .row strong {
+      font-size: 1.15rem;
+    }
+    .row small {
+      display: block;
+      opacity: 0.9;
+    }
+    .banner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .banner h2 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+    .counters {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .counter {
+      padding: 10px 14px;
+      border: 2px solid #0b1f33;
+      border-radius: 12px;
+      background: #f4f8fc;
+    }
+    .counter.live {
+      border-color: #0a7d2c;
+    }
+    .counter.down {
+      border-color: #8c1d18;
+    }
+    .counter span {
+      display: block;
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+    .counter output {
+      display: block;
+      font-size: 2rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+    .pieces {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 12px;
+    }
+    .actions button {
+      min-height: 76px;
+      font-size: 1.15rem;
+      font-weight: 700;
+      white-space: normal;
+    }
   `,
   template: `
-    <app-page-header [title]="'MFG_MES.TITLE' | translate" [subtitle]="'MFG_MES.SUBTITLE' | translate"></app-page-header>
+    <app-page-header
+      [title]="'MFG_MES.TITLE' | translate"
+      [subtitle]="'MFG_MES.SUBTITLE' | translate"
+    ></app-page-header>
 
     <div class="toolbar">
       <nz-select
@@ -97,16 +188,33 @@ const STATUS_COLORS: Record<MesPhaseStatus, string> = {
         (ngModelChange)="selectWorkCenter($event)"
       >
         @for (center of workCenters(); track center.id) {
-          <nz-option [nzValue]="center.id" [nzLabel]="center.work_center_code + ' · ' + center.name"></nz-option>
+          <nz-option
+            [nzValue]="center.id"
+            [nzLabel]="center.work_center_code + ' · ' + center.name"
+          ></nz-option>
         }
       </nz-select>
-      <button nz-button nzSize="large" type="button" data-testid="refresh" [disabled]="!store.workCenterId() || store.loading()" (click)="reload()">
+      <button
+        nz-button
+        nzSize="large"
+        type="button"
+        data-testid="refresh"
+        [disabled]="!store.workCenterId() || store.loading()"
+        (click)="reload()"
+      >
         {{ 'MFG_MES.REFRESH' | translate }}
       </button>
     </div>
 
     @if (store.failure(); as failure) {
-      <nz-alert class="alert" nzType="error" nzShowIcon nzCloseable [nzMessage]="failure.message" (nzOnClose)="store.clearFailure()"></nz-alert>
+      <nz-alert
+        class="alert"
+        nzType="error"
+        nzShowIcon
+        nzCloseable
+        [nzMessage]="failure.message"
+        (nzOnClose)="store.clearFailure()"
+      ></nz-alert>
     }
 
     <nz-spin [nzSpinning]="store.loading()">
@@ -118,10 +226,24 @@ const STATUS_COLORS: Record<MesPhaseStatus, string> = {
         <div class="layout">
           <div class="rows" role="list">
             @for (row of store.rows(); track key(row)) {
-              <button type="button" class="row" role="listitem" [attr.data-testid]="'row-' + row.operation.id" [attr.aria-pressed]="key(row) === selectedKey()" (click)="store.select(key(row))">
-                <strong>{{ row.production_order.order_number }} · {{ row.operation.sequence }} {{ row.operation.name }}</strong>
-                <small>{{ row.production_order.item_code }} {{ row.production_order.item_name }}</small>
-                <nz-tag [nzColor]="color(row.status)">{{ 'RES.V.' + row.status | translate }}</nz-tag>
+              <button
+                type="button"
+                class="row"
+                role="listitem"
+                [attr.data-testid]="'row-' + row.operation.id"
+                [attr.aria-pressed]="key(row) === selectedKey()"
+                (click)="store.select(key(row))"
+              >
+                <strong
+                  >{{ row.production_order.order_number }} · {{ row.operation.sequence }}
+                  {{ row.operation.name }}</strong
+                >
+                <small
+                  >{{ row.production_order.item_code }} {{ row.production_order.item_name }}</small
+                >
+                <nz-tag [nzColor]="color(row.status)">{{
+                  'RES.V.' + row.status | translate
+                }}</nz-tag>
               </button>
             }
           </div>
@@ -129,11 +251,18 @@ const STATUS_COLORS: Record<MesPhaseStatus, string> = {
           @if (store.selected(); as phase) {
             <div>
               <div class="banner" data-testid="status-banner">
-                <h2>{{ phase.production_order.order_number }} · {{ phase.operation.sequence }} {{ phase.operation.name }}</h2>
+                <h2>
+                  {{ phase.production_order.order_number }} · {{ phase.operation.sequence }}
+                  {{ phase.operation.name }}
+                </h2>
                 <span>
-                  <nz-tag [nzColor]="color(phase.status)" data-testid="status-tag">{{ 'RES.V.' + phase.status | translate }}</nz-tag>
+                  <nz-tag [nzColor]="color(phase.status)" data-testid="status-tag">{{
+                    'RES.V.' + phase.status | translate
+                  }}</nz-tag>
                   @if (phase.status === 'running') {
-                    <nz-tag nzColor="geekblue">{{ 'RES.V.' + phase.machine_mode | translate }}</nz-tag>
+                    <nz-tag nzColor="geekblue">{{
+                      'RES.V.' + phase.machine_mode | translate
+                    }}</nz-tag>
                   }
                   @if (phase.open_interval?.suspension_reason; as reason) {
                     <nz-tag nzColor="red">{{ 'RES.V.' + reason | translate }}</nz-tag>
@@ -143,39 +272,176 @@ const STATUS_COLORS: Record<MesPhaseStatus, string> = {
 
               @if (store.live(); as live) {
                 <div class="counters">
-                  <div class="counter" [class.live]="phase.status === 'running' || phase.status === 'setup'">
-                    <span>{{ 'MFG_MES.MAN_TIME' | translate }}</span><output data-testid="man-time">{{ duration(live.man) }}</output>
+                  <div
+                    class="counter"
+                    [class.live]="phase.status === 'running' || phase.status === 'setup'"
+                  >
+                    <span>{{ 'MFG_MES.MAN_TIME' | translate }}</span><output
+                      data-testid="man-time"
+                      >{{ duration(live.man) }}</output
+                    >
                   </div>
-                  <div class="counter" [class.live]="phase.status === 'running' || phase.status === 'setup'">
-                    <span>{{ 'MFG_MES.MACHINE_TIME' | translate }}</span><output data-testid="machine-time">{{ duration(live.machine) }}</output>
+                  <div
+                    class="counter"
+                    [class.live]="phase.status === 'running' || phase.status === 'setup'"
+                  >
+                    <span>{{ 'MFG_MES.MACHINE_TIME' | translate }}</span><output
+                      data-testid="machine-time"
+                      >{{ duration(live.machine) }}</output
+                    >
                   </div>
-                  <div class="counter"><span>{{ 'MFG_MES.SETUP_TIME' | translate }}</span><output data-testid="setup-time">{{ duration(live.setup) }}</output></div>
-                  <div class="counter"><span>{{ 'MFG_MES.RUN_TIME' | translate }}</span><output data-testid="run-time">{{ duration(live.run) }}</output></div>
-                  <div class="counter down"><span>{{ 'MFG_MES.DOWNTIME' | translate }}</span><output data-testid="downtime">{{ duration(live.downtime) }}</output></div>
+                  <div class="counter">
+                    <span>{{ 'MFG_MES.SETUP_TIME' | translate }}</span
+                    ><output data-testid="setup-time">{{ duration(live.setup) }}</output>
+                  </div>
+                  <div class="counter">
+                    <span>{{ 'MFG_MES.RUN_TIME' | translate }}</span
+                    ><output data-testid="run-time">{{ duration(live.run) }}</output>
+                  </div>
+                  <div class="counter down">
+                    <span>{{ 'MFG_MES.DOWNTIME' | translate }}</span
+                    ><output data-testid="downtime">{{ duration(live.downtime) }}</output>
+                  </div>
                 </div>
               }
 
               <div class="pieces">
-                <nz-statistic [nzTitle]="'MFG_MES.GOOD_PIECES' | translate" [nzValue]="phase.declared.good_quantity"></nz-statistic>
-                <nz-statistic [nzTitle]="'MFG_MES.SCRAP_PIECES' | translate" [nzValue]="phase.declared.scrap_quantity"></nz-statistic>
-                <nz-statistic [nzTitle]="'MFG_MES.TARGET' | translate" [nzValue]="phase.production_order.target_quantity ?? '-'"></nz-statistic>
+                <nz-statistic
+                  [nzTitle]="'MFG_MES.GOOD_PIECES' | translate"
+                  [nzValue]="phase.declared.good_quantity"
+                ></nz-statistic>
+                <nz-statistic
+                  [nzTitle]="'MFG_MES.SCRAP_PIECES' | translate"
+                  [nzValue]="phase.declared.scrap_quantity"
+                ></nz-statistic>
+                <nz-statistic
+                  [nzTitle]="'MFG_MES.TARGET' | translate"
+                  [nzValue]="phase.production_order.target_quantity ?? '-'"
+                ></nz-statistic>
               </div>
 
               <div class="actions" role="toolbar" [attr.aria-label]="'MFG_MES.ACTIONS' | translate">
-                <button nz-button nzType="primary" nzSize="large" type="button" data-testid="take-over" [disabled]="!can('take_over') || !operatorId()" (click)="takeOver()">{{ 'MFG_MES.TAKE_OVER' | translate }}</button>
-                <button nz-button nzType="primary" nzSize="large" type="button" data-testid="start-setup" [disabled]="!can('start_setup')" (click)="run(store.startSetup(), 'MFG_MES.DONE_SETUP')">{{ 'MFG_MES.START_SETUP' | translate }}</button>
-                <button nz-button nzType="primary" nzSize="large" type="button" data-testid="start-run" [disabled]="!can('start_production') || phase.status === 'running' && phase.machine_mode === 'attended'" (click)="run(store.startProduction('attended'), 'MFG_MES.DONE_RUN')">{{ 'MFG_MES.START_RUN' | translate }}</button>
-                <button nz-button nzSize="large" type="button" data-testid="start-run-unattended" [disabled]="!can('start_production') || phase.status === 'running' && phase.machine_mode === 'unattended'" (click)="run(store.startProduction('unattended'), 'MFG_MES.DONE_RUN')">{{ 'MFG_MES.START_RUN_UNATTENDED' | translate }}</button>
-                <button nz-button nzDanger nzSize="large" type="button" data-testid="suspend" [disabled]="!can('suspend')" (click)="suspendOpen.set(true)">{{ 'MFG_MES.SUSPEND' | translate }}</button>
-                <button nz-button nzType="primary" nzSize="large" type="button" data-testid="resume" [disabled]="!can('resume')" (click)="run(store.resume(), 'MFG_MES.DONE_RESUME')">{{ 'MFG_MES.RESUME' | translate }}</button>
-                <button nz-button nzSize="large" type="button" data-testid="declare" [disabled]="!can('declare_production')" (click)="declareOpen.set(true)">{{ 'MFG_MES.DECLARE' | translate }}</button>
-                <button nz-button nzSize="large" type="button" data-testid="lot" [disabled]="!can('consume_material')" (click)="lotOpen.set(true)">{{ 'MFG_MES.REGISTER_LOT' | translate }}</button>
-                <button nz-button nzType="primary" nzDanger nzSize="large" type="button" data-testid="close" [disabled]="!can('close')" (click)="confirmClose()">{{ 'MFG_MES.CLOSE_PHASE' | translate }}</button>
+                <button
+                  nz-button
+                  nzType="primary"
+                  nzSize="large"
+                  type="button"
+                  data-testid="take-over"
+                  [disabled]="!can('take_over') || !operatorId()"
+                  (click)="takeOver()"
+                >
+                  {{ 'MFG_MES.TAKE_OVER' | translate }}
+                </button>
+                <button
+                  nz-button
+                  nzType="primary"
+                  nzSize="large"
+                  type="button"
+                  data-testid="start-setup"
+                  [disabled]="!can('start_setup')"
+                  (click)="run(store.startSetup(), 'MFG_MES.DONE_SETUP')"
+                >
+                  {{ 'MFG_MES.START_SETUP' | translate }}
+                </button>
+                <button
+                  nz-button
+                  nzType="primary"
+                  nzSize="large"
+                  type="button"
+                  data-testid="start-run"
+                  [disabled]="
+                    !can('start_production') ||
+                    (phase.status === 'running' && phase.machine_mode === 'attended')
+                  "
+                  (click)="run(store.startProduction('attended'), 'MFG_MES.DONE_RUN')"
+                >
+                  {{ 'MFG_MES.START_RUN' | translate }}
+                </button>
+                <button
+                  nz-button
+                  nzSize="large"
+                  type="button"
+                  data-testid="start-run-unattended"
+                  [disabled]="
+                    !can('start_production') ||
+                    (phase.status === 'running' && phase.machine_mode === 'unattended')
+                  "
+                  (click)="run(store.startProduction('unattended'), 'MFG_MES.DONE_RUN')"
+                >
+                  {{ 'MFG_MES.START_RUN_UNATTENDED' | translate }}
+                </button>
+                <button
+                  nz-button
+                  nzDanger
+                  nzSize="large"
+                  type="button"
+                  data-testid="suspend"
+                  [disabled]="!can('suspend')"
+                  (click)="suspendOpen.set(true)"
+                >
+                  {{ 'MFG_MES.SUSPEND' | translate }}
+                </button>
+                <button
+                  nz-button
+                  nzType="primary"
+                  nzSize="large"
+                  type="button"
+                  data-testid="resume"
+                  [disabled]="!can('resume')"
+                  (click)="run(store.resume(), 'MFG_MES.DONE_RESUME')"
+                >
+                  {{ 'MFG_MES.RESUME' | translate }}
+                </button>
+                <button
+                  nz-button
+                  nzSize="large"
+                  type="button"
+                  data-testid="declare"
+                  [disabled]="!can('declare_production')"
+                  (click)="declareOpen.set(true)"
+                >
+                  {{ 'MFG_MES.DECLARE' | translate }}
+                </button>
+                <button
+                  nz-button
+                  nzSize="large"
+                  type="button"
+                  data-testid="lot"
+                  [disabled]="!can('consume_material')"
+                  (click)="lotOpen.set(true)"
+                >
+                  {{ 'MFG_MES.REGISTER_LOT' | translate }}
+                </button>
+                <button
+                  nz-button
+                  nzType="primary"
+                  nzDanger
+                  nzSize="large"
+                  type="button"
+                  data-testid="close"
+                  [disabled]="!can('close')"
+                  (click)="confirmClose()"
+                >
+                  {{ 'MFG_MES.CLOSE_PHASE' | translate }}
+                </button>
               </div>
 
-              <app-mes-suspend-dialog [(visible)]="suspendOpen" [busy]="store.busy()" (confirmed)="suspend($event)"></app-mes-suspend-dialog>
-              <app-mes-declaration-dialog [(visible)]="declareOpen" [busy]="store.busy()" (confirmed)="declare($event)"></app-mes-declaration-dialog>
-              <app-mes-lot-dialog [(visible)]="lotOpen" [busy]="store.busy()" [components]="phase.components ?? []" (confirmed)="consume($event)"></app-mes-lot-dialog>
+              <app-mes-suspend-dialog
+                [(visible)]="suspendOpen"
+                [busy]="store.busy()"
+                (confirmed)="suspend($event)"
+              ></app-mes-suspend-dialog>
+              <app-mes-declaration-dialog
+                [(visible)]="declareOpen"
+                [busy]="store.busy()"
+                (confirmed)="declare($event)"
+              ></app-mes-declaration-dialog>
+              <app-mes-lot-dialog
+                [(visible)]="lotOpen"
+                [busy]="store.busy()"
+                [components]="phase.components ?? []"
+                (confirmed)="consume($event)"
+              ></app-mes-lot-dialog>
             </div>
           }
         </div>
@@ -206,7 +472,9 @@ export class OperatorBoardComponent implements OnInit {
   ngOnInit(): void {
     this.store.setOperator(this.operatorId());
     this.store.start();
-    this.api.getWorkCenters({ per_page: 100 }).subscribe({ next: (res) => this.workCenters.set(res.data) });
+    this.api
+      .getWorkCenters({ per_page: 100 })
+      .subscribe({ next: (res) => this.workCenters.set(res.data) });
   }
 
   protected selectWorkCenter(id: string | null): void {
@@ -266,7 +534,11 @@ export class OperatorBoardComponent implements OnInit {
   }
 
   /** Runs a store command, if it is allowed, and shows its outcome. */
-  protected run(command: ReturnType<MesBoardStore['startSetup']>, doneKey: string, onDone?: () => void): void {
+  protected run(
+    command: ReturnType<MesBoardStore['startSetup']>,
+    doneKey: string,
+    onDone?: () => void,
+  ): void {
     if (command === null) {
       return;
     }

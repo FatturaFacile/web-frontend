@@ -1,5 +1,6 @@
 /** Lifecycle state of a phase (Italian: fase di lavorazione) on the MES operator board. */
-export type MesPhaseStatus = 'available' | 'assigned' | 'setup' | 'running' | 'suspended' | 'closed';
+export type MesPhaseStatus =
+  'available' | 'assigned' | 'setup' | 'running' | 'suspended' | 'closed';
 
 /** Operator actions of the phase state machine; the API returns the ones allowed in the current state. */
 export type MesAction =
@@ -144,8 +145,19 @@ export interface MesTraceability {
     started_at: string;
     ended_at: string | null;
   }[];
-  declarations: { id: string; operator_id: string | null; good_quantity: string; scrap_quantity: string; declared_at: string }[];
-  scraps: { production_declaration_id: string; quantity: string; defect_reason: MesDefectReason; note: string | null }[];
+  declarations: {
+    id: string;
+    operator_id: string | null;
+    good_quantity: string;
+    scrap_quantity: string;
+    declared_at: string;
+  }[];
+  scraps: {
+    production_declaration_id: string;
+    quantity: string;
+    defect_reason: MesDefectReason;
+    note: string | null;
+  }[];
   materials: {
     id: string;
     mfg_item_id: string;

@@ -1594,6 +1594,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             module: 'manufacturing',
           },
           {
+            key: 'NAV.MFG_MES_BOARD',
+            route: '/manufacturing/mes-board',
+            icon: 'fa-solid fa-tablet-screen-button',
+            module: 'manufacturing',
+          },
+          {
             key: 'NAV.MFG_BOM_DESIGNER',
             route: '/manufacturing/bom-designer',
             icon: 'fa-solid fa-sitemap',

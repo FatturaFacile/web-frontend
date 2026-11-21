@@ -77,8 +77,12 @@ export class MesBoardStore {
 
     return rows.find((row) => rowKey(row) === key) ?? rows[0] ?? null;
   });
-  readonly allowed = computed<ReadonlySet<MesAction>>(() => new Set(this.selected()?.allowed_actions ?? []));
-  readonly elapsedSeconds = computed(() => Math.max(0, (this.nowMs() - this.receivedAtMs()) / 1000));
+  readonly allowed = computed<ReadonlySet<MesAction>>(
+    () => new Set(this.selected()?.allowed_actions ?? []),
+  );
+  readonly elapsedSeconds = computed(() =>
+    Math.max(0, (this.nowMs() - this.receivedAtMs()) / 1000),
+  );
   readonly live = computed<MesLiveTimes | null>(() => {
     const phase = this.selected();
 
@@ -137,7 +141,14 @@ export class MesBoardStore {
     }
     const meta = this.meta('take_over', phase);
 
-    return this.run(this.api.takeOver(meta, { production_order_operation_id: phase.operation.id, operator_id: operatorId, machine_id: machineId ?? null }), phase);
+    return this.run(
+      this.api.takeOver(meta, {
+        production_order_operation_id: phase.operation.id,
+        operator_id: operatorId,
+        machine_id: machineId ?? null,
+      }),
+      phase,
+    );
   }
 
   startSetup(): Observable<unknown> | null {
@@ -161,7 +172,10 @@ export class MesBoardStore {
   }
 
   declare(input: MesDeclarationInput): Observable<unknown> | null {
-    const body: Record<string, unknown> = { good_quantity: input.goodQuantity, scrap_quantity: input.scrapQuantity };
+    const body: Record<string, unknown> = {
+      good_quantity: input.goodQuantity,
+      scrap_quantity: input.scrapQuantity,
+    };
     if (input.defectReason) {
       body['defect_reason'] = input.defectReason;
     }
@@ -191,7 +205,14 @@ export class MesBoardStore {
 
   private simple(
     action: MesAction,
-    path: 'start-setup' | 'start-production' | 'suspend' | 'resume' | 'declarations' | 'material-consumptions' | 'close',
+    path:
+      | 'start-setup'
+      | 'start-production'
+      | 'suspend'
+      | 'resume'
+      | 'declarations'
+      | 'material-consumptions'
+      | 'close',
     body: Record<string, unknown> = {},
     discriminator = '',
   ): Observable<unknown> | null {
@@ -214,7 +235,10 @@ export class MesBoardStore {
       this.pendingKey = { signature: full, key: crypto.randomUUID() };
     }
 
-    return { idempotency_key: this.pendingKey.key, ...(phase.id ? { expected_version: phase.version } : {}) };
+    return {
+      idempotency_key: this.pendingKey.key,
+      ...(phase.id ? { expected_version: phase.version } : {}),
+    };
   }
 
   private run(call: Observable<{ data: MesPhase }>, phase: MesPhase): Observable<unknown> {
@@ -281,9 +305,20 @@ export class MesBoardStore {
       const errors = (error.error?.errors ?? {}) as Record<string, string[]>;
       const [field] = Object.keys(errors);
 
-      return { field: field ?? null, message: (field ? errors[field]?.[0] : undefined) ?? String(error.error?.message ?? ''), stale: field === 'version' || field === 'status' };
+      return {
+        field: field ?? null,
+        message: (field ? errors[field]?.[0] : undefined) ?? String(error.error?.message ?? ''),
+        stale: field === 'version' || field === 'status',
+      };
     }
 
-    return { field: null, message: error instanceof HttpErrorResponse ? String(error.error?.message ?? error.message) : String(error), stale: false };
+    return {
+      field: null,
+      message:
+        error instanceof HttpErrorResponse
+          ? String(error.error?.message ?? error.message)
+          : String(error),
+      stale: false,
+    };
   }
 }

@@ -24,7 +24,12 @@ export function liveTimes(phase: MesPhase, elapsedSeconds: number): MesLiveTimes
 
   switch (open.category) {
     case 'setup':
-      return { ...base, setup: base.setup + extra, man: base.man + extra, machine: base.machine + extra };
+      return {
+        ...base,
+        setup: base.setup + extra,
+        man: base.man + extra,
+        machine: base.machine + extra,
+      };
     case 'run':
       return {
         ...base,

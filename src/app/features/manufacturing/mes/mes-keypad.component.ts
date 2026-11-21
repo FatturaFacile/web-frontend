@@ -13,22 +13,59 @@ const INCREMENTS = [1, 5, 10] as const;
   selector: 'app-mes-keypad',
   imports: [TranslatePipe],
   styles: `
-    :host { display: block }
+    :host {
+      display: block;
+    }
     .display {
-      display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
-      padding: 12px 16px; margin-bottom: 12px; border-radius: 12px;
-      background: #0b1f33; color: #ffffff; font-size: 2.5rem; font-variant-numeric: tabular-nums;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 16px;
+      margin-bottom: 12px;
+      border-radius: 12px;
+      background: #0b1f33;
+      color: #ffffff;
+      font-size: 2.5rem;
+      font-variant-numeric: tabular-nums;
     }
-    .display small { font-size: 1rem; opacity: 0.85 }
-    .pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px }
-    .quick { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 10px }
+    .display small {
+      font-size: 1rem;
+      opacity: 0.85;
+    }
+    .pad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .quick {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
     button {
-      min-height: 72px; border: 2px solid #0b1f33; border-radius: 12px; background: #ffffff; color: #0b1f33;
-      font-size: 1.75rem; font-weight: 600; touch-action: manipulation; cursor: pointer;
+      min-height: 72px;
+      border: 2px solid #0b1f33;
+      border-radius: 12px;
+      background: #ffffff;
+      color: #0b1f33;
+      font-size: 1.75rem;
+      font-weight: 600;
+      touch-action: manipulation;
+      cursor: pointer;
     }
-    button:active { background: #d6e4f5 }
-    button:focus-visible { outline: 4px solid #ffb000; outline-offset: 2px }
-    .quick button { font-size: 1.25rem; background: #e8f1fb }
+    button:active {
+      background: #d6e4f5;
+    }
+    button:focus-visible {
+      outline: 4px solid #ffb000;
+      outline-offset: 2px;
+    }
+    .quick button {
+      font-size: 1.25rem;
+      background: #e8f1fb;
+    }
   `,
   template: `
     <div class="display" data-testid="keypad-display" role="status">
@@ -53,9 +90,13 @@ const INCREMENTS = [1, 5, 10] as const;
     </div>
     <div class="quick">
       @for (step of increments; track step) {
-        <button type="button" [attr.data-testid]="'plus-' + step" (click)="plus(step)">+{{ step }}</button>
+        <button type="button" [attr.data-testid]="'plus-' + step" (click)="plus(step)">
+          +{{ step }}
+        </button>
       }
-      <button type="button" data-testid="key-clear" (click)="press('clear')">{{ 'MFG_MES.KEY_CLEAR' | translate }}</button>
+      <button type="button" data-testid="key-clear" (click)="press('clear')">
+        {{ 'MFG_MES.KEY_CLEAR' | translate }}
+      </button>
     </div>
   `,
 })

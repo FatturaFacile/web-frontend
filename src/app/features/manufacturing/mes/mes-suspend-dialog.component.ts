@@ -12,13 +12,31 @@ import { MES_SUSPENSION_REASONS, MesSuspensionReason } from './mes.models';
   selector: 'app-mes-suspend-dialog',
   imports: [TranslatePipe, NzButtonModule, NzModalModule],
   styles: `
-    .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px }
-    .tile {
-      min-height: 84px; padding: 8px 12px; border: 3px solid #0b1f33; border-radius: 14px; background: #ffffff;
-      color: #0b1f33; font-size: 1.15rem; font-weight: 600; touch-action: manipulation; cursor: pointer;
+    .tiles {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
     }
-    .tile[aria-pressed='true'] { background: #0b1f33; color: #ffffff }
-    .tile:focus-visible { outline: 4px solid #ffb000; outline-offset: 2px }
+    .tile {
+      min-height: 84px;
+      padding: 8px 12px;
+      border: 3px solid #0b1f33;
+      border-radius: 14px;
+      background: #ffffff;
+      color: #0b1f33;
+      font-size: 1.15rem;
+      font-weight: 600;
+      touch-action: manipulation;
+      cursor: pointer;
+    }
+    .tile[aria-pressed='true'] {
+      background: #0b1f33;
+      color: #ffffff;
+    }
+    .tile:focus-visible {
+      outline: 4px solid #ffb000;
+      outline-offset: 2px;
+    }
   `,
   template: `
     <nz-modal
@@ -46,7 +64,9 @@ import { MES_SUSPENSION_REASONS, MesSuspensionReason } from './mes.models';
         </div>
       </ng-template>
       <ng-template #footer>
-        <button nz-button nzSize="large" type="button" (click)="close()">{{ 'MFG_MES.CANCEL' | translate }}</button>
+        <button nz-button nzSize="large" type="button" (click)="close()">
+          {{ 'MFG_MES.CANCEL' | translate }}
+        </button>
         <button
           nz-button
           nzSize="large"

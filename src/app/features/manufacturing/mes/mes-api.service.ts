@@ -29,25 +29,46 @@ export class MesApiService {
 
   /** Query: intervals, declarations, scrap reasons and lots of a phase. */
   getTraceability(phaseId: string): Observable<ApiResponse<MesTraceability>> {
-    return this.http.get<ApiResponse<MesTraceability>>(`${this.base}/phases/${phaseId}/traceability`);
+    return this.http.get<ApiResponse<MesTraceability>>(
+      `${this.base}/phases/${phaseId}/traceability`,
+    );
   }
 
   /** Command: takes an operation over (creates the phase) or hands a suspended phase to another operator. */
   takeOver(
     meta: MesCommandMeta,
-    body: { production_order_operation_id: string; operator_id: string; machine_id?: string | null },
+    body: {
+      production_order_operation_id: string;
+      operator_id: string;
+      machine_id?: string | null;
+    },
   ): Observable<ApiResponse<MesPhase>> {
-    return this.http.post<ApiResponse<MesPhase>>(`${this.base}/phases/take-over`, { ...body, ...meta }, this.options(meta));
+    return this.http.post<ApiResponse<MesPhase>>(
+      `${this.base}/phases/take-over`,
+      { ...body, ...meta },
+      this.options(meta),
+    );
   }
 
   /** Command: any other action on a phase, named by its route segment. */
   command(
     phaseId: string,
-    path: 'start-setup' | 'start-production' | 'suspend' | 'resume' | 'declarations' | 'material-consumptions' | 'close',
+    path:
+      | 'start-setup'
+      | 'start-production'
+      | 'suspend'
+      | 'resume'
+      | 'declarations'
+      | 'material-consumptions'
+      | 'close',
     meta: MesCommandMeta,
     body: Record<string, unknown> = {},
   ): Observable<ApiResponse<MesPhase>> {
-    return this.http.post<ApiResponse<MesPhase>>(`${this.base}/phases/${phaseId}/${path}`, { ...body, ...meta }, this.options(meta));
+    return this.http.post<ApiResponse<MesPhase>>(
+      `${this.base}/phases/${phaseId}/${path}`,
+      { ...body, ...meta },
+      this.options(meta),
+    );
   }
 
   private options(meta: MesCommandMeta): { headers: Record<string, string> } {

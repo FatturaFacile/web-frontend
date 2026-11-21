@@ -1,4 +1,14 @@
-import { Component, computed, effect, ElementRef, input, model, output, signal, viewChild } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  ElementRef,
+  input,
+  model,
+  output,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '@shared';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -16,19 +26,61 @@ import { MesComponent } from './mes.models';
  */
 @Component({
   selector: 'app-mes-lot-dialog',
-  imports: [FormsModule, TranslatePipe, NzButtonModule, NzInputModule, NzModalModule, MesKeypadComponent],
+  imports: [
+    FormsModule,
+    TranslatePipe,
+    NzButtonModule,
+    NzInputModule,
+    NzModalModule,
+    MesKeypadComponent,
+  ],
   styles: `
-    .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 16px }
-    .tile {
-      min-height: 72px; padding: 6px 10px; border: 3px solid #0b1f33; border-radius: 12px; background: #ffffff;
-      color: #0b1f33; font-weight: 600; text-align: left; touch-action: manipulation; cursor: pointer;
+    .tiles {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+      margin-bottom: 16px;
     }
-    .tile small { display: block; font-weight: 400 }
-    .tile[aria-pressed='true'] { background: #0b1f33; color: #ffffff }
-    .tile:focus-visible { outline: 4px solid #ffb000; outline-offset: 2px }
-    .lot { font-size: 1.5rem; height: 64px; margin-bottom: 16px }
-    .over { display: flex; align-items: center; gap: 10px; margin-top: 16px; font-size: 1.1rem }
-    .over input { width: 28px; height: 28px }
+    .tile {
+      min-height: 72px;
+      padding: 6px 10px;
+      border: 3px solid #0b1f33;
+      border-radius: 12px;
+      background: #ffffff;
+      color: #0b1f33;
+      font-weight: 600;
+      text-align: left;
+      touch-action: manipulation;
+      cursor: pointer;
+    }
+    .tile small {
+      display: block;
+      font-weight: 400;
+    }
+    .tile[aria-pressed='true'] {
+      background: #0b1f33;
+      color: #ffffff;
+    }
+    .tile:focus-visible {
+      outline: 4px solid #ffb000;
+      outline-offset: 2px;
+    }
+    .lot {
+      font-size: 1.5rem;
+      height: 64px;
+      margin-bottom: 16px;
+    }
+    .over {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 16px;
+      font-size: 1.1rem;
+    }
+    .over input {
+      width: 28px;
+      height: 28px;
+    }
   `,
   template: `
     <nz-modal
@@ -42,7 +94,13 @@ import { MesComponent } from './mes.models';
       <ng-template #content>
         <div class="tiles" role="group" [attr.aria-label]="'MFG_MES.COMPONENT' | translate">
           @for (component of components(); track component.mfg_item_id) {
-            <button type="button" class="tile" [attr.data-testid]="'component-' + component.item_code" [attr.aria-pressed]="itemId() === component.mfg_item_id" (click)="itemId.set(component.mfg_item_id)">
+            <button
+              type="button"
+              class="tile"
+              [attr.data-testid]="'component-' + component.item_code"
+              [attr.aria-pressed]="itemId() === component.mfg_item_id"
+              (click)="itemId.set(component.mfg_item_id)"
+            >
               {{ component.item_code }}
               <small>{{ component.item_name }}</small>
               <small>{{ component.consumed_quantity }} / {{ component.required_quantity }}</small>
@@ -65,16 +123,36 @@ import { MesComponent } from './mes.models';
           (keydown.enter)="onEnter($event)"
         />
 
-        <app-mes-keypad label="MFG_MES.QUANTITY" [value]="quantity()" (valueChange)="quantity.set($event)"></app-mes-keypad>
+        <app-mes-keypad
+          label="MFG_MES.QUANTITY"
+          [value]="quantity()"
+          (valueChange)="quantity.set($event)"
+        ></app-mes-keypad>
 
         <label class="over">
-          <input type="checkbox" data-testid="over-consumption" [ngModel]="overConsumption()" (ngModelChange)="overConsumption.set($event)" />
+          <input
+            type="checkbox"
+            data-testid="over-consumption"
+            [ngModel]="overConsumption()"
+            (ngModelChange)="overConsumption.set($event)"
+          />
           {{ 'MFG_MES.CONFIRM_OVER_CONSUMPTION' | translate }}
         </label>
       </ng-template>
       <ng-template #footer>
-        <button nz-button nzSize="large" type="button" (click)="close()">{{ 'MFG_MES.CANCEL' | translate }}</button>
-        <button nz-button nzSize="large" nzType="primary" type="button" data-testid="confirm-lot" [disabled]="!canConfirm() || busy()" [nzLoading]="busy()" (click)="confirm()">
+        <button nz-button nzSize="large" type="button" (click)="close()">
+          {{ 'MFG_MES.CANCEL' | translate }}
+        </button>
+        <button
+          nz-button
+          nzSize="large"
+          nzType="primary"
+          type="button"
+          data-testid="confirm-lot"
+          [disabled]="!canConfirm() || busy()"
+          [nzLoading]="busy()"
+          (click)="confirm()"
+        >
           {{ 'MFG_MES.REGISTER_LOT' | translate }}
         </button>
       </ng-template>
@@ -93,12 +171,18 @@ export class MesLotDialogComponent {
   protected readonly overConsumption = signal(false);
   private readonly lotInput = viewChild<ElementRef<HTMLInputElement>>('lotInput');
 
-  private readonly selectedComponent = computed(() => this.components().find((component) => component.mfg_item_id === this.itemId()) ?? null);
+  private readonly selectedComponent = computed(
+    () => this.components().find((component) => component.mfg_item_id === this.itemId()) ?? null,
+  );
   /** An item, a positive quantity and, for a lot-tracked item, the scanned lot. */
   protected readonly canConfirm = computed(() => {
     const component = this.selectedComponent();
 
-    return component !== null && isPositiveQuantity(this.quantity()) && (!component.lot_tracked || this.lot().trim() !== '');
+    return (
+      component !== null &&
+      isPositiveQuantity(this.quantity()) &&
+      (!component.lot_tracked || this.lot().trim() !== '')
+    );
   });
 
   constructor() {
@@ -134,7 +218,12 @@ export class MesLotDialogComponent {
       return;
     }
     const lot = this.lot().trim();
-    this.confirmed.emit({ mfgItemId: itemId, lotCode: lot === '' ? null : lot, quantity: this.quantity(), overConsumptionConfirmed: this.overConsumption() });
+    this.confirmed.emit({
+      mfgItemId: itemId,
+      lotCode: lot === '' ? null : lot,
+      quantity: this.quantity(),
+      overConsumptionConfirmed: this.overConsumption(),
+    });
   }
 
   /** Clears the form once a registration succeeded (the parent calls it) or the dialog closes. */
