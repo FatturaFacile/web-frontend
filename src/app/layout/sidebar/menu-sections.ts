@@ -475,6 +475,8 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         icon: 'fa-solid fa-people-group',
         children: [
           { key: 'NAV.HR', route: '/hr', icon: 'fa-solid fa-user-tie', module: 'hr' },
+          { key: 'HSE.NAV_MATRIX', route: '/hse/compliance-matrix', icon: 'fa-solid fa-helmet-safety', module: 'hse' },
+          { key: 'HSE.NAV_INCIDENTS', route: '/hse/incidents', icon: 'fa-solid fa-triangle-exclamation', module: 'hse' },
           {
             key: 'NAV.HR_ORGANIZATION',
             route: '/hr/organization',
