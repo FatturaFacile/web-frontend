@@ -10,6 +10,7 @@ export * from './auth/sso-login.service';
 export * from './api/auth-api.service';
 export { AuthService } from './services/auth.service';
 export * from './auth/auth.store';
+export * from './iam';
 export * from './interceptors/credentials.interceptor';
 export * from './interceptors/csrf-refresh.interceptor';
 export * from './interceptors/tenant-auth.interceptor';

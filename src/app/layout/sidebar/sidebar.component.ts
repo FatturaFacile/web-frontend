@@ -88,6 +88,10 @@ export class SidebarComponent {
 
   readonly allMenuSections: readonly MenuSection[] = MENU_SECTIONS;
 
+  private hasAnyRole(roles: readonly string[]): boolean {
+    return this.authStore.activeRoles().some((role) => roles.includes(role));
+  }
+
   /** Menu sections filtered reactively based on the active tenant role and module permissions */
   private readonly permittedSections = computed<MenuSection[]>(() => {
     // Read the active role signal to trigger reactivity on tenant/role change
@@ -105,10 +109,17 @@ export class SidebarComponent {
               return null;
             }
 
+            if (item.roles && !this.hasAnyRole(item.roles)) {
+              return null;
+            }
+
             if (item.children) {
               const filteredChildren = item.children.filter((child) => {
                 const childModule = child.module ?? item.module;
                 if (child.permission && !this.authStore.can(child.permission)) {
+                  return false;
+                }
+                if (child.roles && !this.hasAnyRole(child.roles)) {
                   return false;
                 }
                 return !childModule || this.permissions.canRead(childModule);

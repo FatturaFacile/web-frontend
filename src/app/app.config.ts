@@ -21,6 +21,7 @@ import { credentialsInterceptor } from '@core/interceptors/credentials.intercept
 import { portalAuthInterceptor } from '@core/interceptors/portal-auth.interceptor';
 import { csrfRefreshInterceptor } from '@core/interceptors/csrf-refresh.interceptor';
 import { errorInterceptor } from '@core/interceptors/error.interceptor';
+import { iamErrorInterceptor } from '@core/iam/iam-error.interceptor';
 import { idempotencyInterceptor } from '@core/interceptors/idempotency.interceptor';
 import { optimisticLockInterceptor } from '@core/interceptors/optimistic-lock.interceptor';
 import { paginatedResponseInterceptor } from '@core/interceptors/paginated-response.interceptor';
@@ -60,6 +61,7 @@ export const appConfig: ApplicationConfig = {
         idempotencyInterceptor,
         optimisticLockInterceptor,
         paginatedResponseInterceptor,
+        iamErrorInterceptor,
         errorInterceptor,
       ]),
     ),
