@@ -1,5 +1,6 @@
 /** The side menu: every page the user can open, grouped by section, with the ERP module that guards it. */
 import { LOGISTICS_PERMISSIONS } from '@core/models/logistics.model';
+import { SECURITY_CENTER_ROLES } from '../../features/security/security-center/security-center.model';
 
 export interface MenuItem {
   key: string;
@@ -8,7 +9,9 @@ export interface MenuItem {
   module?: string;
   /** Permission of the API (RBAC from `/auth/profile`) required to see the entry; checked together with `module`. */
   permission?: string;
-  children?: { key: string; route: string; icon: string; module?: string; permission?: string }[];
+  /** Roles of the active tenant member that may see the entry (any of them); no list means every role. */
+  roles?: readonly string[];
+  children?: { key: string; route: string; icon: string; module?: string; permission?: string; roles?: readonly string[] }[];
 }
 
 export interface MenuSection {
@@ -1701,6 +1704,17 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
   {
     key: 'NAV.SECTION_SYSTEM',
     items: [
+      {
+        key: 'SECURITY_CENTER.NAV.TITLE',
+        icon: 'fa-solid fa-shield-halved',
+        roles: SECURITY_CENTER_ROLES,
+        children: [
+          { key: 'SECURITY_CENTER.TAB.POSTURE', route: '/security-center/posture', icon: 'fa-solid fa-gauge-high', roles: SECURITY_CENTER_ROLES },
+          { key: 'SECURITY_CENTER.TAB.AUDIT', route: '/security-center/audit', icon: 'fa-solid fa-fingerprint', roles: SECURITY_CENTER_ROLES },
+          { key: 'SECURITY_CENTER.TAB.PRIVACY', route: '/security-center/privacy', icon: 'fa-solid fa-user-lock', roles: SECURITY_CENTER_ROLES },
+          { key: 'SECURITY_CENTER.TAB.BREACHES', route: '/security-center/breaches', icon: 'fa-solid fa-triangle-exclamation', roles: SECURITY_CENTER_ROLES },
+        ],
+      },
       {
         key: 'PRIVACY.NAV.TITLE',
         icon: 'fa-solid fa-user-shield',
