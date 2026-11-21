@@ -1,5 +1,6 @@
 /** The side menu: every page the user can open, grouped by section, with the ERP module that guards it. */
 import { LOGISTICS_PERMISSIONS } from '@core/models/logistics.model';
+import { SECURITY_CENTER_ROLES } from '../../features/security/security-center/security-center.model';
 
 export interface MenuItem {
   key: string;
@@ -8,7 +9,9 @@ export interface MenuItem {
   module?: string;
   /** Permission of the API (RBAC from `/auth/profile`) required to see the entry; checked together with `module`. */
   permission?: string;
-  children?: { key: string; route: string; icon: string; module?: string; permission?: string }[];
+  /** Roles of the active tenant member that may see the entry (any of them); no list means every role. */
+  roles?: readonly string[];
+  children?: { key: string; route: string; icon: string; module?: string; permission?: string; roles?: readonly string[] }[];
 }
 
 export interface MenuSection {
@@ -423,6 +426,24 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         module: 'ocr_extraction',
       },
       {
+        key: 'KPI_DASHBOARDS.NAV',
+        icon: 'fa-solid fa-gauge-high',
+        route: '/kpi-dashboards',
+        module: 'kpi_dashboards',
+      },
+      {
+        key: 'AI_COG.NAV_WORKBENCH',
+        icon: 'fa-solid fa-user-check',
+        route: '/ai/workbench',
+        module: 'ai_cognitive',
+      },
+      {
+        key: 'AI_COG.NAV_INSIGHTS',
+        icon: 'fa-solid fa-lightbulb',
+        route: '/ai/insights',
+        module: 'ai_cognitive',
+      },
+      {
         key: 'NAV.TREASURY_OPERATIONS',
         icon: 'fa-solid fa-money-bill-transfer',
         route: '/treasury/operations',
@@ -761,6 +782,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         module: 'digital_preservation',
       },
       {
+        key: 'ACADEMY.NAV',
+        icon: 'fa-solid fa-graduation-cap',
+        route: '/academy',
+        module: 'academy',
+      },
+      {
         key: 'NAV.ECOMMERCE_INTEGRATIONS',
         icon: 'fa-solid fa-cart-shopping',
         route: '/ecommerce-integrations',
@@ -782,36 +809,11 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         icon: 'fa-solid fa-building',
         module: 'facility',
         children: [
-          {
-            key: 'NAV.FACILITY_BOOKINGS',
-            route: '/facility',
-            icon: 'fa-solid fa-calendar-days',
-            module: 'facility',
-          },
-          {
-            key: 'NAV.FACILITY_SPACES',
-            route: '/facility/spaces',
-            icon: 'fa-solid fa-sitemap',
-            module: 'facility',
-          },
-          {
-            key: 'NAV.FACILITY_REQUESTS',
-            route: '/facility/requests',
-            icon: 'fa-solid fa-screwdriver-wrench',
-            module: 'facility',
-          },
-          {
-            key: 'NAV.FACILITY_INSPECTIONS',
-            route: '/facility/inspections',
-            icon: 'fa-solid fa-clipboard-check',
-            module: 'facility',
-          },
-          {
-            key: 'NAV.FACILITY_METERS',
-            route: '/facility/meters',
-            icon: 'fa-solid fa-gauge-high',
-            module: 'facility',
-          },
+          { key: 'NAV.FACILITY_BOOKINGS', route: '/facility', icon: 'fa-solid fa-calendar-days', module: 'facility' },
+          { key: 'NAV.FACILITY_SPACES', route: '/facility/spaces', icon: 'fa-solid fa-sitemap', module: 'facility' },
+          { key: 'NAV.FACILITY_REQUESTS', route: '/facility/requests', icon: 'fa-solid fa-screwdriver-wrench', module: 'facility' },
+          { key: 'NAV.FACILITY_INSPECTIONS', route: '/facility/inspections', icon: 'fa-solid fa-clipboard-check', module: 'facility' },
+          { key: 'NAV.FACILITY_METERS', route: '/facility/meters', icon: 'fa-solid fa-gauge-high', module: 'facility' },
         ],
       },
       {
@@ -819,54 +821,14 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         icon: 'fa-solid fa-truck-field',
         module: 'supplier_portal',
         children: [
-          {
-            key: 'NAV.SUPPLIER_PORTAL_OVERVIEW',
-            route: '/supplier-portal',
-            icon: 'fa-solid fa-gauge',
-            module: 'supplier_portal',
-          },
-          {
-            key: 'NAV.SUPPLIER_PORTAL_ONBOARDINGS',
-            route: '/supplier-portal/onboardings',
-            icon: 'fa-solid fa-user-check',
-            module: 'supplier_portal',
-          },
-          {
-            key: 'NAV.SUPPLIER_PORTAL_DOCUMENTS',
-            route: '/supplier-portal/documents',
-            icon: 'fa-solid fa-file-circle-check',
-            module: 'supplier_portal',
-          },
-          {
-            key: 'NAV.SUPPLIER_PORTAL_QUALIFICATION',
-            route: '/supplier-portal/qualification',
-            icon: 'fa-solid fa-ranking-star',
-            module: 'supplier_portal',
-          },
-          {
-            key: 'NAV.SUPPLIER_PORTAL_BANK_CHANGES',
-            route: '/supplier-portal/bank-changes',
-            icon: 'fa-solid fa-building-columns',
-            module: 'supplier_portal',
-          },
-          {
-            key: 'NAV.SUPPLIER_PORTAL_BACK_OFFICE',
-            route: '/supplier-portal/back-office',
-            icon: 'fa-solid fa-sliders',
-            module: 'supplier_portal',
-          },
-          {
-            key: 'NAV.SUPPLIER_PORTAL_SELF_SERVICE',
-            route: '/supplier-portal/self-service',
-            icon: 'fa-solid fa-store',
-            module: 'supplier_portal',
-          },
-          {
-            key: 'NAV.SUPPLIER_PORTAL_RFQ_RESPONSES',
-            route: '/supplier-portal/rfq-responses',
-            icon: 'fa-solid fa-scale-balanced',
-            module: 'supplier_portal',
-          },
+          { key: 'NAV.SUPPLIER_PORTAL_OVERVIEW', route: '/supplier-portal', icon: 'fa-solid fa-gauge', module: 'supplier_portal' },
+          { key: 'NAV.SUPPLIER_PORTAL_ONBOARDINGS', route: '/supplier-portal/onboardings', icon: 'fa-solid fa-user-check', module: 'supplier_portal' },
+          { key: 'NAV.SUPPLIER_PORTAL_DOCUMENTS', route: '/supplier-portal/documents', icon: 'fa-solid fa-file-circle-check', module: 'supplier_portal' },
+          { key: 'NAV.SUPPLIER_PORTAL_QUALIFICATION', route: '/supplier-portal/qualification', icon: 'fa-solid fa-ranking-star', module: 'supplier_portal' },
+          { key: 'NAV.SUPPLIER_PORTAL_BANK_CHANGES', route: '/supplier-portal/bank-changes', icon: 'fa-solid fa-building-columns', module: 'supplier_portal' },
+          { key: 'NAV.SUPPLIER_PORTAL_BACK_OFFICE', route: '/supplier-portal/back-office', icon: 'fa-solid fa-sliders', module: 'supplier_portal' },
+          { key: 'NAV.SUPPLIER_PORTAL_SELF_SERVICE', route: '/supplier-portal/self-service', icon: 'fa-solid fa-store', module: 'supplier_portal' },
+          { key: 'NAV.SUPPLIER_PORTAL_RFQ_RESPONSES', route: '/supplier-portal/rfq-responses', icon: 'fa-solid fa-scale-balanced', module: 'supplier_portal' },
         ],
       },
       {
@@ -885,54 +847,14 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         icon: 'fa-solid fa-scale-balanced',
         module: 'governance',
         children: [
-          {
-            key: 'NAV.GOVERNANCE_RISKS',
-            route: '/governance/risks',
-            icon: 'fa-solid fa-triangle-exclamation',
-            module: 'governance',
-          },
-          {
-            key: 'NAV.GOVERNANCE_CONTROLS',
-            route: '/governance/controls',
-            icon: 'fa-solid fa-shield-halved',
-            module: 'governance',
-          },
-          {
-            key: 'NAV.GOVERNANCE_AUDITS',
-            route: '/governance/audits',
-            icon: 'fa-solid fa-clipboard-list',
-            module: 'governance',
-          },
-          {
-            key: 'NAV.GOVERNANCE_FINDINGS',
-            route: '/governance/findings',
-            icon: 'fa-solid fa-magnifying-glass-chart',
-            module: 'governance',
-          },
-          {
-            key: 'NAV.GOVERNANCE_ACTIONS',
-            route: '/governance/actions',
-            icon: 'fa-solid fa-list-check',
-            module: 'governance',
-          },
-          {
-            key: 'NAV.GOVERNANCE_OBLIGATIONS',
-            route: '/governance/obligations',
-            icon: 'fa-solid fa-calendar-check',
-            module: 'governance',
-          },
-          {
-            key: 'NAV.GOVERNANCE_SOD_RULES',
-            route: '/governance/document-rules',
-            icon: 'fa-solid fa-file-shield',
-            module: 'governance',
-          },
-          {
-            key: 'NAV.GOVERNANCE_SOD',
-            route: '/governance/segregation-of-duties',
-            icon: 'fa-solid fa-user-lock',
-            module: 'governance',
-          },
+          { key: 'NAV.GOVERNANCE_RISKS', route: '/governance/risks', icon: 'fa-solid fa-triangle-exclamation', module: 'governance' },
+          { key: 'NAV.GOVERNANCE_CONTROLS', route: '/governance/controls', icon: 'fa-solid fa-shield-halved', module: 'governance' },
+          { key: 'NAV.GOVERNANCE_AUDITS', route: '/governance/audits', icon: 'fa-solid fa-clipboard-list', module: 'governance' },
+          { key: 'NAV.GOVERNANCE_FINDINGS', route: '/governance/findings', icon: 'fa-solid fa-magnifying-glass-chart', module: 'governance' },
+          { key: 'NAV.GOVERNANCE_ACTIONS', route: '/governance/actions', icon: 'fa-solid fa-list-check', module: 'governance' },
+          { key: 'NAV.GOVERNANCE_OBLIGATIONS', route: '/governance/obligations', icon: 'fa-solid fa-calendar-check', module: 'governance' },
+          { key: 'NAV.GOVERNANCE_SOD_RULES', route: '/governance/document-rules', icon: 'fa-solid fa-file-shield', module: 'governance' },
+          { key: 'NAV.GOVERNANCE_SOD', route: '/governance/segregation-of-duties', icon: 'fa-solid fa-user-lock', module: 'governance' },
         ],
       },
       {
@@ -940,18 +862,8 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         icon: 'fa-solid fa-file-contract',
         module: 'leases',
         children: [
-          {
-            key: 'NAV.LEASES_CONTRACTS',
-            route: '/leases',
-            icon: 'fa-solid fa-file-signature',
-            module: 'leases',
-          },
-          {
-            key: 'NAV.LEASES_MATURITY',
-            route: '/leases/maturity',
-            icon: 'fa-solid fa-chart-column',
-            module: 'leases',
-          },
+          { key: 'NAV.LEASES_CONTRACTS', route: '/leases', icon: 'fa-solid fa-file-signature', module: 'leases' },
+          { key: 'NAV.LEASES_MATURITY', route: '/leases/maturity', icon: 'fa-solid fa-chart-column', module: 'leases' },
         ],
       },
       {
@@ -959,54 +871,14 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         icon: 'fa-solid fa-leaf',
         module: 'sustainability',
         children: [
-          {
-            key: 'NAV.SUSTAINABILITY_INVENTORY',
-            route: '/sustainability',
-            icon: 'fa-solid fa-chart-pie',
-            module: 'sustainability',
-          },
-          {
-            key: 'NAV.SUSTAINABILITY_ACTIVITY',
-            route: '/sustainability/activity',
-            icon: 'fa-solid fa-bolt',
-            module: 'sustainability',
-          },
-          {
-            key: 'NAV.SUSTAINABILITY_FACTORS',
-            route: '/sustainability/factors',
-            icon: 'fa-solid fa-flask',
-            module: 'sustainability',
-          },
-          {
-            key: 'NAV.SUSTAINABILITY_TARGETS',
-            route: '/sustainability/targets',
-            icon: 'fa-solid fa-bullseye',
-            module: 'sustainability',
-          },
-          {
-            key: 'NAV.SUSTAINABILITY_KPIS',
-            route: '/sustainability/kpis',
-            icon: 'fa-solid fa-gauge-high',
-            module: 'sustainability',
-          },
-          {
-            key: 'NAV.SUSTAINABILITY_MATERIALITY',
-            route: '/sustainability/materiality',
-            icon: 'fa-solid fa-scale-balanced',
-            module: 'sustainability',
-          },
-          {
-            key: 'NAV.SUSTAINABILITY_ESRS',
-            route: '/sustainability/esrs',
-            icon: 'fa-solid fa-file-circle-check',
-            module: 'sustainability',
-          },
-          {
-            key: 'NAV.SUSTAINABILITY_SCOPE3',
-            route: '/sustainability/scope3',
-            icon: 'fa-solid fa-truck-field',
-            module: 'sustainability',
-          },
+          { key: 'NAV.SUSTAINABILITY_INVENTORY', route: '/sustainability', icon: 'fa-solid fa-chart-pie', module: 'sustainability' },
+          { key: 'NAV.SUSTAINABILITY_ACTIVITY', route: '/sustainability/activity', icon: 'fa-solid fa-bolt', module: 'sustainability' },
+          { key: 'NAV.SUSTAINABILITY_FACTORS', route: '/sustainability/factors', icon: 'fa-solid fa-flask', module: 'sustainability' },
+          { key: 'NAV.SUSTAINABILITY_TARGETS', route: '/sustainability/targets', icon: 'fa-solid fa-bullseye', module: 'sustainability' },
+          { key: 'NAV.SUSTAINABILITY_KPIS', route: '/sustainability/kpis', icon: 'fa-solid fa-gauge-high', module: 'sustainability' },
+          { key: 'NAV.SUSTAINABILITY_MATERIALITY', route: '/sustainability/materiality', icon: 'fa-solid fa-scale-balanced', module: 'sustainability' },
+          { key: 'NAV.SUSTAINABILITY_ESRS', route: '/sustainability/esrs', icon: 'fa-solid fa-file-circle-check', module: 'sustainability' },
+          { key: 'NAV.SUSTAINABILITY_SCOPE3', route: '/sustainability/scope3', icon: 'fa-solid fa-truck-field', module: 'sustainability' },
         ],
       },
       {
@@ -1015,30 +887,10 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         module: 'wms',
         children: [
           { key: 'NAV.WMS_DASHBOARD', route: '/wms', icon: 'fa-solid fa-chart-pie', module: 'wms' },
-          {
-            key: 'NAV.WMS_TASKS',
-            route: '/wms/tasks',
-            icon: 'fa-solid fa-list-check',
-            module: 'wms',
-          },
-          {
-            key: 'NAV.WMS_SLOTTING',
-            route: '/wms/slotting',
-            icon: 'fa-solid fa-layer-group',
-            module: 'wms',
-          },
-          {
-            key: 'NAV.WMS_CROSS_DOCK',
-            route: '/wms/cross-dock',
-            icon: 'fa-solid fa-right-left',
-            module: 'wms',
-          },
-          {
-            key: 'NAV.WMS_DOCKS',
-            route: '/wms/docks',
-            icon: 'fa-solid fa-truck-ramp-box',
-            module: 'wms',
-          },
+          { key: 'NAV.WMS_TASKS', route: '/wms/tasks', icon: 'fa-solid fa-list-check', module: 'wms' },
+          { key: 'NAV.WMS_SLOTTING', route: '/wms/slotting', icon: 'fa-solid fa-layer-group', module: 'wms' },
+          { key: 'NAV.WMS_CROSS_DOCK', route: '/wms/cross-dock', icon: 'fa-solid fa-right-left', module: 'wms' },
+          { key: 'NAV.WMS_DOCKS', route: '/wms/docks', icon: 'fa-solid fa-truck-ramp-box', module: 'wms' },
         ],
       },
       {
@@ -1046,42 +898,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         icon: 'fa-solid fa-route',
         module: 'transportation',
         children: [
-          {
-            key: 'NAV.TMS_DASHBOARD',
-            route: '/transportation',
-            icon: 'fa-solid fa-chart-pie',
-            module: 'transportation',
-          },
-          {
-            key: 'NAV.TMS_CARRIERS',
-            route: '/transportation/carriers',
-            icon: 'fa-solid fa-truck-field',
-            module: 'transportation',
-          },
-          {
-            key: 'NAV.TMS_ORDERS',
-            route: '/transportation/orders',
-            icon: 'fa-solid fa-boxes-packing',
-            module: 'transportation',
-          },
-          {
-            key: 'NAV.TMS_TRIPS',
-            route: '/transportation/trips',
-            icon: 'fa-solid fa-road',
-            module: 'transportation',
-          },
-          {
-            key: 'NAV.TMS_QUOTES',
-            route: '/transportation/quotes',
-            icon: 'fa-solid fa-scale-balanced',
-            module: 'transportation',
-          },
-          {
-            key: 'NAV.TMS_AUDIT',
-            route: '/transportation/audit',
-            icon: 'fa-solid fa-file-invoice-dollar',
-            module: 'transportation',
-          },
+          { key: 'NAV.TMS_DASHBOARD', route: '/transportation', icon: 'fa-solid fa-chart-pie', module: 'transportation' },
+          { key: 'NAV.TMS_CARRIERS', route: '/transportation/carriers', icon: 'fa-solid fa-truck-field', module: 'transportation' },
+          { key: 'NAV.TMS_ORDERS', route: '/transportation/orders', icon: 'fa-solid fa-boxes-packing', module: 'transportation' },
+          { key: 'NAV.TMS_TRIPS', route: '/transportation/trips', icon: 'fa-solid fa-road', module: 'transportation' },
+          { key: 'NAV.TMS_QUOTES', route: '/transportation/quotes', icon: 'fa-solid fa-scale-balanced', module: 'transportation' },
+          { key: 'NAV.TMS_AUDIT', route: '/transportation/audit', icon: 'fa-solid fa-file-invoice-dollar', module: 'transportation' },
         ],
       },
       {
@@ -1089,42 +911,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         icon: 'fa-solid fa-rotate-left',
         module: 'returns',
         children: [
-          {
-            key: 'NAV.RETURNS_DASHBOARD',
-            route: '/returns',
-            icon: 'fa-solid fa-chart-pie',
-            module: 'returns',
-          },
-          {
-            key: 'NAV.RETURNS_RMAS',
-            route: '/returns/rmas',
-            icon: 'fa-solid fa-box-open',
-            module: 'returns',
-          },
-          {
-            key: 'NAV.RETURNS_WARRANTIES',
-            route: '/returns/warranties',
-            icon: 'fa-solid fa-shield-halved',
-            module: 'returns',
-          },
-          {
-            key: 'NAV.RETURNS_CLAIMS',
-            route: '/returns/claims',
-            icon: 'fa-solid fa-file-circle-exclamation',
-            module: 'returns',
-          },
-          {
-            key: 'NAV.RETURNS_SUPPLIER',
-            route: '/returns/supplier-returns',
-            icon: 'fa-solid fa-truck-ramp-box',
-            module: 'returns',
-          },
-          {
-            key: 'NAV.RETURNS_SETTINGS',
-            route: '/returns/settings',
-            icon: 'fa-solid fa-sliders',
-            module: 'returns',
-          },
+          { key: 'NAV.RETURNS_DASHBOARD', route: '/returns', icon: 'fa-solid fa-chart-pie', module: 'returns' },
+          { key: 'NAV.RETURNS_RMAS', route: '/returns/rmas', icon: 'fa-solid fa-box-open', module: 'returns' },
+          { key: 'NAV.RETURNS_WARRANTIES', route: '/returns/warranties', icon: 'fa-solid fa-shield-halved', module: 'returns' },
+          { key: 'NAV.RETURNS_CLAIMS', route: '/returns/claims', icon: 'fa-solid fa-file-circle-exclamation', module: 'returns' },
+          { key: 'NAV.RETURNS_SUPPLIER', route: '/returns/supplier-returns', icon: 'fa-solid fa-truck-ramp-box', module: 'returns' },
+          { key: 'NAV.RETURNS_SETTINGS', route: '/returns/settings', icon: 'fa-solid fa-sliders', module: 'returns' },
         ],
       },
       {
@@ -1132,78 +924,18 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         icon: 'fa-solid fa-hand-holding-dollar',
         module: 'credit-management',
         children: [
-          {
-            key: 'NAV.CREDIT_DASHBOARD',
-            route: '/credit-management',
-            icon: 'fa-solid fa-chart-pie',
-            module: 'credit-management',
-          },
-          {
-            key: 'NAV.CREDIT_WORKLIST',
-            route: '/credit-management/worklist',
-            icon: 'fa-solid fa-list-check',
-            module: 'credit-management',
-          },
-          {
-            key: 'NAV.CREDIT_CASES',
-            route: '/credit-management/cases',
-            icon: 'fa-solid fa-folder-open',
-            module: 'credit-management',
-          },
-          {
-            key: 'NAV.CREDIT_AGING',
-            route: '/credit-management/aging',
-            icon: 'fa-solid fa-hourglass-half',
-            module: 'credit-management',
-          },
-          {
-            key: 'NAV.CREDIT_PROMISES',
-            route: '/credit-management/promises',
-            icon: 'fa-solid fa-handshake',
-            module: 'credit-management',
-          },
-          {
-            key: 'NAV.CREDIT_DISPUTES',
-            route: '/credit-management/disputes',
-            icon: 'fa-solid fa-gavel',
-            module: 'credit-management',
-          },
-          {
-            key: 'NAV.CREDIT_SCORES',
-            route: '/credit-management/scores',
-            icon: 'fa-solid fa-gauge-high',
-            module: 'credit-management',
-          },
-          {
-            key: 'NAV.CREDIT_SCORECARD',
-            route: '/credit-management/scorecard',
-            icon: 'fa-solid fa-sliders',
-            module: 'credit-management',
-          },
-          {
-            key: 'NAV.CREDIT_EXPOSURES',
-            route: '/credit-management/exposures',
-            icon: 'fa-solid fa-chart-line',
-            module: 'credit-management',
-          },
-          {
-            key: 'NAV.CREDIT_LIMITS',
-            route: '/credit-management/limit-requests',
-            icon: 'fa-solid fa-scale-balanced',
-            module: 'credit-management',
-          },
-          {
-            key: 'NAV.CREDIT_INSURANCE',
-            route: '/credit-management/insurance',
-            icon: 'fa-solid fa-shield-halved',
-            module: 'credit-management',
-          },
-          {
-            key: 'NAV.CREDIT_STRATEGIES',
-            route: '/credit-management/strategies',
-            icon: 'fa-solid fa-bell',
-            module: 'credit-management',
-          },
+          { key: 'NAV.CREDIT_DASHBOARD', route: '/credit-management', icon: 'fa-solid fa-chart-pie', module: 'credit-management' },
+          { key: 'NAV.CREDIT_WORKLIST', route: '/credit-management/worklist', icon: 'fa-solid fa-list-check', module: 'credit-management' },
+          { key: 'NAV.CREDIT_CASES', route: '/credit-management/cases', icon: 'fa-solid fa-folder-open', module: 'credit-management' },
+          { key: 'NAV.CREDIT_AGING', route: '/credit-management/aging', icon: 'fa-solid fa-hourglass-half', module: 'credit-management' },
+          { key: 'NAV.CREDIT_PROMISES', route: '/credit-management/promises', icon: 'fa-solid fa-handshake', module: 'credit-management' },
+          { key: 'NAV.CREDIT_DISPUTES', route: '/credit-management/disputes', icon: 'fa-solid fa-gavel', module: 'credit-management' },
+          { key: 'NAV.CREDIT_SCORES', route: '/credit-management/scores', icon: 'fa-solid fa-gauge-high', module: 'credit-management' },
+          { key: 'NAV.CREDIT_SCORECARD', route: '/credit-management/scorecard', icon: 'fa-solid fa-sliders', module: 'credit-management' },
+          { key: 'NAV.CREDIT_EXPOSURES', route: '/credit-management/exposures', icon: 'fa-solid fa-chart-line', module: 'credit-management' },
+          { key: 'NAV.CREDIT_LIMITS', route: '/credit-management/limit-requests', icon: 'fa-solid fa-scale-balanced', module: 'credit-management' },
+          { key: 'NAV.CREDIT_INSURANCE', route: '/credit-management/insurance', icon: 'fa-solid fa-shield-halved', module: 'credit-management' },
+          { key: 'NAV.CREDIT_STRATEGIES', route: '/credit-management/strategies', icon: 'fa-solid fa-bell', module: 'credit-management' },
         ],
       },
       {
@@ -1211,36 +943,11 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         icon: 'fa-solid fa-chart-line',
         module: 'analytics',
         children: [
-          {
-            key: 'NAV.ANALYTICS_KPIS',
-            route: '/analytics',
-            icon: 'fa-solid fa-gauge-high',
-            module: 'analytics',
-          },
-          {
-            key: 'NAV.ANALYTICS_DESIGNER',
-            route: '/analytics/designer',
-            icon: 'fa-solid fa-table-cells',
-            module: 'analytics',
-          },
-          {
-            key: 'NAV.ANALYTICS_REPORTS',
-            route: '/analytics/reports',
-            icon: 'fa-solid fa-table-columns',
-            module: 'analytics',
-          },
-          {
-            key: 'NAV.ANALYTICS_EXPORTS',
-            route: '/analytics/exports',
-            icon: 'fa-solid fa-calendar-check',
-            module: 'analytics',
-          },
-          {
-            key: 'NAV.ANALYTICS_SNAPSHOTS',
-            route: '/analytics/snapshots',
-            icon: 'fa-solid fa-camera',
-            module: 'analytics',
-          },
+          { key: 'NAV.ANALYTICS_KPIS', route: '/analytics', icon: 'fa-solid fa-gauge-high', module: 'analytics' },
+          { key: 'NAV.ANALYTICS_DESIGNER', route: '/analytics/designer', icon: 'fa-solid fa-table-cells', module: 'analytics' },
+          { key: 'NAV.ANALYTICS_REPORTS', route: '/analytics/reports', icon: 'fa-solid fa-table-columns', module: 'analytics' },
+          { key: 'NAV.ANALYTICS_EXPORTS', route: '/analytics/exports', icon: 'fa-solid fa-calendar-check', module: 'analytics' },
+          { key: 'NAV.ANALYTICS_SNAPSHOTS', route: '/analytics/snapshots', icon: 'fa-solid fa-camera', module: 'analytics' },
         ],
       },
       {
@@ -1248,36 +955,11 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         icon: 'fa-solid fa-chart-column',
         module: 'business_intelligence',
         children: [
-          {
-            key: 'NAV.BI_DASHBOARDS',
-            route: '/business-intelligence',
-            icon: 'fa-solid fa-table-columns',
-            module: 'business_intelligence',
-          },
-          {
-            key: 'NAV.BI_EXPLORER',
-            route: '/business-intelligence/explorer',
-            icon: 'fa-solid fa-table-cells',
-            module: 'business_intelligence',
-          },
-          {
-            key: 'NAV.BI_QUERIES',
-            route: '/business-intelligence/queries',
-            icon: 'fa-solid fa-bookmark',
-            module: 'business_intelligence',
-          },
-          {
-            key: 'NAV.BI_MEASURES',
-            route: '/business-intelligence/measures',
-            icon: 'fa-solid fa-square-root-variable',
-            module: 'business_intelligence',
-          },
-          {
-            key: 'NAV.BI_LIBRARY',
-            route: '/business-intelligence/library',
-            icon: 'fa-solid fa-folder-tree',
-            module: 'business_intelligence',
-          },
+          { key: 'NAV.BI_DASHBOARDS', route: '/business-intelligence', icon: 'fa-solid fa-table-columns', module: 'business_intelligence' },
+          { key: 'NAV.BI_EXPLORER', route: '/business-intelligence/explorer', icon: 'fa-solid fa-table-cells', module: 'business_intelligence' },
+          { key: 'NAV.BI_QUERIES', route: '/business-intelligence/queries', icon: 'fa-solid fa-bookmark', module: 'business_intelligence' },
+          { key: 'NAV.BI_MEASURES', route: '/business-intelligence/measures', icon: 'fa-solid fa-square-root-variable', module: 'business_intelligence' },
+          { key: 'NAV.BI_LIBRARY', route: '/business-intelligence/library', icon: 'fa-solid fa-folder-tree', module: 'business_intelligence' },
         ],
       },
       {
@@ -1285,24 +967,9 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         icon: 'fa-solid fa-plug',
         module: 'marketplace',
         children: [
-          {
-            key: 'NAV.MARKETPLACE_CATALOG',
-            route: '/marketplace',
-            icon: 'fa-solid fa-store',
-            module: 'marketplace',
-          },
-          {
-            key: 'NAV.MARKETPLACE_INSTALLATIONS',
-            route: '/marketplace/installations',
-            icon: 'fa-solid fa-plug-circle-check',
-            module: 'marketplace',
-          },
-          {
-            key: 'NAV.MARKETPLACE_RUNS',
-            route: '/marketplace/runs',
-            icon: 'fa-solid fa-clock-rotate-left',
-            module: 'marketplace',
-          },
+          { key: 'NAV.MARKETPLACE_CATALOG', route: '/marketplace', icon: 'fa-solid fa-store', module: 'marketplace' },
+          { key: 'NAV.MARKETPLACE_INSTALLATIONS', route: '/marketplace/installations', icon: 'fa-solid fa-plug-circle-check', module: 'marketplace' },
+          { key: 'NAV.MARKETPLACE_RUNS', route: '/marketplace/runs', icon: 'fa-solid fa-clock-rotate-left', module: 'marketplace' },
         ],
       },
       {
@@ -1310,24 +977,9 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         icon: 'fa-solid fa-calendar-days',
         module: 'events',
         children: [
-          {
-            key: 'NAV.EVENTS_LIST',
-            route: '/events',
-            icon: 'fa-solid fa-ticket',
-            module: 'events',
-          },
-          {
-            key: 'NAV.EVENTS_CHECKIN',
-            route: '/events/check-in',
-            icon: 'fa-solid fa-qrcode',
-            module: 'events',
-          },
-          {
-            key: 'NAV.EVENTS_ADMIN',
-            route: '/events/admin',
-            icon: 'fa-solid fa-list-check',
-            module: 'events',
-          },
+          { key: 'NAV.EVENTS_LIST', route: '/events', icon: 'fa-solid fa-ticket', module: 'events' },
+          { key: 'NAV.EVENTS_CHECKIN', route: '/events/check-in', icon: 'fa-solid fa-qrcode', module: 'events' },
+          { key: 'NAV.EVENTS_ADMIN', route: '/events/admin', icon: 'fa-solid fa-list-check', module: 'events' },
         ],
       },
       {
@@ -1335,18 +987,8 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         icon: 'fa-solid fa-code-branch',
         module: 'plm',
         children: [
-          {
-            key: 'NAV.PLM_CHANGE_ORDERS',
-            route: '/plm',
-            icon: 'fa-solid fa-file-pen',
-            module: 'plm',
-          },
-          {
-            key: 'NAV.PLM_REVISIONS',
-            route: '/plm/revisions',
-            icon: 'fa-solid fa-layer-group',
-            module: 'plm',
-          },
+          { key: 'NAV.PLM_CHANGE_ORDERS', route: '/plm', icon: 'fa-solid fa-file-pen', module: 'plm' },
+          { key: 'NAV.PLM_REVISIONS', route: '/plm/revisions', icon: 'fa-solid fa-layer-group', module: 'plm' },
         ],
       },
       {
@@ -1354,18 +996,8 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         icon: 'fa-solid fa-money-bill-trend-up',
         module: 'pricing',
         children: [
-          {
-            key: 'NAV.PRICING_LISTS',
-            route: '/pricing',
-            icon: 'fa-solid fa-list-ol',
-            module: 'pricing',
-          },
-          {
-            key: 'NAV.PRICING_COMMERCIAL',
-            route: '/pricing/commercial',
-            icon: 'fa-solid fa-tags',
-            module: 'pricing',
-          },
+          { key: 'NAV.PRICING_LISTS', route: '/pricing', icon: 'fa-solid fa-list-ol', module: 'pricing' },
+          { key: 'NAV.PRICING_COMMERCIAL', route: '/pricing/commercial', icon: 'fa-solid fa-tags', module: 'pricing' },
         ],
       },
       {
@@ -1373,24 +1005,9 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         icon: 'fa-solid fa-percent',
         module: 'rebates',
         children: [
-          {
-            key: 'NAV.REBATES_DASHBOARD',
-            route: '/rebates',
-            icon: 'fa-solid fa-chart-pie',
-            module: 'rebates',
-          },
-          {
-            key: 'NAV.REBATES_AGREEMENTS',
-            route: '/rebates/agreements',
-            icon: 'fa-solid fa-file-contract',
-            module: 'rebates',
-          },
-          {
-            key: 'NAV.REBATES_PROMOTIONS',
-            route: '/rebates/promotions',
-            icon: 'fa-solid fa-tags',
-            module: 'rebates',
-          },
+          { key: 'NAV.REBATES_DASHBOARD', route: '/rebates', icon: 'fa-solid fa-chart-pie', module: 'rebates' },
+          { key: 'NAV.REBATES_AGREEMENTS', route: '/rebates/agreements', icon: 'fa-solid fa-file-contract', module: 'rebates' },
+          { key: 'NAV.REBATES_PROMOTIONS', route: '/rebates/promotions', icon: 'fa-solid fa-tags', module: 'rebates' },
         ],
       },
       {
@@ -1398,48 +1015,13 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         icon: 'fa-solid fa-car-side',
         module: 'fleet',
         children: [
-          {
-            key: 'NAV.FLEET_DASHBOARD',
-            route: '/fleet',
-            icon: 'fa-solid fa-chart-pie',
-            module: 'fleet',
-          },
-          {
-            key: 'NAV.FLEET_VEHICLES',
-            route: '/fleet/vehicles',
-            icon: 'fa-solid fa-car',
-            module: 'fleet',
-          },
-          {
-            key: 'NAV.FLEET_ASSIGNMENTS',
-            route: '/fleet/assignments',
-            icon: 'fa-solid fa-key',
-            module: 'fleet',
-          },
-          {
-            key: 'NAV.FLEET_FUEL',
-            route: '/fleet/fuel',
-            icon: 'fa-solid fa-gas-pump',
-            module: 'fleet',
-          },
-          {
-            key: 'NAV.FLEET_SERVICES',
-            route: '/fleet/services',
-            icon: 'fa-solid fa-screwdriver-wrench',
-            module: 'fleet',
-          },
-          {
-            key: 'NAV.FLEET_DEADLINES',
-            route: '/fleet/deadlines',
-            icon: 'fa-solid fa-calendar-check',
-            module: 'fleet',
-          },
-          {
-            key: 'NAV.FLEET_FINES',
-            route: '/fleet/fines',
-            icon: 'fa-solid fa-triangle-exclamation',
-            module: 'fleet',
-          },
+          { key: 'NAV.FLEET_DASHBOARD', route: '/fleet', icon: 'fa-solid fa-chart-pie', module: 'fleet' },
+          { key: 'NAV.FLEET_VEHICLES', route: '/fleet/vehicles', icon: 'fa-solid fa-car', module: 'fleet' },
+          { key: 'NAV.FLEET_ASSIGNMENTS', route: '/fleet/assignments', icon: 'fa-solid fa-key', module: 'fleet' },
+          { key: 'NAV.FLEET_FUEL', route: '/fleet/fuel', icon: 'fa-solid fa-gas-pump', module: 'fleet' },
+          { key: 'NAV.FLEET_SERVICES', route: '/fleet/services', icon: 'fa-solid fa-screwdriver-wrench', module: 'fleet' },
+          { key: 'NAV.FLEET_DEADLINES', route: '/fleet/deadlines', icon: 'fa-solid fa-calendar-check', module: 'fleet' },
+          { key: 'NAV.FLEET_FINES', route: '/fleet/fines', icon: 'fa-solid fa-triangle-exclamation', module: 'fleet' },
         ],
       },
       {
@@ -1447,48 +1029,13 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         icon: 'fa-solid fa-clipboard-check',
         module: 'quality',
         children: [
-          {
-            key: 'NAV.QUALITY_KPIS',
-            route: '/quality/kpis',
-            icon: 'fa-solid fa-gauge-high',
-            module: 'quality',
-          },
-          {
-            key: 'NAV.QUALITY_SPC',
-            route: '/quality/spc',
-            icon: 'fa-solid fa-chart-line',
-            module: 'quality',
-          },
-          {
-            key: 'NAV.QUALITY_INSTRUMENTS',
-            route: '/quality/instruments',
-            icon: 'fa-solid fa-ruler',
-            module: 'quality',
-          },
-          {
-            key: 'NAV.QUALITY_COMPLAINTS',
-            route: '/quality/complaints',
-            icon: 'fa-solid fa-comment-dots',
-            module: 'quality',
-          },
-          {
-            key: 'NAV.QUALITY_NONCONFORMITIES',
-            route: '/quality/nonconformities',
-            icon: 'fa-solid fa-triangle-exclamation',
-            module: 'quality',
-          },
-          {
-            key: 'NAV.QUALITY_CAPA',
-            route: '/quality/capa',
-            icon: 'fa-solid fa-list-check',
-            module: 'quality',
-          },
-          {
-            key: 'NAV.QUALITY_AUDITS',
-            route: '/quality/audits',
-            icon: 'fa-solid fa-clipboard-check',
-            module: 'quality',
-          },
+          { key: 'NAV.QUALITY_KPIS', route: '/quality/kpis', icon: 'fa-solid fa-gauge-high', module: 'quality' },
+          { key: 'NAV.QUALITY_SPC', route: '/quality/spc', icon: 'fa-solid fa-chart-line', module: 'quality' },
+          { key: 'NAV.QUALITY_INSTRUMENTS', route: '/quality/instruments', icon: 'fa-solid fa-ruler', module: 'quality' },
+          { key: 'NAV.QUALITY_COMPLAINTS', route: '/quality/complaints', icon: 'fa-solid fa-comment-dots', module: 'quality' },
+          { key: 'NAV.QUALITY_NONCONFORMITIES', route: '/quality/nonconformities', icon: 'fa-solid fa-triangle-exclamation', module: 'quality' },
+          { key: 'NAV.QUALITY_CAPA', route: '/quality/capa', icon: 'fa-solid fa-list-check', module: 'quality' },
+          { key: 'NAV.QUALITY_AUDITS', route: '/quality/audits', icon: 'fa-solid fa-clipboard-check', module: 'quality' },
         ],
       },
       {
@@ -1496,36 +1043,11 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         icon: 'fa-solid fa-diagram-project',
         module: 'planning',
         children: [
-          {
-            key: 'NAV.PLANNING_DASHBOARD',
-            route: '/planning',
-            icon: 'fa-solid fa-chart-pie',
-            module: 'planning',
-          },
-          {
-            key: 'NAV.PLANNING_SCENARIOS',
-            route: '/planning/scenarios',
-            icon: 'fa-solid fa-layer-group',
-            module: 'planning',
-          },
-          {
-            key: 'NAV.PLANNING_COMPARE',
-            route: '/planning/compare',
-            icon: 'fa-solid fa-code-compare',
-            module: 'planning',
-          },
-          {
-            key: 'NAV.PLANNING_RESOURCES',
-            route: '/planning/resources',
-            icon: 'fa-solid fa-industry',
-            module: 'planning',
-          },
-          {
-            key: 'NAV.PLANNING_ADMIN',
-            route: '/planning/admin',
-            icon: 'fa-solid fa-screwdriver-wrench',
-            module: 'planning',
-          },
+          { key: 'NAV.PLANNING_DASHBOARD', route: '/planning', icon: 'fa-solid fa-chart-pie', module: 'planning' },
+          { key: 'NAV.PLANNING_SCENARIOS', route: '/planning/scenarios', icon: 'fa-solid fa-layer-group', module: 'planning' },
+          { key: 'NAV.PLANNING_COMPARE', route: '/planning/compare', icon: 'fa-solid fa-code-compare', module: 'planning' },
+          { key: 'NAV.PLANNING_RESOURCES', route: '/planning/resources', icon: 'fa-solid fa-industry', module: 'planning' },
+          { key: 'NAV.PLANNING_ADMIN', route: '/planning/admin', icon: 'fa-solid fa-screwdriver-wrench', module: 'planning' },
         ],
       },
       {
@@ -1533,36 +1055,11 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         icon: 'fa-solid fa-chart-pie',
         module: 'controlling',
         children: [
-          {
-            key: 'NAV.CONTROLLING_MARGINS',
-            route: '/controlling/margins',
-            icon: 'fa-solid fa-chart-pie',
-            module: 'controlling',
-          },
-          {
-            key: 'NAV.CONTROLLING_WORKING_CAPITAL',
-            route: '/controlling/working-capital',
-            icon: 'fa-solid fa-coins',
-            module: 'controlling',
-          },
-          {
-            key: 'NAV.CONTROLLING_COST_CENTERS',
-            route: '/controlling/cost-centers',
-            icon: 'fa-solid fa-sitemap',
-            module: 'controlling',
-          },
-          {
-            key: 'NAV.CONTROLLING_VARIANCE',
-            route: '/controlling/variance',
-            icon: 'fa-solid fa-scale-unbalanced',
-            module: 'controlling',
-          },
-          {
-            key: 'NAV.CONTROLLING_BUDGETS',
-            route: '/controlling/budgets',
-            icon: 'fa-solid fa-table-cells',
-            module: 'controlling',
-          },
+          { key: 'NAV.CONTROLLING_MARGINS', route: '/controlling/margins', icon: 'fa-solid fa-chart-pie', module: 'controlling' },
+          { key: 'NAV.CONTROLLING_WORKING_CAPITAL', route: '/controlling/working-capital', icon: 'fa-solid fa-coins', module: 'controlling' },
+          { key: 'NAV.CONTROLLING_COST_CENTERS', route: '/controlling/cost-centers', icon: 'fa-solid fa-sitemap', module: 'controlling' },
+          { key: 'NAV.CONTROLLING_VARIANCE', route: '/controlling/variance', icon: 'fa-solid fa-scale-unbalanced', module: 'controlling' },
+          { key: 'NAV.CONTROLLING_BUDGETS', route: '/controlling/budgets', icon: 'fa-solid fa-table-cells', module: 'controlling' },
         ],
       },
       {
@@ -1570,18 +1067,8 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         icon: 'fa-solid fa-scale-balanced',
         module: 'budgeting',
         children: [
-          {
-            key: 'NAV.BUDGETING_DASHBOARD',
-            route: '/budgeting',
-            icon: 'fa-solid fa-chart-line',
-            module: 'budgeting',
-          },
-          {
-            key: 'NAV.BUDGETING_VERSIONS',
-            route: '/budgeting/versions',
-            icon: 'fa-solid fa-file-invoice-dollar',
-            module: 'budgeting',
-          },
+          { key: 'NAV.BUDGETING_DASHBOARD', route: '/budgeting', icon: 'fa-solid fa-chart-line', module: 'budgeting' },
+          { key: 'NAV.BUDGETING_VERSIONS', route: '/budgeting/versions', icon: 'fa-solid fa-file-invoice-dollar', module: 'budgeting' },
         ],
       },
       {
@@ -1589,60 +1076,15 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         icon: 'fa-solid fa-graduation-cap',
         module: 'talent_learning',
         children: [
-          {
-            key: 'NAV.TALENT_LEARNING_DASHBOARD',
-            route: '/talent-learning',
-            icon: 'fa-solid fa-chart-pie',
-            module: 'talent_learning',
-          },
-          {
-            key: 'NAV.TALENT_LEARNING_SUCCESSION',
-            route: '/talent-learning/succession',
-            icon: 'fa-solid fa-sitemap',
-            module: 'talent_planning',
-          },
-          {
-            key: 'NAV.TALENT_LEARNING_COMPENSATION',
-            route: '/talent-learning/compensation',
-            icon: 'fa-solid fa-sack-dollar',
-            module: 'talent_planning',
-          },
-          {
-            key: 'NAV.TALENT_LEARNING_COURSES',
-            route: '/talent-learning/courses',
-            icon: 'fa-solid fa-book-open',
-            module: 'talent_learning',
-          },
-          {
-            key: 'NAV.TALENT_LEARNING_ENROLMENTS',
-            route: '/talent-learning/enrolments',
-            icon: 'fa-solid fa-user-graduate',
-            module: 'talent_learning',
-          },
-          {
-            key: 'NAV.TALENT_LEARNING_CERTIFICATES',
-            route: '/talent-learning/certificates',
-            icon: 'fa-solid fa-certificate',
-            module: 'talent_learning',
-          },
-          {
-            key: 'NAV.TALENT_LEARNING_MY_LEARNING',
-            route: '/talent-learning/my-learning',
-            icon: 'fa-solid fa-graduation-cap',
-            module: 'talent_learning',
-          },
-          {
-            key: 'NAV.TALENT_LEARNING_COMPLIANCE',
-            route: '/talent-learning/compliance',
-            icon: 'fa-solid fa-clipboard-check',
-            module: 'talent_learning',
-          },
-          {
-            key: 'NAV.TALENT_LEARNING_SURVEYS',
-            route: '/talent-learning/surveys',
-            icon: 'fa-solid fa-comments',
-            module: 'talent_learning',
-          },
+          { key: 'NAV.TALENT_LEARNING_DASHBOARD', route: '/talent-learning', icon: 'fa-solid fa-chart-pie', module: 'talent_learning' },
+          { key: 'NAV.TALENT_LEARNING_SUCCESSION', route: '/talent-learning/succession', icon: 'fa-solid fa-sitemap', module: 'talent_planning' },
+          { key: 'NAV.TALENT_LEARNING_COMPENSATION', route: '/talent-learning/compensation', icon: 'fa-solid fa-sack-dollar', module: 'talent_planning' },
+          { key: 'NAV.TALENT_LEARNING_COURSES', route: '/talent-learning/courses', icon: 'fa-solid fa-book-open', module: 'talent_learning' },
+          { key: 'NAV.TALENT_LEARNING_ENROLMENTS', route: '/talent-learning/enrolments', icon: 'fa-solid fa-user-graduate', module: 'talent_learning' },
+          { key: 'NAV.TALENT_LEARNING_CERTIFICATES', route: '/talent-learning/certificates', icon: 'fa-solid fa-certificate', module: 'talent_learning' },
+          { key: 'NAV.TALENT_LEARNING_MY_LEARNING', route: '/talent-learning/my-learning', icon: 'fa-solid fa-graduation-cap', module: 'talent_learning' },
+          { key: 'NAV.TALENT_LEARNING_COMPLIANCE', route: '/talent-learning/compliance', icon: 'fa-solid fa-clipboard-check', module: 'talent_learning' },
+          { key: 'NAV.TALENT_LEARNING_SURVEYS', route: '/talent-learning/surveys', icon: 'fa-solid fa-comments', module: 'talent_learning' },
         ],
       },
       {
@@ -1650,30 +1092,10 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         icon: 'fa-solid fa-tower-broadcast',
         module: 'communication',
         children: [
-          {
-            key: 'NAV.COMMUNICATION_GATEWAYS',
-            route: '/communication',
-            icon: 'fa-solid fa-tower-broadcast',
-            module: 'communication',
-          },
-          {
-            key: 'NAV.COMMUNICATION_INBOX',
-            route: '/communication/inbox',
-            icon: 'fa-solid fa-inbox',
-            module: 'communication',
-          },
-          {
-            key: 'NAV.COMMUNICATION_CAMPAIGNS',
-            route: '/communication/campaigns',
-            icon: 'fa-solid fa-bullhorn',
-            module: 'communication',
-          },
-          {
-            key: 'NAV.COMMUNICATION_PREFERENCES',
-            route: '/communication/preferences',
-            icon: 'fa-solid fa-user-shield',
-            module: 'communication',
-          },
+          { key: 'NAV.COMMUNICATION_GATEWAYS', route: '/communication', icon: 'fa-solid fa-tower-broadcast', module: 'communication' },
+          { key: 'NAV.COMMUNICATION_INBOX', route: '/communication/inbox', icon: 'fa-solid fa-inbox', module: 'communication' },
+          { key: 'NAV.COMMUNICATION_CAMPAIGNS', route: '/communication/campaigns', icon: 'fa-solid fa-bullhorn', module: 'communication' },
+          { key: 'NAV.COMMUNICATION_PREFERENCES', route: '/communication/preferences', icon: 'fa-solid fa-user-shield', module: 'communication' },
         ],
       },
       {
@@ -1811,12 +1233,7 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         module: 'documents',
         children: [
           { key: 'NAV.DMS', route: '/dms', icon: 'fa-solid fa-folder-tree', module: 'documents' },
-          {
-            key: 'NAV.DMS_WORKFLOWS',
-            route: '/dms/workflows',
-            icon: 'fa-solid fa-stamp',
-            module: 'documents',
-          },
+          { key: 'NAV.DMS_WORKFLOWS', route: '/dms/workflows', icon: 'fa-solid fa-stamp', module: 'documents' },
         ],
       },
       {
@@ -2100,42 +1517,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         icon: 'fa-solid fa-scale-balanced',
         module: 'professionals',
         children: [
-          {
-            key: 'NAV.PRACTICE_MATTERS',
-            route: '/professionals',
-            icon: 'fa-solid fa-briefcase',
-            module: 'professionals',
-          },
-          {
-            key: 'NAV.PRACTICE_PROPOSALS',
-            route: '/professionals/proposals',
-            icon: 'fa-solid fa-file-signature',
-            module: 'professionals',
-          },
-          {
-            key: 'NAV.PRACTICE_CONFLICTS',
-            route: '/professionals/conflicts',
-            icon: 'fa-solid fa-user-shield',
-            module: 'professionals',
-          },
-          {
-            key: 'NAV.PRACTICE_EXPENSES',
-            route: '/professionals/expenses',
-            icon: 'fa-solid fa-receipt',
-            module: 'professionals',
-          },
-          {
-            key: 'NAV.PRACTICE_TRUST',
-            route: '/professionals/trust',
-            icon: 'fa-solid fa-vault',
-            module: 'professionals',
-          },
-          {
-            key: 'Parcella manuale',
-            route: '/professionals/manual-fee-note',
-            icon: 'fa-solid fa-file-invoice-dollar',
-            module: 'professionals',
-          },
+          { key: 'NAV.PRACTICE_MATTERS', route: '/professionals', icon: 'fa-solid fa-briefcase', module: 'professionals' },
+          { key: 'NAV.PRACTICE_PROPOSALS', route: '/professionals/proposals', icon: 'fa-solid fa-file-signature', module: 'professionals' },
+          { key: 'NAV.PRACTICE_CONFLICTS', route: '/professionals/conflicts', icon: 'fa-solid fa-user-shield', module: 'professionals' },
+          { key: 'NAV.PRACTICE_EXPENSES', route: '/professionals/expenses', icon: 'fa-solid fa-receipt', module: 'professionals' },
+          { key: 'NAV.PRACTICE_TRUST', route: '/professionals/trust', icon: 'fa-solid fa-vault', module: 'professionals' },
+          { key: 'Parcella manuale', route: '/professionals/manual-fee-note', icon: 'fa-solid fa-file-invoice-dollar', module: 'professionals' },
         ],
       },
       {
@@ -2342,40 +1729,26 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
     key: 'NAV.SECTION_SYSTEM',
     items: [
       {
+        key: 'SECURITY_CENTER.NAV.TITLE',
+        icon: 'fa-solid fa-shield-halved',
+        roles: SECURITY_CENTER_ROLES,
+        children: [
+          { key: 'SECURITY_CENTER.TAB.POSTURE', route: '/security-center/posture', icon: 'fa-solid fa-gauge-high', roles: SECURITY_CENTER_ROLES },
+          { key: 'SECURITY_CENTER.TAB.AUDIT', route: '/security-center/audit', icon: 'fa-solid fa-fingerprint', roles: SECURITY_CENTER_ROLES },
+          { key: 'SECURITY_CENTER.TAB.PRIVACY', route: '/security-center/privacy', icon: 'fa-solid fa-user-lock', roles: SECURITY_CENTER_ROLES },
+          { key: 'SECURITY_CENTER.TAB.BREACHES', route: '/security-center/breaches', icon: 'fa-solid fa-triangle-exclamation', roles: SECURITY_CENTER_ROLES },
+        ],
+      },
+      {
         key: 'PRIVACY.NAV.TITLE',
         icon: 'fa-solid fa-user-shield',
         module: 'system',
         children: [
-          {
-            key: 'PRIVACY.NAV.DASHBOARD',
-            route: '/privacy-governance/dashboard',
-            icon: 'fa-solid fa-gauge-high',
-            module: 'system',
-          },
-          {
-            key: 'PRIVACY.NAV.ROPA',
-            route: '/privacy-governance/ropa',
-            icon: 'fa-solid fa-book',
-            module: 'system',
-          },
-          {
-            key: 'PRIVACY.NAV.DSAR',
-            route: '/privacy-governance/dsar',
-            icon: 'fa-solid fa-inbox',
-            module: 'system',
-          },
-          {
-            key: 'PRIVACY.NAV.BREACHES',
-            route: '/privacy-governance/breaches',
-            icon: 'fa-solid fa-triangle-exclamation',
-            module: 'system',
-          },
-          {
-            key: 'PRIVACY.NAV.CONSENT_RETENTION',
-            route: '/privacy-governance/consent-retention',
-            icon: 'fa-solid fa-clock-rotate-left',
-            module: 'system',
-          },
+          { key: 'PRIVACY.NAV.DASHBOARD', route: '/privacy-governance/dashboard', icon: 'fa-solid fa-gauge-high', module: 'system' },
+          { key: 'PRIVACY.NAV.ROPA', route: '/privacy-governance/ropa', icon: 'fa-solid fa-book', module: 'system' },
+          { key: 'PRIVACY.NAV.DSAR', route: '/privacy-governance/dsar', icon: 'fa-solid fa-inbox', module: 'system' },
+          { key: 'PRIVACY.NAV.BREACHES', route: '/privacy-governance/breaches', icon: 'fa-solid fa-triangle-exclamation', module: 'system' },
+          { key: 'PRIVACY.NAV.CONSENT_RETENTION', route: '/privacy-governance/consent-retention', icon: 'fa-solid fa-clock-rotate-left', module: 'system' },
         ],
       },
       {
@@ -2383,66 +1756,17 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         icon: 'fa-solid fa-gears',
         module: 'system',
         children: [
-          {
-            key: 'NAV.USERS_ACCESS',
-            route: '/settings/users',
-            icon: 'fa-solid fa-users-gear',
-            module: 'system',
-          },
-          {
-            key: 'NAV.ACCESS_ROLES',
-            route: '/settings/access/roles',
-            icon: 'fa-solid fa-user-tag',
-            module: 'system',
-          },
-          {
-            key: 'NAV.ACCESS_TEAMS',
-            route: '/settings/access/teams',
-            icon: 'fa-solid fa-people-group',
-            module: 'system',
-          },
-          {
-            key: 'NAV.ACCESS_AUDIT',
-            route: '/settings/access/audit',
-            icon: 'fa-solid fa-clock-rotate-left',
-            module: 'system',
-          },
-          {
-            key: 'NAV.PRIVACY_COMPLIANCE',
-            route: '/settings/privacy/compliance',
-            icon: 'fa-solid fa-user-shield',
-            module: 'system',
-          },
-          {
-            key: 'NAV.ENTERPRISE_SECURITY',
-            route: '/settings/security/enterprise',
-            icon: 'fa-solid fa-shield-halved',
-            module: 'system',
-          },
-          {
-            key: 'NAV.AUDIT_TRAIL',
-            route: '/security/audit-trail',
-            icon: 'fa-solid fa-fingerprint',
-            module: 'audit_trail',
-          },
-          {
-            key: 'DATA_SOVEREIGNTY.NAV',
-            route: '/data-sovereignty',
-            icon: 'fa-solid fa-globe-europe',
-            module: 'data_residency',
-          },
-          {
-            key: 'Webhook',
-            route: '/settings/webhooks',
-            icon: 'fa-solid fa-satellite-dish',
-            module: 'system',
-          },
-          {
-            key: 'Tag condivisi',
-            route: '/settings/tags',
-            icon: 'fa-solid fa-tags',
-            module: 'system',
-          },
+          { key: 'NAV.USERS_ACCESS', route: '/settings/users', icon: 'fa-solid fa-users-gear', module: 'system' },
+          { key: 'NAV.ACCESS_ROLES', route: '/settings/access/roles', icon: 'fa-solid fa-user-tag', module: 'system' },
+          { key: 'NAV.ACCESS_TEAMS', route: '/settings/access/teams', icon: 'fa-solid fa-people-group', module: 'system' },
+          { key: 'NAV.ACCESS_AUDIT', route: '/settings/access/audit', icon: 'fa-solid fa-clock-rotate-left', module: 'system' },
+          { key: 'NAV.PRIVACY_COMPLIANCE', route: '/settings/privacy/compliance', icon: 'fa-solid fa-user-shield', module: 'system' },
+          { key: 'NAV.ENTERPRISE_SECURITY', route: '/settings/security/enterprise', icon: 'fa-solid fa-shield-halved', module: 'system' },
+          { key: 'NAV.AUDIT_TRAIL', route: '/security/audit-trail', icon: 'fa-solid fa-fingerprint', module: 'audit_trail' },
+          { key: 'DATA_SOVEREIGNTY.NAV', route: '/data-sovereignty', icon: 'fa-solid fa-globe-europe', module: 'data_residency' },
+          { key: 'AI_COG.NAV_SETTINGS', route: '/settings/ai', icon: 'fa-solid fa-robot', module: 'system' },
+          { key: 'Webhook', route: '/settings/webhooks', icon: 'fa-solid fa-satellite-dish', module: 'system' },
+          { key: 'Tag condivisi', route: '/settings/tags', icon: 'fa-solid fa-tags', module: 'system' },
         ],
       },
     ],
