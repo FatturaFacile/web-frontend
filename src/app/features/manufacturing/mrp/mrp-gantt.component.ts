@@ -322,7 +322,9 @@ interface DragState {
         [ngModel]="zoom()"
         (ngModelChange)="zoom.set($event)"
       >
+        <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
         <label nz-radio-button nzValue="day">{{ 'MRP.GANTT_ZOOM_DAY' | translate }}</label>
+        <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
         <label nz-radio-button nzValue="week">{{ 'MRP.GANTT_ZOOM_WEEK' | translate }}</label>
       </nz-radio-group>
       <button
@@ -609,6 +611,7 @@ interface DragState {
             }
           </dl>
 
+          <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
           <label class="field">
             <span class="field-label">{{ 'MRP.BLOCK_MOVE_TO_CENTER' | translate }}</span>
             <nz-select
@@ -629,6 +632,7 @@ interface DragState {
             </nz-select>
           </label>
 
+          <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
           <label class="field">
             <span class="field-label">{{ 'MRP.BLOCK_START_DATE' | translate }}</span>
             <nz-date-picker

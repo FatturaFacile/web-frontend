@@ -320,9 +320,10 @@ describe('MrpStore', () => {
     });
 
     it('auto-levels with the direction of the run and exposes before and after', () => {
+      store.loadRuns().subscribe();
       store.autoLevel().subscribe();
 
-      expect(api['autoLevel']).toHaveBeenCalledWith('run-1', undefined);
+      expect(api['autoLevel']).toHaveBeenCalledWith('run-1', 'BackwardFromDueDate');
       expect(store.lastLevel()).toMatchObject({
         overloaded_buckets_before: 4,
         overloaded_buckets_after: 1,
