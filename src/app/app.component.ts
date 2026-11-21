@@ -9,6 +9,7 @@ import { AppStore } from '@core/state/app.store';
 import { DisplayPreferencesService } from '@core/theme/display-preferences.service';
 import { HeaderComponent, SidebarComponent, BreadcrumbComponent } from './layout';
 import { TranslatePipe } from '@shared/pipes/translate.pipe';
+import { SpotlightTourOverlayComponent } from './features/academy/spotlight-tour-overlay.component';
 import { ToastHostComponent } from '@shared/ui/toast/toast-host.component';
 import { GlobalSearchComponent } from '@shared/components/global-search/global-search.component';
 import { CopilotDrawerComponent } from '@features/copilot/copilot-drawer.component';
@@ -40,6 +41,7 @@ function isPublicPage(root: ActivatedRouteSnapshot): boolean {
     CopilotDrawerComponent,
     TwoFactorSetupModalComponent,
     ToastHostComponent,
+    SpotlightTourOverlayComponent,
     TranslatePipe,
   ],
   templateUrl: './app.component.html',

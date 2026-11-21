@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
-import { authGuard, guestGuard, moduleGuard } from '@core/auth/auth.guard';
+import { authGuard, guestGuard, moduleGuard, roleGuard } from '@core/auth/auth.guard';
+import { SECURITY_CENTER_ROLES } from './features/security/security-center/security-center.model';
 import { menuEnabledGuard } from '@core/auth/menu-enabled.guard';
 
 export const routes: Routes = [
@@ -280,6 +281,12 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'academy',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'ACADEMY.TITLE', title: 'ACADEMY.TITLE' },
+    loadChildren: () => import('./features/academy/academy.routes').then((m) => m.ACADEMY_ROUTES),
+  },
+  {
     path: 'ecommerce-integrations',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.ECOMMERCE_INTEGRATIONS', title: 'PAGE_TITLE.E_COMMERCE_INTEGRAZIONI_API' },
@@ -457,6 +464,13 @@ export const routes: Routes = [
     data: { breadcrumb: 'NAV.AUDIT_TRAIL', title: 'PAGE_TITLE.AUDIT_TRAIL' },
     loadChildren: () =>
       import('./features/security/audit-trail/audit-trail.routes').then((m) => m.AUDIT_TRAIL_ROUTES),
+  },
+  {
+    path: 'security-center',
+    canActivate: [authGuard, menuEnabledGuard, roleGuard([...SECURITY_CENTER_ROLES])],
+    data: { breadcrumb: 'SECURITY_CENTER.TITLE', title: 'SECURITY_CENTER.TITLE' },
+    loadChildren: () =>
+      import('./features/security/security-center/security-center.routes').then((m) => m.SECURITY_CENTER_ROUTES),
   },
   {
     path: 'controlling',
