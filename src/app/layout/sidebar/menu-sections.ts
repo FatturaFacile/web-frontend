@@ -1,5 +1,6 @@
 /** The side menu: every page the user can open, grouped by section, with the ERP module that guards it. */
 import { LOGISTICS_PERMISSIONS } from '@core/models/logistics.model';
+import { SECURITY_CENTER_ROLES } from '../../features/security/security-center/security-center.model';
 
 export interface MenuItem {
   key: string;
@@ -8,7 +9,9 @@ export interface MenuItem {
   module?: string;
   /** Permission of the API (RBAC from `/auth/profile`) required to see the entry; checked together with `module`. */
   permission?: string;
-  children?: { key: string; route: string; icon: string; module?: string; permission?: string }[];
+  /** Roles of the active tenant member that may see the entry (any of them); no list means every role. */
+  roles?: readonly string[];
+  children?: { key: string; route: string; icon: string; module?: string; permission?: string; roles?: readonly string[] }[];
 }
 
 export interface MenuSection {
@@ -423,6 +426,30 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         module: 'ocr_extraction',
       },
       {
+        key: 'KPI_DASHBOARDS.NAV',
+        icon: 'fa-solid fa-gauge-high',
+        route: '/kpi-dashboards',
+        module: 'kpi_dashboards',
+      },
+      {
+        key: 'CPQ_QUOTES.NAV',
+        icon: 'fa-solid fa-file-signature',
+        route: '/cpq-quotes',
+        module: 'cpq_quotes',
+      },
+      {
+        key: 'AI_COG.NAV_WORKBENCH',
+        icon: 'fa-solid fa-user-check',
+        route: '/ai/workbench',
+        module: 'ai_cognitive',
+      },
+      {
+        key: 'AI_COG.NAV_INSIGHTS',
+        icon: 'fa-solid fa-lightbulb',
+        route: '/ai/insights',
+        module: 'ai_cognitive',
+      },
+      {
         key: 'NAV.TREASURY_OPERATIONS',
         icon: 'fa-solid fa-money-bill-transfer',
         route: '/treasury/operations',
@@ -763,6 +790,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         module: 'digital_preservation',
       },
       {
+        key: 'ACADEMY.NAV',
+        icon: 'fa-solid fa-graduation-cap',
+        route: '/academy',
+        module: 'academy',
+      },
+      {
         key: 'NAV.ECOMMERCE_INTEGRATIONS',
         icon: 'fa-solid fa-cart-shopping',
         route: '/ecommerce-integrations',
@@ -923,6 +956,7 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
           { key: 'NAV.ANALYTICS_REPORTS', route: '/analytics/reports', icon: 'fa-solid fa-table-columns', module: 'analytics' },
           { key: 'NAV.ANALYTICS_EXPORTS', route: '/analytics/exports', icon: 'fa-solid fa-calendar-check', module: 'analytics' },
           { key: 'NAV.ANALYTICS_SNAPSHOTS', route: '/analytics/snapshots', icon: 'fa-solid fa-camera', module: 'analytics' },
+          { key: 'EXEC_DSS.NAV', route: '/analytics/executive-dss', icon: 'fa-solid fa-bullseye', module: 'bi_dss' },
         ],
       },
       {
@@ -1704,6 +1738,17 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
     key: 'NAV.SECTION_SYSTEM',
     items: [
       {
+        key: 'SECURITY_CENTER.NAV.TITLE',
+        icon: 'fa-solid fa-shield-halved',
+        roles: SECURITY_CENTER_ROLES,
+        children: [
+          { key: 'SECURITY_CENTER.TAB.POSTURE', route: '/security-center/posture', icon: 'fa-solid fa-gauge-high', roles: SECURITY_CENTER_ROLES },
+          { key: 'SECURITY_CENTER.TAB.AUDIT', route: '/security-center/audit', icon: 'fa-solid fa-fingerprint', roles: SECURITY_CENTER_ROLES },
+          { key: 'SECURITY_CENTER.TAB.PRIVACY', route: '/security-center/privacy', icon: 'fa-solid fa-user-lock', roles: SECURITY_CENTER_ROLES },
+          { key: 'SECURITY_CENTER.TAB.BREACHES', route: '/security-center/breaches', icon: 'fa-solid fa-triangle-exclamation', roles: SECURITY_CENTER_ROLES },
+        ],
+      },
+      {
         key: 'PRIVACY.NAV.TITLE',
         icon: 'fa-solid fa-user-shield',
         module: 'system',
@@ -1727,6 +1772,8 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
           { key: 'NAV.PRIVACY_COMPLIANCE', route: '/settings/privacy/compliance', icon: 'fa-solid fa-user-shield', module: 'system' },
           { key: 'NAV.ENTERPRISE_SECURITY', route: '/settings/security/enterprise', icon: 'fa-solid fa-shield-halved', module: 'system' },
           { key: 'NAV.AUDIT_TRAIL', route: '/security/audit-trail', icon: 'fa-solid fa-fingerprint', module: 'audit_trail' },
+          { key: 'DATA_SOVEREIGNTY.NAV', route: '/data-sovereignty', icon: 'fa-solid fa-globe-europe', module: 'data_residency' },
+          { key: 'AI_COG.NAV_SETTINGS', route: '/settings/ai', icon: 'fa-solid fa-robot', module: 'system' },
           { key: 'Webhook', route: '/settings/webhooks', icon: 'fa-solid fa-satellite-dish', module: 'system' },
           { key: 'Tag condivisi', route: '/settings/tags', icon: 'fa-solid fa-tags', module: 'system' },
         ],

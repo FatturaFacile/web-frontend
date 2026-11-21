@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { moduleGuard, platformAdminGuard } from '@core';
+import { moduleGuard, permissionKeyGuard, platformAdminGuard } from '@core';
 import { PRIVACY_COMPLIANCE_PAGE } from './pages/privacy/privacy-compliance.page';
 import { SDI_CHANNEL_PAGE } from './pages/sdi-channel/sdi-channel.page';
 
@@ -20,6 +20,18 @@ export const SETTINGS_ROUTES: Routes = [
     data: { breadcrumb: 'PROFILE.TITLE', titleKey: 'PROFILE.TITLE' },
     loadComponent: () =>
       import('./pages/profile/profile-settings.component').then((m) => m.ProfileSettingsComponent),
+  },
+  {
+    path: 'roles',
+    canMatch: [permissionKeyGuard('settings.roles.view')],
+    data: { breadcrumb: 'IAM.ROLES_TITLE', titleKey: 'IAM.ROLES_TITLE' },
+    loadComponent: () => import('./pages/roles/roles-list.component').then((m) => m.RolesListComponent),
+  },
+  {
+    path: 'roles/:id',
+    canMatch: [permissionKeyGuard('settings.roles.view')],
+    data: { breadcrumb: 'IAM.ROLES_TITLE', titleKey: 'IAM.ROLES_TITLE' },
+    loadComponent: () => import('./pages/roles/role-detail.component').then((m) => m.RoleDetailComponent),
   },
   {
     path: 'security',
@@ -156,6 +168,13 @@ export const SETTINGS_ROUTES: Routes = [
     canActivate: [moduleGuard('integrations', 'read')],
     data: { breadcrumb: 'WEBHOOKS.TITLE', title: 'WEBHOOKS.TITLE' },
     loadComponent: () => import('./pages/webhooks/webhooks.component').then((m) => m.WebhooksComponent),
+  },
+  {
+    path: 'ai',
+    canActivate: [moduleGuard('ai_admin', 'read')],
+    data: { breadcrumb: 'AI_COG.SETTINGS_TITLE', title: 'AI_COG.SETTINGS_TITLE' },
+    loadComponent: () =>
+      import('../ai-cognitive/ai-settings-page.component').then((m) => m.AiSettingsPageComponent),
   },
   {
     path: 'tags',
