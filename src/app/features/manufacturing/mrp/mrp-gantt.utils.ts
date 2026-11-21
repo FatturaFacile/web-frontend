@@ -54,7 +54,12 @@ export interface BlockRect {
 }
 
 /** Position of a block: it covers its first and last day entirely, and is clipped to the window. */
-export function blockRect(block: Pick<MrpGanttBlock, 'start_date' | 'end_date'>, from: string, to: string, dayWidth: number): BlockRect {
+export function blockRect(
+  block: Pick<MrpGanttBlock, 'start_date' | 'end_date'>,
+  from: string,
+  to: string,
+  dayWidth: number,
+): BlockRect {
   const first = Math.max(dayNumber(block.start_date), dayNumber(from));
   const last = Math.min(dayNumber(block.end_date), dayNumber(to));
   const days = Math.max(1, last - first + 1);
@@ -63,7 +68,10 @@ export function blockRect(block: Pick<MrpGanttBlock, 'start_date' | 'end_date'>,
 }
 
 /** Stacks overlapping blocks on separate rows (greedy, first row that is free); returns the row of every block id. */
-export function layoutRows(blocks: MrpGanttBlock[]): { rows: Record<string, number>; rowCount: number } {
+export function layoutRows(blocks: MrpGanttBlock[]): {
+  rows: Record<string, number>;
+  rowCount: number;
+} {
   const ordered = [...blocks].sort(
     (a, b) => dayNumber(a.start_date) - dayNumber(b.start_date) || a.id.localeCompare(b.id),
   );
@@ -98,7 +106,9 @@ export function loadPercentage(loaded: number, available: number): number {
 export function bucketPercentage(bucket: MrpGanttBucket): number {
   const served = Number(bucket.load_percentage);
 
-  return Number.isFinite(served) ? served : loadPercentage(bucket.loaded_minutes, bucket.available_minutes);
+  return Number.isFinite(served)
+    ? served
+    : loadPercentage(bucket.loaded_minutes, bucket.available_minutes);
 }
 
 /** Overloaded means strictly above 100 %, whatever the server flag says about rounding. */
@@ -176,7 +186,10 @@ export function droppedRange(
 }
 
 /** The alternatives of a work centre, in the order of the lanes. */
-export function alternativeWorkCenters(workCenters: MrpGanttWorkCenter[], workCenterId: string): MrpGanttWorkCenter[] {
+export function alternativeWorkCenters(
+  workCenters: MrpGanttWorkCenter[],
+  workCenterId: string,
+): MrpGanttWorkCenter[] {
   const current = workCenters.find((workCenter) => workCenter.id === workCenterId);
   const allowed = new Set(current?.alternative_work_center_ids ?? []);
 
@@ -185,7 +198,9 @@ export function alternativeWorkCenters(workCenters: MrpGanttWorkCenter[], workCe
 
 /** Default window of the Gantt: today plus four weeks (a Monday-agnostic, 28-day window). */
 export function defaultWindow(today: Date = new Date()): { from: string; to: string } {
-  const from = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())).toISOString().slice(0, 10);
+  const from = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()))
+    .toISOString()
+    .slice(0, 10);
 
   return { from, to: addDays(from, 27) };
 }

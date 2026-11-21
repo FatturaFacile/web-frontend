@@ -286,5 +286,9 @@ export interface MrpRescheduleResult {
     is_manual: boolean;
   };
   proposal: MrpProposal;
-  capacity: { overloaded_buckets: number; max_load_percentage: number | string; buckets: MrpGanttBucket[] };
+  capacity: {
+    overloaded_buckets: number;
+    max_load_percentage: number | string;
+    buckets: MrpGanttBucket[];
+  };
 }

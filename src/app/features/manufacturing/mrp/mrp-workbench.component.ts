@@ -62,17 +62,53 @@ type SortOrder = 'ascend' | 'descend' | null;
     NzTooltipModule,
   ],
   styles: `
-    :host { display: block }
-    .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px }
-    .filter { min-width: 190px }
-    .item-filter { min-width: 260px }
-    .bulk { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px }
-    .num { text-align: right; font-variant-numeric: tabular-nums }
-    .tags { display: flex; flex-wrap: wrap; gap: 2px }
-    .actions { display: flex; flex-wrap: wrap; gap: 4px }
-    .muted { color: var(--ant-text-color-secondary, rgba(0, 0, 0, 0.45)) }
-    .summary { margin: 0 0 12px; padding-left: 20px }
-    .summary strong { font-variant-numeric: tabular-nums }
+    :host {
+      display: block;
+    }
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .filter {
+      min-width: 190px;
+    }
+    .item-filter {
+      min-width: 260px;
+    }
+    .bulk {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .num {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2px;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    .muted {
+      color: var(--ant-text-color-secondary, rgba(0, 0, 0, 0.45));
+    }
+    .summary {
+      margin: 0 0 12px;
+      padding-left: 20px;
+    }
+    .summary strong {
+      font-variant-numeric: tabular-nums;
+    }
   `,
   template: `
     @if (store.lastResult(); as result) {
@@ -154,13 +190,19 @@ type SortOrder = 'ascend' | 'descend' | null;
         (ngModelChange)="filter({ workCenterId: $event })"
       >
         @for (center of workCenters(); track center.id) {
-          <nz-option [nzValue]="center.id" [nzLabel]="center.work_center_code + ' · ' + center.name"></nz-option>
+          <nz-option
+            [nzValue]="center.id"
+            [nzLabel]="center.work_center_code + ' · ' + center.name"
+          ></nz-option>
         }
       </nz-select>
       <nz-range-picker
         data-testid="filter-need-by"
         [attr.aria-label]="'MRP.FILTER_NEED_BY' | translate"
-        [nzPlaceHolder]="[('MRP.FILTER_NEED_BY_FROM' | translate), ('MRP.FILTER_NEED_BY_TO' | translate)]"
+        [nzPlaceHolder]="[
+          'MRP.FILTER_NEED_BY_FROM' | translate,
+          'MRP.FILTER_NEED_BY_TO' | translate,
+        ]"
         (ngModelChange)="needByChanged($event)"
         [ngModel]="needByRange()"
       ></nz-range-picker>
@@ -171,11 +213,25 @@ type SortOrder = 'ascend' | 'descend' | null;
 
     @if (store.selectionCount() > 0) {
       <div class="bulk" data-testid="bulk-bar">
-        <span data-testid="selection-count">{{ 'MRP.SELECTED_COUNT' | translate: { count: store.selectionCount() } }}</span>
-        <button nz-button nzType="primary" type="button" data-testid="mass-release" (click)="openRelease()">
+        <span data-testid="selection-count">{{
+          'MRP.SELECTED_COUNT' | translate: { count: store.selectionCount() }
+        }}</span>
+        <button
+          nz-button
+          nzType="primary"
+          type="button"
+          data-testid="mass-release"
+          (click)="openRelease()"
+        >
           {{ 'MRP.MASS_FIRM_RELEASE' | translate }}
         </button>
-        <button nz-button type="button" data-testid="mass-dismiss" [disabled]="store.acting()" (click)="dismissSelection()">
+        <button
+          nz-button
+          type="button"
+          data-testid="mass-dismiss"
+          [disabled]="store.acting()"
+          (click)="dismissSelection()"
+        >
           {{ 'MRP.DISMISS_SELECTED' | translate }}
         </button>
         <button nz-button nzType="link" type="button" (click)="store.clearSelection()">
@@ -208,27 +264,60 @@ type SortOrder = 'ascend' | 'descend' | null;
               (nzCheckedChange)="store.togglePage($event)"
             ></th>
             <th nzLeft nzWidth="220px">{{ 'MRP.COL_ITEM' | translate }}</th>
-            <th nzColumnKey="proposal_type" [nzSortOrder]="sortOrder('proposal_type')" (nzSortOrderChange)="sort('proposal_type', $event)">
+            <th
+              nzColumnKey="proposal_type"
+              [nzSortOrder]="sortOrder('proposal_type')"
+              (nzSortOrderChange)="sort('proposal_type', $event)"
+            >
               {{ 'MRP.COL_TYPE' | translate }}
             </th>
-            <th nzColumnKey="status" [nzSortOrder]="sortOrder('status')" (nzSortOrderChange)="sort('status', $event)">
+            <th
+              nzColumnKey="status"
+              [nzSortOrder]="sortOrder('status')"
+              (nzSortOrderChange)="sort('status', $event)"
+            >
               {{ 'MRP.COL_STATUS' | translate }}
             </th>
             <th>{{ 'MRP.COL_EXCEPTIONS' | translate }}</th>
-            <th class="num" nzColumnKey="gross_requirement_qty" [nzSortOrder]="sortOrder('gross_requirement_qty')" (nzSortOrderChange)="sort('gross_requirement_qty', $event)">
+            <th
+              class="num"
+              nzColumnKey="gross_requirement_qty"
+              [nzSortOrder]="sortOrder('gross_requirement_qty')"
+              (nzSortOrderChange)="sort('gross_requirement_qty', $event)"
+            >
               {{ 'MRP.COL_GROSS' | translate }}
             </th>
             <th class="num">{{ 'MRP.COL_PROJECTED' | translate }}</th>
-            <th class="num" nzColumnKey="net_requirement_qty" [nzSortOrder]="sortOrder('net_requirement_qty')" (nzSortOrderChange)="sort('net_requirement_qty', $event)">
+            <th
+              class="num"
+              nzColumnKey="net_requirement_qty"
+              [nzSortOrder]="sortOrder('net_requirement_qty')"
+              (nzSortOrderChange)="sort('net_requirement_qty', $event)"
+            >
               {{ 'MRP.COL_NET' | translate }}
             </th>
-            <th class="num" nzColumnKey="suggested_order_qty" [nzSortOrder]="sortOrder('suggested_order_qty')" (nzSortOrderChange)="sort('suggested_order_qty', $event)">
-              <span nz-tooltip [nzTooltipTitle]="'MRP.TIP_SUGGESTED' | translate">{{ 'MRP.COL_SUGGESTED' | translate }}</span>
+            <th
+              class="num"
+              nzColumnKey="suggested_order_qty"
+              [nzSortOrder]="sortOrder('suggested_order_qty')"
+              (nzSortOrderChange)="sort('suggested_order_qty', $event)"
+            >
+              <span nz-tooltip [nzTooltipTitle]="'MRP.TIP_SUGGESTED' | translate">{{
+                'MRP.COL_SUGGESTED' | translate
+              }}</span>
             </th>
-            <th nzColumnKey="need_by_date" [nzSortOrder]="sortOrder('need_by_date')" (nzSortOrderChange)="sort('need_by_date', $event)">
+            <th
+              nzColumnKey="need_by_date"
+              [nzSortOrder]="sortOrder('need_by_date')"
+              (nzSortOrderChange)="sort('need_by_date', $event)"
+            >
               {{ 'MRP.COL_NEED_BY' | translate }}
             </th>
-            <th nzColumnKey="release_order_by_date" [nzSortOrder]="sortOrder('release_order_by_date')" (nzSortOrderChange)="sort('release_order_by_date', $event)">
+            <th
+              nzColumnKey="release_order_by_date"
+              [nzSortOrder]="sortOrder('release_order_by_date')"
+              (nzSortOrderChange)="sort('release_order_by_date', $event)"
+            >
               {{ 'MRP.COL_RELEASE_BY' | translate }}
             </th>
             <th nzRight nzWidth="300px">{{ 'MRP.COL_ACTIONS' | translate }}</th>
@@ -245,13 +334,19 @@ type SortOrder = 'ascend' | 'descend' | null;
               ></td>
               <td nzLeft>
                 <strong>{{ row.item_code }}</strong>
-                <div class="muted">{{ row.item_name }} · {{ 'MRP.LLC' | translate }} {{ row.low_level_code }}</div>
+                <div class="muted">
+                  {{ row.item_name }} · {{ 'MRP.LLC' | translate }} {{ row.low_level_code }}
+                </div>
               </td>
               <td>
-                <nz-tag data-testid="type-badge" [nzColor]="typeColors[row.proposal_type]">{{ typeKeys[row.proposal_type] | translate }}</nz-tag>
+                <nz-tag data-testid="type-badge" [nzColor]="typeColors[row.proposal_type]">{{
+                  typeKeys[row.proposal_type] | translate
+                }}</nz-tag>
               </td>
               <td>
-                <nz-tag data-testid="status-badge" [nzColor]="statusColors[row.status]">{{ statusKeys[row.status] | translate }}</nz-tag>
+                <nz-tag data-testid="status-badge" [nzColor]="statusColors[row.status]">{{
+                  statusKeys[row.status] | translate
+                }}</nz-tag>
               </td>
               <td>
                 <div class="tags">
@@ -271,21 +366,52 @@ type SortOrder = 'ascend' | 'descend' | null;
               <td class="num">{{ qty(row.gross_requirement_qty) }}</td>
               <td class="num">{{ qty(row.projected_on_hand_qty) }}</td>
               <td class="num">{{ qty(row.net_requirement_qty) }}</td>
-              <td class="num"><strong>{{ qty(row.suggested_order_qty) }}</strong></td>
+              <td class="num">
+                <strong>{{ qty(row.suggested_order_qty) }}</strong>
+              </td>
               <td>{{ row.need_by_date ?? '-' }}</td>
               <td>{{ row.release_order_by_date ?? '-' }}</td>
               <td nzRight>
                 <div class="actions">
-                  <button nz-button nzSize="small" type="button" data-testid="act-firm" [disabled]="store.acting() || !eligible(row, 'firm')" (click)="act(row, 'firm')">
+                  <button
+                    nz-button
+                    nzSize="small"
+                    type="button"
+                    data-testid="act-firm"
+                    [disabled]="store.acting() || !eligible(row, 'firm')"
+                    (click)="act(row, 'firm')"
+                  >
                     {{ 'MRP.ACTION_FIRM' | translate }}
                   </button>
-                  <button nz-button nzSize="small" nzType="primary" type="button" data-testid="act-release" [disabled]="store.acting() || !eligible(row, 'release')" (click)="act(row, 'release')">
+                  <button
+                    nz-button
+                    nzSize="small"
+                    nzType="primary"
+                    type="button"
+                    data-testid="act-release"
+                    [disabled]="store.acting() || !eligible(row, 'release')"
+                    (click)="act(row, 'release')"
+                  >
                     {{ 'MRP.ACTION_RELEASE' | translate }}
                   </button>
-                  <button nz-button nzSize="small" nzDanger type="button" data-testid="act-dismiss" [disabled]="store.acting() || !eligible(row, 'dismiss')" (click)="act(row, 'dismiss')">
+                  <button
+                    nz-button
+                    nzSize="small"
+                    nzDanger
+                    type="button"
+                    data-testid="act-dismiss"
+                    [disabled]="store.acting() || !eligible(row, 'dismiss')"
+                    (click)="act(row, 'dismiss')"
+                  >
                     {{ 'MRP.ACTION_DISMISS' | translate }}
                   </button>
-                  <button nz-button nzSize="small" type="button" data-testid="act-pegging" (click)="inspect(row)">
+                  <button
+                    nz-button
+                    nzSize="small"
+                    type="button"
+                    data-testid="act-pegging"
+                    (click)="inspect(row)"
+                  >
                     {{ 'MRP.ACTION_PEGGING' | translate }}
                   </button>
                 </div>
@@ -302,13 +428,17 @@ type SortOrder = 'ascend' | 'descend' | null;
       [nzOkText]="'MRP.RELEASE_CONFIRM' | translate"
       [nzCancelText]="'MRP.CANCEL' | translate"
       [nzOkLoading]="store.acting()"
-      [nzOkDisabled]="store.releaseSummary().eligible === 0 || store.releaseSummary().ineligible > 0"
+      [nzOkDisabled]="
+        store.releaseSummary().eligible === 0 || store.releaseSummary().ineligible > 0
+      "
       (nzOnOk)="confirmRelease()"
       (nzOnCancel)="releaseOpen.set(false)"
     >
       <ng-container *nzModalContent>
         @if (store.releaseSummary(); as summary) {
-          <p data-testid="release-intro">{{ 'MRP.RELEASE_INTRO' | translate: { count: summary.selected } }}</p>
+          <p data-testid="release-intro">
+            {{ 'MRP.RELEASE_INTRO' | translate: { count: summary.selected } }}
+          </p>
           <ul class="summary" data-testid="release-summary">
             <li>
               <strong data-testid="summary-requisitions">{{ summary.purchaseRequisitions }}</strong>
@@ -330,7 +460,12 @@ type SortOrder = 'ascend' | 'descend' | null;
               data-testid="release-ineligible-alert"
               [nzMessage]="'MRP.RELEASE_INELIGIBLE_HINT' | translate"
             ></nz-alert>
-            <button nz-button type="button" data-testid="keep-eligible" (click)="store.keepEligible('release')">
+            <button
+              nz-button
+              type="button"
+              data-testid="keep-eligible"
+              (click)="store.keepEligible('release')"
+            >
               {{ 'MRP.RELEASE_KEEP_ELIGIBLE' | translate }}
             </button>
           }

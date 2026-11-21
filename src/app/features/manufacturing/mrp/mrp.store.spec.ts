@@ -19,7 +19,11 @@ const PROPOSALS: MrpProposal[] = [
 
 describe('MrpStore', () => {
   let api: Record<string, ReturnType<typeof vi.fn>>;
-  let notification: { success: ReturnType<typeof vi.fn>; error: ReturnType<typeof vi.fn>; warning: ReturnType<typeof vi.fn> };
+  let notification: {
+    success: ReturnType<typeof vi.fn>;
+    error: ReturnType<typeof vi.fn>;
+    warning: ReturnType<typeof vi.fn>;
+  };
   let store: MrpStore;
 
   beforeEach(() => {
@@ -34,13 +38,21 @@ describe('MrpStore', () => {
           processed: 2,
           purchase_requisition_ids: ['pr-1'],
           production_order_ids: ['po-1'],
-          proposals: [{ ...PROPOSALS[0], status: 'Released' }, { ...PROPOSALS[1], status: 'Released' }],
+          proposals: [
+            { ...PROPOSALS[0], status: 'Released' },
+            { ...PROPOSALS[1], status: 'Released' },
+          ],
         }),
       ),
       pegging: vi.fn(() => ok(PEGGING)),
       gantt: vi.fn(() => ok(GANTT)),
       autoLevel: vi.fn(() =>
-        ok({ run: RUN, overloaded_buckets_before: 4, overloaded_buckets_after: 1, leveled_proposals: 3 }),
+        ok({
+          run: RUN,
+          overloaded_buckets_before: 4,
+          overloaded_buckets_after: 1,
+          leveled_proposals: 3,
+        }),
       ),
       reschedule: vi.fn(() =>
         ok({
@@ -100,7 +112,9 @@ describe('MrpStore', () => {
   });
 
   it('reports a failed run (cyclic BOM) as an error notification with the server message', () => {
-    api['startRun'] = vi.fn(() => ok({ ...RUN, status: 'Failed', error_message: 'Cyclic BOM detected' }));
+    api['startRun'] = vi.fn(() =>
+      ok({ ...RUN, status: 'Failed', error_message: 'Cyclic BOM detected' }),
+    );
 
     store.startRun({ planning_horizon_days: 30 }).subscribe();
 
@@ -110,7 +124,9 @@ describe('MrpStore', () => {
 
   it('turns a failed call into a notification and a null result, never an exception', () => {
     api['startRun'] = vi.fn(() =>
-      throwError(() => new HttpErrorResponse({ status: 422, error: { detail: 'Horizon too long' } })),
+      throwError(
+        () => new HttpErrorResponse({ status: 422, error: { detail: 'Horizon too long' } }),
+      ),
     );
     let result: unknown = 'untouched';
 
@@ -122,7 +138,9 @@ describe('MrpStore', () => {
   });
 
   it('answers a 403 with the permission message', () => {
-    api['applyAction'] = vi.fn(() => throwError(() => new HttpErrorResponse({ status: 403, error: {} })));
+    api['applyAction'] = vi.fn(() =>
+      throwError(() => new HttpErrorResponse({ status: 403, error: {} })),
+    );
     store.selectRun('run-1');
     store.loadProposals().subscribe();
     store.toggleSelection(PROPOSALS[0], true);
@@ -217,7 +235,12 @@ describe('MrpStore', () => {
       store.applyAction('release').subscribe();
 
       expect(api['applyAction']).toHaveBeenCalledWith(['p1', 'p2'], 'release');
-      expect(store.proposals().filter((row) => row.status === 'Released').map((row) => row.id)).toEqual(['p1', 'p2']);
+      expect(
+        store
+          .proposals()
+          .filter((row) => row.status === 'Released')
+          .map((row) => row.id),
+      ).toEqual(['p1', 'p2']);
       expect(store.lastResult()?.purchase_requisition_ids).toEqual(['pr-1']);
       expect(store.selectionCount()).toBe(0);
       expect(notification.success).toHaveBeenCalledWith(
@@ -228,12 +251,21 @@ describe('MrpStore', () => {
 
     it('keeps the selection and reports the reason when the server refuses (all-or-nothing 422)', () => {
       api['applyAction'] = vi.fn(() =>
-        throwError(() => new HttpErrorResponse({ status: 422, error: { detail: 'Proposal p3 is not eligible' } })),
+        throwError(
+          () =>
+            new HttpErrorResponse({
+              status: 422,
+              error: { detail: 'Proposal p3 is not eligible' },
+            }),
+        ),
       );
       store.togglePage(true);
       store.applyAction('release').subscribe();
 
-      expect(notification.error).toHaveBeenCalledWith(expect.any(String), 'Proposal p3 is not eligible');
+      expect(notification.error).toHaveBeenCalledWith(
+        expect.any(String),
+        'Proposal p3 is not eligible',
+      );
       expect(store.selectionCount()).toBe(3);
       expect(store.proposals().every((row) => row.status === 'Proposed')).toBe(true);
     });
@@ -291,24 +323,39 @@ describe('MrpStore', () => {
       store.autoLevel().subscribe();
 
       expect(api['autoLevel']).toHaveBeenCalledWith('run-1', undefined);
-      expect(store.lastLevel()).toMatchObject({ overloaded_buckets_before: 4, overloaded_buckets_after: 1 });
+      expect(store.lastLevel()).toMatchObject({
+        overloaded_buckets_before: 4,
+        overloaded_buckets_after: 1,
+      });
       expect(notification.success).toHaveBeenCalled();
     });
 
     it('reschedules a block and reports a refused move without raising', () => {
       store.reschedule('blk-1', { start_date: '2027-03-03', end_date: '2027-03-04' }).subscribe();
 
-      expect(api['reschedule']).toHaveBeenCalledWith('blk-1', { start_date: '2027-03-03', end_date: '2027-03-04' });
+      expect(api['reschedule']).toHaveBeenCalledWith('blk-1', {
+        start_date: '2027-03-03',
+        end_date: '2027-03-04',
+      });
 
       api['reschedule'] = vi.fn(() =>
-        throwError(() => new HttpErrorResponse({ status: 422, error: { detail: 'Not an alternative work center' } })),
+        throwError(
+          () =>
+            new HttpErrorResponse({
+              status: 422,
+              error: { detail: 'Not an alternative work center' },
+            }),
+        ),
       );
       let result: unknown = 'untouched';
 
       store.reschedule('blk-1', { work_center_id: 'wc-z' }).subscribe((value) => (result = value));
 
       expect(result).toBeNull();
-      expect(notification.error).toHaveBeenCalledWith(expect.any(String), 'Not an alternative work center');
+      expect(notification.error).toHaveBeenCalledWith(
+        expect.any(String),
+        'Not an alternative work center',
+      );
       expect(store.rescheduling()).toBe(false);
     });
   });

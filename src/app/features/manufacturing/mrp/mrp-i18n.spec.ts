@@ -11,7 +11,13 @@ import {
 const DIR = __dirname;
 const MENU = join(DIR, '..', '..', '..', 'layout', 'sidebar', 'menu-sections.ts');
 const API_ROOT = process.env['API_ROOT'] ?? resolve(process.cwd(), '..', 'web-api');
-const DEFINITIONS = join(API_ROOT, 'database', 'seeders', 'Translations', 'MrpPlanningFrontendTranslations.php');
+const DEFINITIONS = join(
+  API_ROOT,
+  'database',
+  'seeders',
+  'Translations',
+  'MrpPlanningFrontendTranslations.php',
+);
 
 /** Keys written in full in the sources (templates and code, not the specs) and the menu entry. */
 function literalKeys(): string[] {
@@ -56,7 +62,9 @@ function definitions(): Record<string, string[]> | null {
 const seededDefinitions = definitions();
 const hasDefinitions = seededDefinitions !== null;
 /** The class is registered in FrontendTranslationSeeder once the dumped dictionaries carry its keys. */
-const registered = hasSeededDictionaries && Object.keys(seededDictionaries['en'] ?? {}).some((key) => key.startsWith('MRP.'));
+const registered =
+  hasSeededDictionaries &&
+  Object.keys(seededDictionaries['en'] ?? {}).some((key) => key.startsWith('MRP.'));
 
 const placeholders = (text: string): string =>
   [...text.matchAll(/\{(\w+)\}/g)]
@@ -77,21 +85,30 @@ describe('MRP planning translations', () => {
     }
   });
 
-  it.skipIf(!hasDefinitions)('has every key in the backend class in it, en, de and fr with a non-empty text', () => {
-    const entries = seededDefinitions ?? {};
+  it.skipIf(!hasDefinitions)(
+    'has every key in the backend class in it, en, de and fr with a non-empty text',
+    () => {
+      const entries = seededDefinitions ?? {};
 
-    for (const key of literalKeys()) {
-      const texts = entries[key];
+      for (const key of literalKeys()) {
+        const texts = entries[key];
 
-      expect(texts, `${key} is missing in MrpPlanningFrontendTranslations`).toBeDefined();
-      expect(texts).toHaveLength(4);
-      expect((texts ?? []).every((text) => text.trim() !== ''), `${key} has an empty language`).toBe(true);
-    }
-  });
+        expect(texts, `${key} is missing in MrpPlanningFrontendTranslations`).toBeDefined();
+        expect(texts).toHaveLength(4);
+        expect(
+          (texts ?? []).every((text) => text.trim() !== ''),
+          `${key} has an empty language`,
+        ).toBe(true);
+      }
+    },
+  );
 
   it.skipIf(!hasDefinitions)('uses the same placeholders in every language', () => {
     for (const [key, texts] of Object.entries(seededDefinitions ?? {})) {
-      expect(new Set(texts.map(placeholders)).size, `${key} has different placeholders per language`).toBe(1);
+      expect(
+        new Set(texts.map(placeholders)).size,
+        `${key} has different placeholders per language`,
+      ).toBe(1);
     }
   });
 

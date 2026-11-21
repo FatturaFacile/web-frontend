@@ -119,7 +119,10 @@ const PRODUCTION_TYPES: MrpProposalType[] = ['PlannedProductionOrder', 'PlannedS
 
 /** `true` for the proposals that turn into a document (a requisition or a production order); the rest is advice. */
 export function isNewOrder(proposal: Pick<MrpProposal, 'proposal_type'>): boolean {
-  return PURCHASE_TYPES.includes(proposal.proposal_type) || PRODUCTION_TYPES.includes(proposal.proposal_type);
+  return (
+    PURCHASE_TYPES.includes(proposal.proposal_type) ||
+    PRODUCTION_TYPES.includes(proposal.proposal_type)
+  );
 }
 
 /** Mirrors the server rules: only Proposed new orders are firmed, Proposed or Firm new orders are released, advice is only dismissed. */
@@ -146,7 +149,10 @@ export interface ActionSummary {
 }
 
 /** What an action on the selected proposals would do, computed before the server is called. */
-export function summarizeAction(proposals: MrpProposal[], action: MrpProposalAction): ActionSummary {
+export function summarizeAction(
+  proposals: MrpProposal[],
+  action: MrpProposalAction,
+): ActionSummary {
   const eligible = proposals.filter((proposal) => isEligible(proposal, action));
 
   return {
@@ -154,8 +160,12 @@ export function summarizeAction(proposals: MrpProposal[], action: MrpProposalAct
     selected: proposals.length,
     eligible: eligible.length,
     ineligible: proposals.length - eligible.length,
-    purchaseRequisitions: eligible.filter((proposal) => PURCHASE_TYPES.includes(proposal.proposal_type)).length,
-    productionOrders: eligible.filter((proposal) => PRODUCTION_TYPES.includes(proposal.proposal_type)).length,
+    purchaseRequisitions: eligible.filter((proposal) =>
+      PURCHASE_TYPES.includes(proposal.proposal_type),
+    ).length,
+    productionOrders: eligible.filter((proposal) =>
+      PRODUCTION_TYPES.includes(proposal.proposal_type),
+    ).length,
   };
 }
 
@@ -196,7 +206,9 @@ export function toNumber(value: string | number | null | undefined): number {
 }
 
 /** Entries of a count map ordered by count (largest first), for the KPI cards. */
-export function countEntries(counts: Record<string, number> | null | undefined): { key: string; count: number }[] {
+export function countEntries(
+  counts: Record<string, number> | null | undefined,
+): { key: string; count: number }[] {
   return Object.entries(counts ?? {})
     .map(([key, count]) => ({ key, count }))
     .filter((entry) => entry.count > 0)

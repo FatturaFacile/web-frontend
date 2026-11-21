@@ -29,7 +29,9 @@ export class MrpApiService {
   private readonly http = inject(HttpClient);
   private readonly base = `${environment.apiBaseUrl}/mrp`;
 
-  runs(query: { status?: MrpRunStatus; page?: number; perPage?: number } = {}): Observable<MrpEnvelope<MrpRun[], MrpPageMeta>> {
+  runs(
+    query: { status?: MrpRunStatus; page?: number; perPage?: number } = {},
+  ): Observable<MrpEnvelope<MrpRun[], MrpPageMeta>> {
     return this.http.get<MrpEnvelope<MrpRun[], MrpPageMeta>>(`${this.base}/runs`, {
       params: toHttpParams({ status: query.status, page: query.page, per_page: query.perPage }),
     });
@@ -62,7 +64,10 @@ export class MrpApiService {
     });
   }
 
-  applyAction(proposalIds: string[], action: MrpProposalAction): Observable<MrpEnvelope<MrpProposalActionResult>> {
+  applyAction(
+    proposalIds: string[],
+    action: MrpProposalAction,
+  ): Observable<MrpEnvelope<MrpProposalActionResult>> {
     return this.http.post<MrpEnvelope<MrpProposalActionResult>>(`${this.base}/proposals/actions`, {
       proposal_ids: proposalIds,
       action,
@@ -82,13 +87,25 @@ export class MrpApiService {
     return this.http.get<MrpEnvelope<MrpGantt>>(`${this.base}/runs/${runId}/gantt`, { params });
   }
 
-  autoLevel(runId: string, direction?: MrpSchedulingDirection): Observable<MrpEnvelope<MrpAutoLevelResult>> {
-    return this.http.post<MrpEnvelope<MrpAutoLevelResult>>(`${this.base}/runs/${runId}/auto-level`, {
-      scheduling_direction: direction,
-    });
+  autoLevel(
+    runId: string,
+    direction?: MrpSchedulingDirection,
+  ): Observable<MrpEnvelope<MrpAutoLevelResult>> {
+    return this.http.post<MrpEnvelope<MrpAutoLevelResult>>(
+      `${this.base}/runs/${runId}/auto-level`,
+      {
+        scheduling_direction: direction,
+      },
+    );
   }
 
-  reschedule(blockId: string, payload: MrpReschedulePayload): Observable<MrpEnvelope<MrpRescheduleResult>> {
-    return this.http.post<MrpEnvelope<MrpRescheduleResult>>(`${this.base}/schedule-blocks/${blockId}/reschedule`, payload);
+  reschedule(
+    blockId: string,
+    payload: MrpReschedulePayload,
+  ): Observable<MrpEnvelope<MrpRescheduleResult>> {
+    return this.http.post<MrpEnvelope<MrpRescheduleResult>>(
+      `${this.base}/schedule-blocks/${blockId}/reschedule`,
+      payload,
+    );
   }
 }

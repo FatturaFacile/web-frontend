@@ -56,13 +56,38 @@ import { MrpExceptionCode, MrpProposalType } from './mrp.models';
     NzTagModule,
   ],
   styles: `
-    :host { display: block; margin-bottom: 16px }
-    .bar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 12px }
-    .run-select { min-width: 280px }
-    .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-top: 12px }
-    .tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px }
-    .muted { color: var(--ant-text-color-secondary, rgba(0, 0, 0, 0.45)) }
-    .overload { color: #cf1322 }
+    :host {
+      display: block;
+      margin-bottom: 16px;
+    }
+    .bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .run-select {
+      min-width: 280px;
+    }
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 4px;
+    }
+    .muted {
+      color: var(--ant-text-color-secondary, rgba(0, 0, 0, 0.45));
+    }
+    .overload {
+      color: #cf1322;
+    }
   `,
   template: `
     <div class="bar">
@@ -76,7 +101,10 @@ import { MrpExceptionCode, MrpProposalType } from './mrp.models';
         (ngModelChange)="selectRun($event)"
       >
         @for (run of store.runs(); track run.id) {
-          <nz-option [nzValue]="run.id" [nzLabel]="run.run_code + ' · ' + (runStatusKeys[run.status] | translate)"></nz-option>
+          <nz-option
+            [nzValue]="run.id"
+            [nzLabel]="run.run_code + ' · ' + (runStatusKeys[run.status] | translate)"
+          ></nz-option>
         }
       </nz-select>
 
@@ -114,10 +142,16 @@ import { MrpExceptionCode, MrpProposalType } from './mrp.models';
     @if (store.kpis(); as kpis) {
       <div class="kpis" data-testid="kpis">
         <nz-card nzSize="small">
-          <nz-statistic data-testid="kpi-proposals" [nzTitle]="'MRP.KPI_PROPOSALS' | translate" [nzValue]="kpis.proposals_total"></nz-statistic>
+          <nz-statistic
+            data-testid="kpi-proposals"
+            [nzTitle]="'MRP.KPI_PROPOSALS' | translate"
+            [nzValue]="kpis.proposals_total"
+          ></nz-statistic>
           <div class="tags" data-testid="kpi-by-type">
             @for (entry of byType(); track entry.key) {
-              <nz-tag [nzColor]="typeColors[entry.key]">{{ typeKeys[entry.key] | translate }}: {{ entry.count }}</nz-tag>
+              <nz-tag [nzColor]="typeColors[entry.key]"
+                >{{ typeKeys[entry.key] | translate }}: {{ entry.count }}</nz-tag
+              >
             }
           </div>
         </nz-card>
@@ -129,7 +163,9 @@ import { MrpExceptionCode, MrpProposalType } from './mrp.models';
           ></nz-statistic>
           <div class="tags">
             @for (entry of byException(); track entry.key) {
-              <nz-tag [nzColor]="exceptionColors[entry.key]">{{ exceptionKeys[entry.key] | translate }}: {{ entry.count }}</nz-tag>
+              <nz-tag [nzColor]="exceptionColors[entry.key]"
+                >{{ exceptionKeys[entry.key] | translate }}: {{ entry.count }}</nz-tag
+              >
             }
           </div>
         </nz-card>
@@ -141,7 +177,11 @@ import { MrpExceptionCode, MrpProposalType } from './mrp.models';
             [nzValueStyle]="kpis.overloaded_buckets > 0 ? { color: '#cf1322' } : {}"
           ></nz-statistic>
           <div class="muted">
-            {{ 'MRP.KPI_OVERLOADED_CENTERS' | translate: { centers: kpis.overloaded_work_centers, buckets: kpis.capacity_buckets } }}
+            {{
+              'MRP.KPI_OVERLOADED_CENTERS'
+                | translate
+                  : { centers: kpis.overloaded_work_centers, buckets: kpis.capacity_buckets }
+            }}
           </div>
         </nz-card>
         <nz-card nzSize="small">
@@ -169,7 +209,9 @@ import { MrpExceptionCode, MrpProposalType } from './mrp.models';
       <ng-container *nzModalContent>
         <form nz-form nzLayout="vertical" [formGroup]="form" data-testid="run-form">
           <nz-form-item>
-            <nz-form-label nzRequired nzFor="horizon">{{ 'MRP.FIELD_HORIZON' | translate }}</nz-form-label>
+            <nz-form-label nzRequired nzFor="horizon">{{
+              'MRP.FIELD_HORIZON' | translate
+            }}</nz-form-label>
             <nz-form-control [nzErrorTip]="'MRP.ERR_HORIZON' | translate">
               <nz-input-number
                 nzId="horizon"
@@ -196,7 +238,10 @@ import { MrpExceptionCode, MrpProposalType } from './mrp.models';
             <nz-form-control>
               <nz-select formControlName="capacity_scheduling_mode" data-testid="capacity-mode">
                 @for (mode of capacityModes; track mode) {
-                  <nz-option [nzValue]="mode" [nzLabel]="capacityKeys[mode] | translate"></nz-option>
+                  <nz-option
+                    [nzValue]="mode"
+                    [nzLabel]="capacityKeys[mode] | translate"
+                  ></nz-option>
                 }
               </nz-select>
             </nz-form-control>
@@ -206,7 +251,10 @@ import { MrpExceptionCode, MrpProposalType } from './mrp.models';
             <nz-form-control>
               <nz-select formControlName="scheduling_direction" data-testid="direction">
                 @for (direction of directions; track direction) {
-                  <nz-option [nzValue]="direction" [nzLabel]="directionKeys[direction] | translate"></nz-option>
+                  <nz-option
+                    [nzValue]="direction"
+                    [nzLabel]="directionKeys[direction] | translate"
+                  ></nz-option>
                 }
               </nz-select>
             </nz-form-control>
@@ -214,13 +262,19 @@ import { MrpExceptionCode, MrpProposalType } from './mrp.models';
           <nz-form-item>
             <nz-form-label>{{ 'MRP.FIELD_CUSTOMS' | translate }}</nz-form-label>
             <nz-form-control [nzExtra]="'MRP.HINT_CUSTOMS' | translate">
-              <nz-switch formControlName="include_cross_border_customs_lead_time" data-testid="customs"></nz-switch>
+              <nz-switch
+                formControlName="include_cross_border_customs_lead_time"
+                data-testid="customs"
+              ></nz-switch>
             </nz-form-control>
           </nz-form-item>
           <nz-form-item>
             <nz-form-label>{{ 'MRP.FIELD_SHUTDOWN' | translate }}</nz-form-label>
             <nz-form-control [nzExtra]="'MRP.HINT_SHUTDOWN' | translate">
-              <nz-switch formControlName="apply_supplier_shutdown_calendars" data-testid="shutdown"></nz-switch>
+              <nz-switch
+                formControlName="apply_supplier_shutdown_calendars"
+                data-testid="shutdown"
+              ></nz-switch>
             </nz-form-control>
           </nz-form-item>
         </form>
@@ -237,10 +291,15 @@ export class MrpRunBarComponent {
 
   protected readonly modalOpen = signal(false);
   protected readonly form = this.fb.nonNullable.group({
-    planning_horizon_days: [90, [Validators.required, Validators.min(1), Validators.max(730), Validators.pattern(/^\d+$/)]],
+    planning_horizon_days: [
+      90,
+      [Validators.required, Validators.min(1), Validators.max(730), Validators.pattern(/^\d+$/)],
+    ],
     run_mode: this.fb.nonNullable.control<MrpRunPayload['run_mode']>('RegenerativeFull'),
-    capacity_scheduling_mode: this.fb.nonNullable.control<MrpRunPayload['capacity_scheduling_mode']>('InfiniteCapacity'),
-    scheduling_direction: this.fb.nonNullable.control<MrpRunPayload['scheduling_direction']>('BackwardFromDueDate'),
+    capacity_scheduling_mode:
+      this.fb.nonNullable.control<MrpRunPayload['capacity_scheduling_mode']>('InfiniteCapacity'),
+    scheduling_direction:
+      this.fb.nonNullable.control<MrpRunPayload['scheduling_direction']>('BackwardFromDueDate'),
     include_cross_border_customs_lead_time: false,
     apply_supplier_shutdown_calendars: false,
   });
@@ -259,15 +318,21 @@ export class MrpRunBarComponent {
   protected readonly exceptionColors: Record<string, string> = EXCEPTION_COLORS;
 
   protected readonly byType = computed(() =>
-    countEntries(this.store.kpis()?.by_type).filter((entry) => (entry.key as MrpProposalType) in PROPOSAL_TYPE_KEYS),
+    countEntries(this.store.kpis()?.by_type).filter(
+      (entry) => (entry.key as MrpProposalType) in PROPOSAL_TYPE_KEYS,
+    ),
   );
   protected readonly byException = computed(() =>
-    countEntries(this.store.kpis()?.by_exception).filter((entry) => (entry.key as MrpExceptionCode) in EXCEPTION_KEYS),
+    countEntries(this.store.kpis()?.by_exception).filter(
+      (entry) => (entry.key as MrpExceptionCode) in EXCEPTION_KEYS,
+    ),
   );
   protected readonly exceptionTotal = computed(() =>
     this.byException().reduce((sum, entry) => sum + entry.count, 0),
   );
-  protected readonly maxLoad = computed(() => Math.round(toNumber(this.store.kpis()?.max_load_percentage) * 100) / 100);
+  protected readonly maxLoad = computed(
+    () => Math.round(toNumber(this.store.kpis()?.max_load_percentage) * 100) / 100,
+  );
 
   protected selectRun(runId: string | null): void {
     this.store.selectRun(runId);

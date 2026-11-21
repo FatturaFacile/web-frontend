@@ -24,13 +24,34 @@ import {
   selector: 'app-mrp-pegging-drawer',
   imports: [TranslatePipe, NzDrawerModule, NzEmptyModule, NzSpinModule, NzTagModule, NzTreeModule],
   styles: `
-    .inspector { margin-top: 16px; padding: 12px; border: 1px solid var(--ant-border-color-split, #f0f0f0); border-radius: 6px }
-    dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; margin: 0 }
-    dt { color: var(--ant-text-color-secondary, rgba(0, 0, 0, 0.45)) }
-    dd { margin: 0 }
-    .roots { margin: 16px 0 0; padding-left: 20px }
-    .qty { font-variant-numeric: tabular-nums }
-    .node-info { margin-left: 6px }
+    .inspector {
+      margin-top: 16px;
+      padding: 12px;
+      border: 1px solid var(--ant-border-color-split, #f0f0f0);
+      border-radius: 6px;
+    }
+    dl {
+      display: grid;
+      grid-template-columns: max-content 1fr;
+      gap: 4px 16px;
+      margin: 0;
+    }
+    dt {
+      color: var(--ant-text-color-secondary, rgba(0, 0, 0, 0.45));
+    }
+    dd {
+      margin: 0;
+    }
+    .roots {
+      margin: 16px 0 0;
+      padding-left: 20px;
+    }
+    .qty {
+      font-variant-numeric: tabular-nums;
+    }
+    .node-info {
+      margin-left: 6px;
+    }
   `,
   template: `
     <nz-drawer
@@ -59,14 +80,23 @@ import {
               <span [attr.data-testid]="'node-' + detail.key">
                 @switch (detail.direction) {
                   @case ('group') {
-                    <strong>{{ (detail.key === 'group-upstream' ? 'MRP.PEGGING_UPSTREAM' : 'MRP.PEGGING_DOWNSTREAM') | translate }}</strong>
+                    <strong>{{
+                      (detail.key === 'group-upstream'
+                        ? 'MRP.PEGGING_UPSTREAM'
+                        : 'MRP.PEGGING_DOWNSTREAM'
+                      ) | translate
+                    }}</strong>
                   }
                   @default {
                     @if (detail.isRootDemand) {
-                      <nz-tag nzColor="gold" data-testid="root-demand">{{ sourceKeys[detail.sourceType] | translate }}</nz-tag>
+                      <nz-tag nzColor="gold" data-testid="root-demand">{{
+                        sourceKeys[detail.sourceType] | translate
+                      }}</nz-tag>
                       <span class="qty">{{ qty(detail.quantity) }}</span>
                     } @else {
-                      <nz-tag [nzColor]="typeColors[detail.proposalType]">{{ typeKeys[detail.proposalType] | translate }}</nz-tag>
+                      <nz-tag [nzColor]="typeColors[detail.proposalType]">{{
+                        typeKeys[detail.proposalType] | translate
+                      }}</nz-tag>
                       <strong>{{ detail.itemCode }}</strong>
                       <span class="qty node-info">{{ qty(detail.quantity) }}</span>
                     }
@@ -81,15 +111,25 @@ import {
                 <dl>
                   @if (detail.proposalType) {
                     <dt>{{ 'MRP.COL_TYPE' | translate }}</dt>
-                    <dd><nz-tag [nzColor]="typeColors[detail.proposalType]">{{ typeKeys[detail.proposalType] | translate }}</nz-tag></dd>
+                    <dd>
+                      <nz-tag [nzColor]="typeColors[detail.proposalType]">{{
+                        typeKeys[detail.proposalType] | translate
+                      }}</nz-tag>
+                    </dd>
                   }
                   @if (detail.proposalStatus) {
                     <dt>{{ 'MRP.COL_STATUS' | translate }}</dt>
-                    <dd><nz-tag [nzColor]="statusColors[detail.proposalStatus]">{{ statusKeys[detail.proposalStatus] | translate }}</nz-tag></dd>
+                    <dd>
+                      <nz-tag [nzColor]="statusColors[detail.proposalStatus]">{{
+                        statusKeys[detail.proposalStatus] | translate
+                      }}</nz-tag>
+                    </dd>
                   }
                   @if (detail.itemCode) {
                     <dt>{{ 'MRP.COL_ITEM' | translate }}</dt>
-                    <dd data-testid="inspector-item">{{ detail.itemCode }} · {{ detail.itemName }}</dd>
+                    <dd data-testid="inspector-item">
+                      {{ detail.itemCode }} · {{ detail.itemName }}
+                    </dd>
                   }
                   <dt>{{ 'MRP.INSPECTOR_QUANTITY' | translate }}</dt>
                   <dd class="qty" data-testid="inspector-quantity">{{ qty(detail.quantity) }}</dd>
@@ -99,7 +139,9 @@ import {
                   }
                   @if (detail.sourceType) {
                     <dt>{{ 'MRP.INSPECTOR_SOURCE' | translate }}</dt>
-                    <dd data-testid="inspector-source">{{ sourceKeys[detail.sourceType] | translate }}</dd>
+                    <dd data-testid="inspector-source">
+                      {{ sourceKeys[detail.sourceType] | translate }}
+                    </dd>
                     <dt>{{ 'MRP.INSPECTOR_SOURCE_ID' | translate }}</dt>
                     <dd>{{ detail.sourceId }}</dd>
                   }
@@ -114,7 +156,9 @@ import {
               <ul class="roots" data-testid="root-demands">
                 @for (root of roots(); track root.key) {
                   <li>
-                    <nz-tag nzColor="gold">{{ sourceKeys[root.sourceType ?? 'mrp_proposal'] | translate }}</nz-tag>
+                    <nz-tag nzColor="gold">{{
+                      sourceKeys[root.sourceType ?? 'mrp_proposal'] | translate
+                    }}</nz-tag>
                     <span class="qty">{{ qty(root.quantity) }}</span>
                   </li>
                 }

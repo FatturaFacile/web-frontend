@@ -82,13 +82,21 @@ export class MrpStore {
   readonly selectedProposals = computed(() => Object.values(this.selection()));
   readonly selectionCount = computed(() => this.selectedProposals().length);
   /** What "Mass Firm & Release" would generate for the selection. */
-  readonly releaseSummary = computed<ActionSummary>(() => summarizeAction(this.selectedProposals(), 'release'));
-  readonly firmSummary = computed<ActionSummary>(() => summarizeAction(this.selectedProposals(), 'firm'));
+  readonly releaseSummary = computed<ActionSummary>(() =>
+    summarizeAction(this.selectedProposals(), 'release'),
+  );
+  readonly firmSummary = computed<ActionSummary>(() =>
+    summarizeAction(this.selectedProposals(), 'firm'),
+  );
   readonly pageAllSelected = computed(
-    () => this.proposals().length > 0 && this.proposals().every((proposal) => this.selection()[proposal.id] !== undefined),
+    () =>
+      this.proposals().length > 0 &&
+      this.proposals().every((proposal) => this.selection()[proposal.id] !== undefined),
   );
   readonly pageSomeSelected = computed(
-    () => !this.pageAllSelected() && this.proposals().some((proposal) => this.selection()[proposal.id] !== undefined),
+    () =>
+      !this.pageAllSelected() &&
+      this.proposals().some((proposal) => this.selection()[proposal.id] !== undefined),
   );
   /** Overloaded buckets of the Gantt window per work centre id. */
   readonly overloadedByWorkCenter = computed<Record<string, number>>(() => {
@@ -109,7 +117,9 @@ export class MrpStore {
     return source.pipe(
       catchError((error: unknown) => {
         const forbidden = error instanceof HttpErrorResponse && error.status === 403;
-        const description = forbidden ? this.i18n.instant('MRP.ERR_FORBIDDEN') : (errorDetail(error) ?? '');
+        const description = forbidden
+          ? this.i18n.instant('MRP.ERR_FORBIDDEN')
+          : (errorDetail(error) ?? '');
 
         this.notification.error(this.i18n.instant(titleKey), description);
 
@@ -166,7 +176,10 @@ export class MrpStore {
           this.selectRun(run.id);
 
           if (run.status === 'Failed') {
-            this.notification.error(this.i18n.instant('MRP.RUN_FAILED_TITLE'), run.error_message ?? '');
+            this.notification.error(
+              this.i18n.instant('MRP.RUN_FAILED_TITLE'),
+              run.error_message ?? '',
+            );
           } else {
             this.notification.success(
               this.i18n.instant('MRP.RUN_DONE_TITLE'),
@@ -190,12 +203,19 @@ export class MrpStore {
     this.filters.update((current) => ({ ...current, page }));
   }
 
-  setSort(sortBy: MrpProposalFilters['sortBy'], sortDirection: MrpProposalFilters['sortDirection']): void {
+  setSort(
+    sortBy: MrpProposalFilters['sortBy'],
+    sortDirection: MrpProposalFilters['sortDirection'],
+  ): void {
     this.filters.update((current) => ({ ...current, sortBy, sortDirection, page: 1 }));
   }
 
   resetFilters(): void {
-    this.filters.update((current) => ({ ...DEFAULT_FILTERS, runId: current.runId, perPage: current.perPage }));
+    this.filters.update((current) => ({
+      ...DEFAULT_FILTERS,
+      runId: current.runId,
+      perPage: current.perPage,
+    }));
   }
 
   loadProposals(): Observable<MrpProposal[] | null> {
@@ -237,7 +257,9 @@ export class MrpStore {
   /** Drops from the selection the proposals the action cannot be applied to, so an all-or-nothing call can go through. */
   keepEligible(action: MrpProposalAction): void {
     this.selection.update((current) =>
-      Object.fromEntries(Object.entries(current).filter(([, proposal]) => isEligible(proposal, action))),
+      Object.fromEntries(
+        Object.entries(current).filter(([, proposal]) => isEligible(proposal, action)),
+      ),
     );
   }
 
@@ -289,7 +311,10 @@ export class MrpStore {
   }
 
   /** Runs the action on one proposal (the row buttons), leaving the bulk selection untouched. */
-  applyActionTo(proposal: MrpProposal, action: MrpProposalAction): Observable<MrpProposalActionResult | null> {
+  applyActionTo(
+    proposal: MrpProposal,
+    action: MrpProposalAction,
+  ): Observable<MrpProposalActionResult | null> {
     return this.applyAction(action, [proposal]);
   }
 
@@ -362,14 +387,19 @@ export class MrpStore {
   }
 
   /** Moves a block (dates and/or work centre); a refused move (422) is reported and leaves the Gantt as it was. */
-  reschedule(blockId: string, payload: MrpReschedulePayload): Observable<MrpRescheduleResult | null> {
+  reschedule(
+    blockId: string,
+    payload: MrpReschedulePayload,
+  ): Observable<MrpRescheduleResult | null> {
     this.rescheduling.set(true);
 
     return this.guard(
       this.api.reschedule(blockId, payload).pipe(
         map((res) => res.data),
         tap((result) => {
-          this.proposals.update((rows) => rows.map((row) => (row.id === result.proposal.id ? result.proposal : row)));
+          this.proposals.update((rows) =>
+            rows.map((row) => (row.id === result.proposal.id ? result.proposal : row)),
+          );
           this.notification.success(
             this.i18n.instant('MRP.RESCHEDULE_DONE_TITLE'),
             this.i18n.instant('MRP.RESCHEDULE_DONE_TEXT', {

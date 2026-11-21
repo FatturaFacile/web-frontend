@@ -73,8 +73,14 @@ describe('mrp.utils', () => {
   });
 
   it('reads the detail of a problem or Laravel error', () => {
-    const problem = new HttpErrorResponse({ status: 422, error: { detail: 'Proposal is not eligible', message: 'x' } });
-    const laravel = new HttpErrorResponse({ status: 422, error: { message: 'The given data was invalid.' } });
+    const problem = new HttpErrorResponse({
+      status: 422,
+      error: { detail: 'Proposal is not eligible', message: 'x' },
+    });
+    const laravel = new HttpErrorResponse({
+      status: 422,
+      error: { message: 'The given data was invalid.' },
+    });
 
     expect(errorDetail(problem)).toBe('Proposal is not eligible');
     expect(errorDetail(laravel)).toBe('The given data was invalid.');
@@ -105,13 +111,19 @@ describe('mrp-pegging.utils', () => {
 
   it('puts the proposal at the top with an upstream and a downstream branch', () => {
     expect(tree.nodes).toHaveLength(1);
-    expect(tree.nodes[0].children.map((node) => node.key)).toEqual(['group-upstream', 'group-downstream']);
+    expect(tree.nodes[0].children.map((node) => node.key)).toEqual([
+      'group-upstream',
+      'group-downstream',
+    ]);
   });
 
   it('maps upstream down to the root demands, recursively', () => {
     const upstream = tree.nodes[0].children[0];
 
-    expect(upstream.children.map((node) => node.detail.sourceType)).toEqual(['sales_order_line', 'mrp_proposal']);
+    expect(upstream.children.map((node) => node.detail.sourceType)).toEqual([
+      'sales_order_line',
+      'mrp_proposal',
+    ]);
     expect(upstream.children[0].detail.isRootDemand).toBe(true);
     expect(upstream.children[0].isLeaf).toBe(true);
 
@@ -133,7 +145,10 @@ describe('mrp-pegging.utils', () => {
 
   it('indexes every node by key and lists the root demands', () => {
     expect(Object.keys(tree.details).length).toBe(8);
-    expect(rootDemandNodes(tree).map((detail) => detail.sourceType)).toEqual(['sales_order_line', 'mps_line']);
+    expect(rootDemandNodes(tree).map((detail) => detail.sourceType)).toEqual([
+      'sales_order_line',
+      'mps_line',
+    ]);
   });
 });
 
@@ -142,7 +157,11 @@ describe('mrp-gantt.utils', () => {
     expect(daySpan('2027-03-01', '2027-03-07')).toBe(7);
     expect(addDays('2027-03-28', 1)).toBe('2027-03-29');
     expect(addDays('2027-12-31', 1)).toBe('2028-01-01');
-    expect(windowDays('2027-03-01', '2027-03-03')).toEqual(['2027-03-01', '2027-03-02', '2027-03-03']);
+    expect(windowDays('2027-03-01', '2027-03-03')).toEqual([
+      '2027-03-01',
+      '2027-03-02',
+      '2027-03-03',
+    ]);
     expect(dayNumber('2027-03-02') - dayNumber('2027-03-01')).toBe(1);
   });
 
@@ -153,15 +172,36 @@ describe('mrp-gantt.utils', () => {
   });
 
   it('sizes a block: first and last day are covered and the window clips it', () => {
-    expect(blockRect({ start_date: '2027-03-01', end_date: '2027-03-02' }, '2027-03-01', '2027-03-07', 40)).toEqual({
+    expect(
+      blockRect(
+        { start_date: '2027-03-01', end_date: '2027-03-02' },
+        '2027-03-01',
+        '2027-03-07',
+        40,
+      ),
+    ).toEqual({
       left: 0,
       width: 80,
     });
-    expect(blockRect({ start_date: '2027-03-04', end_date: '2027-03-04' }, '2027-03-01', '2027-03-07', 40)).toEqual({
+    expect(
+      blockRect(
+        { start_date: '2027-03-04', end_date: '2027-03-04' },
+        '2027-03-01',
+        '2027-03-07',
+        40,
+      ),
+    ).toEqual({
       left: 120,
       width: 40,
     });
-    expect(blockRect({ start_date: '2027-02-27', end_date: '2027-03-02' }, '2027-03-01', '2027-03-07', 40)).toEqual({
+    expect(
+      blockRect(
+        { start_date: '2027-02-27', end_date: '2027-03-02' },
+        '2027-03-01',
+        '2027-03-07',
+        40,
+      ),
+    ).toEqual({
       left: 0,
       width: 80,
     });
@@ -169,7 +209,12 @@ describe('mrp-gantt.utils', () => {
 
   it('stacks overlapping blocks on separate rows', () => {
     const [first, second] = GANTT.work_centers[0].blocks;
-    const overlapping = { ...second, id: 'blk-3', start_date: '2027-03-02', end_date: '2027-03-03' };
+    const overlapping = {
+      ...second,
+      id: 'blk-3',
+      start_date: '2027-03-02',
+      end_date: '2027-03-03',
+    };
     const { rows, rowCount } = layoutRows([first, second, overlapping]);
 
     expect(rows['blk-1']).toBe(0);
@@ -191,7 +236,9 @@ describe('mrp-gantt.utils', () => {
   });
 
   it('falls back to the computed percentage when the served one is not a number', () => {
-    expect(bucketPercentage({ ...bucket('2027-03-01', 'D', 150, 300, '50'), load_percentage: 'n/a' })).toBe(50);
+    expect(
+      bucketPercentage({ ...bucket('2027-03-01', 'D', 150, 300, '50'), load_percentage: 'n/a' }),
+    ).toBe(50);
   });
 
   it('selects the red class for overloaded buckets only', () => {
@@ -218,12 +265,20 @@ describe('mrp-gantt.utils', () => {
     const block = { start_date: '2027-03-01', end_date: '2027-03-02' };
 
     // grabbed 10px into the block, dropped with the pointer 130px into the lane: starts on day 3 (2027-03-04)
-    expect(droppedRange(block, 130, 10, '2027-03-01', 40)).toEqual({ start_date: '2027-03-04', end_date: '2027-03-05' });
-    expect(droppedRange(block, 10, 10, '2027-03-01', 40)).toEqual({ start_date: '2027-03-01', end_date: '2027-03-02' });
+    expect(droppedRange(block, 130, 10, '2027-03-01', 40)).toEqual({
+      start_date: '2027-03-04',
+      end_date: '2027-03-05',
+    });
+    expect(droppedRange(block, 10, 10, '2027-03-01', 40)).toEqual({
+      start_date: '2027-03-01',
+      end_date: '2027-03-02',
+    });
   });
 
   it('lists only the alternatives of a work centre', () => {
-    expect(alternativeWorkCenters(GANTT.work_centers, 'wc-a').map((center) => center.id)).toEqual(['wc-b']);
+    expect(alternativeWorkCenters(GANTT.work_centers, 'wc-a').map((center) => center.id)).toEqual([
+      'wc-b',
+    ]);
     expect(alternativeWorkCenters(GANTT.work_centers, 'wc-c')).toEqual([]);
     expect(alternativeWorkCenters(GANTT.work_centers, 'missing')).toEqual([]);
   });

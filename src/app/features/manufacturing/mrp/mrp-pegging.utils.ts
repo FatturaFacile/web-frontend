@@ -44,7 +44,10 @@ export interface PeggingTree {
   details: Record<string, PeggingNodeDetail>;
 }
 
-const blankDetail = (key: string, direction: PeggingNodeDetail['direction']): PeggingNodeDetail => ({
+const blankDetail = (
+  key: string,
+  direction: PeggingNodeDetail['direction'],
+): PeggingNodeDetail => ({
   key,
   direction,
   proposalType: null,
@@ -58,7 +61,11 @@ const blankDetail = (key: string, direction: PeggingNodeDetail['direction']): Pe
   isRootDemand: false,
 });
 
-function proposalDetail(key: string, node: MrpPeggingNode, direction: PeggingDirection): PeggingNodeDetail {
+function proposalDetail(
+  key: string,
+  node: MrpPeggingNode,
+  direction: PeggingDirection,
+): PeggingNodeDetail {
   return {
     ...blankDetail(key, direction),
     proposalType: node.proposal_type,

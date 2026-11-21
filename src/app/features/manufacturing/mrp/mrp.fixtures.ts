@@ -42,8 +42,11 @@ export function proposal(overrides: Partial<MrpProposal> & Pick<MrpProposal, 'id
   };
 }
 
-export const typed = (id: string, proposalType: MrpProposalType, extra: Partial<MrpProposal> = {}): MrpProposal =>
-  proposal({ id, proposal_type: proposalType, ...extra });
+export const typed = (
+  id: string,
+  proposalType: MrpProposalType,
+  extra: Partial<MrpProposal> = {},
+): MrpProposal => proposal({ id, proposal_type: proposalType, ...extra });
 
 export const RUN: MrpRun = {
   id: 'run-1',
@@ -114,7 +117,9 @@ export const PEGGING: MrpPegging = {
         quantity: '4.0000',
         need_by_date: '2027-03-12',
       },
-      upstream: [{ type: 'mps_line', id: 'mps-1', quantity: '4.0000', proposal: null, upstream: [] }],
+      upstream: [
+        { type: 'mps_line', id: 'mps-1', quantity: '4.0000', proposal: null, upstream: [] },
+      ],
     },
   ],
   downstream: [
@@ -148,7 +153,13 @@ export const PEGGING: MrpPegging = {
   ],
 };
 
-export const bucket = (date: string, shift: string, loaded: number, available: number, pct: string): MrpGanttBucket => ({
+export const bucket = (
+  date: string,
+  shift: string,
+  loaded: number,
+  available: number,
+  pct: string,
+): MrpGanttBucket => ({
   bucket_date: date,
   shift_code: shift,
   available_minutes: available,

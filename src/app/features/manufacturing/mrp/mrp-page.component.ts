@@ -24,14 +24,20 @@ import { MrpStore } from './mrp.store';
     MrpWorkbenchComponent,
   ],
   template: `
-    <app-page-header [title]="'MRP.TITLE' | translate" [subtitle]="'MRP.SUBTITLE' | translate"></app-page-header>
+    <app-page-header
+      [title]="'MRP.TITLE' | translate"
+      [subtitle]="'MRP.SUBTITLE' | translate"
+    ></app-page-header>
 
     <app-mrp-run-bar (refresh)="refresh()"></app-mrp-run-bar>
 
     <nz-tabs nzSize="small">
       <nz-tab [nzTitle]="'MRP.TAB_PROPOSALS' | translate">
         <ng-template nz-tab>
-          <app-mrp-workbench (pegging)="openPegging($event)" (changed)="reloadKpis()"></app-mrp-workbench>
+          <app-mrp-workbench
+            (pegging)="openPegging($event)"
+            (changed)="reloadKpis()"
+          ></app-mrp-workbench>
         </ng-template>
       </nz-tab>
       <nz-tab [nzTitle]="'MRP.TAB_CAPACITY' | translate">
