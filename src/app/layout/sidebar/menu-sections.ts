@@ -432,6 +432,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         module: 'kpi_dashboards',
       },
       {
+        key: 'CPQ_QUOTES.NAV',
+        icon: 'fa-solid fa-file-signature',
+        route: '/cpq-quotes',
+        module: 'cpq_quotes',
+      },
+      {
         key: 'AI_COG.NAV_WORKBENCH',
         icon: 'fa-solid fa-user-check',
         route: '/ai/workbench',

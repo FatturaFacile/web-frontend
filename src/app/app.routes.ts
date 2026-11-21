@@ -265,6 +265,13 @@ export const routes: Routes = [
       import('./features/kpi-dashboards/kpi-dashboards.routes').then((m) => m.KPI_DASHBOARDS_ROUTES),
   },
   {
+    path: 'cpq-quotes',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'CPQ_QUOTES.TITLE', title: 'CPQ_QUOTES.TITLE' },
+    loadChildren: () =>
+      import('./features/cpq-quotes/cpq-quotes.routes').then((m) => m.CPQ_QUOTES_ROUTES),
+  },
+  {
     path: 'ai',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'AI_COG.TITLE', title: 'AI_COG.TITLE' },
