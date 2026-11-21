@@ -1769,6 +1769,7 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
           { key: 'NAV.PRIVACY_COMPLIANCE', route: '/settings/privacy/compliance', icon: 'fa-solid fa-user-shield', module: 'system' },
           { key: 'NAV.ENTERPRISE_SECURITY', route: '/settings/security/enterprise', icon: 'fa-solid fa-shield-halved', module: 'system' },
           { key: 'NAV.AUDIT_TRAIL', route: '/security/audit-trail', icon: 'fa-solid fa-fingerprint', module: 'audit_trail' },
+          { key: 'DATA_SOVEREIGNTY.NAV', route: '/data-sovereignty', icon: 'fa-solid fa-globe-europe', module: 'data_residency' },
           { key: 'AI_COG.NAV_SETTINGS', route: '/settings/ai', icon: 'fa-solid fa-robot', module: 'system' },
           { key: 'Webhook', route: '/settings/webhooks', icon: 'fa-solid fa-satellite-dish', module: 'system' },
           { key: 'Tag condivisi', route: '/settings/tags', icon: 'fa-solid fa-tags', module: 'system' },
