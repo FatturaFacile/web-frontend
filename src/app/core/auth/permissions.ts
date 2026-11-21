@@ -88,6 +88,7 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
     grants: { read: ['payroll.read', 'payroll.write', 'payroll.*'], write: ['payroll.write', 'payroll.*'] },
   },
   workflow: { read: ANY_MEMBER, write: ANY_MEMBER },
+  academy: { read: ANY_MEMBER, write: ANY_MEMBER },
   fiscal_retail: { read: FINANCE_READERS, write: ['owner', 'admin', 'accountant', 'sales'] },
   // Health data with fiscal codes: the read-only accountant role stays out.
   health_expenses: { read: FINANCE, write: FINANCE },
