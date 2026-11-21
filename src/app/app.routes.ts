@@ -771,6 +771,13 @@ export const routes: Routes = [
       ),
   },
   {
+    // Interactive proposal portal (Mod 036): no auth guard, the unguessable token is the credential, no application shell.
+    path: 'proposal/:token',
+    data: { publicPage: true, title: 'PROPOSAL.TITLE' },
+    loadComponent: () =>
+      import('./features/proposal-portal/proposal-portal.component').then((m) => m.ProposalPortalComponent),
+  },
+  {
     // Public careers portal (Recruiting & ATS): no auth guard, embeddable.
     path: 'careers',
     data: { publicPage: true, title: 'CAREERS.TITLE' },
