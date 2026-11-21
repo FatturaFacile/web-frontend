@@ -1,0 +1,167 @@
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  word-break: break-all;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 12px;
+
+  a {
+    padding: 6px 2px;
+    border-bottom: 2px solid transparent;
+
+    &.active {
+      border-bottom-color: var(--ant-primary-color, #1677ff);
+      font-weight: 600;
+    }
+  }
+}
+
+.sub-tabs {
+  @extend .tabs;
+  font-size: 13px;
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.kpi {
+  &-value {
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
+  &-caption {
+    margin-top: 4px;
+    font-size: 12px;
+    opacity: 0.75;
+  }
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.banner {
+  margin-bottom: 12px;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.diff {
+  width: 100%;
+  border-collapse: collapse;
+
+  th,
+  td {
+    padding: 4px 8px;
+    vertical-align: top;
+    border: 1px solid rgba(128, 128, 128, 0.25);
+    text-align: left;
+  }
+
+  &-row-added td.after {
+    background: rgba(82, 196, 26, 0.16);
+  }
+
+  &-row-removed td.before {
+    background: rgba(255, 77, 79, 0.16);
+  }
+
+  &-row-modified td.before {
+    background: rgba(255, 77, 79, 0.16);
+  }
+
+  &-row-modified td.after {
+    background: rgba(82, 196, 26, 0.16);
+  }
+}
+
+.hash-inspector {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px 12px;
+  margin: 12px 0 0;
+
+  dt {
+    font-weight: 600;
+  }
+
+  dd {
+    margin: 0;
+  }
+}
+
+.pii-reveal {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.pii-form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 260px;
+}
+
+.pii-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.hint {
+  opacity: 0.7;
+}
+
+.error {
+  color: var(--ant-error-color, #cf1322);
+}
+
+.wizard {
+  max-width: 880px;
+
+  &-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+  }
+}
+
+.matrix-ref {
+  white-space: nowrap;
+}
+
+.breach-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.countdown {
+  font-size: 24px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+
+  &.overdue {
+    color: var(--ant-error-color, #cf1322);
+  }
+}

@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
-import { authGuard, guestGuard, moduleGuard } from '@core/auth/auth.guard';
+import { authGuard, guestGuard, moduleGuard, roleGuard } from '@core/auth/auth.guard';
+import { SECURITY_CENTER_ROLES } from './features/security/security-center/security-center.model';
 import { menuEnabledGuard } from '@core/auth/menu-enabled.guard';
 
 export const routes: Routes = [
@@ -250,6 +251,13 @@ export const routes: Routes = [
       import('./features/document-trust/document-trust.routes').then((m) => m.DOCUMENT_TRUST_ROUTES),
   },
   {
+    path: 'ocr-inbox',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'OCR_INBOX.TITLE', title: 'OCR_INBOX.TITLE' },
+    loadChildren: () =>
+      import('./features/ocr-inbox/ocr-inbox.routes').then((m) => m.OCR_INBOX_ROUTES),
+  },
+  {
     path: 'ai-forecasting',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'AI_FORECAST.TITLE', title: 'AI_FORECAST.TITLE' },
@@ -449,6 +457,13 @@ export const routes: Routes = [
     data: { breadcrumb: 'NAV.AUDIT_TRAIL', title: 'PAGE_TITLE.AUDIT_TRAIL' },
     loadChildren: () =>
       import('./features/security/audit-trail/audit-trail.routes').then((m) => m.AUDIT_TRAIL_ROUTES),
+  },
+  {
+    path: 'security-center',
+    canActivate: [authGuard, menuEnabledGuard, roleGuard([...SECURITY_CENTER_ROLES])],
+    data: { breadcrumb: 'SECURITY_CENTER.TITLE', title: 'SECURITY_CENTER.TITLE' },
+    loadChildren: () =>
+      import('./features/security/security-center/security-center.routes').then((m) => m.SECURITY_CENTER_ROUTES),
   },
   {
     path: 'controlling',
