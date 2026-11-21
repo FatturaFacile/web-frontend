@@ -1,0 +1,266 @@
+<div class="bid-matrix-page">
+  <app-page-header
+    [title]="'RFQ.MATRIX.TITLE' | translate"
+    [subtitle]="matrix() ? matrix()!.rfq_number + ' — ' + matrix()!.title : ''"
+  />
+
+  <div class="matrix-topbar">
+    <a nz-button routerLink="/procurement/rfqs">{{ 'RFQ.WIZARD.PREV' | translate }}</a>
+
+    @if (matrix() && matrix()!.can_award && !matrix()!.is_sealed && matrix()!.columns.length > 0) {
+      <div class="preset-actions">
+        <button
+          nz-button
+          type="button"
+          [disabled]="!matrix()!.recommendations.lowest_total_cost_bid_id"
+          (click)="applyLowestTotalPreset()"
+        >
+          {{ 'RFQ.MATRIX.PRESET_LOWEST_TOTAL' | translate }}
+        </button>
+        <button
+          nz-button
+          type="button"
+          [disabled]="matrix()!.recommendations.optimal_split_line_awards.length === 0"
+          (click)="applyOptimalSplitPreset()"
+        >
+          {{ 'RFQ.MATRIX.PRESET_OPTIMAL_SPLIT' | translate }}
+        </button>
+        <button
+          nz-button
+          type="button"
+          [disabled]="matrix()!.recommendations.lowest_price_split_line_awards.length === 0"
+          (click)="applyLowestPriceSplitPreset()"
+        >
+          {{ 'RFQ.MATRIX.PRESET_LOWEST_PRICE_SPLIT' | translate }}
+        </button>
+        <button
+          nz-button
+          nzType="primary"
+          type="button"
+          [disabled]="selectedCount() === 0"
+          (click)="openAwardDrawer()"
+        >
+          {{ 'RFQ.MATRIX.REVIEW_AWARD' | translate: { count: selectedCount() } }}
+        </button>
+      </div>
+    }
+  </div>
+
+  @if (store.error()) {
+    <nz-alert nzType="error" nzShowIcon [nzMessage]="store.error() ?? ''" />
+  }
+
+  <nz-spin [nzSpinning]="store.loadingMatrix()">
+    @if (matrix(); as m) {
+      @if (m.is_sealed) {
+        <nz-alert
+          nzType="warning"
+          nzShowIcon
+          [nzMessage]="
+            'RFQ.MATRIX.SEALED_BANNER'
+              | translate: { deadline: (m.submission_deadline | appDate: 'dateTime') }
+          "
+          class="sealed-banner"
+        />
+      }
+
+      @if (!m.is_sealed && m.columns.length === 0) {
+        <nz-empty [nzNotFoundContent]="'RFQ.MATRIX.NO_BIDS_YET' | translate" />
+      } @else {
+        <div class="matrix-scroll-container">
+          <table class="comparison-matrix-table">
+            <thead>
+              <tr>
+                <th scope="col" class="sticky-col item-col-header">
+                  <div># / {{ 'RFQ.WIZARD.LINE_DESCRIPTION' | translate }}</div>
+                  <small>
+                    {{ 'RFQ.WIZARD.LINE_QTY' | translate }} · {{ 'RFQ.WIZARD.LINE_UOM' | translate }} ·
+                    {{ 'RFQ.WIZARD.LINE_TARGET_PRICE' | translate }}
+                  </small>
+                </th>
+                @for (col of m.columns; track col.supplier_id) {
+                  <th scope="col" class="supplier-col-header">
+                    <div class="supplier-header-top">
+                      <strong>{{ col.supplier_name }}</strong>
+                      <nz-tag>{{ col.supplier_rating_grade ?? 'B' }} ({{ col.supplier_rating_score }})</nz-tag>
+                    </div>
+
+                    @if (!m.is_sealed && !col.is_redacted) {
+                      <div class="supplier-header-meta">
+                        <span>{{ col.quote_reference ?? col.supplier_code }}</span>
+                        <span>{{ 'RFQ.MATRIX.PAYMENT_TERMS' | translate: { days: col.payment_terms_days ?? 0 } }}</span>
+                        @if (col.incoterms) {
+                          <nz-tag nzColor="blue">{{ col.incoterms }}</nz-tag>
+                        }
+                      </div>
+                      <div class="supplier-header-totals">
+                        <div>
+                          <small>{{ 'RFQ.MATRIX.LANDED_COST' | translate }}:</small>
+                          <strong>
+                            {{ col.total_landed_cost ?? 0 | number: '1.2-2' }} {{ col.currency_code ?? m.currency_code }}
+                          </strong>
+                        </div>
+                        <div>
+                          <small>{{ 'RFQ.MATRIX.OVERALL_SCORE' | translate }}:</small>
+                          <strong>{{ col.weighted_overall_score ?? '0.00' }}</strong>
+                        </div>
+                      </div>
+                      <div class="supplier-header-badges">
+                        @if (col.is_lowest_total_cost) {
+                          <nz-tag nzColor="green">{{ 'RFQ.MATRIX.BADGE_BEST_PRICE' | translate }}</nz-tag>
+                        }
+                        @if (col.is_highest_score) {
+                          <nz-tag nzColor="purple">{{ 'RFQ.MATRIX.BADGE_TOP_SCORE' | translate }}</nz-tag>
+                        }
+                      </div>
+                    } @else {
+                      <div class="supplier-header-meta">
+                        <nz-tag nzColor="default">{{ col.status }}</nz-tag>
+                      </div>
+                    }
+                  </th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of m.rows; track row.rfq_line_id) {
+                <tr>
+                  <th scope="row" class="sticky-col item-row-cell">
+                    <div class="row-line-title">
+                      <span class="line-num">#{{ row.line_number }}</span>
+                      <span>{{ row.description }}</span>
+                    </div>
+                    <div class="row-line-meta">
+                      <span>{{ row.quantity | number: '1.0-4' }} {{ row.unit_of_measure }}</span>
+                      @if (row.target_unit_price) {
+                        <span>
+                          {{ 'RFQ.WIZARD.LINE_TARGET_PRICE' | translate }}:
+                          {{ row.target_unit_price | number: '1.2-2' }} {{ m.currency_code }}
+                        </span>
+                      }
+                    </div>
+                  </th>
+
+                  @for (col of m.columns; track col.supplier_id) {
+                    @let cell = cellForColumn(row, col);
+                    <td
+                      class="bid-cell"
+                      [class.selected-cell]="isCellSelected(row.rfq_line_id, cell)"
+                      [class.awarded-cell]="!!cell?.is_awarded"
+                      [class.no-bid-cell]="m.is_sealed || !cell || cell.is_no_bid"
+                    >
+                      @if (m.is_sealed || !cell || cell.is_no_bid) {
+                        <span class="no-bid-label">{{ 'RFQ.MATRIX.NO_BID' | translate }}</span>
+                      } @else {
+                        <div class="cell-metrics">
+                          <div class="price-line">
+                            <strong>{{ cell.net_unit_price | number: '1.2-4' }} {{ col.currency_code ?? m.currency_code }}</strong>
+                            @if ((cell.discount_percent ?? '0') !== '0' && (cell.discount_percent ?? '0') !== '0.00') {
+                              <small>-{{ cell.discount_percent }}%</small>
+                            }
+                          </div>
+                          <div class="sub-metric">
+                            <span>{{ 'RFQ.MATRIX.NET_TOTAL' | translate }}:</span>
+                            <span>{{ cell.line_total_net | number: '1.2-2' }}</span>
+                          </div>
+                          <div class="sub-metric">
+                            <span>{{ 'RFQ.MATRIX.LEAD_TIME_DAYS' | translate: { days: cell.lead_time_days ?? 0 } }}</span>
+                            <span>{{ 'RFQ.MATRIX.SCORE' | translate }}: {{ cell.line_weighted_score ?? '0.00' }}</span>
+                          </div>
+                          <div class="cell-badges">
+                            @if (cell.is_lowest_price) {
+                              <nz-tag nzColor="green">{{ 'RFQ.MATRIX.BADGE_BEST_PRICE' | translate }}</nz-tag>
+                            }
+                            @if (cell.is_fastest_delivery) {
+                              <nz-tag nzColor="cyan">{{ 'RFQ.MATRIX.BADGE_FASTEST' | translate }}</nz-tag>
+                            }
+                            @if (cell.is_highest_score) {
+                              <nz-tag nzColor="purple">{{ 'RFQ.MATRIX.BADGE_TOP_SCORE' | translate }}</nz-tag>
+                            }
+                          </div>
+                          @if (m.can_award) {
+                            <button
+                              nz-button
+                              nzSize="small"
+                              [nzType]="isCellSelected(row.rfq_line_id, cell) ? 'primary' : 'default'"
+                              type="button"
+                              (click)="selectCell(row, cell)"
+                            >
+                              {{ 'RFQ.MATRIX.SELECT_LINE_FOR_AWARD' | translate }}
+                            </button>
+                          }
+                        </div>
+                      }
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    }
+  </nz-spin>
+
+  <nz-drawer
+    [nzVisible]="awardDrawerOpen()"
+    [nzTitle]="'RFQ.MATRIX.AWARD_DRAWER_TITLE' | translate"
+    [nzWidth]="620"
+    (nzOnClose)="closeAwardDrawer()"
+  >
+    <ng-container *nzDrawerContent>
+      <div class="award-preview-list">
+        @for (po of groupedPoPreviews(); track po.supplier_id) {
+          <nz-card
+            [nzTitle]="'RFQ.MATRIX.PO_PREVIEW_SUPPLIER' | translate: { supplier: po.supplier_name }"
+            nzSize="small"
+          >
+            <ul class="po-line-list">
+              @for (line of po.lines; track line.rfq_line_id) {
+                <li>
+                  <span>{{ line.description }} ({{ line.quantity }} {{ line.unit_of_measure }})</span>
+                  <strong>{{ line.line_total_net | number: '1.2-2' }} {{ po.currency_code }}</strong>
+                </li>
+              }
+            </ul>
+            <div class="po-subtotal">
+              <span>{{ 'RFQ.MATRIX.LANDED_COST' | translate }}:</span>
+              <strong>{{ po.total_with_shipping | number: '1.2-2' }} {{ po.currency_code }}</strong>
+            </div>
+          </nz-card>
+        }
+
+        <nz-card [nzTitle]="'RFQ.MATRIX.EMAIL_PREVIEW_TITLE' | translate" nzSize="small">
+          <p>{{ 'RFQ.MATRIX.EMAIL_WINNERS' | translate: { count: winnerCount() } }}</p>
+          <p>{{ 'RFQ.MATRIX.EMAIL_REGRET' | translate: { count: regretCount() } }}</p>
+        </nz-card>
+
+        <div class="award-notes">
+          <label for="award-notes-input">{{ 'RFQ.WIZARD.DESCRIPTION' | translate }}</label>
+          <textarea
+            id="award-notes-input"
+            nz-input
+            rows="2"
+            [ngModel]="awardNotes()"
+            (ngModelChange)="awardNotes.set($event)"
+          ></textarea>
+        </div>
+
+        <div class="award-drawer-footer">
+          <button nz-button type="button" (click)="closeAwardDrawer()">
+            {{ 'RFQ.WIZARD.PREV' | translate }}
+          </button>
+          <button
+            nz-button
+            nzType="primary"
+            type="button"
+            [nzLoading]="awarding()"
+            (click)="confirmAward()"
+          >
+            {{ 'RFQ.MATRIX.CONFIRM_AWARD' | translate }}
+          </button>
+        </div>
+      </div>
+    </ng-container>
+  </nz-drawer>
+</div>

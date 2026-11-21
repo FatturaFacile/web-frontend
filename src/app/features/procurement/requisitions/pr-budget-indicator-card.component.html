@@ -1,0 +1,98 @@
+<nz-card [nzTitle]="'PR.BUDGET.CARD_TITLE' | translate" [nzExtra]="budgetTagTpl" class="budget-card">
+  <ng-template #budgetTagTpl>
+    @if (preview(); as snap) {
+      <nz-tag [nzColor]="statusTagColor()">{{ statusTagKey() | translate }}</nz-tag>
+    }
+  </ng-template>
+
+  <nz-spin [nzSpinning]="loading()">
+    @if (!hasCostCenter() && !preview()) {
+      <nz-alert
+        nzType="info"
+        nzShowIcon
+        [nzMessage]="'PR.BUDGET.SELECT_COST_CENTER_HINT' | translate"
+      />
+    } @else if (error() && !preview()) {
+      <nz-alert
+        nzType="warning"
+        nzShowIcon
+        [nzMessage]="'PR.BUDGET.CHECK_UNAVAILABLE' | translate"
+        [nzDescription]="error() ?? ''"
+      />
+    } @else if (preview(); as snap) {
+      <div class="budget-meta">
+        @if (snap.cost_center_code || snap.cost_center_name) {
+          <span class="budget-cc-name">
+            {{ snap.cost_center_code }}
+            @if (snap.cost_center_code && snap.cost_center_name) {
+              —
+            }
+            {{ snap.cost_center_name }}
+          </span>
+        }
+        @if (snap.period_label || snap.fiscal_year) {
+          <small class="budget-period">
+            {{ snap.period_label || snap.fiscal_year }}
+          </small>
+        }
+      </div>
+
+      <div class="budget-metrics-grid">
+        <div class="budget-metric">
+          <span class="metric-label">{{ 'PR.BUDGET.ALLOCATED' | translate }}</span>
+          <strong class="metric-value">{{ snap.allocated_budget | money: activeCurrency() }}</strong>
+        </div>
+
+        <div class="budget-metric">
+          <span class="metric-label">{{ 'PR.BUDGET.COMMITTED' | translate }}</span>
+          <strong class="metric-value">{{ snap.committed_amount | money: activeCurrency() }}</strong>
+        </div>
+
+        <div class="budget-metric">
+          <span class="metric-label">{{ 'PR.BUDGET.AVAILABLE_RESIDUAL' | translate }}</span>
+          <strong class="metric-value available-value">
+            {{ snap.available_budget | money: activeCurrency() }}
+          </strong>
+        </div>
+
+        <div class="budget-metric">
+          <span class="metric-label">{{ 'PR.BUDGET.POST_PR_BALANCE' | translate }}</span>
+          <strong
+            class="metric-value"
+            [class.balance-negative]="snap.remaining_after_requisition < 0"
+            [class.balance-warning]="isWarning() && snap.remaining_after_requisition >= 0"
+            [class.balance-ok]="!isHardBlock() && !isWarning() && snap.remaining_after_requisition >= 0"
+          >
+            {{ snap.remaining_after_requisition | money: activeCurrency() }}
+          </strong>
+        </div>
+      </div>
+
+      <div class="budget-progress">
+        <div class="progress-header">
+          <span>{{ 'PR.BUDGET.UTILIZATION' | translate }}</span>
+          <span>{{ snap.utilization_percent }}%</span>
+        </div>
+        <nz-progress
+          [nzPercent]="progressPercent()"
+          [nzStatus]="progressStatus()"
+          nzSize="small"
+          [nzShowInfo]="false"
+        />
+      </div>
+
+      <nz-alert
+        [nzType]="alertType()"
+        nzShowIcon
+        [nzMessage]="alertTitleKey() | translate"
+        [nzDescription]="snap.message || (alertDescriptionKey() | translate)"
+        class="budget-alert"
+      />
+    } @else {
+      <div class="budget-pending-total">
+        <span class="metric-label">{{ 'PR.BUDGET.PR_ESTIMATED_AMOUNT' | translate }}</span>
+        <strong class="metric-value">{{ estimatedTotal() | money: currency() }}</strong>
+      </div>
+    }
+  </nz-spin>
+</nz-card>
