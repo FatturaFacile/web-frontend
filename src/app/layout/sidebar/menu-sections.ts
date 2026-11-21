@@ -614,6 +614,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             module: 'shift_planning',
           },
           {
+            key: 'NAV.SHIFT_PLANNING_MY',
+            route: '/shift-planning/my',
+            icon: 'fa-solid fa-calendar-check',
+            module: 'shift_planning_self',
+          },
+          {
             key: 'NAV.SHIFT_PLANNING_TEMPLATES',
             route: '/shift-planning/templates',
             icon: 'fa-solid fa-clock',
