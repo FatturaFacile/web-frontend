@@ -423,6 +423,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         module: 'ocr_extraction',
       },
       {
+        key: 'KPI_DASHBOARDS.NAV',
+        icon: 'fa-solid fa-gauge-high',
+        route: '/kpi-dashboards',
+        module: 'kpi_dashboards',
+      },
+      {
         key: 'NAV.TREASURY_OPERATIONS',
         icon: 'fa-solid fa-money-bill-transfer',
         route: '/treasury/operations',

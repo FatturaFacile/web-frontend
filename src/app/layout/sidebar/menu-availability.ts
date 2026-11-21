@@ -121,6 +121,7 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/digital-preservation',
   '/ai-forecasting',
   '/ocr-inbox',
+  '/kpi-dashboards',
   '/ecommerce-integrations',
   '/exports',
   '/logistics/consignment',
