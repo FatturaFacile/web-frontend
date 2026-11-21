@@ -574,7 +574,7 @@ export class MrpWorkbenchComponent implements OnInit {
     return filters.sortDirection === 'asc' ? 'ascend' : 'descend';
   }
 
-  protected sort(key: MrpProposalSortBy, order: SortOrder): void {
+  protected sort(key: MrpProposalSortBy, order: string | null): void {
     if (order === null) {
       this.store.setSort('need_by_date', 'asc');
     } else {

@@ -67,7 +67,6 @@ import {
             <div data-testid="pegging-tree">
               <nz-tree
                 nzBlockNode
-
                 nzExpandAll
                 [nzData]="tree.nodes"
                 [nzTreeTemplate]="nodeTemplate"
@@ -175,11 +174,11 @@ import {
 export class MrpPeggingDrawerComponent {
   protected readonly store = inject(MrpStore);
 
-  protected readonly typeKeys = PROPOSAL_TYPE_KEYS;
-  protected readonly typeColors = PROPOSAL_TYPE_COLORS;
+  protected readonly typeKeys: Record<string, string> = PROPOSAL_TYPE_KEYS;
+  protected readonly typeColors: Record<string, string> = PROPOSAL_TYPE_COLORS;
   protected readonly statusKeys = PROPOSAL_STATUS_KEYS;
   protected readonly statusColors = PROPOSAL_STATUS_COLORS;
-  protected readonly sourceKeys = SOURCE_TYPE_KEYS;
+  protected readonly sourceKeys: Record<string, string> = SOURCE_TYPE_KEYS;
   protected readonly qty = formatQuantity;
 
   protected readonly selectedKey = signal<string | null>(null);
