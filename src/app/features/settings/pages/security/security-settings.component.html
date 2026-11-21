@@ -1,6 +1,8 @@
 <app-page-header [title]="'SECURITY.TITLE' | translate" [subtitle]="'SECURITY.SUBTITLE' | translate" />
 
 <div class="security-container">
+  <app-passkeys-card class="section-card" />
+
   <!-- 2FA SECTION -->
   <nz-card [nzTitle]="'SECURITY.TWO_FACTOR_CARD' | translate" [nzLoading]="isLoading2FA()" class="section-card">
     @if (twoFactorStatus(); as status) {

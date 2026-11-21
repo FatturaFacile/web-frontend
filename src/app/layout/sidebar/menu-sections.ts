@@ -432,6 +432,18 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         module: 'kpi_dashboards',
       },
       {
+        key: 'AI_COG.NAV_WORKBENCH',
+        icon: 'fa-solid fa-user-check',
+        route: '/ai/workbench',
+        module: 'ai_cognitive',
+      },
+      {
+        key: 'AI_COG.NAV_INSIGHTS',
+        icon: 'fa-solid fa-lightbulb',
+        route: '/ai/insights',
+        module: 'ai_cognitive',
+      },
+      {
         key: 'NAV.TREASURY_OPERATIONS',
         icon: 'fa-solid fa-money-bill-transfer',
         route: '/treasury/operations',
@@ -1751,6 +1763,7 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
           { key: 'NAV.PRIVACY_COMPLIANCE', route: '/settings/privacy/compliance', icon: 'fa-solid fa-user-shield', module: 'system' },
           { key: 'NAV.ENTERPRISE_SECURITY', route: '/settings/security/enterprise', icon: 'fa-solid fa-shield-halved', module: 'system' },
           { key: 'NAV.AUDIT_TRAIL', route: '/security/audit-trail', icon: 'fa-solid fa-fingerprint', module: 'audit_trail' },
+          { key: 'AI_COG.NAV_SETTINGS', route: '/settings/ai', icon: 'fa-solid fa-robot', module: 'system' },
           { key: 'Webhook', route: '/settings/webhooks', icon: 'fa-solid fa-satellite-dish', module: 'system' },
           { key: 'Tag condivisi', route: '/settings/tags', icon: 'fa-solid fa-tags', module: 'system' },
         ],

@@ -29,6 +29,7 @@ export const PREMATURE_OPEN_ISSUE_MODULES: Readonly<Record<string, { issue: numb
   forecasting: { issue: 221, routePrefix: '/ai-forecasting' },
   ocr_extraction: { issue: 220, routePrefix: '/ocr-inbox' },
   kpi_dashboards: { issue: 217, routePrefix: '/kpi-dashboards' },
+  ai_cognitive: { issue: 219, routePrefix: '/ai' },
   leases: { issue: 274, routePrefix: '/leases' },
   retail: { issue: 275, routePrefix: '/retail' },
   hospitality: { issue: 276, routePrefix: '/hospitality' },
