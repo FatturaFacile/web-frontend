@@ -158,6 +158,13 @@ export const SETTINGS_ROUTES: Routes = [
     loadComponent: () => import('./pages/webhooks/webhooks.component').then((m) => m.WebhooksComponent),
   },
   {
+    path: 'ai',
+    canActivate: [moduleGuard('ai_admin', 'read')],
+    data: { breadcrumb: 'AI_COG.SETTINGS_TITLE', title: 'AI_COG.SETTINGS_TITLE' },
+    loadComponent: () =>
+      import('../ai-cognitive/ai-settings-page.component').then((m) => m.AiSettingsPageComponent),
+  },
+  {
     path: 'tags',
     canActivate: [moduleGuard('system', 'read')],
     data: { breadcrumb: 'COLLABORATION.TAGS.TITLE', title: 'COLLABORATION.TAGS.TITLE' },
