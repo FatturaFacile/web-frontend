@@ -5,7 +5,7 @@ import {
   hasSeededDictionaries,
   SEEDED_LANGUAGES,
   seededDictionaries,
-} from '../../../testing/seeded-dictionaries';
+} from '../../../../testing/seeded-dictionaries';
 import { BOM_IMPORT_FIELDS } from './bom.utils';
 
 const DIR = __dirname;
