@@ -4,8 +4,23 @@ import { environment } from '@env';
 import { Observable } from 'rxjs';
 import {
   ApiResponse,
+  BomCoProductPayload,
+  BomCostAllocation,
+  BomDiffResult,
+  BomExplosion,
+  BomExplosionParams,
+  BomImplosion,
+  BomImportPayload,
+  BomImportReport,
+  BomMassReplacePayload,
+  BomMassReplaceResult,
+  BomPreferentialOrigin,
+  BomRevisionPayload,
+  BomRevisionResult,
   CancelProductionOrderPayload,
   CreateBomPayload,
+  EngineeringChangeResource,
+  MfgItemSummary,
   CreateProductionOrderPayload,
   CreateWorkCenterPayload,
   MfgBomResource,
@@ -95,6 +110,70 @@ export class ManufacturingApiService {
 
   explodeBom(id: string): Observable<ApiResponse<unknown>> {
     return this.http.get<ApiResponse<unknown>>(`${this.base}/boms/${id}/explode`);
+  }
+
+  // --- Mod 060: multi-level BOM management ---
+
+  /** Opens an engineering change (with `source_bom_id`) or creates a draft; the BOM comes back `pending_eco_approval` for a change. */
+  createBomRevision(payload: BomRevisionPayload): Observable<BomRevisionResult> {
+    return this.http.post<BomRevisionResult>(`${this.base}/boms/revisions`, payload);
+  }
+
+  /** Booleans go out as 1/0: the Laravel `boolean` rule does not accept the strings "true"/"false". */
+  getBomExplosion(id: string, params: BomExplosionParams = {}): Observable<ApiResponse<BomExplosion>> {
+    const query = {
+      quantity: params.quantity,
+      date: params.date,
+      multi_level: params.multi_level === undefined ? undefined : Number(params.multi_level),
+      flatten_phantoms: params.flatten_phantoms === undefined ? undefined : Number(params.flatten_phantoms),
+    };
+    return this.http.get<ApiResponse<BomExplosion>>(`${this.base}/boms/${id}/explosion`, {
+      params: toHttpParams(query),
+    });
+  }
+
+  getItemImplosion(itemId: string, date?: string): Observable<ApiResponse<BomImplosion>> {
+    return this.http.get<ApiResponse<BomImplosion>>(`${this.base}/items/${itemId}/implosion`, {
+      params: toHttpParams({ date }),
+    });
+  }
+
+  /** `dry_run: true` only reports what would be replaced and skipped. */
+  massReplaceComponent(payload: BomMassReplacePayload): Observable<ApiResponse<BomMassReplaceResult>> {
+    return this.http.post<ApiResponse<BomMassReplaceResult>>(`${this.base}/boms/mass-replace`, payload);
+  }
+
+  getBomDiff(id: string, otherId: string): Observable<ApiResponse<BomDiffResult>> {
+    return this.http.get<ApiResponse<BomDiffResult>>(`${this.base}/boms/${id}/diff/${otherId}`);
+  }
+
+  /** `dry_run: false` creates the draft (201) or answers 422 with the per-row report. */
+  importBom(payload: BomImportPayload): Observable<ApiResponse<BomImportReport>> {
+    return this.http.post<ApiResponse<BomImportReport>>(`${this.base}/boms/import`, payload);
+  }
+
+  updateBomCoProducts(id: string, payload: BomCoProductPayload): Observable<ApiResponse<unknown>> {
+    return this.http.put<ApiResponse<unknown>>(`${this.base}/boms/${id}/co-products`, payload);
+  }
+
+  getBomCostAllocation(id: string): Observable<ApiResponse<BomCostAllocation>> {
+    return this.http.get<ApiResponse<BomCostAllocation>>(`${this.base}/boms/${id}/cost-allocation`);
+  }
+
+  getBomPreferentialOrigin(id: string, thresholdPercentage?: number): Observable<ApiResponse<BomPreferentialOrigin>> {
+    return this.http.get<ApiResponse<BomPreferentialOrigin>>(`${this.base}/boms/${id}/preferential-origin`, {
+      params: toHttpParams({ threshold_percentage: thresholdPercentage }),
+    });
+  }
+
+  getMfgItems(params?: QueryFilterParams): Observable<PaginatedResponse<MfgItemSummary>> {
+    return this.http.get<PaginatedResponse<MfgItemSummary>>(`${this.base}/items`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  getEngineeringChange(id: string): Observable<ApiResponse<EngineeringChangeResource>> {
+    return this.http.get<ApiResponse<EngineeringChangeResource>>(`${this.base}/engineering-changes/${id}`);
   }
 
   // --- MRP (Material Requirements Planning) ---
