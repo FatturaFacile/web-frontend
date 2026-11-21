@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
-import { authGuard, guestGuard, moduleGuard } from '@core/auth/auth.guard';
+import { authGuard, guestGuard, moduleGuard, roleGuard } from '@core/auth/auth.guard';
+import { SECURITY_CENTER_ROLES } from './features/security/security-center/security-center.model';
 import { menuEnabledGuard } from '@core/auth/menu-enabled.guard';
 
 export const routes: Routes = [
@@ -257,6 +258,20 @@ export const routes: Routes = [
       import('./features/ocr-inbox/ocr-inbox.routes').then((m) => m.OCR_INBOX_ROUTES),
   },
   {
+    path: 'kpi-dashboards',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'KPI_DASHBOARDS.TITLE', title: 'KPI_DASHBOARDS.TITLE' },
+    loadChildren: () =>
+      import('./features/kpi-dashboards/kpi-dashboards.routes').then((m) => m.KPI_DASHBOARDS_ROUTES),
+  },
+  {
+    path: 'ai',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'AI_COG.TITLE', title: 'AI_COG.TITLE' },
+    loadChildren: () =>
+      import('./features/ai-cognitive/ai-cognitive.routes').then((m) => m.AI_COGNITIVE_ROUTES),
+  },
+  {
     path: 'ai-forecasting',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'AI_FORECAST.TITLE', title: 'AI_FORECAST.TITLE' },
@@ -271,6 +286,12 @@ export const routes: Routes = [
       import('./features/digital-preservation/digital-preservation.routes').then(
         (m) => m.DIGITAL_PRESERVATION_ROUTES,
       ),
+  },
+  {
+    path: 'academy',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'ACADEMY.TITLE', title: 'ACADEMY.TITLE' },
+    loadChildren: () => import('./features/academy/academy.routes').then((m) => m.ACADEMY_ROUTES),
   },
   {
     path: 'ecommerce-integrations',
@@ -450,6 +471,13 @@ export const routes: Routes = [
     data: { breadcrumb: 'NAV.AUDIT_TRAIL', title: 'PAGE_TITLE.AUDIT_TRAIL' },
     loadChildren: () =>
       import('./features/security/audit-trail/audit-trail.routes').then((m) => m.AUDIT_TRAIL_ROUTES),
+  },
+  {
+    path: 'security-center',
+    canActivate: [authGuard, menuEnabledGuard, roleGuard([...SECURITY_CENTER_ROLES])],
+    data: { breadcrumb: 'SECURITY_CENTER.TITLE', title: 'SECURITY_CENTER.TITLE' },
+    loadChildren: () =>
+      import('./features/security/security-center/security-center.routes').then((m) => m.SECURITY_CENTER_ROUTES),
   },
   {
     path: 'controlling',
