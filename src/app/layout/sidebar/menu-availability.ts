@@ -175,6 +175,8 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/hr/payroll-tools',
   '/hr/recruiting',
   '/hr/shifts',
+  '/shift-planning',
+  '/shift-planning/templates',
   '/hr/short-time',
   '/hr/talent',
   '/hr/time',

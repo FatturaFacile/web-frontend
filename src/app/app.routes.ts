@@ -376,6 +376,12 @@ export const routes: Routes = [
       import('./features/business-intelligence/business-intelligence.routes').then((m) => m.BUSINESS_INTELLIGENCE_ROUTES),
   },
   {
+    path: 'shift-planning',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'NAV.SHIFT_PLANNING', title: 'PAGE_TITLE.SHIFT_PLANNING' },
+    loadChildren: () => import('./features/shift-planning/shift-planning.routes').then((m) => m.SHIFT_PLANNING_ROUTES),
+  },
+  {
     path: 'marketplace',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.MARKETPLACE', title: 'PAGE_TITLE.MARKETPLACE' },

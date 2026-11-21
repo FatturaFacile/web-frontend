@@ -1,0 +1,278 @@
+:host {
+  display: block;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.period-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.period-range {
+  min-width: 190px;
+  text-align: center;
+}
+
+.feedback {
+  margin-bottom: 12px;
+}
+
+.issue-list {
+  margin: 4px 0 0;
+  padding-left: 18px;
+
+  .blocking code {
+    color: var(--ant-error-color, #cf1322);
+  }
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.stat {
+  padding: 12px 16px;
+  border: 1px solid var(--ant-border-color-split, #f0f0f0);
+  border-radius: 8px;
+  background: var(--ant-component-background, #fff);
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--ant-text-color-secondary, #595959);
+}
+
+.stat-value {
+  font-size: 22px;
+}
+
+.stat-alert {
+  border-color: var(--ant-error-color, #cf1322);
+
+  .stat-value {
+    color: var(--ant-error-color, #cf1322);
+  }
+}
+
+.palette {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.palette-title {
+  font-weight: 600;
+}
+
+.palette-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.palette-card {
+  min-width: 150px;
+  cursor: grab;
+}
+
+.muted {
+  color: var(--ant-text-color-secondary, #595959);
+  font-size: 12px;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.matrix {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+
+  th,
+  td {
+    border-bottom: 1px solid var(--ant-border-color-split, #f0f0f0);
+    border-right: 1px solid var(--ant-border-color-split, #f0f0f0);
+    padding: 4px;
+    vertical-align: top;
+  }
+
+  .row-head {
+    width: 190px;
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background: var(--ant-component-background, #fff);
+    text-align: left;
+  }
+
+  .day-head {
+    text-align: center;
+    font-weight: 600;
+  }
+
+  .cell {
+    min-height: 64px;
+    min-width: 128px;
+    height: 64px;
+  }
+
+  .cost-cell {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.compact .matrix {
+  .row-head {
+    width: 150px;
+  }
+
+  .cell {
+    min-width: 56px;
+  }
+}
+
+.row-title {
+  font-weight: 600;
+}
+
+.row-hours {
+  font-size: 12px;
+  color: var(--ant-text-color-secondary, #595959);
+}
+
+.open-row .row-head {
+  font-style: italic;
+}
+
+.coverage {
+  display: block;
+  border-radius: 4px;
+  padding: 2px 4px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.coverage-ok {
+  background: #f6ffed;
+  color: #237804;
+}
+
+.coverage-low {
+  background: #fff7e6;
+  color: #ad4e00;
+}
+
+.coverage-critical {
+  background: #fff1f0;
+  color: #a8071a;
+}
+
+.shift-card {
+  display: block;
+  box-sizing: border-box;
+  margin-bottom: 4px;
+  padding: 4px 6px;
+  border: 1px solid var(--ant-border-color-base, #d9d9d9);
+  border-left: 4px solid var(--ant-primary-color, #1677ff);
+  border-radius: 4px;
+  background: var(--ant-component-background, #fff);
+  font-size: 12px;
+  cursor: grab;
+
+  &.is-open {
+    border-style: dashed;
+  }
+
+  &.has-blocking {
+    border-color: var(--ant-error-color, #cf1322);
+    background: #fff1f0;
+  }
+}
+
+.card-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.card-time {
+  flex: 1;
+  color: var(--ant-text-color-secondary, #595959);
+}
+
+.card-menu {
+  margin-left: auto;
+}
+
+.card-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0 6px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.badge-error {
+  background: #cf1322;
+  color: #fff;
+}
+
+.badge-warning {
+  background: #ad4e00;
+  color: #fff;
+}
+
+.tip-list {
+  margin: 0;
+  padding-left: 16px;
+}
+
+.cdk-drag-preview {
+  box-shadow: 0 6px 16px rgb(0 0 0 / 20%);
+}
+
+.cdk-drag-placeholder {
+  opacity: 0.35;
+}
+
+.cdk-drop-list-dragging .shift-card:not(.cdk-drag-placeholder) {
+  transition: transform 150ms ease;
+}
+
+.cdk-drop-list-receiving {
+  background: #e6f4ff;
+}
