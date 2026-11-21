@@ -1,0 +1,346 @@
+<div class="supplier-portal-shell">
+  <header class="portal-topbar">
+    <div class="portal-brand">
+      <strong>FatturaFacile ERP</strong>
+      <span class="portal-subtitle">{{ 'RFQ.PORTAL.TITLE' | translate }}</span>
+    </div>
+
+    <div class="portal-lang-switcher">
+      <label for="portal-lang-select">{{ 'RFQ.PORTAL.LANGUAGE' | translate }}</label>
+      <nz-select
+        id="portal-lang-select"
+        [ngModel]="currentLanguage()"
+        (ngModelChange)="switchLanguage($event)"
+        class="lang-select"
+      >
+        @for (lang of languages; track lang) {
+          <nz-option [nzValue]="lang" [nzLabel]="lang.toUpperCase()" />
+        }
+      </nz-select>
+    </div>
+  </header>
+
+  <main class="portal-main">
+    <nz-spin [nzSpinning]="loading()">
+      @if (loadError()) {
+        <nz-alert
+          nzType="error"
+          nzShowIcon
+          [nzMessage]="'RFQ.PORTAL.INVALID_OR_EXPIRED' | translate"
+        />
+      } @else if (portalView(); as view) {
+        <nz-card class="portal-card">
+          <div class="rfq-header-block">
+            <div>
+              <nz-tag nzColor="blue">{{ view.rfq.rfq_number }}</nz-tag>
+              <h1>{{ view.rfq.title }}</h1>
+              <p class="buyer-meta">
+                {{ 'RFQ.PORTAL.BUYER_HEADER' | translate: { company: view.buyer_company.name } }}
+                @if (view.buyer_company.vat_number) {
+                  <span>· VAT {{ view.buyer_company.vat_number }}</span>
+                }
+              </p>
+              @if (view.rfq.description) {
+                <p>{{ view.rfq.description }}</p>
+              }
+            </div>
+
+            <div class="deadline-box">
+              <small>{{ 'RFQ.COL_DEADLINE' | translate }}</small>
+              <strong>{{ view.rfq.submission_deadline | appDate: 'dateTime' }}</strong>
+              <nz-tag nzColor="gold">{{ countdownLabel() }}</nz-tag>
+              @if (view.invitation.supplier_name) {
+                <small class="supplier-name">{{ view.invitation.supplier_name }}</small>
+              }
+            </div>
+          </div>
+        </nz-card>
+
+        @if (actionFeedback()) {
+          <nz-alert nzType="success" nzShowIcon [nzMessage]="actionFeedback() ?? ''" />
+        }
+
+        @if (view.rfq.attachments.length > 0) {
+          <nz-card [nzTitle]="'RFQ.PORTAL.ATTACHMENTS_TITLE' | translate" class="portal-card">
+            <div class="portal-attachments">
+              @for (att of view.rfq.attachments; track att.id) {
+                <div class="portal-attachment-item">
+                  <span>{{ att.file_name }}</span>
+                  <button
+                    nz-button
+                    nzSize="small"
+                    type="button"
+                    (click)="downloadAttachment(att)"
+                  >
+                    {{ 'RFQ.PORTAL.DOWNLOAD' | translate }}
+                  </button>
+                </div>
+              }
+            </div>
+          </nz-card>
+        }
+
+        <nz-card [nzTitle]="'RFQ.PORTAL.QUOTE_HEADER' | translate" class="portal-card">
+          <div class="terms-grid">
+            <div class="field">
+              <label for="quote-ref">{{ 'RFQ.PORTAL.QUOTE_REFERENCE' | translate }}</label>
+              <input
+                id="quote-ref"
+                nz-input
+                [disabled]="!canInteract()"
+                [ngModel]="supplierQuoteReference()"
+                (ngModelChange)="supplierQuoteReference.set($event)"
+              />
+            </div>
+
+            <div class="field">
+              <label for="quote-currency">{{ 'RFQ.PORTAL.CURRENCY' | translate }}</label>
+              <nz-select
+                id="quote-currency"
+                [nzDisabled]="!canInteract()"
+                [ngModel]="currencyCode()"
+                (ngModelChange)="currencyCode.set($event)"
+              >
+                @for (curr of currencies; track curr) {
+                  <nz-option [nzValue]="curr" [nzLabel]="curr" />
+                }
+              </nz-select>
+            </div>
+
+            <div class="field">
+              <label for="payment-terms">{{ 'RFQ.PORTAL.PAYMENT_TERMS_DAYS' | translate }}</label>
+              <nz-input-number
+                id="payment-terms"
+                [nzDisabled]="!canInteract()"
+                [nzMin]="0"
+                [nzMax]="365"
+                [ngModel]="paymentTermsDays()"
+                (ngModelChange)="paymentTermsDays.set($event ?? 0)"
+              />
+            </div>
+
+            <div class="field">
+              <label for="quote-incoterms">{{ 'RFQ.PORTAL.INCOTERMS' | translate }}</label>
+              <input
+                id="quote-incoterms"
+                nz-input
+                [disabled]="!canInteract()"
+                [ngModel]="incoterms()"
+                (ngModelChange)="incoterms.set($event)"
+              />
+            </div>
+
+            <div class="field">
+              <label for="shipping-cost">{{ 'RFQ.PORTAL.SHIPPING_COST' | translate }}</label>
+              <nz-input-number
+                id="shipping-cost"
+                [nzDisabled]="!canInteract()"
+                [nzMin]="0"
+                [nzStep]="0.01"
+                [ngModel]="shippingCost()"
+                (ngModelChange)="shippingCost.set($event ?? 0)"
+              />
+            </div>
+
+            <div class="field">
+              <label for="valid-until">{{ 'RFQ.PORTAL.VALID_UNTIL' | translate }}</label>
+              <input
+                id="valid-until"
+                nz-input
+                type="date"
+                [disabled]="!canInteract()"
+                [ngModel]="validUntil()"
+                (ngModelChange)="validUntil.set($event)"
+              />
+            </div>
+
+            <div class="field full-span">
+              <label for="general-notes">{{ 'RFQ.PORTAL.GENERAL_NOTES' | translate }}</label>
+              <textarea
+                id="general-notes"
+                nz-input
+                rows="2"
+                [disabled]="!canInteract()"
+                [ngModel]="generalNotes()"
+                (ngModelChange)="generalNotes.set($event)"
+              ></textarea>
+            </div>
+
+            <div class="field full-span">
+              <span>{{ 'RFQ.PORTAL.QUOTE_PDF' | translate }}</span>
+              <div class="pdf-upload-row">
+                <nz-upload
+                  [nzBeforeUpload]="handleQuotePdfUpload"
+                  [nzShowUploadList]="false"
+                  [nzDisabled]="!canInteract()"
+                >
+                  <button nz-button type="button" [disabled]="!canInteract()">
+                    {{ 'RFQ.PORTAL.QUOTE_PDF' | translate }}
+                  </button>
+                </nz-upload>
+                @if (quotePdfFile()) {
+                  <span>{{ quotePdfFile()!.name }}</span>
+                  <button nz-button nzSize="small" nzDanger type="button" (click)="clearQuotePdf()">
+                    {{ 'RFQ.WIZARD.REMOVE_LINE' | translate }}
+                  </button>
+                } @else if (view.bid?.quote_attachment_file_name) {
+                  <span>{{ view.bid!.quote_attachment_file_name }}</span>
+                }
+              </div>
+            </div>
+          </div>
+        </nz-card>
+
+        <nz-card class="portal-card">
+          <nz-table [nzData]="lineEntries()" [nzFrontPagination]="false" [nzScroll]="{ x: '980px' }">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">{{ 'RFQ.WIZARD.LINE_DESCRIPTION' | translate }}</th>
+                <th scope="col">{{ 'RFQ.WIZARD.LINE_QTY' | translate }}</th>
+                <th scope="col">{{ 'RFQ.PORTAL.COL_NO_BID' | translate }}</th>
+                <th scope="col">{{ 'RFQ.PORTAL.COL_UNIT_PRICE' | translate }}</th>
+                <th scope="col">{{ 'RFQ.PORTAL.COL_DISCOUNT' | translate }}</th>
+                <th scope="col">{{ 'RFQ.PORTAL.COL_LEAD_TIME' | translate }}</th>
+                <th scope="col">{{ 'RFQ.PORTAL.COL_LINE_NET' | translate }}</th>
+                <th scope="col">{{ 'RFQ.PORTAL.COL_NOTES' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (entry of lineEntries(); track entry.rfq_line_id) {
+                <tr>
+                  <td>{{ entry.line_number }}</td>
+                  <td>
+                    <div class="line-desc">
+                      <strong>{{ entry.description }}</strong>
+                      @if (entry.technical_specifications) {
+                        <small>{{ entry.technical_specifications }}</small>
+                      }
+                    </div>
+                  </td>
+                  <td>{{ entry.quoted_quantity }} {{ entry.unit_of_measure }}</td>
+                  <td>
+                    <nz-switch
+                      [nzDisabled]="!canInteract()"
+                      [ngModel]="entry.is_no_bid"
+                      (ngModelChange)="updateLine(entry.rfq_line_id, 'is_no_bid', $event)"
+                      [attr.aria-label]="'RFQ.PORTAL.COL_NO_BID' | translate"
+                    />
+                  </td>
+                  <td>
+                    <nz-input-number
+                      [nzDisabled]="!canInteract() || entry.is_no_bid"
+                      [nzMin]="0"
+                      [nzStep]="0.01"
+                      [ngModel]="entry.unit_price"
+                      (ngModelChange)="updateLine(entry.rfq_line_id, 'unit_price', $event)"
+                      [attr.aria-label]="'RFQ.PORTAL.COL_UNIT_PRICE' | translate"
+                    />
+                  </td>
+                  <td>
+                    <nz-input-number
+                      [nzDisabled]="!canInteract() || entry.is_no_bid"
+                      [nzMin]="0"
+                      [nzMax]="100"
+                      [ngModel]="entry.discount_percent"
+                      (ngModelChange)="updateLine(entry.rfq_line_id, 'discount_percent', $event ?? 0)"
+                      [attr.aria-label]="'RFQ.PORTAL.COL_DISCOUNT' | translate"
+                    />
+                  </td>
+                  <td>
+                    <nz-input-number
+                      [nzDisabled]="!canInteract() || entry.is_no_bid"
+                      [nzMin]="0"
+                      [nzMax]="3650"
+                      [ngModel]="entry.lead_time_days"
+                      (ngModelChange)="updateLine(entry.rfq_line_id, 'lead_time_days', $event ?? 0)"
+                      [attr.aria-label]="'RFQ.PORTAL.COL_LEAD_TIME' | translate"
+                    />
+                  </td>
+                  <td class="line-net-cell">
+                    <strong>{{ computeLineNet(entry) | number: '1.2-2' }} {{ currencyCode() }}</strong>
+                  </td>
+                  <td>
+                    <input
+                      nz-input
+                      [disabled]="!canInteract() || entry.is_no_bid"
+                      [ngModel]="entry.supplier_notes"
+                      (ngModelChange)="updateLine(entry.rfq_line_id, 'supplier_notes', $event)"
+                      [attr.aria-label]="'RFQ.PORTAL.COL_NOTES' | translate"
+                    />
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </nz-table>
+
+          <div class="portal-summary-footer">
+            <div class="totals-box">
+              <div>
+                <span>{{ 'RFQ.PORTAL.SUMMARY_NET' | translate }}:</span>
+                <strong>{{ itemsNetTotal() | number: '1.2-2' }} {{ currencyCode() }}</strong>
+              </div>
+              <div>
+                <span>{{ 'RFQ.PORTAL.SUMMARY_LANDED' | translate }}:</span>
+                <strong class="landed-amount">{{ totalLandedOffer() | number: '1.2-2' }} {{ currencyCode() }}</strong>
+              </div>
+            </div>
+
+            <div class="portal-actions">
+              <button
+                nz-button
+                nzDanger
+                type="button"
+                [disabled]="!canInteract() || submitting()"
+                (click)="openDeclineModal()"
+              >
+                {{ 'RFQ.PORTAL.DECLINE_BUTTON' | translate }}
+              </button>
+              <button
+                nz-button
+                type="button"
+                [disabled]="!canInteract() || submitting()"
+                [nzLoading]="submitting()"
+                (click)="saveDraft()"
+              >
+                {{ 'RFQ.PORTAL.SAVE_DRAFT' | translate }}
+              </button>
+              <button
+                nz-button
+                nzType="primary"
+                type="button"
+                [disabled]="!canInteract() || !hasValidBidLine() || submitting()"
+                [nzLoading]="submitting()"
+                (click)="submitFinalQuote()"
+              >
+                {{ 'RFQ.PORTAL.SUBMIT_BID' | translate }}
+              </button>
+            </div>
+          </div>
+        </nz-card>
+      }
+    </nz-spin>
+  </main>
+
+  <nz-modal
+    [nzVisible]="declineModalVisible()"
+    [nzTitle]="'RFQ.PORTAL.DECLINE_MODAL_TITLE' | translate"
+    [nzOkDanger]="true"
+    [nzOkLoading]="submitting()"
+    (nzOnCancel)="closeDeclineModal()"
+    (nzOnOk)="confirmDecline()"
+  >
+    <ng-container *nzModalContent>
+      <div class="field">
+        <label for="decline-reason-input">{{ 'RFQ.PORTAL.DECLINE_REASON' | translate }}</label>
+        <textarea
+          id="decline-reason-input"
+          nz-input
+          rows="3"
+          [ngModel]="declineReason()"
+          (ngModelChange)="declineReason.set($event)"
+        ></textarea>
+      </div>
+    </ng-container>
+  </nz-modal>
+</div>

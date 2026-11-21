@@ -148,6 +148,15 @@ export const routes: Routes = [
       import('./features/purchases/purchases.routes').then((m) => m.PURCHASES_ROUTES),
   },
   {
+    // Public/deep-link email 1-click approve/reject handler (Mod 044): no authGuard, renders without app shell.
+    path: 'procurement/requisitions/one-click',
+    data: { publicPage: true, title: 'PR.ONE_CLICK.TITLE' },
+    loadComponent: () =>
+      import('./features/procurement/requisitions/pr-one-click-action.component').then(
+        (m) => m.PrOneClickActionComponent,
+      ),
+  },
+  {
     path: 'procurement',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'BREADCRUMB.APPROVVIGIONAMENTO', title: 'PAGE_TITLE.APPROVVIGIONAMENTO' },
@@ -683,6 +692,14 @@ export const routes: Routes = [
     data: { publicPage: true, title: 'RMA.ESTIMATE.TITLE' },
     loadComponent: () =>
       import('./features/warranty-rma/public/rma-estimate.component').then((m) => m.RmaEstimateComponent),
+  },
+  {
+    path: 'supplier-bid/:token',
+    data: { publicPage: true, title: 'RFQ.PORTAL.TITLE' },
+    loadComponent: () =>
+      import('./features/procurement/rfq/supplier-bid-portal.component').then(
+        (m) => m.SupplierBidPortalComponent,
+      ),
   },
   {
     path: 'rma-tracking',

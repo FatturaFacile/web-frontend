@@ -386,6 +386,18 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             module: 'procurement',
           },
           {
+            key: 'NAV.PROC_REQUISITIONS',
+            route: '/procurement/requisitions',
+            icon: 'fa-solid fa-clipboard-list',
+            module: 'procurement',
+          },
+          {
+            key: 'NAV.PROC_RFQS',
+            route: '/procurement/rfqs',
+            icon: 'fa-solid fa-file-signature',
+            module: 'procurement',
+          },
+          {
             key: 'NAV.PROC_ORDERS',
             route: '/procurement/orders',
             icon: 'fa-solid fa-boxes-packing',

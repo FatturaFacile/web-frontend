@@ -1,0 +1,152 @@
+<div class="one-click-shell">
+  <header class="one-click-topbar">
+    <div class="brand-block">
+      <strong>Fattura Facile</strong>
+      <small>{{ 'PR.ONE_CLICK.TITLE' | translate }}</small>
+    </div>
+
+    <div class="lang-switcher">
+      <nz-select
+        [ngModel]="currentLanguage()"
+        (ngModelChange)="switchLanguage($event)"
+        [attr.aria-label]="'PR.ONE_CLICK.LANGUAGE' | translate"
+        class="lang-select"
+      >
+        @for (lang of languages; track lang) {
+          <nz-option [nzValue]="lang" [nzLabel]="lang.toUpperCase()" />
+        }
+      </nz-select>
+    </div>
+  </header>
+
+  <main class="one-click-main">
+    <nz-card class="one-click-card">
+      @switch (viewState()) {
+        @case ('loading') {
+          <div class="loading-box" data-testid="one-click-loading">
+            <nz-spin nzSimple [nzTip]="'PR.ONE_CLICK.PROCESSING' | translate" />
+          </div>
+        }
+
+        @case ('confirm_reject') {
+          <div class="reject-confirm-box" data-testid="one-click-reject-form">
+            <h2>{{ 'PR.ONE_CLICK.REJECT_TITLE' | translate }}</h2>
+            <p class="reject-hint">{{ 'PR.ONE_CLICK.REJECT_HINT' | translate }}</p>
+
+            @if (rejectError(); as errMsg) {
+              <nz-alert
+                nzType="error"
+                nzShowIcon
+                [nzMessage]="errMsg"
+                data-testid="one-click-reject-validation-error"
+              />
+            }
+
+            <div class="comment-field">
+              <label for="one-click-reject-comment">
+                {{ 'PR.ONE_CLICK.COMMENT_LABEL' | translate }}
+              </label>
+              <textarea
+                id="one-click-reject-comment"
+                nz-input
+                rows="4"
+                [formControl]="commentControl"
+                [placeholder]="'PR.ONE_CLICK.COMMENT_PLACEHOLDER' | translate"
+                data-testid="one-click-comment-input"
+              ></textarea>
+            </div>
+
+            <div class="reject-actions">
+              <a nz-button routerLink="/procurement/requisitions">
+                {{ 'PR.ACTION_CANCEL' | translate }}
+              </a>
+              <button
+                nz-button
+                nzType="primary"
+                nzDanger
+                type="button"
+                [nzLoading]="submitting()"
+                (click)="submitRejection()"
+                data-testid="one-click-confirm-reject-btn"
+              >
+                {{ 'PR.ONE_CLICK.CONFIRM_REJECT' | translate }}
+              </button>
+            </div>
+          </div>
+        }
+
+        @case ('success') {
+          @if (result(); as res) {
+            <nz-result
+              nzStatus="success"
+              [nzTitle]="
+                (res.action === 'approve'
+                  ? 'PR.ONE_CLICK.APPROVED_TITLE'
+                  : 'PR.ONE_CLICK.REJECTED_TITLE'
+                ) | translate
+              "
+              [nzSubTitle]="
+                res.message ||
+                ((res.action === 'approve'
+                  ? 'PR.ONE_CLICK.APPROVED_DESC'
+                  : 'PR.ONE_CLICK.REJECTED_DESC'
+                ) | translate: { number: res.requisition_number })
+              "
+              data-testid="one-click-success"
+            >
+              <div nz-result-content class="result-meta">
+                <div class="meta-row">
+                  <span>{{ 'PR.COL_NUMBER' | translate }}:</span>
+                  <strong class="mono-text">{{ res.requisition_number }}</strong>
+                </div>
+                <div class="meta-row">
+                  <span>{{ 'PR.COL_STATUS' | translate }}:</span>
+                  <nz-tag [nzColor]="statusColor(res.status)">
+                    {{ statusLabel(res.status) | translate }}
+                  </nz-tag>
+                </div>
+                @if (res.next_approver_name) {
+                  <div class="meta-row">
+                    <span>{{ 'PR.ONE_CLICK.NEXT_APPROVER' | translate }}:</span>
+                    <strong>{{ res.next_approver_name }}</strong>
+                  </div>
+                }
+                @if (res.acted_at) {
+                  <div class="meta-row">
+                    <span>{{ 'PR.ONE_CLICK.ACTED_AT' | translate }}:</span>
+                    <span>{{ res.acted_at | appDate: 'dateTime' }}</span>
+                  </div>
+                }
+              </div>
+
+              <div nz-result-extra>
+                <a
+                  nz-button
+                  nzType="primary"
+                  [routerLink]="['/procurement/requisitions', res.requisition_id]"
+                >
+                  {{ 'PR.ONE_CLICK.VIEW_REQUISITION' | translate }}
+                </a>
+              </div>
+            </nz-result>
+          }
+        }
+
+        @case ('error') {
+          <nz-result
+            nzStatus="error"
+            [nzTitle]="'PR.ONE_CLICK.ERROR_TITLE' | translate"
+            [nzSubTitle]="errorMessage()"
+            data-testid="one-click-error"
+          >
+            <div nz-result-extra>
+              <a nz-button nzType="primary" routerLink="/procurement/requisitions">
+                {{ 'PR.BACK_TO_LIST' | translate }}
+              </a>
+            </div>
+          </nz-result>
+        }
+      }
+    </nz-card>
+  </main>
+</div>

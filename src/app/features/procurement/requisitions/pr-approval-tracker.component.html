@@ -1,0 +1,50 @@
+<div class="tracker-grid">
+  <nz-card [nzTitle]="'PR.APPROVAL.CHAIN_TITLE' | translate" class="tracker-card">
+    @if (steps().length > 0) {
+      <nz-steps
+        nzDirection="vertical"
+        nzSize="small"
+        [nzCurrent]="currentStepIndex()"
+        [nzStatus]="stepperStatus()"
+        data-testid="pr-approval-steps"
+      >
+        @for (step of steps(); track step.id) {
+          <nz-step
+            [nzTitle]="step.tier_name"
+            [nzSubtitle]="stepSubtitle(step)"
+            [nzDescription]="stepDescription(step)"
+            [nzStatus]="mapStepStatus(step.status)"
+          />
+        }
+      </nz-steps>
+    } @else {
+      <nz-empty [nzNotFoundContent]="'PR.APPROVAL.NO_STEPS' | translate" />
+    }
+  </nz-card>
+
+  <nz-card [nzTitle]="'PR.APPROVAL.AUDIT_LOG_TITLE' | translate" class="tracker-card">
+    @if (logs().length > 0) {
+      <nz-timeline data-testid="pr-audit-timeline">
+        @for (log of logs(); track log.id) {
+          <nz-timeline-item [nzColor]="timelineColor(log.action)">
+            <div class="log-entry">
+              <div class="log-header">
+                <span class="log-actor">{{ log.actor_name }}</span>
+                <nz-tag [nzColor]="actionTagColor(log.action)">
+                  {{ actionLabelKey(log.action) | translate }}
+                </nz-tag>
+                <nz-tag>{{ channelLabelKey(log.channel) | translate }}</nz-tag>
+              </div>
+              <small class="log-timestamp">{{ log.created_at | appDate: 'dateTime' }}</small>
+              @if (log.comment) {
+                <blockquote class="log-comment">{{ log.comment }}</blockquote>
+              }
+            </div>
+          </nz-timeline-item>
+        }
+      </nz-timeline>
+    } @else {
+      <nz-empty [nzNotFoundContent]="'PR.APPROVAL.NO_LOGS' | translate" />
+    }
+  </nz-card>
+</div>
