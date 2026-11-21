@@ -315,6 +315,13 @@ export const routes: Routes = [
       import('./features/ai-cognitive/ai-cognitive.routes').then((m) => m.AI_COGNITIVE_ROUTES),
   },
   {
+    path: 'ocr-inbox',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'OCR_INBOX.TITLE', title: 'OCR_INBOX.TITLE' },
+    loadChildren: () =>
+      import('./features/ocr-inbox/ocr-inbox.routes').then((m) => m.OCR_INBOX_ROUTES),
+  },
+  {
     path: 'ai-forecasting',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'AI_FORECAST.TITLE', title: 'AI_FORECAST.TITLE' },
