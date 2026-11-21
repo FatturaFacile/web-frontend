@@ -20,6 +20,7 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/analytics/designer',
   '/analytics/exports',
   '/analytics/snapshots',
+  '/analytics/executive-dss',
   '/appointments',
   '/assets/operations',
   '/assets/lifecycle',

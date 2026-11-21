@@ -921,6 +921,7 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
           { key: 'NAV.ANALYTICS_REPORTS', route: '/analytics/reports', icon: 'fa-solid fa-table-columns', module: 'analytics' },
           { key: 'NAV.ANALYTICS_EXPORTS', route: '/analytics/exports', icon: 'fa-solid fa-calendar-check', module: 'analytics' },
           { key: 'NAV.ANALYTICS_SNAPSHOTS', route: '/analytics/snapshots', icon: 'fa-solid fa-camera', module: 'analytics' },
+          { key: 'EXEC_DSS.NAV', route: '/analytics/executive-dss', icon: 'fa-solid fa-bullseye', module: 'bi_dss' },
         ],
       },
       {
