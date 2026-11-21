@@ -20,7 +20,7 @@ import {
   MrpRunDetail,
   MrpRunPayload,
 } from './mrp.models';
-import { ActionSummary, errorDetail, summarizeAction } from './mrp.utils';
+import { ActionSummary, errorDetail, isEligible, summarizeAction } from './mrp.utils';
 
 const DEFAULT_FILTERS: MrpProposalFilters = {
   runId: null,
@@ -232,6 +232,13 @@ export class MrpStore {
     for (const proposal of this.proposals()) {
       this.toggleSelection(proposal, checked);
     }
+  }
+
+  /** Drops from the selection the proposals the action cannot be applied to, so an all-or-nothing call can go through. */
+  keepEligible(action: MrpProposalAction): void {
+    this.selection.update((current) =>
+      Object.fromEntries(Object.entries(current).filter(([, proposal]) => isEligible(proposal, action))),
+    );
   }
 
   clearSelection(): void {

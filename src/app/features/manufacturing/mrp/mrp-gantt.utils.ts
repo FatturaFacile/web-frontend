@@ -189,3 +189,10 @@ export function defaultWindow(today: Date = new Date()): { from: string; to: str
 
   return { from, to: addDays(from, 27) };
 }
+
+/** A local calendar date as `YYYY-MM-DD` (what the date pickers hand out), without any timezone shift. */
+export function formatIsoDate(date: Date): string {
+  const pad = (value: number): string => String(value).padStart(2, '0');
+
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}

@@ -1689,6 +1689,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             icon: 'fa-solid fa-code-branch',
             module: 'manufacturing',
           },
+          {
+            key: 'MRP.NAV',
+            route: '/manufacturing/mrp',
+            icon: 'fa-solid fa-diagram-next',
+            module: 'manufacturing',
+          },
         ],
       },
       {

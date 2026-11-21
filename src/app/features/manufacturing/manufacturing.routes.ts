@@ -64,4 +64,9 @@ export const MANUFACTURING_ROUTES: Routes = [
   bomRoute('genealogy', 'MFG_CC.GENEALOGY_TITLE', () =>
     import('./command-center/genealogy-inspector.page').then((m) => m.GenealogyInspectorComponent),
   ),
+  {
+    path: 'mrp',
+    data: { breadcrumb: 'MRP.NAV', title: 'MRP.TITLE' },
+    loadComponent: () => import('./mrp/mrp-page.component').then((m) => m.MrpPageComponent),
+  },
 ];
