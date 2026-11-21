@@ -8,6 +8,11 @@ export const SHIFT_PLANNING_ROUTES: Routes = [
     loadComponent: () => import('./roster-matrix.component').then((m) => m.RosterMatrixComponent),
   },
   {
+    path: 'my',
+    data: { breadcrumb: 'NAV.SHIFT_PLANNING_MY', title: 'PAGE_TITLE.SHIFT_PLANNING_MY' },
+    loadComponent: () => import('./my-shifts.component').then((m) => m.MyShiftsComponent),
+  },
+  {
     path: 'templates',
     data: { breadcrumb: 'NAV.SHIFT_PLANNING_TEMPLATES', title: 'PAGE_TITLE.SHIFT_TEMPLATES' },
     loadComponent: () =>

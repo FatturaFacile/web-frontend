@@ -83,6 +83,36 @@ describe('ShiftPlanningApiService', () => {
     expect(httpTesting.expectOne(`${base}/my/open-shifts/a-1/claim`).request.method).toBe('POST');
   });
 
+  it('reads the team calendar and the colleagues eligible for a swap', () => {
+    service.getTeamShifts('2026-03-02', '2026-03-29').subscribe();
+    expect(
+      httpTesting.expectOne((req) => req.url === `${base}/my/team-shifts`).request.params.get('to'),
+    ).toBe('2026-03-29');
+
+    service.getEligiblePeers('a-1').subscribe();
+    expect(httpTesting.expectOne(`${base}/my/shifts/a-1/eligible-peers`).request.method).toBe(
+      'GET',
+    );
+  });
+
+  it('requests a swap and answers one as the colleague', () => {
+    service.getMySwaps('pending_peer_acceptance').subscribe();
+    expect(
+      httpTesting.expectOne((req) => req.url === `${base}/my/swaps`).request.params.get('status'),
+    ).toBe('pending_peer_acceptance');
+
+    const payload = { shift_assignment_id: 'a-1', target_peer_employee_id: null };
+    service.requestSwap(payload).subscribe();
+    const created = httpTesting.expectOne(`${base}/my/swaps`);
+    expect(created.request.method).toBe('POST');
+    expect(created.request.body).toEqual(payload);
+
+    service.respondToSwap('s-1', 'reject').subscribe();
+    expect(httpTesting.expectOne(`${base}/my/swaps/s-1/respond`).request.body).toEqual({
+      decision: 'reject',
+    });
+  });
+
   it('writes the templates', () => {
     const payload = {
       code: 'MORN',

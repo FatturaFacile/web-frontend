@@ -236,3 +236,35 @@ export interface SwapDecisionPayload {
   decision: 'approve' | 'reject';
   rejection_reason?: string | null;
 }
+
+/** A colleague's shift in the team calendar (published rosters only, no cost). */
+export interface TeamShift {
+  id: string;
+  employee_id: string | null;
+  employee_name: string | null;
+  shift_date: string;
+  template: { code: string; name: Record<string, string>; color_hex: string } | null;
+  start_at: string;
+  end_at: string;
+}
+
+/** A colleague who could take over a shift, with the findings of the check against the colleague's plan. */
+export interface EligibleSwapPeer {
+  employee_id: string;
+  name: string;
+  warnings: ComplianceIssue[];
+  shifts: {
+    id: string;
+    shift_date: string;
+    template_code: string | null;
+    start_at: string;
+    end_at: string;
+  }[];
+}
+
+export interface RequestSwapPayload {
+  shift_assignment_id: string;
+  /** Empty for a broadcast to every qualified colleague. */
+  target_peer_employee_id?: string | null;
+  target_shift_assignment_id?: string | null;
+}

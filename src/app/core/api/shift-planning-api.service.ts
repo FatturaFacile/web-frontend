@@ -5,12 +5,14 @@ import { Observable } from 'rxjs';
 import {
   AssignShiftPayload,
   AssignShiftResult,
+  EligibleSwapPeer,
   GenerateRosterPayload,
   GenerateRosterResult,
   PublishRosterResult,
   RosterGroupBy,
   RosterMatrix,
   RosterPeriod,
+  RequestSwapPayload,
   RosterPeriodType,
   ShiftAssignment,
   ShiftPlanningResponse,
@@ -19,6 +21,7 @@ import {
   ShiftTemplatePayload,
   SwapDecisionPayload,
   SwapStatus,
+  TeamShift,
 } from '../models';
 
 /** Manager and employee endpoints of the shift planning module (Mod 073). */
@@ -169,6 +172,44 @@ export class ShiftPlanningApiService {
         warnings: ShiftAssignment['compliance_warnings'];
       }>
     >(`${this.base}/my/open-shifts/${id}/claim`, {});
+  }
+
+  getTeamShifts(from?: string, to?: string): Observable<ShiftPlanningResponse<TeamShift[]>> {
+    return this.http.get<ShiftPlanningResponse<TeamShift[]>>(`${this.base}/my/team-shifts`, {
+      params: this.window(from, to),
+    });
+  }
+
+  getEligiblePeers(shiftId: string): Observable<ShiftPlanningResponse<EligibleSwapPeer[]>> {
+    return this.http.get<ShiftPlanningResponse<EligibleSwapPeer[]>>(
+      `${this.base}/my/shifts/${shiftId}/eligible-peers`,
+    );
+  }
+
+  /** The swaps the employee requested, those offered to the employee and the open broadcasts. */
+  getMySwaps(status?: SwapStatus): Observable<ShiftPlanningResponse<ShiftSwapRequest[]>> {
+    const params = status ? new HttpParams().set('status', status) : undefined;
+    return this.http.get<ShiftPlanningResponse<ShiftSwapRequest[]>>(`${this.base}/my/swaps`, {
+      params,
+    });
+  }
+
+  requestSwap(payload: RequestSwapPayload): Observable<ShiftPlanningResponse<ShiftSwapRequest>> {
+    return this.http.post<ShiftPlanningResponse<ShiftSwapRequest>>(
+      `${this.base}/my/swaps`,
+      payload,
+    );
+  }
+
+  /** First step of the swap approval: the colleague accepts or declines. */
+  respondToSwap(
+    id: string,
+    decision: 'approve' | 'reject',
+  ): Observable<ShiftPlanningResponse<ShiftSwapRequest>> {
+    return this.http.post<ShiftPlanningResponse<ShiftSwapRequest>>(
+      `${this.base}/my/swaps/${id}/respond`,
+      { decision },
+    );
   }
 
   private window(from?: string, to?: string): HttpParams {
