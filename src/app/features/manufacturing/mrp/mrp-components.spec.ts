@@ -303,6 +303,8 @@ describe('MrpGanttComponent', () => {
 
   beforeEach(async () => {
     store = configure();
+    store.runs.set([RUN]);
+    store.selectRun('run-1');
     store.gantt.set(GANTT);
     fixture = TestBed.createComponent(MrpGanttComponent);
     await settle(fixture);

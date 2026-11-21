@@ -67,7 +67,7 @@ import {
             <div data-testid="pegging-tree">
               <nz-tree
                 nzBlockNode
-                nzShowLine
+
                 nzExpandAll
                 [nzData]="tree.nodes"
                 [nzTreeTemplate]="nodeTemplate"
