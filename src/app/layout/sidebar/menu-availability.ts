@@ -51,6 +51,7 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/automotive/workshop',
   '/security-center',
   '/security/audit-trail',
+  '/data-sovereignty',
   '/controlling',
   '/controlling/margins',
   '/controlling/working-capital',
