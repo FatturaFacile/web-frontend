@@ -19,6 +19,7 @@ export * from './procurement.model';
 export * from './construction.model';
 export * from './professionals.model';
 export * from './manufacturing.model';
+export * from './manufacturing-cockpit.model';
 export * from './bom-management.model';
 export * from './rent.model';
 export * from './automotive.model';

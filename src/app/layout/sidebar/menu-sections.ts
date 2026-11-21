@@ -1635,6 +1635,30 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             icon: 'fa-solid fa-calendar-days',
             module: 'manufacturing',
           },
+          {
+            key: 'NAV.MFG_CONTROL_TOWER',
+            route: '/manufacturing/control-tower',
+            icon: 'fa-solid fa-tower-observation',
+            module: 'manufacturing',
+          },
+          {
+            key: 'NAV.MFG_MRP_GANTT',
+            route: '/manufacturing/mrp-gantt',
+            icon: 'fa-solid fa-chart-gantt',
+            module: 'manufacturing',
+          },
+          {
+            key: 'NAV.MFG_KIOSK',
+            route: '/manufacturing/kiosk',
+            icon: 'fa-solid fa-hand-pointer',
+            module: 'manufacturing',
+          },
+          {
+            key: 'NAV.MFG_GENEALOGY',
+            route: '/manufacturing/genealogy',
+            icon: 'fa-solid fa-code-branch',
+            module: 'manufacturing',
+          },
         ],
       },
       {
