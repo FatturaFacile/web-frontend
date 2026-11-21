@@ -123,6 +123,7 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/academy',
   '/ai-forecasting',
   '/ocr-inbox',
+  '/kpi-dashboards',
   '/ai/workbench',
   '/ai/insights',
   '/settings/ai',
