@@ -49,4 +49,16 @@ export const MANUFACTURING_ROUTES: Routes = [
   bomRoute('oee', 'MFG_PE.OEE_TITLE', () =>
     import('./production-engineering/oee-dashboard.page').then((m) => m.OeeDashboardComponent),
   ),
+  bomRoute('control-tower', 'MFG_CC.TOWER_TITLE', () =>
+    import('./command-center/control-tower.page').then((m) => m.ControlTowerComponent),
+  ),
+  bomRoute('mrp-gantt', 'MFG_CC.GANTT_TITLE', () =>
+    import('./command-center/mrp-gantt.page').then((m) => m.MrpGanttComponent),
+  ),
+  bomRoute('kiosk', 'MFG_CC.KIOSK_TITLE', () =>
+    import('./command-center/shop-floor-kiosk.page').then((m) => m.ShopFloorKioskComponent),
+  ),
+  bomRoute('genealogy', 'MFG_CC.GENEALOGY_TITLE', () =>
+    import('./command-center/genealogy-inspector.page').then((m) => m.GenealogyInspectorComponent),
+  ),
 ];
