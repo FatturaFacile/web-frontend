@@ -64,8 +64,10 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           req.url.includes('/childcare-family/') ||
           // The reception kiosk authenticates with its own key and secret: a refused kiosk must not end the staff session.
           req.url.includes('/visitor-kiosk/') ||
-          // The supplier self-service endpoints require a supplier account: a 401 for a staff member must not end the staff session.
-          req.url.includes('/supplier-self-service/');
+          // The supplier self-service & public RFQ portal endpoints use token auth: a 401 must not end the staff session.
+          req.url.includes('/supplier-self-service/') ||
+          req.url.includes('/public/rfq-portal/') ||
+          req.url.includes('/procurement/purchase-requisitions/one-click-action');
 
         const body: ProblemDetails | null =
           typeof err.error === 'object' && err.error !== null

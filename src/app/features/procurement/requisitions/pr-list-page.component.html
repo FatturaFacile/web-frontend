@@ -1,0 +1,388 @@
+<div class="pr-list-page">
+  <div class="pr-header-bar">
+    <app-page-header
+      [title]="'PR.TITLE' | translate"
+      [subtitle]="'PR.SUBTITLE' | translate"
+    />
+
+    <div class="pr-top-actions">
+      <a nz-button routerLink="/procurement/requisitions/convert">
+        <span nz-icon nzType="swap" aria-hidden="true"></span>
+        {{ 'PR.CONVERT.OPEN_WORKBENCH' | translate }}
+      </a>
+      <button
+        nz-button
+        type="button"
+        (click)="refresh()"
+        [nzLoading]="store.loadingList()"
+      >
+        <span nz-icon nzType="reload" aria-hidden="true"></span>
+        {{ 'PR.REFRESH' | translate }}
+      </button>
+      <button
+        nz-button
+        nzType="primary"
+        type="button"
+        (click)="createNew()"
+        data-testid="pr-new-btn"
+      >
+        <span nz-icon nzType="plus" aria-hidden="true"></span>
+        {{ 'PR.NEW' | translate }}
+      </button>
+    </div>
+  </div>
+
+  <nz-tabs
+    [nzSelectedIndex]="selectedTabIndex()"
+    (nzSelectedIndexChange)="onTabIndexChange($event)"
+    data-testid="pr-scope-tabs"
+  >
+    <nz-tab [nzTitle]="'PR.TAB_MY_REQUISITIONS' | translate" />
+    <nz-tab [nzTitle]="'PR.TAB_ALL_DEPARTMENT' | translate" />
+    <nz-tab [nzTitle]="pendingTabTitle" />
+  </nz-tabs>
+
+  <ng-template #pendingTabTitle>
+    <span class="pending-tab-label">
+      <span>{{ 'PR.TAB_PENDING_APPROVAL' | translate }}</span>
+      <nz-badge
+        [nzCount]="store.pendingApprovalCount()"
+        [nzOverflowCount]="99"
+        [nzShowZero]="false"
+      />
+    </span>
+  </ng-template>
+
+  <div class="pr-filters-bar">
+    <div class="filter-field filter-search">
+      <label class="sr-only" for="pr-search-input">{{ 'PR.SEARCH_PLACEHOLDER' | translate }}</label>
+      <input
+        id="pr-search-input"
+        nz-input
+        type="search"
+        [ngModel]="searchTerm()"
+        (ngModelChange)="onSearchInput($event)"
+        [placeholder]="'PR.SEARCH_PLACEHOLDER' | translate"
+      />
+    </div>
+
+    <div class="filter-field">
+      <nz-select
+        nzAllowClear
+        [ngModel]="statusFilter()"
+        (ngModelChange)="onStatusChange($event)"
+        [nzPlaceHolder]="'PR.FILTER_STATUS' | translate"
+        [attr.aria-label]="'PR.FILTER_STATUS' | translate"
+        class="filter-select"
+      >
+        @for (opt of statusOptions; track opt.value) {
+          <nz-option [nzValue]="opt.value" [nzLabel]="opt.labelKey | translate" />
+        }
+      </nz-select>
+    </div>
+
+    <div class="filter-field">
+      <nz-select
+        nzAllowClear
+        nzShowSearch
+        [ngModel]="costCenterFilter()"
+        (ngModelChange)="onCostCenterChange($event)"
+        [nzPlaceHolder]="'PR.FILTER_COST_CENTER' | translate"
+        [attr.aria-label]="'PR.FILTER_COST_CENTER' | translate"
+        class="filter-select"
+      >
+        @for (cc of store.costCenters(); track cc.id) {
+          <nz-option [nzValue]="cc.id" [nzLabel]="cc.label" />
+        }
+      </nz-select>
+    </div>
+
+    <div class="filter-field">
+      <nz-select
+        nzAllowClear
+        nzShowSearch
+        [ngModel]="projectFilter()"
+        (ngModelChange)="onProjectChange($event)"
+        [nzPlaceHolder]="'PR.FILTER_PROJECT' | translate"
+        [attr.aria-label]="'PR.FILTER_PROJECT' | translate"
+        class="filter-select"
+      >
+        @for (proj of store.projects(); track proj.id) {
+          <nz-option [nzValue]="proj.id" [nzLabel]="proj.label" />
+        }
+      </nz-select>
+    </div>
+
+    <div class="filter-field filter-compact">
+      <nz-select
+        nzAllowClear
+        [ngModel]="urgencyFilter()"
+        (ngModelChange)="onUrgencyChange($event)"
+        [nzPlaceHolder]="'PR.FILTER_URGENCY' | translate"
+        [attr.aria-label]="'PR.FILTER_URGENCY' | translate"
+        class="filter-select"
+      >
+        @for (opt of urgencyOptions; track opt.value) {
+          <nz-option [nzValue]="opt.value" [nzLabel]="opt.labelKey | translate" />
+        }
+      </nz-select>
+    </div>
+
+    @if (store.activeTab() !== 'mine') {
+      <div class="filter-field">
+        <nz-select
+          nzAllowClear
+          nzShowSearch
+          [ngModel]="requesterFilter()"
+          (ngModelChange)="onRequesterChange($event)"
+          [nzPlaceHolder]="'PR.FILTER_REQUESTER' | translate"
+          [attr.aria-label]="'PR.FILTER_REQUESTER' | translate"
+          class="filter-select"
+        >
+          @for (reqUser of store.requesters(); track reqUser.id) {
+            <nz-option [nzValue]="reqUser.id" [nzLabel]="reqUser.name" />
+          }
+        </nz-select>
+      </div>
+    }
+
+    <div class="filter-field filter-range">
+      <nz-range-picker
+        [ngModel]="dateRangeFilter()"
+        (ngModelChange)="onDateRangeChange($event)"
+        [attr.aria-label]="'PR.FILTER_DATE_RANGE' | translate"
+      />
+    </div>
+
+    @if (store.hasActiveFilters()) {
+      <button nz-button type="button" (click)="resetAllFilters()">
+        <span nz-icon nzType="clear" aria-hidden="true"></span>
+        {{ 'PR.RESET_FILTERS' | translate }}
+      </button>
+    }
+  </div>
+
+  @if (store.error()) {
+    <nz-alert
+      nzType="error"
+      nzShowIcon
+      [nzMessage]="'PR.LOAD_ERROR' | translate"
+      [nzDescription]="store.error() ?? ''"
+    />
+  }
+
+  <nz-table
+    #prTable
+    [nzData]="store.items()"
+    [nzLoading]="store.loadingList()"
+    [nzFrontPagination]="false"
+    [nzTotal]="store.total()"
+    [nzPageIndex]="store.page()"
+    [nzPageSize]="store.perPage()"
+    [nzShowSizeChanger]="true"
+    (nzPageIndexChange)="onPageChange($event)"
+    (nzPageSizeChange)="onPageSizeChange($event)"
+    [nzScroll]="{ x: '1240px' }"
+  >
+    <thead>
+      <tr>
+        <th scope="col">{{ 'PR.COL_NUMBER' | translate }}</th>
+        <th scope="col">{{ 'PR.COL_DATE' | translate }}</th>
+        <th scope="col">{{ 'PR.COL_REQUESTER' | translate }}</th>
+        <th scope="col">{{ 'PR.COL_COST_CENTER_PROJECT' | translate }}</th>
+        <th scope="col">{{ 'PR.COL_URGENCY' | translate }}</th>
+        <th scope="col">{{ 'PR.COL_ESTIMATED_TOTAL' | translate }}</th>
+        <th scope="col">{{ 'PR.COL_STATUS' | translate }}</th>
+        <th scope="col">{{ 'PR.COL_LINKED_DOCS' | translate }}</th>
+        <th scope="col" nzRight>{{ 'PR.COL_ACTIONS' | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of prTable.data; track row.id) {
+        <tr>
+          <td>
+            <div class="number-cell">
+              <a [routerLink]="['/procurement/requisitions', row.id]" class="pr-number-link">
+                {{ row.requisition_number }}
+              </a>
+              <span class="pr-row-title">{{ row.title }}</span>
+            </div>
+          </td>
+
+          <td>
+            <div class="date-cell">
+              <span>{{ row.requested_delivery_date | appDate: 'mediumDate' }}</span>
+              <small>{{ row.created_at | appDate: 'shortDate' }}</small>
+            </div>
+          </td>
+
+          <td>{{ row.requester_name }}</td>
+
+          <td>
+            <div class="cc-proj-cell">
+              <span>{{ row.cost_center_code || row.cost_center_name || '—' }}</span>
+              @if (row.project_name || row.project_code) {
+                <small>{{ row.project_code || row.project_name }}</small>
+              }
+            </div>
+          </td>
+
+          <td>
+            <nz-tag [nzColor]="urgencyColor(row.urgency)">
+              {{ urgencyLabel(row.urgency) | translate }}
+            </nz-tag>
+          </td>
+
+          <td class="amount-cell">
+            <strong>{{ row.estimated_total | money: row.currency }}</strong>
+          </td>
+
+          <td>
+            <nz-tag [nzColor]="statusColor(row.status)">
+              {{ statusLabel(row.status) | translate }}
+            </nz-tag>
+          </td>
+
+          <td>
+            @if (row.document_links && row.document_links.length > 0) {
+              <div class="doc-badges">
+                @for (link of row.document_links; track link.id) {
+                  @let routeTarget = docLinkRoute(link);
+                  <a
+                    [routerLink]="routeTarget.commands"
+                    [queryParams]="routeTarget.queryParams ?? null"
+                    class="doc-badge-link"
+                  >
+                    <nz-tag [nzColor]="link.document_type === 'rfq' ? 'purple' : 'geekblue'">
+                      {{ link.document_type === 'rfq' ? 'RDO' : 'PO' }}: {{ link.document_number }}
+                    </nz-tag>
+                  </a>
+                }
+              </div>
+            } @else {
+              —
+            }
+          </td>
+
+          <td nzRight>
+            <nz-space nzSize="small">
+              <button
+                *nzSpaceItem
+                nz-button
+                nzSize="small"
+                type="button"
+                (click)="openDrawer(row)"
+                [attr.aria-label]="'PR.ACTION_PREVIEW' | translate"
+              >
+                <span nz-icon nzType="eye" aria-hidden="true"></span>
+              </button>
+
+              @if (canEditRow(row)) {
+                <a
+                  *nzSpaceItem
+                  nz-button
+                  nzSize="small"
+                  [routerLink]="['/procurement/requisitions', row.id, 'edit']"
+                >
+                  {{ 'PR.ACTION_EDIT' | translate }}
+                </a>
+              }
+
+              @if (canApproveRow(row)) {
+                <button
+                  *nzSpaceItem
+                  nz-button
+                  nzSize="small"
+                  nzType="primary"
+                  type="button"
+                  [nzLoading]="store.busy()"
+                  (click)="quickApprove(row)"
+                >
+                  {{ 'PR.ACTION_APPROVE' | translate }}
+                </button>
+                <button
+                  *nzSpaceItem
+                  nz-button
+                  nzSize="small"
+                  nzDanger
+                  type="button"
+                  [disabled]="store.busy()"
+                  (click)="openRejectModal(row)"
+                >
+                  {{ 'PR.ACTION_REJECT' | translate }}
+                </button>
+              }
+
+              @if (row.status === 'draft') {
+                <button
+                  *nzSpaceItem
+                  nz-button
+                  nzSize="small"
+                  nzDanger
+                  type="button"
+                  nz-popconfirm
+                  [nzPopconfirmTitle]="'PR.DELETE_CONFIRM' | translate"
+                  (nzOnConfirm)="deleteDraft(row)"
+                  [attr.aria-label]="'PR.ACTION_DELETE' | translate"
+                >
+                  <span nz-icon nzType="delete" aria-hidden="true"></span>
+                </button>
+              }
+            </nz-space>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </nz-table>
+
+  @if (!store.loadingList() && store.items().length === 0) {
+    <nz-empty [nzNotFoundContent]="'PR.EMPTY' | translate" />
+  }
+
+  <nz-drawer
+    [nzVisible]="drawerVisible()"
+    [nzWidth]="820"
+    [nzTitle]="'PR.DETAIL.DRAWER_TITLE' | translate"
+    (nzOnClose)="closeDrawer()"
+  >
+    <ng-container *nzDrawerContent>
+      @if (drawerRequisitionId(); as reqId) {
+        <app-pr-detail-page
+          [requisitionIdInput]="reqId"
+          [embedded]="true"
+          (actionCompleted)="onDrawerActionCompleted()"
+        />
+      }
+    </ng-container>
+  </nz-drawer>
+
+  <nz-modal
+    [nzVisible]="rejectModalVisible()"
+    [nzTitle]="'PR.REJECT_MODAL.TITLE' | translate"
+    [nzOkText]="'PR.REJECT_MODAL.CONFIRM' | translate"
+    [nzCancelText]="'PR.ACTION_CANCEL' | translate"
+    [nzOkDanger]="true"
+    [nzOkLoading]="store.busy()"
+    (nzOnCancel)="closeRejectModal()"
+    (nzOnOk)="confirmReject()"
+  >
+    <ng-container *nzModalContent>
+      <form nz-form nzLayout="vertical" [formGroup]="rejectForm">
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="pr-list-reject-reason">
+            {{ 'PR.REJECT_MODAL.REASON_LABEL' | translate }}
+          </nz-form-label>
+          <nz-form-control [nzErrorTip]="'PR.REJECT_MODAL.REASON_ERROR' | translate">
+            <textarea
+              id="pr-list-reject-reason"
+              nz-input
+              rows="4"
+              formControlName="reason"
+              [placeholder]="'PR.REJECT_MODAL.REASON_PLACEHOLDER' | translate"
+            ></textarea>
+          </nz-form-control>
+        </nz-form-item>
+      </form>
+    </ng-container>
+  </nz-modal>
+</div>

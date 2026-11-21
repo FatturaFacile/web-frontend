@@ -229,6 +229,8 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/privacy-governance/ropa',
   '/procurement/admin',
   '/procurement/orders',
+  '/procurement/requisitions',
+  '/procurement/rfqs',
   '/procurement/sourcing',
   '/procurement/suppliers',
   '/professionals',

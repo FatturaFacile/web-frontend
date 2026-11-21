@@ -1,0 +1,512 @@
+<div class="rfq-wizard-page">
+  <app-page-header
+    [title]="(rfqId() ? 'RFQ.EDIT_TITLE' : 'RFQ.CREATE_TITLE') | translate"
+    [subtitle]="'RFQ.SUBTITLE' | translate"
+  />
+
+  <div class="wizard-top-actions">
+    <a nz-button routerLink="/procurement/rfqs">{{ 'RFQ.WIZARD.PREV' | translate }}</a>
+  </div>
+
+  @if (error()) {
+    <nz-alert nzType="error" nzShowIcon [nzMessage]="error() ?? ''" />
+  }
+
+  <nz-steps [nzCurrent]="currentStep()" (nzIndexChange)="goToStep($event)" class="wizard-steps">
+    <nz-step [nzTitle]="'RFQ.WIZARD.STEP_GENERAL' | translate" />
+    <nz-step [nzTitle]="'RFQ.WIZARD.STEP_LINES' | translate" />
+    <nz-step [nzTitle]="'RFQ.WIZARD.STEP_ATTACHMENTS' | translate" />
+    <nz-step [nzTitle]="'RFQ.WIZARD.STEP_SUPPLIERS' | translate" />
+  </nz-steps>
+
+  <nz-card [nzLoading]="loading()" class="wizard-card">
+    @switch (currentStep()) {
+      @case (0) {
+        <div class="form-grid">
+          <div class="field full-span">
+            <label for="rfq-title">{{ 'RFQ.WIZARD.TITLE' | translate }} *</label>
+            <input
+              id="rfq-title"
+              nz-input
+              [ngModel]="title()"
+              (ngModelChange)="title.set($event)"
+            />
+          </div>
+
+          <div class="field full-span">
+            <label for="rfq-description">{{ 'RFQ.WIZARD.DESCRIPTION' | translate }}</label>
+            <textarea
+              id="rfq-description"
+              nz-input
+              rows="3"
+              [ngModel]="description()"
+              (ngModelChange)="description.set($event)"
+            ></textarea>
+          </div>
+
+          <div class="field">
+            <label for="rfq-currency">{{ 'RFQ.WIZARD.CURRENCY' | translate }}</label>
+            <nz-select
+              id="rfq-currency"
+              [ngModel]="currencyCode()"
+              (ngModelChange)="currencyCode.set($event)"
+            >
+              @for (curr of currencies; track curr) {
+                <nz-option [nzValue]="curr" [nzLabel]="curr" />
+              }
+            </nz-select>
+          </div>
+
+          <div class="field">
+            <label for="rfq-incoterms">{{ 'RFQ.WIZARD.INCOTERMS' | translate }}</label>
+            <nz-select
+              id="rfq-incoterms"
+              nzAllowClear
+              [ngModel]="incoterms()"
+              (ngModelChange)="incoterms.set($event ?? '')"
+            >
+              @for (term of incotermsOptions; track term) {
+                <nz-option [nzValue]="term" [nzLabel]="term" />
+              }
+            </nz-select>
+          </div>
+
+          <div class="field">
+            <label for="rfq-deadline">{{ 'RFQ.WIZARD.SUBMISSION_DEADLINE' | translate }} *</label>
+            <input
+              id="rfq-deadline"
+              nz-input
+              type="datetime-local"
+              [ngModel]="submissionDeadline()"
+              (ngModelChange)="submissionDeadline.set($event)"
+            />
+          </div>
+
+          <div class="field">
+            <label for="rfq-expected-delivery">{{ 'RFQ.WIZARD.EXPECTED_DELIVERY' | translate }}</label>
+            <input
+              id="rfq-expected-delivery"
+              nz-input
+              type="date"
+              [ngModel]="expectedDeliveryDate()"
+              (ngModelChange)="expectedDeliveryDate.set($event)"
+            />
+          </div>
+
+          <div class="field full-span switch-field">
+            <nz-switch
+              id="rfq-sealed-bidding"
+              [ngModel]="sealedBidding()"
+              (ngModelChange)="sealedBidding.set($event)"
+            />
+            <div class="switch-labels">
+              <label for="rfq-sealed-bidding">{{ 'RFQ.WIZARD.SEALED_BIDDING' | translate }}</label>
+              <small>{{ 'RFQ.WIZARD.SEALED_BIDDING_HINT' | translate }}</small>
+            </div>
+          </div>
+
+          <div class="field full-span weights-panel">
+            <h3>{{ 'RFQ.WIZARD.WEIGHTS_TITLE' | translate }}</h3>
+
+            @if (!weightsValid()) {
+              <nz-alert
+                nzType="error"
+                nzShowIcon
+                [nzMessage]="'RFQ.WIZARD.WEIGHTS_SUM_ERROR' | translate: { sum: weightsSum() }"
+              />
+            }
+
+            <div class="weight-row">
+              <label for="weight-price">{{ 'RFQ.WIZARD.WEIGHT_PRICE' | translate }}</label>
+              <nz-slider
+                [nzMin]="0"
+                [nzMax]="100"
+                [ngModel]="priceWeight()"
+                (ngModelChange)="priceWeight.set($event)"
+              />
+              <nz-input-number
+                id="weight-price"
+                [nzMin]="0"
+                [nzMax]="100"
+                [ngModel]="priceWeight()"
+                (ngModelChange)="priceWeight.set($event ?? 0)"
+              />
+            </div>
+
+            <div class="weight-row">
+              <label for="weight-lead-time">{{ 'RFQ.WIZARD.WEIGHT_LEAD_TIME' | translate }}</label>
+              <nz-slider
+                [nzMin]="0"
+                [nzMax]="100"
+                [ngModel]="leadTimeWeight()"
+                (ngModelChange)="leadTimeWeight.set($event)"
+              />
+              <nz-input-number
+                id="weight-lead-time"
+                [nzMin]="0"
+                [nzMax]="100"
+                [ngModel]="leadTimeWeight()"
+                (ngModelChange)="leadTimeWeight.set($event ?? 0)"
+              />
+            </div>
+
+            <div class="weight-row">
+              <label for="weight-rating">{{ 'RFQ.WIZARD.WEIGHT_RATING' | translate }}</label>
+              <nz-slider
+                [nzMin]="0"
+                [nzMax]="100"
+                [ngModel]="supplierRatingWeight()"
+                (ngModelChange)="supplierRatingWeight.set($event)"
+              />
+              <nz-input-number
+                id="weight-rating"
+                [nzMin]="0"
+                [nzMax]="100"
+                [ngModel]="supplierRatingWeight()"
+                (ngModelChange)="supplierRatingWeight.set($event ?? 0)"
+              />
+            </div>
+          </div>
+        </div>
+      }
+
+      @case (1) {
+        <div class="lines-toolbar">
+          <button nz-button type="button" (click)="openPrDrawer()">
+            {{ 'RFQ.WIZARD.IMPORT_PR_BUTTON' | translate }}
+          </button>
+          <button nz-button nzType="dashed" type="button" (click)="addLine()">
+            {{ 'RFQ.WIZARD.ADD_LINE' | translate }}
+          </button>
+        </div>
+
+        <nz-table [nzData]="lines()" [nzFrontPagination]="false" [nzScroll]="{ x: '980px' }">
+          <thead>
+            <tr>
+              <th scope="col">{{ 'RFQ.WIZARD.LINE_CODE' | translate }}</th>
+              <th scope="col">{{ 'RFQ.WIZARD.LINE_DESCRIPTION' | translate }} *</th>
+              <th scope="col">{{ 'RFQ.WIZARD.LINE_SPECS' | translate }}</th>
+              <th scope="col">{{ 'RFQ.WIZARD.LINE_QTY' | translate }} *</th>
+              <th scope="col">{{ 'RFQ.WIZARD.LINE_UOM' | translate }}</th>
+              <th scope="col">{{ 'RFQ.WIZARD.LINE_TARGET_PRICE' | translate }}</th>
+              <th scope="col">{{ 'RFQ.WIZARD.LINE_DELIVERY_DATE' | translate }}</th>
+              <th scope="col">{{ 'RFQ.COL_ACTIONS' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (line of lines(); track line.localId) {
+              <tr>
+                <td>
+                  <input
+                    nz-input
+                    [attr.aria-label]="'RFQ.WIZARD.LINE_CODE' | translate"
+                    [ngModel]="line.custom_item_code"
+                    (ngModelChange)="updateLine(line.localId, 'custom_item_code', $event)"
+                  />
+                </td>
+                <td>
+                  <input
+                    nz-input
+                    [attr.aria-label]="'RFQ.WIZARD.LINE_DESCRIPTION' | translate"
+                    [ngModel]="line.description"
+                    (ngModelChange)="updateLine(line.localId, 'description', $event)"
+                  />
+                </td>
+                <td>
+                  <input
+                    nz-input
+                    [attr.aria-label]="'RFQ.WIZARD.LINE_SPECS' | translate"
+                    [ngModel]="line.technical_specifications"
+                    (ngModelChange)="updateLine(line.localId, 'technical_specifications', $event)"
+                  />
+                </td>
+                <td>
+                  <nz-input-number
+                    [nzMin]="0.0001"
+                    [nzStep]="1"
+                    [attr.aria-label]="'RFQ.WIZARD.LINE_QTY' | translate"
+                    [ngModel]="line.quantity"
+                    (ngModelChange)="updateLine(line.localId, 'quantity', $event ?? 1)"
+                  />
+                </td>
+                <td>
+                  <input
+                    nz-input
+                    [attr.aria-label]="'RFQ.WIZARD.LINE_UOM' | translate"
+                    [ngModel]="line.unit_of_measure"
+                    (ngModelChange)="updateLine(line.localId, 'unit_of_measure', $event)"
+                  />
+                </td>
+                <td>
+                  <nz-input-number
+                    [nzMin]="0"
+                    [nzStep]="0.01"
+                    [attr.aria-label]="'RFQ.WIZARD.LINE_TARGET_PRICE' | translate"
+                    [ngModel]="line.target_unit_price"
+                    (ngModelChange)="updateLine(line.localId, 'target_unit_price', $event)"
+                  />
+                </td>
+                <td>
+                  <input
+                    nz-input
+                    type="date"
+                    [attr.aria-label]="'RFQ.WIZARD.LINE_DELIVERY_DATE' | translate"
+                    [ngModel]="line.requested_delivery_date"
+                    (ngModelChange)="updateLine(line.localId, 'requested_delivery_date', $event)"
+                  />
+                </td>
+                <td>
+                  <button
+                    nz-button
+                    nzDanger
+                    nzSize="small"
+                    type="button"
+                    (click)="removeLine(line.localId)"
+                  >
+                    {{ 'RFQ.WIZARD.REMOVE_LINE' | translate }}
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      }
+
+      @case (2) {
+        <div class="attachments-step">
+          <p class="hint-text">{{ 'RFQ.WIZARD.UPLOAD_HINT' | translate }}</p>
+
+          <nz-upload [nzBeforeUpload]="handleBeforeUpload" [nzMultiple]="true" [nzShowUploadList]="false">
+            <button nz-button type="button">{{ 'RFQ.WIZARD.STEP_ATTACHMENTS' | translate }}</button>
+          </nz-upload>
+
+          @if (persistedAttachments().length > 0 || pendingFiles().length > 0) {
+            <div class="attachment-list">
+              @for (att of persistedAttachments(); track att.id) {
+                <div class="attachment-row">
+                  <span class="file-name">{{ att.file_name }}</span>
+                  <div class="attachment-controls">
+                    <label [for]="'att-vis-' + att.id">{{ 'RFQ.WIZARD.VISIBLE_TO_SUPPLIERS' | translate }}</label>
+                    <nz-switch
+                      [id]="'att-vis-' + att.id"
+                      [ngModel]="att.is_visible_to_suppliers"
+                      (ngModelChange)="togglePersistedAttachmentVisibility(att, $event)"
+                    />
+                    <button
+                      nz-button
+                      nzDanger
+                      nzSize="small"
+                      type="button"
+                      (click)="deletePersistedAttachment(att.id)"
+                    >
+                      {{ 'RFQ.WIZARD.REMOVE_LINE' | translate }}
+                    </button>
+                  </div>
+                </div>
+              }
+
+              @for (item of pendingFiles(); track item.localId) {
+                <div class="attachment-row">
+                  <span class="file-name">{{ item.file.name }}</span>
+                  <div class="attachment-controls">
+                    <label [for]="'pend-vis-' + item.localId">{{ 'RFQ.WIZARD.VISIBLE_TO_SUPPLIERS' | translate }}</label>
+                    <nz-switch
+                      [id]="'pend-vis-' + item.localId"
+                      [ngModel]="item.isVisibleToSuppliers"
+                      (ngModelChange)="togglePendingFileVisibility(item.localId, $event)"
+                    />
+                    <button
+                      nz-button
+                      nzDanger
+                      nzSize="small"
+                      type="button"
+                      (click)="removePendingFile(item.localId)"
+                    >
+                      {{ 'RFQ.WIZARD.REMOVE_LINE' | translate }}
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      @case (3) {
+        <div class="suppliers-step">
+          <div class="suppliers-filters">
+            <div class="filter-control">
+              <label class="sr-only" for="sup-search">{{ 'RFQ.WIZARD.SUPPLIER_SEARCH' | translate }}</label>
+              <input
+                id="sup-search"
+                nz-input
+                type="search"
+                [ngModel]="supplierSearch()"
+                (ngModelChange)="supplierSearch.set($event)"
+                [placeholder]="'RFQ.WIZARD.SUPPLIER_SEARCH' | translate"
+              />
+            </div>
+
+            <div class="filter-control">
+              <label class="sr-only" for="sup-category">{{ 'RFQ.WIZARD.SUPPLIER_CATEGORY' | translate }}</label>
+              <nz-select
+                id="sup-category"
+                nzAllowClear
+                [ngModel]="supplierCategoryFilter()"
+                (ngModelChange)="supplierCategoryFilter.set($event)"
+                [nzPlaceHolder]="'RFQ.WIZARD.SUPPLIER_CATEGORY' | translate"
+              >
+                @for (cat of supplierCategories(); track cat.id) {
+                  <nz-option [nzValue]="cat.id" [nzLabel]="cat.name" />
+                }
+              </nz-select>
+            </div>
+
+            <nz-tag nzColor="blue">
+              {{ 'RFQ.WIZARD.SELECTED_SUPPLIERS' | translate: { count: selectedSupplierIds().length } }}
+            </nz-tag>
+          </div>
+
+          <nz-table [nzData]="filteredSuppliers()" [nzLoading]="suppliersLoading()" [nzPageSize]="10">
+            <thead>
+              <tr>
+                <th scope="col">{{ 'RFQ.COL_ACTIONS' | translate }}</th>
+                <th scope="col">{{ 'RFQ.WIZARD.LINE_CODE' | translate }}</th>
+                <th scope="col">{{ 'RFQ.COL_TITLE' | translate }}</th>
+                <th scope="col">{{ 'RFQ.WIZARD.WEIGHT_RATING' | translate }}</th>
+                <th scope="col">{{ 'RFQ.WIZARD.SUPPLIER_CATEGORY' | translate }}</th>
+                <th scope="col">{{ 'RFQ.COL_CURRENCY' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (sup of filteredSuppliers(); track sup.id) {
+                <tr>
+                  <td>
+                    <input
+                      type="checkbox"
+                      [id]="'sup-select-' + sup.id"
+                      [checked]="isSupplierSelected(sup.id)"
+                      (change)="onSupplierCheckboxChange(sup.id, $event)"
+                    />
+                    <label class="sr-only" [for]="'sup-select-' + sup.id">{{ sup.company_name }}</label>
+                  </td>
+                  <td>{{ sup.supplier_code }}</td>
+                  <td>{{ sup.company_name }}</td>
+                  <td>
+                    <nz-tag>{{ sup.rating ?? 'B' }}</nz-tag>
+                  </td>
+                  <td>{{ sup.category?.name ?? '-' }}</td>
+                  <td>{{ sup.currency ?? 'EUR' }}</td>
+                </tr>
+              }
+            </tbody>
+          </nz-table>
+        </div>
+      }
+    }
+
+    <div class="wizard-footer">
+      <div class="nav-buttons">
+        @if (currentStep() > 0) {
+          <button nz-button type="button" (click)="prevStep()">
+            {{ 'RFQ.WIZARD.PREV' | translate }}
+          </button>
+        }
+        @if (currentStep() < 3) {
+          <button nz-button nzType="default" type="button" (click)="nextStep()">
+            {{ 'RFQ.WIZARD.NEXT' | translate }}
+          </button>
+        }
+      </div>
+
+      <div class="submit-buttons">
+        <button
+          nz-button
+          type="button"
+          [disabled]="!canSubmitWizard()"
+          [nzLoading]="saving()"
+          (click)="saveDraft()"
+        >
+          {{ 'RFQ.WIZARD.SAVE_DRAFT' | translate }}
+        </button>
+        <button
+          nz-button
+          nzType="primary"
+          type="button"
+          [disabled]="!canSubmitWizard()"
+          [nzLoading]="saving()"
+          (click)="publishAndDispatch()"
+        >
+          {{ 'RFQ.WIZARD.PUBLISH_DISPATCH' | translate }}
+        </button>
+      </div>
+    </div>
+  </nz-card>
+
+  <nz-drawer
+    [nzVisible]="prDrawerOpen()"
+    [nzTitle]="'RFQ.WIZARD.IMPORT_PR_DRAWER_TITLE' | translate"
+    [nzWidth]="680"
+    (nzOnClose)="closePrDrawer()"
+  >
+    <ng-container *nzDrawerContent>
+      <div class="pr-drawer-options">
+        <nz-switch
+          id="pr-consolidate-switch"
+          [ngModel]="consolidateMatchingItems()"
+          (ngModelChange)="consolidateMatchingItems.set($event)"
+        />
+        <label for="pr-consolidate-switch">{{ 'RFQ.WIZARD.CONSOLIDATE_ITEMS' | translate }}</label>
+      </div>
+
+      @if (prLoading()) {
+        <p>Loading...</p>
+      } @else {
+        <div class="pr-list">
+          @for (req of approvedRequisitions(); track req.id) {
+            <nz-card [nzTitle]="req.requisition_number + (req.title ? ' — ' + req.title : '')" nzSize="small">
+              <div class="pr-header-actions">
+                <button
+                  nz-button
+                  nzSize="small"
+                  type="button"
+                  (click)="toggleEntireRequisition(req, true)"
+                >
+                  + {{ req.requisition_number }}
+                </button>
+              </div>
+              @for (line of req.lines ?? []; track line.id) {
+                <div class="pr-line-item">
+                  <input
+                    type="checkbox"
+                    [id]="'pr-line-select-' + line.id"
+                    [checked]="isPrLineSelected(line.id)"
+                    (change)="onPrLineCheckboxChange(line.id, $event)"
+                  />
+                  <label [for]="'pr-line-select-' + line.id">
+                    {{ line.description }} ({{ line.quantity_requested }} {{ line.uom }})
+                  </label>
+                </div>
+              }
+            </nz-card>
+          }
+        </div>
+      }
+
+      <div class="pr-drawer-footer">
+        <button nz-button type="button" (click)="closePrDrawer()">
+          {{ 'RFQ.WIZARD.PREV' | translate }}
+        </button>
+        <button
+          nz-button
+          nzType="primary"
+          type="button"
+          [disabled]="selectedPrLineIds().length === 0"
+          (click)="importSelectedPrLines()"
+        >
+          {{ 'RFQ.WIZARD.IMPORT_SELECTED' | translate: { count: selectedPrLineIds().length } }}
+        </button>
+      </div>
+    </ng-container>
+  </nz-drawer>
+</div>
