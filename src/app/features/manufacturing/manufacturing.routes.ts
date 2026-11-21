@@ -27,6 +27,9 @@ export const MANUFACTURING_ROUTES: Routes = [
   manufacturingRoute('production', 'Ordini & Esecuzione', MFG_PRODUCTION_PAGE),
   manufacturingRoute('quality', 'Qualità', MFG_QUALITY_PAGE),
   manufacturingRoute('planning', 'Pianificazione & KPI', MFG_PLANNING_PAGE),
+  bomRoute('mes-board', 'MFG_MES.TITLE', () =>
+    import('./mes/operator-board.component').then((m) => m.OperatorBoardComponent),
+  ),
   bomRoute('bom-designer', 'MFG_BOM.DESIGNER_TITLE', () =>
     import('./bom/bom-designer.component').then((m) => m.BomDesignerComponent),
   ),
