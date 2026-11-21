@@ -161,7 +161,7 @@ interface GaugeRow {
         <nz-card [nzTitle]="'MFG_CC.WIP_VS_STANDARD' | translate">
           @if (facade.wip(); as wip) {
             <div class="wip">
-              <svg viewBox="0 0 300 120" role="img" [attr.aria-label]="'MFG_CC.WIP_CHART_LABEL' | translate: { wip: (wip.valuation | number: '1.2-2'), standard: (wip.standard | number: '1.2-2') }">
+              <svg viewBox="0 0 300 120" role="img" [attr.aria-label]="'MFG_CC.WIP_CHART_LABEL' | translate: wipLabel()">
                 <rect x="10" y="14" height="34" fill="#0958d9" [attr.width]="(wip.valuation / wip.max) * 270"></rect>
                 <rect x="10" y="68" height="34" fill="#722ed1" [attr.width]="(wip.standard / wip.max) * 270"></rect>
               </svg>
@@ -271,6 +271,11 @@ interface GaugeRow {
 })
 export class ControlTowerComponent implements OnInit {
   protected readonly facade = inject(ManufacturingFacadeService);
+
+  protected readonly wipLabel = computed(() => ({
+    wip: (this.facade.wip()?.valuation ?? 0).toFixed(2),
+    standard: (this.facade.wip()?.standard ?? 0).toFixed(2),
+  }));
 
   protected readonly gauges = computed<GaugeRow[]>(() =>
     this.facade.oee().map((row) => {
