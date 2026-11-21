@@ -124,15 +124,13 @@ export const routes: Routes = [
     path: 'crm',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'BREADCRUMB.CRM_AND_ANAGRAFICHE', title: 'PAGE_TITLE.CRM_CROSS_BORDER' },
-    loadChildren: () =>
-      import('./features/crm/crm.routes').then((m) => m.CRM_ROUTES),
+    loadChildren: () => import('./features/crm/crm.routes').then((m) => m.CRM_ROUTES),
   },
   {
     path: 'sales',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'BREADCRUMB.VENDITE_AND_FATTURAZIONE', title: 'PAGE_TITLE.VENDITE' },
-    loadChildren: () =>
-      import('./features/sales/sales.routes').then((m) => m.SALES_ROUTES),
+    loadChildren: () => import('./features/sales/sales.routes').then((m) => m.SALES_ROUTES),
   },
   {
     path: 'logistics',
@@ -173,13 +171,15 @@ export const routes: Routes = [
     path: 'customs',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'BREADCRUMB.DOGANA_IT_CH', title: 'PAGE_TITLE.DOGANA_SPEDIZIONI_IT_CH' },
-    loadChildren: () =>
-      import('./features/customs/customs.routes').then((m) => m.CUSTOMS_ROUTES),
+    loadChildren: () => import('./features/customs/customs.routes').then((m) => m.CUSTOMS_ROUTES),
   },
   {
     path: 'workflows',
     canActivate: [authGuard, menuEnabledGuard],
-    data: { breadcrumb: 'BREADCRUMB.PROCESSI_AND_APPROVAZIONI', title: 'PAGE_TITLE.WORKFLOW_APPROVAZIONI' },
+    data: {
+      breadcrumb: 'BREADCRUMB.PROCESSI_AND_APPROVAZIONI',
+      title: 'PAGE_TITLE.WORKFLOW_APPROVAZIONI',
+    },
     loadChildren: () =>
       import('./features/workflows/workflows.routes').then((m) => m.WORKFLOW_ROUTES),
   },
@@ -187,34 +187,49 @@ export const routes: Routes = [
     path: 'dms',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'BREADCRUMB.GESTIONE_DOCUMENTALE_DMS', title: 'PAGE_TITLE.DMS_ARCHIVIO' },
-    loadChildren: () =>
-      import('./features/dms/dms.routes').then((m) => m.DMS_ROUTES),
+    loadChildren: () => import('./features/dms/dms.routes').then((m) => m.DMS_ROUTES),
   },
   {
     path: 'contract-register',
     canActivate: [authGuard, menuEnabledGuard],
-    data: { breadcrumb: 'BREADCRUMB.REGISTRO_CONTRATTI', title: 'PAGE_TITLE.REGISTRO_CONTRATTI_OBBLIGAZIONI' },
+    data: {
+      breadcrumb: 'BREADCRUMB.REGISTRO_CONTRATTI',
+      title: 'PAGE_TITLE.REGISTRO_CONTRATTI_OBBLIGAZIONI',
+    },
     loadChildren: () =>
-      import('./features/contract-register/contract-register.routes').then((m) => m.CONTRACT_REGISTER_ROUTES),
+      import('./features/contract-register/contract-register.routes').then(
+        (m) => m.CONTRACT_REGISTER_ROUTES,
+      ),
   },
   {
     path: 'associations/governance',
     canActivate: [authGuard, menuEnabledGuard],
-    data: { breadcrumb: 'BREADCRUMB.GOVERNANCE_E_CONFORMITA', title: 'PAGE_TITLE.GOVERNANCE_E_CONFORMITA_DELLE_ASSOCIAZIONI' },
+    data: {
+      breadcrumb: 'BREADCRUMB.GOVERNANCE_E_CONFORMITA',
+      title: 'PAGE_TITLE.GOVERNANCE_E_CONFORMITA_DELLE_ASSOCIAZIONI',
+    },
     loadChildren: () =>
-      import('./features/associations/governance/governance.routes').then((m) => m.ASSOCIATIONS_GOVERNANCE_ROUTES),
+      import('./features/associations/governance/governance.routes').then(
+        (m) => m.ASSOCIATIONS_GOVERNANCE_ROUTES,
+      ),
   },
   {
     path: 'associations',
     canActivate: [authGuard, menuEnabledGuard],
-    data: { breadcrumb: 'BREADCRUMB.ASSOCIAZIONI_AND_TERZO_SETTORE', title: 'PAGE_TITLE.ASSOCIAZIONI_ETS_SPORTIVE' },
+    data: {
+      breadcrumb: 'BREADCRUMB.ASSOCIAZIONI_AND_TERZO_SETTORE',
+      title: 'PAGE_TITLE.ASSOCIAZIONI_ETS_SPORTIVE',
+    },
     loadChildren: () =>
       import('./features/associations/associations.routes').then((m) => m.ASSOCIATIONS_ROUTES),
   },
   {
     path: 'childcare',
     canActivate: [authGuard, menuEnabledGuard],
-    data: { breadcrumb: 'BREADCRUMB.INFANZIA_AND_ASILO_NIDO', title: 'PAGE_TITLE.INFANZIA_ASILO_NIDO' },
+    data: {
+      breadcrumb: 'BREADCRUMB.INFANZIA_AND_ASILO_NIDO',
+      title: 'PAGE_TITLE.INFANZIA_ASILO_NIDO',
+    },
     loadChildren: () =>
       import('./features/childcare/childcare.routes').then((m) => m.CHILDCARE_ROUTES),
   },
@@ -222,19 +237,22 @@ export const routes: Routes = [
     path: 'contract-signing/:token',
     data: { title: 'CONTRACT_SIGN.TITLE' },
     loadComponent: () =>
-      import('./features/contract-signing/contract-signing.component').then((m) => m.ContractSigningComponent),
+      import('./features/contract-signing/contract-signing.component').then(
+        (m) => m.ContractSigningComponent,
+      ),
   },
   {
     path: 'quote-signature/:token',
     data: { title: 'CPQ.SIGN.TITLE' },
     loadComponent: () =>
-      import('./features/quote-signature/quote-signature.component').then((m) => m.QuoteSignatureComponent),
+      import('./features/quote-signature/quote-signature.component').then(
+        (m) => m.QuoteSignatureComponent,
+      ),
   },
   {
     path: 'portal',
     data: { breadcrumb: 'NAV.PORTAL', title: 'PAGE_TITLE.AREA_CLIENTI_PORTALE_B2B' },
-    loadChildren: () =>
-      import('./features/portal/portal.routes').then((m) => m.PORTAL_ROUTES),
+    loadChildren: () => import('./features/portal/portal.routes').then((m) => m.PORTAL_ROUTES),
   },
   {
     path: 'intrastat',
@@ -248,7 +266,25 @@ export const routes: Routes = [
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.DOCUMENT_TRUST', title: 'PAGE_TITLE.RETI_E_DOCUMENT_DIGITAL_TRUST' },
     loadChildren: () =>
-      import('./features/document-trust/document-trust.routes').then((m) => m.DOCUMENT_TRUST_ROUTES),
+      import('./features/document-trust/document-trust.routes').then(
+        (m) => m.DOCUMENT_TRUST_ROUTES,
+      ),
+  },
+  {
+    path: 'ocr-inbox',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'OCR_INBOX.TITLE', title: 'OCR_INBOX.TITLE' },
+    loadChildren: () =>
+      import('./features/ocr-inbox/ocr-inbox.routes').then((m) => m.OCR_INBOX_ROUTES),
+  },
+  {
+    path: 'data-sovereignty',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'DATA_SOVEREIGNTY.TITLE', title: 'DATA_SOVEREIGNTY.TITLE' },
+    loadChildren: () =>
+      import('./features/data-sovereignty/data-sovereignty.routes').then(
+        (m) => m.DATA_SOVEREIGNTY_ROUTES,
+      ),
   },
   {
     path: 'ocr-inbox',
@@ -276,7 +312,9 @@ export const routes: Routes = [
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'AI_FORECAST.TITLE', title: 'AI_FORECAST.TITLE' },
     loadChildren: () =>
-      import('./features/ai-forecasting/ai-forecasting.routes').then((m) => m.AI_FORECASTING_ROUTES),
+      import('./features/ai-forecasting/ai-forecasting.routes').then(
+        (m) => m.AI_FORECASTING_ROUTES,
+      ),
   },
   {
     path: 'digital-preservation',
@@ -296,16 +334,26 @@ export const routes: Routes = [
   {
     path: 'ecommerce-integrations',
     canActivate: [authGuard, menuEnabledGuard],
-    data: { breadcrumb: 'NAV.ECOMMERCE_INTEGRATIONS', title: 'PAGE_TITLE.E_COMMERCE_INTEGRAZIONI_API' },
+    data: {
+      breadcrumb: 'NAV.ECOMMERCE_INTEGRATIONS',
+      title: 'PAGE_TITLE.E_COMMERCE_INTEGRAZIONI_API',
+    },
     loadChildren: () =>
-      import('./features/ecommerce-integrations/ecommerce-integrations.routes').then((m) => m.ECOMMERCE_INTEGRATIONS_ROUTES),
+      import('./features/ecommerce-integrations/ecommerce-integrations.routes').then(
+        (m) => m.ECOMMERCE_INTEGRATIONS_ROUTES,
+      ),
   },
   {
     path: 'tessera-sanitaria',
     canActivate: [authGuard, menuEnabledGuard],
-    data: { breadcrumb: 'NAV.TESSERA_SANITARIA', title: 'PAGE_TITLE.SISTEMA_TESSERA_SANITARIA_STS' },
+    data: {
+      breadcrumb: 'NAV.TESSERA_SANITARIA',
+      title: 'PAGE_TITLE.SISTEMA_TESSERA_SANITARIA_STS',
+    },
     loadChildren: () =>
-      import('./features/tessera-sanitaria/tessera-sanitaria.routes').then((m) => m.TESSERA_SANITARIA_ROUTES),
+      import('./features/tessera-sanitaria/tessera-sanitaria.routes').then(
+        (m) => m.TESSERA_SANITARIA_ROUTES,
+      ),
   },
   {
     path: 'visitors',
@@ -326,7 +374,9 @@ export const routes: Routes = [
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.SUPPLIER_PORTAL', title: 'SUPPLIER_PORTAL.TITLE' },
     loadChildren: () =>
-      import('./features/supplier-portal/supplier-portal.routes').then((m) => m.SUPPLIER_PORTAL_ROUTES),
+      import('./features/supplier-portal/supplier-portal.routes').then(
+        (m) => m.SUPPLIER_PORTAL_ROUTES,
+      ),
   },
   {
     path: 'travel',
@@ -346,7 +396,9 @@ export const routes: Routes = [
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'PRIVACY.NAV.TITLE', title: 'PRIVACY.NAV.TITLE' },
     loadChildren: () =>
-      import('./features/privacy-governance/privacy-governance.routes').then((m) => m.PRIVACY_GOVERNANCE_ROUTES),
+      import('./features/privacy-governance/privacy-governance.routes').then(
+        (m) => m.PRIVACY_GOVERNANCE_ROUTES,
+      ),
   },
   {
     path: 'governance',
@@ -360,41 +412,49 @@ export const routes: Routes = [
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.LEASES', title: 'PAGE_TITLE.LEASES' },
     loadChildren: () =>
-      import('./features/lease-accounting/lease-accounting.routes').then((m) => m.LEASE_ACCOUNTING_ROUTES),
+      import('./features/lease-accounting/lease-accounting.routes').then(
+        (m) => m.LEASE_ACCOUNTING_ROUTES,
+      ),
   },
   {
     path: 'sustainability',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.SUSTAINABILITY', title: 'PAGE_TITLE.SUSTAINABILITY_ESG' },
     loadChildren: () =>
-      import('./features/sustainability/sustainability.routes').then((m) => m.SUSTAINABILITY_ROUTES),
+      import('./features/sustainability/sustainability.routes').then(
+        (m) => m.SUSTAINABILITY_ROUTES,
+      ),
   },
   {
     path: 'returns',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.RETURNS', title: 'PAGE_TITLE.RETURNS_DASHBOARD' },
-    loadChildren: () =>
-      import('./features/returns/returns.routes').then((m) => m.RETURNS_ROUTES),
+    loadChildren: () => import('./features/returns/returns.routes').then((m) => m.RETURNS_ROUTES),
   },
   {
     path: 'credit-management',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.CREDIT_MANAGEMENT', title: 'PAGE_TITLE.CREDIT_MANAGEMENT' },
     loadChildren: () =>
-      import('./features/credit-management/credit-management.routes').then((m) => m.CREDIT_MANAGEMENT_ROUTES),
+      import('./features/credit-management/credit-management.routes').then(
+        (m) => m.CREDIT_MANAGEMENT_ROUTES,
+      ),
   },
   {
     path: 'analytics',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.ANALYTICS', title: 'NAV.ANALYTICS' },
-    loadChildren: () => import('./features/analytics/analytics.routes').then((m) => m.ANALYTICS_ROUTES),
+    loadChildren: () =>
+      import('./features/analytics/analytics.routes').then((m) => m.ANALYTICS_ROUTES),
   },
   {
     path: 'business-intelligence',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.BI', title: 'PAGE_TITLE.BI' },
     loadChildren: () =>
-      import('./features/business-intelligence/business-intelligence.routes').then((m) => m.BUSINESS_INTELLIGENCE_ROUTES),
+      import('./features/business-intelligence/business-intelligence.routes').then(
+        (m) => m.BUSINESS_INTELLIGENCE_ROUTES,
+      ),
   },
   {
     path: 'marketplace',
@@ -407,50 +467,46 @@ export const routes: Routes = [
     path: 'events',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.EVENTS_MANAGEMENT', title: 'PAGE_TITLE.EVENTS' },
-    loadChildren: () =>
-      import('./features/events/events.routes').then((m) => m.EVENTS_ROUTES),
+    loadChildren: () => import('./features/events/events.routes').then((m) => m.EVENTS_ROUTES),
   },
   {
     path: 'plm',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.PLM_MANAGEMENT', title: 'PAGE_TITLE.PLM' },
-    loadChildren: () =>
-      import('./features/plm/plm.routes').then((m) => m.PLM_ROUTES),
+    loadChildren: () => import('./features/plm/plm.routes').then((m) => m.PLM_ROUTES),
   },
   {
     path: 'pricing',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.PRICING_MANAGEMENT', title: 'PAGE_TITLE.PRICING' },
-    loadChildren: () =>
-      import('./features/pricing/pricing.routes').then((m) => m.PRICING_ROUTES),
+    loadChildren: () => import('./features/pricing/pricing.routes').then((m) => m.PRICING_ROUTES),
   },
   {
     path: 'rebates',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.REBATES_MANAGEMENT', title: 'PAGE_TITLE.REBATES' },
-    loadChildren: () =>
-      import('./features/rebates/rebates.routes').then((m) => m.REBATES_ROUTES),
+    loadChildren: () => import('./features/rebates/rebates.routes').then((m) => m.REBATES_ROUTES),
   },
   {
     path: 'fleet',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.FLEET_MANAGEMENT', title: 'PAGE_TITLE.FLEET' },
-    loadChildren: () =>
-      import('./features/fleet/fleet.routes').then((m) => m.FLEET_ROUTES),
+    loadChildren: () => import('./features/fleet/fleet.routes').then((m) => m.FLEET_ROUTES),
   },
   {
     path: 'wms',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.WMS', title: 'PAGE_TITLE.WMS' },
-    loadChildren: () =>
-      import('./features/wms/wms.routes').then((m) => m.WMS_ROUTES),
+    loadChildren: () => import('./features/wms/wms.routes').then((m) => m.WMS_ROUTES),
   },
   {
     path: 'transportation',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.TMS', title: 'PAGE_TITLE.TMS' },
     loadChildren: () =>
-      import('./features/transportation/transportation.routes').then((m) => m.TRANSPORTATION_ROUTES),
+      import('./features/transportation/transportation.routes').then(
+        (m) => m.TRANSPORTATION_ROUTES,
+      ),
   },
   {
     path: 'quality',
@@ -470,7 +526,9 @@ export const routes: Routes = [
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.AUDIT_TRAIL', title: 'PAGE_TITLE.AUDIT_TRAIL' },
     loadChildren: () =>
-      import('./features/security/audit-trail/audit-trail.routes').then((m) => m.AUDIT_TRAIL_ROUTES),
+      import('./features/security/audit-trail/audit-trail.routes').then(
+        (m) => m.AUDIT_TRAIL_ROUTES,
+      ),
   },
   {
     path: 'security-center',
@@ -498,7 +556,9 @@ export const routes: Routes = [
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.TALENT_LEARNING', title: 'PAGE_TITLE.TALENT_LEARNING' },
     loadChildren: () =>
-      import('./features/talent-learning/talent-learning.routes').then((m) => m.TALENT_LEARNING_ROUTES),
+      import('./features/talent-learning/talent-learning.routes').then(
+        (m) => m.TALENT_LEARNING_ROUTES,
+      ),
   },
   {
     path: 'communication',
@@ -510,7 +570,10 @@ export const routes: Routes = [
   {
     path: 'appointments',
     canActivate: [authGuard, menuEnabledGuard],
-    data: { breadcrumb: 'BREADCRUMB.AGENDA_AND_APPUNTAMENTI', title: 'PAGE_TITLE.APPUNTAMENTI_CALENDARIO' },
+    data: {
+      breadcrumb: 'BREADCRUMB.AGENDA_AND_APPUNTAMENTI',
+      title: 'PAGE_TITLE.APPUNTAMENTI_CALENDARIO',
+    },
     loadChildren: () =>
       import('./features/appointments/appointments.routes').then((m) => m.APPOINTMENTS_ROUTES),
   },
@@ -539,20 +602,27 @@ export const routes: Routes = [
     path: 'assets',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'BREADCRUMB.CESPITI_AND_ASSET_EAM', title: 'PAGE_TITLE.CESPITI' },
-    loadChildren: () =>
-      import('./features/assets/assets.routes').then((m) => m.ASSETS_ROUTES),
+    loadChildren: () => import('./features/assets/assets.routes').then((m) => m.ASSETS_ROUTES),
   },
   {
     path: 'catalog',
     canActivate: [authGuard, menuEnabledGuard],
-    data: { breadcrumb: 'BREADCRUMB.ANAGRAFICHE_CATALOGO', title: 'PAGE_TITLE.ANAGRAFICHE_CATALOGO' },
+    data: {
+      breadcrumb: 'BREADCRUMB.ANAGRAFICHE_CATALOGO',
+      title: 'PAGE_TITLE.ANAGRAFICHE_CATALOGO',
+    },
     loadComponent: () =>
-      import('./features/catalog/catalog-master-data.component').then((m) => m.CatalogMasterDataComponent),
+      import('./features/catalog/catalog-master-data.component').then(
+        (m) => m.CatalogMasterDataComponent,
+      ),
   },
   {
     path: 'subscriptions',
     canActivate: [authGuard, menuEnabledGuard],
-    data: { breadcrumb: 'BREADCRUMB.ABBONAMENTI_AND_CONTRATTI_RECURRENTI', title: 'PAGE_TITLE.ABBONAMENTI' },
+    data: {
+      breadcrumb: 'BREADCRUMB.ABBONAMENTI_AND_CONTRATTI_RECURRENTI',
+      title: 'PAGE_TITLE.ABBONAMENTI',
+    },
     loadChildren: () =>
       import('./features/subscriptions/subscriptions.routes').then((m) => m.SUBSCRIPTIONS_ROUTES),
   },
@@ -574,8 +644,7 @@ export const routes: Routes = [
     path: 'rent',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'BREADCRUMB.NOLEGGIO_FLOTTE', title: 'PAGE_TITLE.NOLEGGIO' },
-    loadChildren: () =>
-      import('./features/rent/rent.routes').then((m) => m.RENT_ROUTES),
+    loadChildren: () => import('./features/rent/rent.routes').then((m) => m.RENT_ROUTES),
   },
   {
     path: 'construction',
@@ -601,7 +670,10 @@ export const routes: Routes = [
   {
     path: 'hospitality',
     canActivate: [authGuard, menuEnabledGuard],
-    data: { breadcrumb: 'BREADCRUMB.RISTORAZIONE_AND_HOSPITALITY', title: 'PAGE_TITLE.HOSPITALITY_COMANDE' },
+    data: {
+      breadcrumb: 'BREADCRUMB.RISTORAZIONE_AND_HOSPITALITY',
+      title: 'PAGE_TITLE.HOSPITALITY_COMANDE',
+    },
     loadChildren: () =>
       import('./features/hospitality/hospitality.routes').then((m) => m.HOSPITALITY_ROUTES),
   },
@@ -615,8 +687,7 @@ export const routes: Routes = [
     path: 'retail',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'BREADCRUMB.VENDITA_AL_BANCO_AND_POS', title: 'POS' },
-    loadChildren: () =>
-      import('./features/retail/retail.routes').then((m) => m.RETAIL_ROUTES),
+    loadChildren: () => import('./features/retail/retail.routes').then((m) => m.RETAIL_ROUTES),
   },
   {
     // The old clock screen called the deprecated /time-attendance/* endpoints: working time now lives in /hr/time.
@@ -628,26 +699,30 @@ export const routes: Routes = [
     path: 'hr',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'BREADCRUMB.PAYROLL_AND_HR_IT_CH', title: 'PAGE_TITLE.HR_PAYROLL' },
-    loadChildren: () =>
-      import('./features/hr/hr.routes').then((m) => m.HR_ROUTES),
+    loadChildren: () => import('./features/hr/hr.routes').then((m) => m.HR_ROUTES),
   },
   {
     path: 'exports',
     canActivate: [authGuard, menuEnabledGuard, moduleGuard('exports', 'read')],
     data: { breadcrumb: 'NAV.EXPORTS', title: 'NAV.EXPORTS' },
-    loadComponent: () => import('./features/exports/exports.component').then((m) => m.ExportsComponent),
+    loadComponent: () =>
+      import('./features/exports/exports.component').then((m) => m.ExportsComponent),
   },
   {
     path: 'sdi-cockpit',
     canActivate: [authGuard, menuEnabledGuard, moduleGuard('invoicing', 'read')],
     data: { breadcrumb: 'NAV.SDI_COCKPIT', title: 'NAV.SDI_COCKPIT' },
-    loadComponent: () => import('./features/sdi-cockpit/sdi-cockpit.component').then((m) => m.SdiCockpitComponent),
+    loadComponent: () =>
+      import('./features/sdi-cockpit/sdi-cockpit.component').then((m) => m.SdiCockpitComponent),
   },
   {
     path: 'sdi-transmissions',
     canActivate: [authGuard, menuEnabledGuard, moduleGuard('invoicing', 'read')],
     data: { breadcrumb: 'NAV.SDI_TRANSMISSIONS', title: 'NAV.SDI_TRANSMISSIONS' },
-    loadComponent: () => import('./features/sdi-transmissions/sdi-transmissions.component').then((m) => m.SdiTransmissionsComponent),
+    loadComponent: () =>
+      import('./features/sdi-transmissions/sdi-transmissions.component').then(
+        (m) => m.SdiTransmissionsComponent,
+      ),
   },
   {
     path: 'accounting',
@@ -661,21 +736,21 @@ export const routes: Routes = [
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.GENERAL_LEDGER', title: 'NAV.GENERAL_LEDGER' },
     loadChildren: () =>
-      import('./features/general-ledger/general-ledger.routes').then((m) => m.GENERAL_LEDGER_ROUTES),
+      import('./features/general-ledger/general-ledger.routes').then(
+        (m) => m.GENERAL_LEDGER_ROUTES,
+      ),
   },
   {
     path: 'alerts',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'BREADCRUMB.CENTRO_AVVISI', title: 'PAGE_TITLE.CENTRO_AVVISI' },
-    loadChildren: () =>
-      import('./features/alerts/alerts.routes').then((m) => m.ALERTS_ROUTES),
+    loadChildren: () => import('./features/alerts/alerts.routes').then((m) => m.ALERTS_ROUTES),
   },
   {
     path: 'system',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'BREADCRUMB.SISTEMA_AND_BACKUP', title: 'PAGE_TITLE.SISTEMA' },
-    loadChildren: () =>
-      import('./features/system/system.routes').then((m) => m.SYSTEM_ROUTES),
+    loadChildren: () => import('./features/system/system.routes').then((m) => m.SYSTEM_ROUTES),
   },
   {
     path: 'workspace',
@@ -695,28 +770,30 @@ export const routes: Routes = [
     path: 'orders',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'BREADCRUMB.STORICO_ORDINI', title: 'PAGE_TITLE.STORICO_ORDINI' },
-    loadChildren: () =>
-      import('./features/order-history').then((m) => m.ORDER_ROUTES),
+    loadChildren: () => import('./features/order-history').then((m) => m.ORDER_ROUTES),
   },
   {
     path: 'welcome',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'BREADCRUMB.BENVENUTO', title: 'PAGE_TITLE.BENVENUTO' },
-    loadChildren: () =>
-      import('./features/welcome').then((m) => m.WELCOME_ROUTES),
+    loadChildren: () => import('./features/welcome').then((m) => m.WELCOME_ROUTES),
   },
   // Customer-facing RMA pages: no guard, rendered without the application shell (`data.publicPage`).
   {
     path: 'rma-estimate/:token',
     data: { publicPage: true, title: 'RMA.ESTIMATE.TITLE' },
     loadComponent: () =>
-      import('./features/warranty-rma/public/rma-estimate.component').then((m) => m.RmaEstimateComponent),
+      import('./features/warranty-rma/public/rma-estimate.component').then(
+        (m) => m.RmaEstimateComponent,
+      ),
   },
   {
     path: 'rma-tracking',
     data: { publicPage: true, title: 'RMA.TRACKING.TITLE' },
     loadComponent: () =>
-      import('./features/warranty-rma/public/rma-tracking.component').then((m) => m.RmaTrackingComponent),
+      import('./features/warranty-rma/public/rma-tracking.component').then(
+        (m) => m.RmaTrackingComponent,
+      ),
   },
   {
     // The live catalog of the design system: tokens, components, theme, density and brand controls.
@@ -724,7 +801,9 @@ export const routes: Routes = [
     canActivate: [authGuard],
     data: { breadcrumb: 'DESIGN_SYSTEM.TITLE', title: 'DESIGN_SYSTEM.TITLE' },
     loadComponent: () =>
-      import('./features/design-system/design-system.component').then((m) => m.DesignSystemComponent),
+      import('./features/design-system/design-system.component').then(
+        (m) => m.DesignSystemComponent,
+      ),
   },
   {
     path: 'tools',
@@ -748,7 +827,8 @@ export const routes: Routes = [
     path: 'advanced',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.ADVANCED', title: 'PAGE_TITLE.FUNZIONALITA_AVANZATE' },
-    loadChildren: () => import('./features/advanced/advanced.routes').then((m) => m.ADVANCED_ROUTES),
+    loadChildren: () =>
+      import('./features/advanced/advanced.routes').then((m) => m.ADVANCED_ROUTES),
   },
   {
     path: 'docs',
@@ -760,7 +840,9 @@ export const routes: Routes = [
     path: 'association-area',
     data: { title: 'PAGE_TITLE.AREA_SOCI' },
     loadComponent: () =>
-      import('./features/association-area/association-area.component').then((m) => m.AssociationAreaComponent),
+      import('./features/association-area/association-area.component').then(
+        (m) => m.AssociationAreaComponent,
+      ),
   },
   {
     path: 'association-enrolment/:token',
@@ -781,8 +863,7 @@ export const routes: Routes = [
     // Public careers portal (Recruiting & ATS): no auth guard, embeddable.
     path: 'careers',
     data: { publicPage: true, title: 'CAREERS.TITLE' },
-    loadChildren: () =>
-      import('./features/careers/careers.routes').then((m) => m.CAREERS_ROUTES),
+    loadChildren: () => import('./features/careers/careers.routes').then((m) => m.CAREERS_ROUTES),
   },
   {
     path: '**',
