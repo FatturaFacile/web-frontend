@@ -5,7 +5,9 @@ import { CanActivateFn, Router } from '@angular/router';
  * Registry of premature / open-issue ERP modules mapped to their tracking GitHub issue numbers.
  * Used to gate unfinished vertical or enterprise modules behind explicit tenant/environment feature flags.
  */
-export const PREMATURE_OPEN_ISSUE_MODULES: Readonly<Record<string, { issue: number; routePrefix: string }>> = {
+export const PREMATURE_OPEN_ISSUE_MODULES: Readonly<
+  Record<string, { issue: number; routePrefix: string }>
+> = {
   credit_management: { issue: 253, routePrefix: '/credit-management' },
   supplier_portal: { issue: 254, routePrefix: '/supplier-portal' },
   manufacturing: { issue: 255, routePrefix: '/manufacturing' },
@@ -28,6 +30,11 @@ export const PREMATURE_OPEN_ISSUE_MODULES: Readonly<Record<string, { issue: numb
   digital_preservation: { issue: 212, routePrefix: '/digital-preservation' },
   forecasting: { issue: 221, routePrefix: '/ai-forecasting' },
   ocr_extraction: { issue: 220, routePrefix: '/ocr-inbox' },
+  hse: { issue: 176, routePrefix: '/hse' },
+  bi_dss: { issue: 214, routePrefix: '/analytics/executive-dss' },
+  data_residency: { issue: 627, routePrefix: '/data-sovereignty' },
+  kpi_dashboards: { issue: 217, routePrefix: '/kpi-dashboards' },
+  ai_cognitive: { issue: 219, routePrefix: '/ai' },
   leases: { issue: 274, routePrefix: '/leases' },
   retail: { issue: 275, routePrefix: '/retail' },
   hospitality: { issue: 276, routePrefix: '/hospitality' },
@@ -46,7 +53,8 @@ export const PREMATURE_OPEN_ISSUE_MODULES: Readonly<Record<string, { issue: numb
  */
 export function isFeatureFlagEnabled(flagKey: string): boolean {
   try {
-    const rawFlags = typeof localStorage !== 'undefined' ? localStorage.getItem('ff_feature_flags') : null;
+    const rawFlags =
+      typeof localStorage !== 'undefined' ? localStorage.getItem('ff_feature_flags') : null;
     if (rawFlags) {
       const parsed = JSON.parse(rawFlags) as Record<string, boolean>;
       if (typeof parsed[flagKey] === 'boolean') {
@@ -57,7 +65,8 @@ export function isFeatureFlagEnabled(flagKey: string): boolean {
       }
     }
     const strictRelease =
-      typeof localStorage !== 'undefined' && localStorage.getItem('ff_release_strict_flags') === 'true';
+      typeof localStorage !== 'undefined' &&
+      localStorage.getItem('ff_release_strict_flags') === 'true';
     if (strictRelease && flagKey in PREMATURE_OPEN_ISSUE_MODULES) {
       return false;
     }

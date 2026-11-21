@@ -32,7 +32,7 @@
                   id="email"
                   type="email"
                   formControlName="email"
-                  autocomplete="username"
+                  autocomplete="username webauthn"
                   nzSize="large"
                   [placeholder]="'LOGIN.LBL_NAME_COMPANY_COM' | translate"
                 />
@@ -126,6 +126,20 @@
             <nz-icon nzType="safety-certificate" />
             {{ "AUTH.SSO_BUTTON" | translate }}
           </button>
+          @if (passkeySupported()) {
+            <button
+              nz-button
+              nzBlock
+              nzSize="large"
+              type="button"
+              data-testid="passkey-signin"
+              [nzLoading]="isPasskeyStarting()"
+              (click)="onPasskeySignIn()"
+            >
+              <nz-icon nzType="key" />
+              {{ "IAM.PASSKEY_SIGNIN" | translate }}
+            </button>
+          }
         </div>
 
         <p class="register-link">
