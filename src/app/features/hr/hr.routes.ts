@@ -63,6 +63,13 @@ export const HR_ROUTES: Routes = [
       import('./payroll-compliance/payroll-compliance.component').then((m) => m.PayrollComplianceComponent),
   },
   {
+    path: 'italian-payroll',
+    canActivate: [moduleGuard('italian_payroll', 'read')],
+    data: { breadcrumb: 'NAV.HR_ITALIAN_PAYROLL', title: 'NAV.HR_ITALIAN_PAYROLL' },
+    loadComponent: () =>
+      import('./italian-payroll/italian-payroll-closing-hub.component').then((m) => m.ItalianPayrollClosingHubComponent),
+  },
+  {
     path: 'short-time',
     canActivate: [moduleGuard('payroll', 'read')],
     data: { breadcrumb: 'NAV.HR_SHORT_TIME', title: 'NAV.HR_SHORT_TIME' },

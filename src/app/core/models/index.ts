@@ -87,6 +87,7 @@ export * from './hr-self-service.model';
 export * from './hr-employee.model';
 export * from './hr-time.model';
 export * from './payroll.model';
+export * from './italian-payroll.model';
 export * from './hr-talent.model';
 export * from './hr-shift.model';
 export * from './hr-workforce.model';

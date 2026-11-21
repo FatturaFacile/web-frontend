@@ -55,6 +55,7 @@ export * from './api/hr-employee-api.service';
 export * from './api/payroll-agreement-api.service';
 export * from './api/hr-time-api.service';
 export * from './api/payroll-api.service';
+export * from './api/italian-payroll-api.service';
 export * from './api/payroll-compliance-api.service';
 export * from './api/short-time-api.service';
 export * from './api/admin-api.service';

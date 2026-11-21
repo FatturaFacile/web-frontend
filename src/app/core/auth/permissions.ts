@@ -87,6 +87,14 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
     write: MANAGERS,
     grants: { read: ['payroll.read', 'payroll.write', 'payroll.*'], write: ['payroll.write', 'payroll.*'] },
   },
+  // Italian payroll closing (Mod 077): the pay data of every employee, so the same rule as payroll. The self-service
+  // keys let any member list and open their own payslips.
+  italian_payroll: {
+    read: MANAGERS,
+    write: MANAGERS,
+    grants: { read: ['payroll.read', 'payroll.write', 'payroll.*'], write: ['payroll.write', 'payroll.*'] },
+  },
+  italian_payroll_self: { read: ANY_MEMBER, write: ANY_MEMBER },
   workflow: { read: ANY_MEMBER, write: ANY_MEMBER },
   fiscal_retail: { read: FINANCE_READERS, write: ['owner', 'admin', 'accountant', 'sales'] },
   // Health data with fiscal codes: the read-only accountant role stays out.

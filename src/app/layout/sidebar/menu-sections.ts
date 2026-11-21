@@ -507,6 +507,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             module: 'payroll',
           },
           {
+            key: 'NAV.HR_ITALIAN_PAYROLL',
+            route: '/hr/italian-payroll',
+            icon: 'fa-solid fa-file-invoice-dollar',
+            module: 'italian_payroll',
+          },
+          {
             key: 'NAV.HR_SHORT_TIME',
             route: '/hr/short-time',
             icon: 'fa-solid fa-helmet-safety',
