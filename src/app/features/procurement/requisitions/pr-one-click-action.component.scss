@@ -1,0 +1,97 @@
+.one-click-shell {
+  min-height: 100vh;
+  background: var(--ff-color-bg);
+  display: flex;
+  flex-direction: column;
+}
+
+.one-click-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--ff-space-3) var(--ff-space-5);
+  background: var(--ff-color-sidebar);
+  color: var(--ff-color-sidebar-text-active);
+  border-bottom: 1px solid var(--ff-color-sidebar-border);
+}
+
+.brand-block {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-block small {
+  color: var(--ff-color-sidebar-text);
+  font-size: var(--ff-font-size-xs);
+}
+
+.lang-select {
+  min-width: 88px;
+}
+
+.one-click-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ff-space-5);
+}
+
+.one-click-card {
+  width: 100%;
+  max-width: 620px;
+  border: 1px solid var(--ff-color-border);
+  box-shadow: var(--ff-shadow-card);
+}
+
+.loading-box {
+  display: flex;
+  justify-content: center;
+  padding: var(--ff-space-6) 0;
+}
+
+.reject-confirm-box {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ff-space-3);
+}
+
+.reject-confirm-box h2 {
+  margin: 0;
+  color: var(--ff-color-text);
+}
+
+.reject-hint {
+  margin: 0;
+  color: var(--ff-color-text-secondary);
+}
+
+.comment-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ff-space-2);
+}
+
+.reject-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--ff-space-2);
+  margin-top: var(--ff-space-2);
+}
+
+.result-meta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ff-space-2);
+}
+
+.meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--ff-space-3);
+}
+
+.mono-text {
+  font-family: var(--ff-font-mono);
+}

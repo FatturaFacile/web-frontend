@@ -28,4 +28,10 @@ export const ANALYTICS_ROUTES: Routes = [
     data: { breadcrumb: 'NAV.ANALYTICS_SNAPSHOTS', title: 'NAV.ANALYTICS_SNAPSHOTS' },
     loadComponent: () => import('./kpi-snapshots.component').then((m) => m.KpiSnapshotsComponent),
   },
+  {
+    path: 'executive-dss',
+    canActivate: [moduleGuard('bi_dss', 'read')],
+    data: { breadcrumb: 'EXEC_DSS.NAV', title: 'EXEC_DSS.TITLE' },
+    loadComponent: () => import('./dss/executive-dss.component').then((m) => m.ExecutiveDssComponent),
+  },
 ];

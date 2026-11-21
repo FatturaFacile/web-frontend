@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -18,14 +18,18 @@ import {
   AuthStore,
   SupportedLanguage,
   I18nService,
+  IamApiService,
   isValidationError,
   LoginResult,
+  PasskeyUnavailableError,
   SsoLoginService,
+  WebAuthnService,
 } from '@core';
 import { TranslatePipe } from '@shared';
 import { AuthFooterComponent } from '../../components/auth-footer.component';
 import { ThemeSelectorComponent } from '../../components/theme-selector.component';
 import { environment } from '@env';
+import { firstValueFrom } from 'rxjs';
 import { purgeLegacyTokenKeys } from '@core/auth/token-storage.service';
 import { ResendVerificationComponent } from '../../components/resend-verification.component';
 import { TwoFactorSetupModalComponent } from '../../components/two-factor-setup-modal/two-factor-setup-modal.component';
@@ -65,6 +69,9 @@ export class LoginComponent {
   private readonly message = inject(NzMessageService);
   private readonly i18n = inject(I18nService);
   private readonly sso = inject(SsoLoginService);
+  private readonly webauthn = inject(WebAuthnService);
+  private readonly iam = inject(IamApiService);
+  private readonly destroyRef = inject(DestroyRef);
 
   // Footer & Language
   protected readonly currentLang = this.i18n.currentLanguage;
@@ -74,6 +81,9 @@ export class LoginComponent {
   protected readonly errorMessage = signal<string | null>(null);
   protected readonly needsVerification = signal(false);
   protected readonly isSsoStarting = signal(false);
+  protected readonly passkeySupported = signal(this.webauthn.isSupported());
+  protected readonly isPasskeyStarting = signal(false);
+  private autofill: AbortController | null = null;
 
   // 2FA Challenge & Setup State
   protected readonly isChallengeStep = signal(false);
@@ -97,6 +107,11 @@ export class LoginComponent {
     code: this.fb.control(''),
     recoveryCode: this.fb.control(''),
   });
+
+  constructor() {
+    void this.startPasskeyAutofill();
+    this.destroyRef.onDestroy(() => this.autofill?.abort());
+  }
 
   protected setLanguage(lang: SupportedLanguage): void {
     this.authStore.setLocale(lang);
@@ -131,6 +146,46 @@ export class LoginComponent {
         this.handleError(err);
       },
     });
+  }
+
+  /** "Sign in with a passkey": the browser asks for a passkey and the biometric or PIN check (discoverable credential, no email needed). */
+  protected onPasskeySignIn(): void {
+    this.autofill?.abort();
+    void this.completePasskeyLogin(false);
+  }
+
+  /** Offers the passkeys in the autofill of the email field when the browser supports conditional mediation. */
+  private async startPasskeyAutofill(): Promise<void> {
+    if (!(await this.webauthn.isConditionalSupported())) {
+      return;
+    }
+    this.autofill = new AbortController();
+    await this.completePasskeyLogin(true, this.autofill.signal);
+  }
+
+  private async completePasskeyLogin(conditional: boolean, signal?: AbortSignal): Promise<void> {
+    if (!conditional) {
+      this.isPasskeyStarting.set(true);
+    }
+    this.errorMessage.set(null);
+    try {
+      const begun = await firstValueFrom(this.iam.beginPasskeyLogin());
+      const credential = await this.webauthn.get(begun.data.options as never, conditional, signal);
+      const result = await firstValueFrom(this.iam.finishPasskeyLogin(begun.data.ceremony_id, credential));
+      this.processSuccessfulLogin(result.data as LoginResult);
+    } catch (err) {
+      if (err instanceof PasskeyUnavailableError) {
+        if (err.reason !== 'cancelled') {
+          this.errorMessage.set(this.i18n.translate('IAM.PASSKEY_UNAVAILABLE'));
+        }
+      } else if (err instanceof HttpErrorResponse && err.status === 401) {
+        this.errorMessage.set(this.i18n.translate('IAM.PASSKEY_REJECTED'));
+      } else {
+        this.handleError(err);
+      }
+    } finally {
+      this.isPasskeyStarting.set(false);
+    }
   }
 
   /** Looks up the single sign-on of the typed email address and sends the browser to its identity provider. */

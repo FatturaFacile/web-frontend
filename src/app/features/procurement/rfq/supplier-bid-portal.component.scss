@@ -1,0 +1,154 @@
+.supplier-portal-shell {
+  min-height: 100vh;
+  background: #f1f5f9;
+}
+
+.portal-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.9rem 1.5rem;
+  background: #0f172a;
+  color: #ffffff;
+}
+
+.portal-brand {
+  display: flex;
+  flex-direction: column;
+}
+
+.portal-subtitle {
+  font-size: 0.8rem;
+  color: #cbd5e1;
+}
+
+.portal-lang-switcher {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.lang-select {
+  min-width: 90px;
+}
+
+.portal-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.portal-card {
+  margin-bottom: 1rem;
+}
+
+.rfq-header-block {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.buyer-meta {
+  color: #475569;
+  margin: 0.25rem 0;
+}
+
+.deadline-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
+.supplier-name {
+  color: #334155;
+  font-weight: 500;
+}
+
+.portal-attachments {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.portal-attachment-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+}
+
+.terms-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.full-span {
+  grid-column: 1 / -1;
+}
+
+.pdf-upload-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.line-desc {
+  display: flex;
+  flex-direction: column;
+}
+
+.line-desc small {
+  color: #64748b;
+}
+
+.line-net-cell {
+  white-space: nowrap;
+}
+
+.portal-summary-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.totals-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.totals-box div {
+  display: flex;
+  gap: 0.75rem;
+  align-items: baseline;
+}
+
+.landed-amount {
+  font-size: 1.15rem;
+  color: #0f766e;
+}
+
+.portal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
