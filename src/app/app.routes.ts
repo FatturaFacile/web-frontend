@@ -322,6 +322,12 @@ export const routes: Routes = [
       import('./features/ocr-inbox/ocr-inbox.routes').then((m) => m.OCR_INBOX_ROUTES),
   },
   {
+    path: 'hse',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'HSE.NAV', title: 'HSE.NAV' },
+    loadChildren: () => import('./features/hse/hse.routes').then((m) => m.HSE_ROUTES),
+  },
+  {
     path: 'ai-forecasting',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'AI_FORECAST.TITLE', title: 'AI_FORECAST.TITLE' },

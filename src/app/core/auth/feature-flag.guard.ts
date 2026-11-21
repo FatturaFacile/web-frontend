@@ -30,6 +30,7 @@ export const PREMATURE_OPEN_ISSUE_MODULES: Readonly<
   digital_preservation: { issue: 212, routePrefix: '/digital-preservation' },
   forecasting: { issue: 221, routePrefix: '/ai-forecasting' },
   ocr_extraction: { issue: 220, routePrefix: '/ocr-inbox' },
+  hse: { issue: 176, routePrefix: '/hse' },
   bi_dss: { issue: 214, routePrefix: '/analytics/executive-dss' },
   data_residency: { issue: 627, routePrefix: '/data-sovereignty' },
   kpi_dashboards: { issue: 217, routePrefix: '/kpi-dashboards' },
