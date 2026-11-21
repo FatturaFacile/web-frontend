@@ -37,4 +37,16 @@ export const MANUFACTURING_ROUTES: Routes = [
   bomRoute('bom-import', 'MFG_BOM.IMPORT_TITLE', () =>
     import('./bom/bom-import-wizard.component').then((m) => m.BomImportWizardComponent),
   ),
+  bomRoute('work-centers', 'MFG_PE.WORK_CENTERS_TITLE', () =>
+    import('./production-engineering/work-centers.page').then((m) => m.WorkCentersComponent),
+  ),
+  bomRoute('working-calendars', 'MFG_PE.CALENDARS_TITLE', () =>
+    import('./production-engineering/working-calendars.page').then((m) => m.WorkingCalendarsComponent),
+  ),
+  bomRoute('routings', 'MFG_PE.ROUTINGS_TITLE', () =>
+    import('./production-engineering/routing-designer.page').then((m) => m.RoutingDesignerComponent),
+  ),
+  bomRoute('oee', 'MFG_PE.OEE_TITLE', () =>
+    import('./production-engineering/oee-dashboard.page').then((m) => m.OeeDashboardComponent),
+  ),
 ];

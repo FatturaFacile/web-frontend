@@ -1618,6 +1618,30 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             module: 'manufacturing',
           },
           {
+            key: 'NAV.MFG_WORK_CENTERS',
+            route: '/manufacturing/work-centers',
+            icon: 'fa-solid fa-industry',
+            module: 'manufacturing',
+          },
+          {
+            key: 'NAV.MFG_WORKING_CALENDARS',
+            route: '/manufacturing/working-calendars',
+            icon: 'fa-solid fa-calendar-week',
+            module: 'manufacturing',
+          },
+          {
+            key: 'NAV.MFG_ROUTINGS',
+            route: '/manufacturing/routings',
+            icon: 'fa-solid fa-route',
+            module: 'manufacturing',
+          },
+          {
+            key: 'NAV.MFG_OEE',
+            route: '/manufacturing/oee',
+            icon: 'fa-solid fa-gauge-high',
+            module: 'manufacturing',
+          },
+          {
             key: 'NAV.MFG_PRODUCTION',
             route: '/manufacturing/production',
             icon: 'fa-solid fa-gears',
