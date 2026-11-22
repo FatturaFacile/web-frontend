@@ -1,8 +1,10 @@
-import { act, col, cols, ResourcePageConfig, rf, req } from '@shared';
+import { HELPDESK_LOCALES } from '@core';
+import { act, col, cols, ResourcePageConfig, rf, req, tagCol } from '@shared';
 
 const CANNED_FIELDS = [
   req(rf.text('title', { maxLength: 150 })),
   rf.text('category', { maxLength: 80 }),
+  rf.select('locale', HELPDESK_LOCALES),
   req(rf.textarea('body', { maxLength: 20000 })),
   rf.bool('is_shared'),
 ];
@@ -29,7 +31,11 @@ export const HELPDESK_AGENT_TOOLS_PAGE: ResourcePageConfig = {
       id: 'canned-responses',
       titleKey: 'RES.P.canned_responses',
       module: 'service',
-      list: { path: '/esm/helpdesk/canned-responses', columns: [...cols('title', 'category'), col('is_shared', 'bool')] },
+      list: {
+        path: '/esm/helpdesk/canned-responses',
+        filters: [rf.select('locale', HELPDESK_LOCALES)],
+        columns: [...cols('title', 'category'), tagCol('locale'), col('is_shared', 'bool')],
+      },
       create: act('POST', 'RES.A.new_canned_response', '/esm/helpdesk/canned-responses', { fields: CANNED_FIELDS }),
       rowActions: [
         act('PATCH', 'RES.ACTION.EDIT', '/esm/helpdesk/canned-responses/{id}', { prefill: true, fields: CANNED_FIELDS }),

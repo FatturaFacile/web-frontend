@@ -5,6 +5,7 @@ import { SDI_CHANNEL_PAGE } from '../settings/pages/sdi-channel/sdi-channel.page
 import { HELPDESK_AGENT_TOOLS_PAGE } from './agent-tools.page';
 import { HELPDESK_AUTOMATION_PAGE } from './automation.page';
 import { HELPDESK_REPORTS_PAGE } from './helpdesk-reports.page';
+import { HELPDESK_SLA_ADMIN_PAGE } from './helpdesk-sla-admin.page';
 import { ITSM_PAGE } from './itsm.page';
 import { KNOWLEDGE_BASE_PAGE } from './knowledge-base.page';
 import { SERVICE_WORK_ORDERS_PAGE } from './service-delivery.page';
@@ -13,6 +14,7 @@ const PAGES: Record<string, ResourcePageConfig> = {
   HELPDESK_AGENT_TOOLS_PAGE,
   HELPDESK_AUTOMATION_PAGE,
   HELPDESK_REPORTS_PAGE,
+  HELPDESK_SLA_ADMIN_PAGE,
   ITSM_PAGE,
   KNOWLEDGE_BASE_PAGE,
   SERVICE_WORK_ORDERS_PAGE,

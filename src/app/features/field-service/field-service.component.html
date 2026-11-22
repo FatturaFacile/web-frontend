@@ -4,6 +4,22 @@
 />
 
 <nz-card [nzTitle]="'FIELD_SERVICE.CARD_TITLE' | translate" [nzExtra]="extraTemplate">
+  <nz-radio-group
+    class="view-switch"
+    nzButtonStyle="solid"
+    [ngModel]="view()"
+    (ngModelChange)="view.set($event)"
+    [attr.aria-label]="'HELPDESK_SLA.VIEW' | translate"
+  >
+    <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+    <label nz-radio-button nzValue="all">{{ 'HELPDESK_SLA.VIEW_ALL' | translate }}</label>
+    <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+    <label nz-radio-button nzValue="at_risk" data-testid="view-at-risk">{{ 'HELPDESK_SLA.VIEW_AT_RISK' | translate }}</label>
+  </nz-radio-group>
+
+  @if (view() === 'at_risk') {
+    <app-sla-dashboard (openTicket)="openDetail($event)" />
+  } @else {
   <!-- Filter bar -->
   <div class="filters">
     <div class="filter-search">
@@ -67,6 +83,18 @@
       </nz-select>
     </div>
 
+    <div class="filter-team">
+      <input
+        type="text"
+        nz-input
+        [placeholder]="'HELPDESK_SLA.FILTER_QUEUE' | translate"
+        [attr.aria-label]="'HELPDESK_SLA.FILTER_QUEUE' | translate"
+        [ngModel]="filterTeam()"
+        (ngModelChange)="filterTeam.set($event)"
+        (keyup.enter)="onSearch()"
+      />
+    </div>
+
     <button nz-button (click)="resetFilters()" [title]="'FIELD_SERVICE.LBL_REIMPOSTA_FILTRI' | translate">
       <i nz-icon nzType="clear"></i> {{ 'FIELD_SERVICE.LBL_RESET' | translate }}
     </button>
@@ -82,6 +110,7 @@
     [actionsTemplate]="actionsTpl"
     (selectionChange)="selectedTickets.set($event)"
   />
+  }
 
   <ng-template #ticketTpl let-tk>
     <strong>{{ tk.ticket_number ? '#' + tk.ticket_number : tk.id.substring(0, 8) }}</strong>
@@ -100,8 +129,10 @@
   </ng-template>
   <ng-template #slaTpl let-tk>
     <nz-tag [nzColor]="getSlaColor(tk.sla_state)">{{ tk.sla_state }}</nz-tag>
-    @if (tk.resolution_due_at) {
-      <div class="ticket-sub">Entro: {{ tk.resolution_due_at | date:'dd/MM HH:mm' }}</div>
+    @if (tk.resolution_due_at && tk.status !== 'resolved' && tk.status !== 'closed') {
+      <div class="ticket-sub">
+        <app-sla-countdown [dueAt]="tk.resolution_due_at" [paused]="tk.sla_state === 'paused'" />
+      </div>
     }
   </ng-template>
   <ng-template #createdTpl let-tk>{{ tk.created_at | date:'dd/MM/yyyy HH:mm' }}</ng-template>

@@ -1,4 +1,6 @@
+import { HOLIDAY_COUNTRIES } from '@core';
 import { act, col, cols, ResourcePageConfig, rf, req } from '@shared';
+import { HOLIDAY_REGION_OPTIONS } from './helpdesk-sla-admin.page';
 
 const PRIORITIES = ['low', 'medium', 'high', 'critical'] as const;
 const STRATEGIES = ['manual', 'round_robin', 'least_loaded'] as const;
@@ -26,6 +28,8 @@ const BUSINESS_HOURS_FIELDS = [
   req(rf.text('timezone')),
   req(rf.json('weekly_schedule')),
   rf.tags('holidays'),
+  rf.select('holiday_country', HOLIDAY_COUNTRIES),
+  rf.select('holiday_region', HOLIDAY_REGION_OPTIONS),
   rf.uuid('hr_holiday_calendar_id'),
   rf.bool('is_active', { defaultValue: true }),
 ];

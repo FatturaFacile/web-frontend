@@ -24,6 +24,10 @@ interface Harness {
   split(): void;
   strategy: { set(value: 'round_robin' | 'least_loaded'): void };
   autoAssign(): void;
+  changeLocale(locale: string | null): void;
+  searchArticles(term: string): void;
+  articleId: { set(value: string | null): void };
+  insertArticle(): void;
 }
 
 describe('TicketAgentToolsComponent', () => {
@@ -44,11 +48,21 @@ describe('TicketAgentToolsComponent', () => {
     unlinkKnowledgeArticle: vi.fn(),
     getTickets: vi.fn(),
   };
+  const helpdesk = {
+    getMacros: vi.fn(),
+    getCannedResponses: vi.fn(),
+    getKnowledgeArticles: vi.fn(),
+  };
   const message = { success: vi.fn(), error: vi.fn() };
   const modal = { confirm: vi.fn((options: { nzOnOk: () => void }) => options.nzOnOk()) };
 
   beforeEach(async () => {
     vi.clearAllMocks();
+    helpdesk.getMacros.mockReturnValue(of({ data: [{ id: 'm1', name: 'Close' }] }));
+    helpdesk.getCannedResponses.mockReturnValue(of({ data: [{ id: 'c1', title: 'Greeting' }] }));
+    helpdesk.getKnowledgeArticles.mockReturnValue(
+      of({ data: [{ id: 'a1', article_number: 'KB-1', title: 'Reset', summary: 'Hold the button', content: 'Long text' }] }),
+    );
     tickets.getWatchers.mockReturnValue(of({ data: [] }));
     tickets.getKnowledgeLinks.mockReturnValue(of({ data: [] }));
     tickets.applyMacro.mockReturnValue(of({ data: { id: 't1' } }));
@@ -64,14 +78,7 @@ describe('TicketAgentToolsComponent', () => {
       providers: [
         provideNzIcons(icons),
         { provide: TicketApiService, useValue: tickets },
-        {
-          provide: HelpdeskApiService,
-          useValue: {
-            getMacros: () => of({ data: [{ id: 'm1', name: 'Close' }] }),
-            getCannedResponses: () => of({ data: [{ id: 'c1', title: 'Greeting' }] }),
-            getKnowledgeArticles: () => of({ data: [] }),
-          },
-        },
+        { provide: HelpdeskApiService, useValue: helpdesk },
         { provide: SettingsApiService, useValue: { getTenantUsers: () => of({ data: [{ id: 'u1', name: 'Tech' }] }) } },
         { provide: I18nService, useValue: { translate: (key: string) => key } },
         { provide: NzMessageService, useValue: message },
@@ -138,5 +145,26 @@ describe('TicketAgentToolsComponent', () => {
 
     expect(tickets.splitTicket).toHaveBeenCalledWith('t1', { subject: 'Second topic', message_ids: ['m-1'] });
     expect(harness.canSplit()).toBe(false);
+  });
+
+  it('narrows the canned responses and the articles to the chosen language', () => {
+    harness.changeLocale('de-CH');
+
+    expect(helpdesk.getCannedResponses).toHaveBeenLastCalledWith({ locale: 'de-CH' });
+    expect(helpdesk.getKnowledgeArticles).toHaveBeenLastCalledWith({ q: undefined, locale: 'de-CH' });
+
+    harness.changeLocale(null);
+    expect(helpdesk.getCannedResponses).toHaveBeenLastCalledWith(undefined);
+  });
+
+  it('inserts the summary of the selected article in the reply', () => {
+    const insert = vi.fn();
+    fixture.componentInstance.insertReply.subscribe(insert);
+    harness.searchArticles('reset');
+    harness.articleId.set('a1');
+
+    harness.insertArticle();
+
+    expect(insert).toHaveBeenCalledWith('Hold the button');
   });
 });

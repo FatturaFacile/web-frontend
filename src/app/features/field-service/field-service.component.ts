@@ -8,6 +8,7 @@ import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzRadioModule } from 'ng-zorro-antd/radio';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSpaceModule } from 'ng-zorro-antd/space';
 import { NzTagModule } from 'ng-zorro-antd/tag';
@@ -24,6 +25,8 @@ import {
   TranslateService,
 } from '@core';
 import { BaseTableComponent, IconActionDirective, PageHeaderComponent, TableColumnDef, TranslatePipe } from '@shared';
+import { SlaCountdownComponent } from '../helpdesk/sla/sla-countdown.component';
+import { SlaDashboardComponent } from '../helpdesk/sla/sla-dashboard.component';
 import { TicketCreateDrawerComponent } from './components/ticket-create-drawer/ticket-create-drawer.component';
 import { TicketBulkModalComponent } from './components/ticket-bulk-modal/ticket-bulk-modal.component';
 import { TicketDetailDrawerComponent } from './components/ticket-detail-drawer/ticket-detail-drawer.component';
@@ -45,6 +48,9 @@ import { TicketDetailDrawerComponent } from './components/ticket-detail-drawer/t
     NzIconModule,
     NzDividerModule,
     NzBadgeModule,
+    NzRadioModule,
+    SlaCountdownComponent,
+    SlaDashboardComponent,
     PageHeaderComponent,
     TranslatePipe,
     TicketCreateDrawerComponent,
@@ -83,6 +89,10 @@ export class FieldServiceComponent {
   readonly filterStatus = signal<string>('');
   readonly filterPriority = signal<string>('');
   readonly filterSlaState = signal<string>('');
+  readonly filterTeam = signal('');
+
+  /** `all` is the paged ticket grid, `at_risk` the live queue of tickets about to breach an SLA target. */
+  readonly view = signal<'all' | 'at_risk'>('all');
 
   // Drawers
   readonly createDrawerOpen = signal(false);
@@ -128,6 +138,7 @@ export class FieldServiceComponent {
       status: (this.filterStatus() as TicketStatus) || undefined,
       priority: (this.filterPriority() as TicketPriority) || undefined,
       sla_state: (this.filterSlaState() as SlaState) || undefined,
+      team_id: this.filterTeam().trim() || undefined,
       q: this.searchQuery().trim() || undefined,
     });
   }
@@ -137,6 +148,7 @@ export class FieldServiceComponent {
     this.filterStatus.set('');
     this.filterPriority.set('');
     this.filterSlaState.set('');
+    this.filterTeam.set('');
     this.onSearch();
   }
 

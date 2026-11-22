@@ -36,6 +36,7 @@ export type ResourceLookupName =
   | 'contacts'
   | 'kbCategories'
   | 'businessHours'
+  | 'escalationChains'
   | 'constructionSites'
   | 'hospitalityRooms'
   | 'equipmentPassports';
