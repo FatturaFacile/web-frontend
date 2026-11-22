@@ -1,114 +1,93 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { provideRouter } from '@angular/router';
+import { of, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { NzMessageService } from 'ng-zorro-antd/message';
-import { NzModalService } from 'ng-zorro-antd/modal';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
+import type { FsmWorkOrder, FsmWorkOrderStatus } from '@core';
+import { FsmApiService, I18nService } from '@core';
 import { icons } from '../../../icons-provider';
-import { AttachmentsApiService, FieldServiceApiService, I18nService, ServiceReportsApiService, PermissionsService } from '@core';
 import { ServiceReportsComponent } from './service-reports.component';
 
-interface ReportsHarness {
-  selectedIds(): ReadonlySet<string>;
-  canConsolidate(): boolean;
-  toggle(id: string, checked: boolean): void;
-  consolidate(): void;
-  openSign(report: unknown): void;
-  sign(result: { signerName: string; signerRole: string; signerEmail: string; signature: string }): void;
-  invoice(report: unknown): void;
+interface Harness {
+  visible: () => FsmWorkOrder[];
+  setFilter(value: string): void;
+  loadError: () => boolean;
+}
+
+function order(id: string, status: FsmWorkOrderStatus, completion: string, invoiceId: string | null = null): FsmWorkOrder {
+  return {
+    id,
+    work_order_number: `WO-${id}`,
+    work_order_type: 'corrective',
+    status,
+    priority: 'normal',
+    title: `Job ${id}`,
+    problem_description: null,
+    customer_id: 'c1',
+    equipment_passport_id: null,
+    service_contract_id: null,
+    assigned_technician_id: 't1',
+    required_skills: [],
+    required_parts: [],
+    scheduled_start: null,
+    scheduled_end: null,
+    actual_arrival: null,
+    actual_completion: completion,
+    site: null,
+    client_uuid: null,
+    invoice_id: invoiceId,
+  };
 }
 
 describe('ServiceReportsComponent', () => {
   let fixture: ComponentFixture<ServiceReportsComponent>;
-  let harness: ReportsHarness;
-
-  const reports = [
-    { id: 'r1', report_number: 'SR-1', report_date: '2026-11-01', is_signed: true, is_invoiced: false, total_gross: '122.00', total_hours: 2 },
-    { id: 'r2', report_number: 'SR-2', report_date: '2026-11-02', is_signed: false, is_invoiced: false, total_gross: '50.00', total_hours: 1 },
-  ];
-
-  const api = {
-    getServiceReports: vi.fn(),
-    signServiceReport: vi.fn(),
-    generateServiceReportInvoice: vi.fn(),
-    generateConsolidatedInvoice: vi.fn(),
-    uploadServiceReportPhoto: vi.fn(),
-    downloadServiceReportPdf: vi.fn(),
-  };
-  const message = { success: vi.fn(), error: vi.fn() };
-  const modal = { confirm: vi.fn((options: { nzOnOk: () => void }) => options.nzOnOk()) };
+  let harness: Harness;
+  const api = { listWorkOrders: vi.fn() };
 
   beforeEach(async () => {
     vi.clearAllMocks();
-    api.getServiceReports.mockReturnValue(of({ data: reports, meta: { total: 2 } }));
-    api.signServiceReport.mockReturnValue(of({ data: reports[0] }));
-    api.generateServiceReportInvoice.mockReturnValue(of({ data: { invoice_number: 'F-1' } }));
-    api.generateConsolidatedInvoice.mockReturnValue(of({ data: { invoice_number: 'F-2' } }));
-
-    await TestBed.overrideProvider(NzModalService, { useValue: modal })
-      .configureTestingModule({
+    api.listWorkOrders.mockImplementation((params: { status: string }) =>
+      of({
+        data:
+          params.status === 'completed'
+            ? [order('1', 'completed', '2026-03-02T10:00:00+00:00')]
+            : [order('2', 'invoiced', '2026-03-03T10:00:00+00:00', 'i1')],
+      }),
+    );
+    await TestBed.configureTestingModule({
       imports: [ServiceReportsComponent],
       providers: [
+        provideRouter([]),
         provideNzIcons(icons),
-        { provide: FieldServiceApiService, useValue: api },
-        { provide: ServiceReportsApiService, useValue: { patchServiceReport: vi.fn(), deleteServiceReport: vi.fn() } },
-        { provide: AttachmentsApiService, useValue: { list: vi.fn(() => of({ data: [] })) } },
-        { provide: PermissionsService, useValue: { canWrite: () => true } },
+        { provide: FsmApiService, useValue: api },
         { provide: I18nService, useValue: { currentLanguage: () => 'it', translate: (key: string) => key } },
-        { provide: NzMessageService, useValue: message },
-        { provide: NzModalService, useValue: modal },
       ],
     }).compileComponents();
-
     fixture = TestBed.createComponent(ServiceReportsComponent);
-    harness = fixture.componentInstance as unknown as ReportsHarness;
-    fixture.detectChanges();
-    await new Promise((resolve) => setTimeout(resolve, 30));
+    harness = fixture.componentInstance as unknown as Harness;
     fixture.detectChanges();
   });
 
-  it('loads the reports with the paging parameters', () => {
-    expect(api.getServiceReports).toHaveBeenCalledWith(expect.objectContaining({ page: 1, per_page: 20 }));
-    expect(fixture.nativeElement.textContent).toContain('SR-1');
+  it('loads the completed and invoiced work orders, newest first', () => {
+    expect(api.listWorkOrders).toHaveBeenCalledWith({ status: 'completed' });
+    expect(api.listWorkOrders).toHaveBeenCalledWith({ status: 'invoiced' });
+    expect(harness.visible().map((o) => o.id)).toEqual(['2', '1']);
+    const link = (fixture.nativeElement as HTMLElement).querySelector<HTMLAnchorElement>('[data-testid="reports-table"] a');
+    expect(link?.getAttribute('href')).toBe('/field-service/work-orders/2');
   });
 
-  it('offers the sign action only for unsigned reports and the invoice action only for signed ones', () => {
-    const rows = [...(fixture.nativeElement as HTMLElement).querySelectorAll('tbody tr')].map((row) => row.textContent ?? '');
-    const signed = rows.find((text) => text.includes('SR-1')) ?? '';
-    const unsigned = rows.find((text) => text.includes('SR-2')) ?? '';
-    expect(signed).toContain('SERVICE_REPORTS.INVOICE');
-    expect(signed).not.toContain('SERVICE_REPORTS.SIGN ');
-    expect(unsigned).toContain('SERVICE_REPORTS.SIGN');
-    expect(unsigned).not.toContain('SERVICE_REPORTS.INVOICE');
+  it('filters the orders still to invoice and the invoiced ones', () => {
+    harness.setFilter('to_invoice');
+    expect(harness.visible().map((o) => o.id)).toEqual(['1']);
+    harness.setFilter('invoiced');
+    expect(harness.visible().map((o) => o.id)).toEqual(['2']);
   });
 
-  it('needs two selected reports before a consolidated invoice and then posts their ids', () => {
-    harness.toggle('r1', true);
-    expect(harness.canConsolidate()).toBe(false);
-    harness.toggle('r3', true);
-    expect(harness.canConsolidate()).toBe(true);
-
-    harness.consolidate();
-
-    expect(api.generateConsolidatedInvoice).toHaveBeenCalledWith(['r1', 'r3']);
-    expect(harness.selectedIds().size).toBe(0);
-    expect(message.success).toHaveBeenCalled();
-  });
-
-  it('signs a report with the signer details and the drawn signature', () => {
-    harness.openSign(reports[1]);
-    harness.sign({ signerName: 'Rossi', signerRole: '', signerEmail: 'r@example.com', signature: 'data:image/png;base64,AAA' });
-
-    expect(api.signServiceReport).toHaveBeenCalledWith('r2', {
-      signature_base64: 'data:image/png;base64,AAA',
-      signer_name: 'Rossi',
-      signer_role: null,
-      signer_email: 'r@example.com',
-    });
-  });
-
-  it('drafts the invoice of a signed report after confirmation', () => {
-    harness.invoice(reports[0]);
-    expect(api.generateServiceReportInvoice).toHaveBeenCalledWith('r1');
+  it('flags a load failure', () => {
+    api.listWorkOrders.mockReturnValue(throwError(() => new Error('down')));
+    fixture = TestBed.createComponent(ServiceReportsComponent);
+    harness = fixture.componentInstance as unknown as Harness;
+    fixture.detectChanges();
+    expect(harness.loadError()).toBe(true);
   });
 });

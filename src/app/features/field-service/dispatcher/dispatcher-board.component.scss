@@ -1,0 +1,100 @@
+.db-week {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.db-alert {
+  margin-bottom: 12px;
+}
+
+.db-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 1100px) {
+  .db-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.db-filters {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 12px;
+  }
+
+  nz-select {
+    width: 100%;
+  }
+}
+
+.db-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 640px;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.db-item {
+  padding: 8px 12px;
+  border: 1px solid var(--ant-color-border-secondary, #f0f0f0);
+  border-radius: 6px;
+}
+
+.db-item-selected {
+  border-color: var(--ant-color-primary, #1677ff);
+  box-shadow: 0 0 0 1px var(--ant-color-primary, #1677ff);
+}
+
+.db-item-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.db-item-title {
+  margin: 4px 0 0;
+}
+
+.db-item-meta {
+  margin: 0;
+  font-size: 12px;
+}
+
+.db-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.db-item-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.db-dialog-wo {
+  margin-bottom: 12px;
+}
+
+.db-blocker-title {
+  margin: 4px 0 0;
+  font-weight: 600;
+}

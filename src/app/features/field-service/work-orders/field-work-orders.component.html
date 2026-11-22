@@ -1,141 +1,183 @@
-<app-page-header
-  [title]="'FS_WORK_ORDERS.TITLE' | translate"
-  [subtitle]="'FS_WORK_ORDERS.SUBTITLE' | translate"
-/>
+<app-page-header [title]="'FSM.WO.TITLE' | translate" [subtitle]="'FSM.WO.SUBTITLE' | translate">
+  <div header-actions>
+    @if (canWrite()) {
+      <button nz-button nzType="primary" type="button" (click)="openCreate()">{{ 'FSM.WO.NEW' | translate }}</button>
+    }
+  </div>
+</app-page-header>
+
+@if (loadError()) {
+  <nz-alert class="fwo-alert" nzType="error" nzShowIcon [nzMessage]="'FSM.WO.LOAD_ERROR' | translate" />
+}
 
 <nz-card>
-  @if (canWrite()) {
-    <div class="fwo-actions">
-      <button nz-button nzType="primary" type="button" appIconAction="create" (click)="openCreate()"></button>
-    </div>
-  }
+  <div class="fwo-filters">
+    <label>
+      <span>{{ 'FSM.WO.STATUS' | translate }}</span>
+      <nz-select nzAllowClear class="fwo-filter" [ngModel]="statusFilter() || null" (ngModelChange)="setStatus($event)" data-testid="status-filter">
+        @for (s of statuses; track s) {
+          <nz-option [nzValue]="s" [nzLabel]="'FSM.STATUS.' + s.toUpperCase() | translate" />
+        }
+      </nz-select>
+    </label>
+    <label>
+      <span>{{ 'FSM.WO.TYPE' | translate }}</span>
+      <nz-select nzAllowClear class="fwo-filter" [ngModel]="typeFilter() || null" (ngModelChange)="setType($event)" data-testid="type-filter">
+        @for (t of types; track t) {
+          <nz-option [nzValue]="t" [nzLabel]="'FSM.TYPE.' + t.toUpperCase() | translate" />
+        }
+      </nz-select>
+    </label>
+  </div>
 
-  <app-base-table [grid]="grid" [columns]="columns()" [scroll]="{ x: 'max-content' }" [actionsTemplate]="actionsTpl" />
-
-  <ng-template #numberTpl let-order><strong>{{ order.work_order_number }}</strong></ng-template>
-  <ng-template #dateTpl let-order>{{ order.date.slice(0, 16).replace('T', ' ') }}</ng-template>
-  <ng-template #totalTpl let-order>{{ order.total_amount | money }}</ng-template>
-  <ng-template #statusTpl let-order>
-    <nz-tag>{{ order.status }}</nz-tag>
-    @if (order.client_signed_by) {
-      <nz-tag nzColor="success">{{ order.client_signed_by }}</nz-tag>
-    }
-  </ng-template>
-  <ng-template #actionsTpl let-order>
-    @if (canWrite()) {
-      @if (order.status === 'draft') {
-        <button nz-button nzType="link" nzSize="small" type="button" appIconAction="edit" (click)="openEdit(order)"></button>
-        <button nz-button nzType="link" nzSize="small" type="button" (click)="complete(order)">
-          {{ 'FS_WORK_ORDERS.COMPLETE' | translate }}
-        </button>
+  <nz-table nzSize="small" [nzData]="orders()" [nzLoading]="loading()" [nzShowPagination]="orders().length > 20" data-testid="wo-table">
+    <thead>
+      <tr>
+        <th>{{ 'FSM.WO.NUMBER' | translate }}</th>
+        <th>{{ 'FSM.WO.NAME' | translate }}</th>
+        <th>{{ 'FSM.WO.TYPE' | translate }}</th>
+        <th>{{ 'FSM.WO.PRIORITY' | translate }}</th>
+        <th>{{ 'FSM.WO.STATUS' | translate }}</th>
+        <th>{{ 'FSM.WO.SCHEDULED' | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (order of orders(); track order.id) {
+        <tr>
+          <td>
+            <a [routerLink]="['/field-service/work-orders', order.id]">{{ order.work_order_number }}</a>
+          </td>
+          <td>{{ order.title }}</td>
+          <td>{{ 'FSM.TYPE.' + order.work_order_type.toUpperCase() | translate }}</td>
+          <td>{{ 'FSM.PRIORITY.' + order.priority.toUpperCase() | translate }}</td>
+          <td>
+            <nz-tag [nzColor]="tagColors[order.status] ?? 'default'">{{ 'FSM.STATUS.' + order.status.toUpperCase() | translate }}</nz-tag>
+          </td>
+          <td>{{ order.scheduled_start ? order.scheduled_start.slice(0, 16).replace('T', ' ') : '-' }}</td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="6">{{ 'FSM.WO.EMPTY' | translate }}</td>
+        </tr>
       }
-      @if (order.status === 'draft' || order.status === 'completed') {
-        <button nz-button nzType="link" nzSize="small" type="button" (click)="openSign(order)">
-          {{ 'FS_WORK_ORDERS.SIGN' | translate }}
-        </button>
-      }
-      @if ((order.status === 'completed' || order.status === 'signed') && !order.invoice_id) {
-        <button nz-button nzType="link" nzSize="small" type="button" (click)="invoice(order)">
-          {{ 'FS_WORK_ORDERS.INVOICE' | translate }}
-        </button>
-      }
-    }
-  </ng-template>
+    </tbody>
+  </nz-table>
 </nz-card>
-
-<app-signature-dialog
-  [(open)]="signOpen"
-  titleKey="FS_WORK_ORDERS.SIGN_TITLE"
-  [saving]="saving()"
-  (confirmed)="sign($event)"
-/>
 
 <nz-modal
   [nzVisible]="formOpen()"
-  [nzTitle]="(editingId() ? 'FS_WORK_ORDERS.EDIT' : 'FS_WORK_ORDERS.NEW') | translate"
-  [nzWidth]="860"
-  [nzFooter]="formFooter"
+  [nzTitle]="'FSM.WO.NEW' | translate"
+  [nzOkText]="'COMMON.SAVE' | translate"
+  [nzCancelText]="'COMMON.CANCEL' | translate"
+  [nzOkLoading]="saving()"
+  [nzOkDisabled]="form.invalid"
+  [nzMaskClosable]="false"
+  nzWidth="820px"
+  (nzOnOk)="save()"
   (nzOnCancel)="formOpen.set(false)"
 >
   <ng-container *nzModalContent>
+    @if (formError()) {
+      <nz-alert class="fwo-alert" nzType="error" nzShowIcon [nzMessage]="formError()" />
+    }
     <form nz-form nzLayout="vertical" [formGroup]="form">
       <nz-form-item>
-        <nz-form-label nzRequired nzFor="fwo-client">{{ 'FS_WORK_ORDERS.CLIENT' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="fieldError('client_id')">
-          <nz-select nzId="fwo-client" nzShowSearch class="fwo-full" formControlName="client_id" [nzOptions]="clients()" />
-        </nz-form-control>
-      </nz-form-item>
-      <nz-form-item>
-        <nz-form-label nzFor="fwo-tech">{{ 'FS_WORK_ORDERS.TECHNICIAN' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="fieldError('technician_user_id')">
-          <nz-select nzId="fwo-tech" nzAllowClear nzShowSearch class="fwo-full" formControlName="technician_user_id">
-            @for (user of technicians(); track user.id) {
-              <nz-option [nzValue]="user.id" [nzLabel]="user.name" />
+        <nz-form-label nzRequired nzFor="fwo-type">{{ 'FSM.WO.TYPE' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select nzId="fwo-type" formControlName="work_order_type">
+            @for (t of types; track t) {
+              <nz-option [nzValue]="t" [nzLabel]="'FSM.TYPE.' + t.toUpperCase() | translate" />
             }
           </nz-select>
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
-        <nz-form-label nzRequired nzFor="fwo-date">{{ 'FS_WORK_ORDERS.DATE' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="fieldError('date')">
-          <input nz-input id="fwo-date" type="datetime-local" formControlName="date" />
+        <nz-form-label nzRequired nzFor="fwo-customer">{{ 'FSM.WO.CUSTOMER' | translate }}</nz-form-label>
+        <nz-form-control>
+          <app-customer-select inputId="fwo-customer" formControlName="customer_id" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
-        <nz-form-label nzFor="fwo-start">{{ 'FS_WORK_ORDERS.STARTED_AT' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="fieldError('started_at')">
-          <input nz-input id="fwo-start" type="datetime-local" formControlName="started_at" />
+        <nz-form-label nzRequired nzFor="fwo-title">{{ 'FSM.WO.NAME' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input id="fwo-title" formControlName="title" maxlength="200" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
-        <nz-form-label nzFor="fwo-end">{{ 'FS_WORK_ORDERS.ENDED_AT' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="fieldError('ended_at')">
-          <input nz-input id="fwo-end" type="datetime-local" formControlName="ended_at" />
+        <nz-form-label nzFor="fwo-problem">{{ 'FSM.WO.PROBLEM' | translate }}</nz-form-label>
+        <nz-form-control>
+          <textarea nz-input id="fwo-problem" rows="3" formControlName="problem_description" maxlength="5000"></textarea>
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
-        <nz-form-label nzFor="fwo-ticket">{{ 'FS_WORK_ORDERS.TICKET_ID' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="fieldError('ticket_id')">
-          <input nz-input id="fwo-ticket" formControlName="ticket_id" />
+        <nz-form-label nzFor="fwo-priority">{{ 'FSM.WO.PRIORITY' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select nzId="fwo-priority" formControlName="priority">
+            @for (p of priorities; track p) {
+              <nz-option [nzValue]="p" [nzLabel]="'FSM.PRIORITY.' + p.toUpperCase() | translate" />
+            }
+          </nz-select>
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
-        <nz-form-label nzFor="fwo-address">{{ 'FS_WORK_ORDERS.ADDRESS' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="fieldError('intervention_address')">
-          <input nz-input id="fwo-address" formControlName="intervention_address" />
+        <nz-form-label nzFor="fwo-equipment">{{ 'FSM.WO.EQUIPMENT' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select nzId="fwo-equipment" nzAllowClear nzShowSearch formControlName="equipment_passport_id" [nzOptions]="equipmentOptions()" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
-        <nz-form-label nzFor="fwo-notes">{{ 'FS_WORK_ORDERS.NOTES' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="fieldError('notes')">
-          <textarea nz-input id="fwo-notes" rows="2" formControlName="notes"></textarea>
+        <nz-form-label nzFor="fwo-contract">{{ 'FSM.WO.CONTRACT' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select nzId="fwo-contract" nzAllowClear nzShowSearch formControlName="service_contract_id" [nzOptions]="contractOptions()" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="fwo-address">{{ 'FSM.WO.SITE_ADDRESS' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input id="fwo-address" formControlName="site_address" maxlength="255" />
+        </nz-form-control>
+      </nz-form-item>
+      <div class="fwo-geo">
+        <nz-form-item>
+          <nz-form-label nzFor="fwo-lat">{{ 'FSM.WO.LATITUDE' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-input-number nzId="fwo-lat" formControlName="site_latitude" [nzMin]="-90" [nzMax]="90" [nzStep]="0.0001" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="fwo-lng">{{ 'FSM.WO.LONGITUDE' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-input-number nzId="fwo-lng" formControlName="site_longitude" [nzMin]="-180" [nzMax]="180" [nzStep]="0.0001" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <nz-form-item>
+        <nz-form-label nzFor="fwo-skills">{{ 'FSM.WO.REQUIRED_SKILLS' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select nzId="fwo-skills" nzMode="tags" formControlName="required_skills" [nzTokenSeparators]="[',']" />
         </nz-form-control>
       </nz-form-item>
 
-      <fieldset>
-        <legend>{{ 'FS_WORK_ORDERS.LINES' | translate }}</legend>
-        <div formArrayName="lines">
-          @for (line of lines.controls; track line; let i = $index) {
-            <div class="fwo-line" [formGroupName]="i">
-              <nz-select formControlName="type" [attr.aria-label]="'FS_WORK_ORDERS.LINE_TYPE' | translate">
-                @for (type of lineTypes; track type) {
-                  <nz-option [nzValue]="type" [nzLabel]="'FS_WORK_ORDERS.TYPE_' + type | translate" />
-                }
-              </nz-select>
-              <input nz-input formControlName="description" [attr.aria-label]="'FS_WORK_ORDERS.LINE_DESCRIPTION' | translate" [placeholder]="'FS_WORK_ORDERS.LINE_DESCRIPTION' | translate" />
-              <nz-input-number formControlName="quantity" [nzMin]="0.01" [attr.aria-label]="'FS_WORK_ORDERS.LINE_QUANTITY' | translate" />
-              <nz-input-number formControlName="unit_price" [nzMin]="0" [nzStep]="0.01" [attr.aria-label]="'FS_WORK_ORDERS.LINE_PRICE' | translate" />
-              <nz-input-number formControlName="tax_rate" [nzMin]="0" [nzMax]="100" [attr.aria-label]="'FS_WORK_ORDERS.LINE_TAX' | translate" />
-              <button nz-button nzType="text" nzDanger type="button" (click)="removeLine(i)" appIconAction="delete"></button>
+      <fieldset class="fwo-parts">
+        <legend>{{ 'FSM.WO.REQUIRED_PARTS' | translate }}</legend>
+        <div formArrayName="required_parts">
+          @for (part of parts.controls; track part; let i = $index) {
+            <div class="fwo-part" [formGroupName]="i">
+              <app-fsm-product-select formControlName="product_id" [placeholder]="'FSM.WO.PRODUCT' | translate" />
+              <nz-input-number formControlName="quantity" [nzMin]="0.01" [attr.aria-label]="'FSM.WO.QUANTITY' | translate" />
+              <button nz-button nzType="text" nzDanger type="button" (click)="removePart(i)">{{ 'COMMON.DELETE' | translate }}</button>
             </div>
           }
         </div>
-        <button nz-button type="button" appIconAction="add" (click)="addLine()"></button>
+        <button nz-button type="button" (click)="addPart()">{{ 'FSM.WO.ADD_PART' | translate }}</button>
       </fieldset>
+
+      <nz-form-item>
+        <nz-form-label nzFor="fwo-notes">{{ 'FSM.WO.INTERNAL_NOTES' | translate }}</nz-form-label>
+        <nz-form-control>
+          <textarea nz-input id="fwo-notes" rows="2" formControlName="internal_notes" maxlength="5000"></textarea>
+        </nz-form-control>
+      </nz-form-item>
     </form>
   </ng-container>
-  <ng-template #formFooter>
-    <button nz-button type="button" appIconAction="cancel" (click)="formOpen.set(false)"></button>
-    <button nz-button nzType="primary" type="button" appIconAction="save" [nzLoading]="saving()" [disabled]="form.invalid" (click)="save()"></button>
-  </ng-template>
 </nz-modal>

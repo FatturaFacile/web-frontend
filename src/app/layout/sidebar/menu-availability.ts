@@ -143,6 +143,8 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/facility/requests',
   '/facility/spaces',
   '/field-service/contracts',
+  '/field-service/dispatcher',
+  '/field-service/equipment',
   '/field-service/reports',
   '/field-service/tickets',
   '/field-service/work-orders',

@@ -1,165 +1,54 @@
-<app-page-header
-  [title]="'SERVICE_REPORTS.TITLE' | translate"
-  [subtitle]="'SERVICE_REPORTS.SUBTITLE' | translate"
-/>
+<app-page-header [title]="'FSM.REPORT.LIST_TITLE' | translate" [subtitle]="'FSM.REPORT.LIST_SUBTITLE' | translate">
+  <div header-actions>
+    <button nz-button type="button" [nzLoading]="loading()" (click)="load()">{{ 'FSM.DISPATCH.REFRESH' | translate }}</button>
+  </div>
+</app-page-header>
+
+@if (loadError()) {
+  <nz-alert class="sr-alert" nzType="error" nzShowIcon [nzMessage]="'FSM.REPORT.LOAD_ERROR' | translate" />
+}
 
 <nz-card>
-  <div class="sr-filters">
-    <input
-      nz-input
-      class="sr-filter"
-      [ngModel]="status()"
-      (ngModelChange)="status.set($event)"
-      (keyup.enter)="applyFilters()"
-      [placeholder]="'SERVICE_REPORTS.FILTER_STATUS' | translate"
-      [attr.aria-label]="'SERVICE_REPORTS.FILTER_STATUS' | translate"
-    />
-    <input
-      nz-input
-      class="sr-filter"
-      type="date"
-      [ngModel]="fromDate()"
-      (ngModelChange)="fromDate.set($event)"
-      [attr.aria-label]="'SERVICE_REPORTS.FROM' | translate"
-    />
-    <input
-      nz-input
-      class="sr-filter"
-      type="date"
-      [ngModel]="toDate()"
-      (ngModelChange)="toDate.set($event)"
-      [attr.aria-label]="'SERVICE_REPORTS.TO' | translate"
-    />
-    <button nz-button type="button" (click)="applyFilters()">{{ 'SERVICE_REPORTS.APPLY' | translate }}</button>
-    <span class="sr-spacer"></span>
-    @if (canWrite()) {
-      <button nz-button nzType="primary" type="button" [disabled]="!canConsolidate()" (click)="consolidate()">
-        {{ 'SERVICE_REPORTS.CONSOLIDATED_INVOICE' | translate }}
+  <div class="sr-filters" role="group" [attr.aria-label]="'FSM.REPORT.FILTER' | translate">
+    @for (f of filters; track f) {
+      <button nz-button type="button" [nzType]="filter() === f ? 'primary' : 'default'" [attr.aria-pressed]="filter() === f" (click)="setFilter(f)">
+        {{ 'FSM.REPORT.FILTER_' + f.toUpperCase() | translate }}
       </button>
     }
   </div>
 
-  <app-base-table [grid]="grid" [columns]="columns()" [scroll]="{ x: 'max-content' }" [actionsTemplate]="actionsTpl" />
-
-  <ng-template #selectTpl let-report>
-    @if (canWrite() && report.is_signed && !report.is_invoiced) {
-      <input
-        type="checkbox"
-        [checked]="selectedIds().has(report.id)"
-        (change)="toggle(report.id, $any($event.target).checked)"
-        [attr.aria-label]="'SERVICE_REPORTS.SELECT' | translate"
-      />
-    }
-  </ng-template>
-  <ng-template #numberTpl let-report><strong>{{ report.report_number }}</strong></ng-template>
-  <ng-template #totalTpl let-report>{{ report.total_gross | money }}</ng-template>
-  <ng-template #statusTpl let-report>
-    @if (report.status?.label) {
-      <nz-tag>{{ report.status?.label }}</nz-tag>
-    }
-    @if (report.is_signed) {
-      <nz-tag nzColor="success">{{ 'SERVICE_REPORTS.SIGNED_TAG' | translate }}</nz-tag>
-    }
-    @if (report.is_invoiced) {
-      <nz-tag nzColor="blue">{{ 'SERVICE_REPORTS.INVOICED_TAG' | translate }}</nz-tag>
-    }
-  </ng-template>
-  <ng-template #actionsTpl let-report>
-    <button nz-button nzType="link" nzSize="small" type="button" (click)="downloadPdf(report)">
-      {{ 'SERVICE_REPORTS.PDF' | translate }}
-    </button>
-    <button nz-button nzType="link" nzSize="small" type="button" (click)="attachmentsTarget.set(report)">{{ 'SERVICE_REPORTS.ATTACHMENTS' | translate }}</button>
-    @if (canWrite()) {
-      @if (!report.is_invoiced) {
-        <button nz-button nzType="link" nzSize="small" type="button" (click)="openNotes(report)">{{ 'SERVICE_REPORTS.NOTES' | translate }}</button>
+  <nz-table nzSize="small" [nzData]="visible()" [nzLoading]="loading()" [nzShowPagination]="visible().length > 20" data-testid="reports-table">
+    <thead>
+      <tr>
+        <th>{{ 'FSM.WO.NUMBER' | translate }}</th>
+        <th>{{ 'FSM.WO.NAME' | translate }}</th>
+        <th>{{ 'FSM.WO.STATUS' | translate }}</th>
+        <th>{{ 'FSM.REPORT.COMPLETED_AT' | translate }}</th>
+        <th>{{ 'COMMON.ACTIONS' | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (order of visible(); track order.id) {
+        <tr>
+          <td>{{ order.work_order_number }}</td>
+          <td>{{ order.title }}</td>
+          <td>
+            @if (order.status === 'invoiced' || order.invoice_id) {
+              <nz-tag nzColor="cyan">{{ 'FSM.STATUS.INVOICED' | translate }}</nz-tag>
+            } @else {
+              <nz-tag nzColor="orange">{{ 'FSM.REPORT.TO_INVOICE' | translate }}</nz-tag>
+            }
+          </td>
+          <td>{{ order.actual_completion ? order.actual_completion.slice(0, 16).replace('T', ' ') : '-' }}</td>
+          <td>
+            <a nz-button nzSize="small" [routerLink]="['/field-service/work-orders', order.id]">{{ 'FSM.REPORT.OPEN' | translate }}</a>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="5">{{ 'FSM.REPORT.EMPTY' | translate }}</td>
+        </tr>
       }
-      @if (!report.is_signed && !report.is_invoiced) {
-        <button nz-button nzType="link" nzSize="small" nzDanger type="button" (click)="remove(report)">{{ 'COMMON.DELETE' | translate }}</button>
-      }
-      @if (!report.is_signed) {
-        <button nz-button nzType="link" nzSize="small" type="button" (click)="openSign(report)">
-          {{ 'SERVICE_REPORTS.SIGN' | translate }}
-        </button>
-      }
-      @if (!report.is_invoiced) {
-        <button nz-button nzType="link" nzSize="small" type="button" (click)="openPhoto(report)">
-          {{ 'SERVICE_REPORTS.ADD_PHOTO' | translate }}
-        </button>
-      }
-      @if (report.is_signed && !report.is_invoiced) {
-        <button nz-button nzType="link" nzSize="small" type="button" (click)="invoice(report)">
-          {{ 'SERVICE_REPORTS.INVOICE' | translate }}
-        </button>
-      }
-    }
-  </ng-template>
+    </tbody>
+  </nz-table>
 </nz-card>
-
-<app-signature-dialog
-  [(open)]="signOpen"
-  titleKey="SERVICE_REPORTS.SIGN_TITLE"
-  [withContact]="true"
-  [saving]="saving()"
-  (confirmed)="sign($event)"
-/>
-
-<nz-modal
-  [nzVisible]="photoTarget() !== null"
-  [nzTitle]="'SERVICE_REPORTS.ADD_PHOTO' | translate"
-  [nzFooter]="photoFooter"
-  (nzOnCancel)="photoTarget.set(null)"
->
-  <ng-container *nzModalContent>
-    <label class="sr-label" for="sr-photo">{{ 'SERVICE_REPORTS.PHOTO_FILE' | translate }}</label>
-    <input id="sr-photo" type="file" accept="image/*,application/pdf" (change)="onPhotoPicked($event)" />
-    <label class="sr-label" for="sr-stage">{{ 'SERVICE_REPORTS.PHOTO_STAGE' | translate }}</label>
-    <nz-select id="sr-stage" class="sr-select" [ngModel]="photoStage()" (ngModelChange)="photoStage.set($event)">
-      @for (stage of stages; track stage) {
-        <nz-option [nzValue]="stage" [nzLabel]="'SERVICE_REPORTS.STAGE_' + stage | translate" />
-      }
-    </nz-select>
-    <label class="sr-label" for="sr-caption">{{ 'SERVICE_REPORTS.PHOTO_CAPTION' | translate }}</label>
-    <input id="sr-caption" nz-input maxlength="255" [ngModel]="photoCaption()" (ngModelChange)="photoCaption.set($event)" />
-  </ng-container>
-  <ng-template #photoFooter>
-    <button nz-button type="button" appIconAction="cancel" (click)="photoTarget.set(null)"></button>
-    <button nz-button nzType="primary" type="button" [nzLoading]="saving()" [disabled]="!photoFile()" (click)="uploadPhoto()">
-      {{ 'SERVICE_REPORTS.UPLOAD' | translate }}
-    </button>
-  </ng-template>
-</nz-modal>
-
-<nz-modal
-  [nzVisible]="attachmentsTarget() !== null"
-  [nzTitle]="'SERVICE_REPORTS.ATTACHMENTS' | translate"
-  [nzFooter]="null"
-  (nzOnCancel)="attachmentsTarget.set(null)"
->
-  <ng-container *nzModalContent>
-    @if (attachmentsTarget(); as target) {
-      <app-record-attachments attachableType="service_report" [attachableId]="target.id" [canWrite]="canWrite()" />
-    }
-  </ng-container>
-</nz-modal>
-
-<nz-modal
-  [nzVisible]="notesTarget() !== null"
-  [nzTitle]="'SERVICE_REPORTS.NOTES_TITLE' | translate"
-  [nzFooter]="notesFooter"
-  (nzOnCancel)="notesTarget.set(null)"
->
-  <ng-container *nzModalContent>
-    <label class="sr-label" for="sr-cnotes">{{ 'SERVICE_REPORTS.CUSTOMER_NOTES' | translate }}</label>
-    <textarea id="sr-cnotes" nz-input rows="3" [ngModel]="customerNotes()" (ngModelChange)="customerNotes.set($event)"></textarea>
-    <label class="sr-label" for="sr-inotes">{{ 'SERVICE_REPORTS.INTERNAL_NOTES' | translate }}</label>
-    <textarea id="sr-inotes" nz-input rows="3" [ngModel]="internalNotes()" (ngModelChange)="internalNotes.set($event)"></textarea>
-    <label class="sr-label">
-      <input type="checkbox" [checked]="portalVisible()" (change)="portalVisible.set($any($event.target).checked)" />
-      {{ 'SERVICE_REPORTS.PORTAL_VISIBLE' | translate }}
-    </label>
-  </ng-container>
-  <ng-template #notesFooter>
-    <button nz-button type="button" appIconAction="cancel" (click)="notesTarget.set(null)"></button>
-    <button nz-button nzType="primary" type="button" [nzLoading]="saving()" (click)="saveNotes()">{{ 'COMMON.SAVE' | translate }}</button>
-  </ng-template>
-</nz-modal>

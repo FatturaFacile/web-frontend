@@ -48,6 +48,7 @@ export * from './api/manufacturing-cockpit-api.service';
 export * from './api/rent-api.service';
 export * from './api/automotive-api.service';
 export * from './api/field-service-api.service';
+export * from './api/fsm-api.service';
 export * from './api/ticket-api.service';
 export * from './api/helpdesk-api.service';
 export * from './api/project-api.service';

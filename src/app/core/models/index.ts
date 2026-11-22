@@ -28,6 +28,7 @@ export * from './rent.model';
 export * from './automotive.model';
 export * from './field-service.model';
 export * from './field-operations.model';
+export * from './fsm.model';
 export * from './ticket.model';
 export * from './helpdesk.model';
 export * from './project.model';
