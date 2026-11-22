@@ -1114,6 +1114,17 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         ],
       },
       {
+        key: 'NAV.ANALYTICAL',
+        icon: 'fa-solid fa-diagram-project',
+        module: 'analytical_accounting',
+        children: [
+          { key: 'NAV.ANALYTICAL_CENTERS', route: '/analytical-accounting', icon: 'fa-solid fa-sitemap', module: 'analytical_accounting' },
+          { key: 'NAV.ANALYTICAL_RULES', route: '/analytical-accounting/rules', icon: 'fa-solid fa-code-branch', module: 'analytical_accounting' },
+          { key: 'NAV.ANALYTICAL_APPORTIONMENT', route: '/analytical-accounting/apportionment', icon: 'fa-solid fa-stairs', module: 'analytical_accounting' },
+          { key: 'NAV.ANALYTICAL_REPORTS', route: '/analytical-accounting/reports', icon: 'fa-solid fa-chart-column', module: 'analytical_accounting' },
+        ],
+      },
+      {
         key: 'NAV.BUDGETING',
         icon: 'fa-solid fa-scale-balanced',
         module: 'budgeting',

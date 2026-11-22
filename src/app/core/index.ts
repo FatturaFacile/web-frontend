@@ -115,6 +115,7 @@ export * from './api/marketplace-api.service';
 export * from './api/platform-api.service';
 export * from './api/planning-api.service';
 export * from './api/budgeting-api.service';
+export * from './api/analytical-accounting-api.service';
 export * from './api/controlling-api.service';
 export * from './api/credit-management-api.service';
 export * from './api/shift-planning-api.service';

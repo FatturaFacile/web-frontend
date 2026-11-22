@@ -573,6 +573,15 @@ export const routes: Routes = [
       import('./features/security/security-center/security-center.routes').then((m) => m.SECURITY_CENTER_ROUTES),
   },
   {
+    path: 'analytical-accounting',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'NAV.ANALYTICAL', title: 'PAGE_TITLE.ANALYTICAL_CENTERS' },
+    loadChildren: () =>
+      import('./features/analytical-accounting/analytical-accounting.routes').then(
+        (m) => m.ANALYTICAL_ACCOUNTING_ROUTES,
+      ),
+  },
+  {
     path: 'controlling',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.CONTROLLING', title: 'PAGE_TITLE.CONTROLLING' },

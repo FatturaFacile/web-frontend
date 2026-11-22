@@ -1,0 +1,98 @@
+:host {
+  display: block;
+}
+
+.error {
+  color: var(--error-color, #cf1322);
+  margin-bottom: 12px;
+}
+
+.muted {
+  color: var(--text-secondary, #8c8c8c);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-weight: 500;
+  }
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.negative {
+  color: var(--error-color, #cf1322);
+}
+
+.positive {
+  color: var(--success-color, #389e0d);
+}
+
+.statement {
+  display: grid;
+  gap: 4px;
+  max-width: 640px;
+
+  .row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 12px;
+    border-radius: 4px;
+
+    &.level {
+      font-weight: 600;
+      background: var(--bg-subtle, #fafafa);
+    }
+
+    &.result {
+      font-weight: 700;
+      border: 1px solid var(--border-color, #f0f0f0);
+    }
+
+    .pct {
+      min-width: 72px;
+      text-align: right;
+      color: var(--text-secondary, #8c8c8c);
+    }
+  }
+}
+
+.trace-step {
+  margin-bottom: 16px;
+
+  h4 {
+    margin: 0 0 8px;
+  }
+}
+
+.vector-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) 110px 40px;
+  gap: 8px;
+  margin-bottom: 8px;
+  align-items: center;
+}
