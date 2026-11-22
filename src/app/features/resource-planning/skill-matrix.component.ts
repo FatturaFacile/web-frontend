@@ -90,7 +90,7 @@ interface ProfileDraft {
     }
 
     <nz-spin [nzSpinning]="store.loading() || store.saving()">
-      <nz-tabset>
+      <nz-tabs>
         <nz-tab [nzTitle]="'resourcePlanning.skills.matrix' | translate">
           <div class="toolbar">
             <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
@@ -229,7 +229,7 @@ interface ProfileDraft {
             </tbody>
           </nz-table>
         </nz-tab>
-      </nz-tabset>
+      </nz-tabs>
     </nz-spin>
 
     <ng-template #cellTip let-cell>
