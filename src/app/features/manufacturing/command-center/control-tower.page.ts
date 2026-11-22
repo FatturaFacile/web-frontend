@@ -83,15 +83,21 @@ interface GaugeRow {
         (ngModelChange)="windowChanged($event)"
       ></nz-input-number>
       <label for="cc-live">{{ 'MFG_CC.LIVE_UPDATE' | translate }}</label>
-      <nz-switch id="cc-live" [ngModel]="facade.polling()" (ngModelChange)="toggleLive($event)"></nz-switch>
+      <nz-switch id="cc-live" [ngModel]="facade.live()" (ngModelChange)="toggleLive($event)"></nz-switch>
       <button nz-button type="button" data-testid="refresh" [nzLoading]="facade.cockpitLoading()" (click)="refresh()">
         {{ 'MFG_CC.REFRESH' | translate }}
       </button>
       <span class="sub" aria-live="polite">
-        @if (facade.polling()) {
-          {{ 'MFG_CC.POLLING_EVERY' | translate: { seconds: facade.pollMs() / 1000 } }}
-        } @else {
-          {{ 'MFG_CC.POLLING_OFF' | translate }}
+        @switch (facade.connection()) {
+          @case ('sse') {
+            {{ 'MFG_CC.CONNECTION_SSE' | translate }}
+          }
+          @case ('polling') {
+            {{ 'MFG_CC.POLLING_EVERY' | translate: { seconds: facade.pollMs() / 1000 } }}
+          }
+          @default {
+            {{ 'MFG_CC.POLLING_OFF' | translate }}
+          }
         }
       </span>
     </div>
@@ -295,7 +301,7 @@ export class ControlTowerComponent implements OnInit {
 
   ngOnInit(): void {
     this.facade.loadGateways();
-    this.facade.startPolling();
+    this.facade.startLive();
   }
 
   protected refresh(): void {
@@ -309,9 +315,9 @@ export class ControlTowerComponent implements OnInit {
 
   protected toggleLive(on: boolean): void {
     if (on) {
-      this.facade.startPolling(this.facade.pollMs());
+      this.facade.startLive();
     } else {
-      this.facade.stopPolling();
+      this.facade.stopLive();
     }
   }
 }

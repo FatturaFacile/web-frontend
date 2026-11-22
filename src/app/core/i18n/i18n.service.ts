@@ -4,8 +4,10 @@ import { en_US, it_IT, de_DE, fr_FR, NzI18nService } from 'ng-zorro-antd/i18n';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '@env';
 import {
+  dictionaryLocale,
   resolveInitialLanguage,
   SupportedLanguage,
+  TranslationRegion,
   SUPPORTED_LANGUAGES,
   TranslationDictionary,
 } from './i18n.types';
@@ -54,6 +56,9 @@ export class I18nService {
   readonly languages = SUPPORTED_LANGUAGES;
   readonly currentLanguage = signal<SupportedLanguage>(resolveInitialLanguage());
   readonly currentTenantId = signal<string>(getInitialTenantId());
+  /** The region of the active tenant (null until known): it picks the regional dictionary of the language. */
+  readonly region = signal<TranslationRegion | null>(null);
+  readonly dictionaryLocale = computed(() => dictionaryLocale(this.currentLanguage(), this.region()));
 
   // Cache in memoria dei dizionari per lingua
   private readonly dictionaries = signal<Record<string, TranslationDictionary>>({});
@@ -66,8 +71,9 @@ export class I18nService {
   private readonly inFlightRequests = new Map<string, Promise<TranslationDictionary>>();
 
   readonly currentDictionary = computed<TranslationDictionary>(() => {
-    const lang = this.currentLanguage();
-    return this.dictionaries()[lang] ?? {};
+    // The regional variant is complete (it derives from its language); until it is loaded the language itself is shown.
+    const dictionaries = this.dictionaries();
+    return dictionaries[this.dictionaryLocale()] ?? dictionaries[this.currentLanguage()] ?? {};
   });
 
   constructor() {
@@ -119,6 +125,22 @@ export class I18nService {
     }
   }
 
+  /** Sets the region of the active tenant and loads the regional dictionary of the current language, if there is one. */
+  setRegion(region: TranslationRegion | null): void {
+    if (this.region() === region) {
+      return;
+    }
+    this.region.set(region);
+    this.loadRegional();
+  }
+
+  private loadRegional(): void {
+    const locale = this.dictionaryLocale();
+    if (locale !== this.currentLanguage()) {
+      void this.loadDictionary(locale);
+    }
+  }
+
   setTenantId(tenantId: string): void {
     this.currentTenantId.set(tenantId);
     if (typeof window !== 'undefined' && window.localStorage) {
@@ -129,7 +151,7 @@ export class I18nService {
     // Invalida la cache in memoria e le richieste in sospeso per il nuovo tenant
     this.inFlightRequests.clear();
     this.dictionaries.set({});
-    void this.loadInitialTranslations();
+    void this.loadInitialTranslations().then(() => this.loadRegional());
   }
 
   setLanguage(lang: SupportedLanguage): Promise<TranslationDictionary> {
@@ -145,10 +167,12 @@ export class I18nService {
     }
 
     this.syncNzLocale(lang);
+    this.loadRegional();
     return this.loadDictionary(lang);
   }
 
-  loadDictionary(lang: SupportedLanguage): Promise<TranslationDictionary> {
+  /** Loads a dictionary: a language (it, en, de, fr) or a regional variant of it (it-CH, de-CH, fr-CH, it-IT). */
+  loadDictionary(lang: string): Promise<TranslationDictionary> {
     const existing = this.dictionaries()[lang];
     if (existing) {
       return Promise.resolve(existing);

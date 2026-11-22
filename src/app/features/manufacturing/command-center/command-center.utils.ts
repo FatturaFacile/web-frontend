@@ -165,10 +165,12 @@ export function ownBookedHours(operations: readonly MfgOrderOperation[], workCen
   return minutes / 60;
 }
 
-export type RescheduleIssueCode = 'status' | 'range' | 'overload' | 'no_capacity';
+/** `server` is a refusal of the API itself (its message in `message`), for example an overload it found. */
+export type RescheduleIssueCode = 'status' | 'range' | 'overload' | 'no_capacity' | 'server';
 
 export interface RescheduleIssue {
   code: RescheduleIssueCode;
+  message?: string;
   workCenterId?: string;
   requiredHours?: number;
   freeHours?: number;
