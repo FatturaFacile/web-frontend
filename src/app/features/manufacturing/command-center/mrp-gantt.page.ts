@@ -37,8 +37,8 @@ interface GanttRow {
 /**
  * MRP planned orders, pegging and a finite-capacity Gantt. Production orders (planned or released) are dragged with the
  * pointer or moved with the arrow keys; the move is checked against the capacity of their work centres before the API is
- * called, and an overload refuses it. Planned MRP orders are shown as read-only bars: the API has no endpoint to
- * reschedule them (they are dated by the MRP run and converted with their dates).
+ * called (the API checks the capacity again), and an overload refuses it; the planner can book it anyway. Planned MRP
+ * orders are dragged too (`POST /mrp/planned-orders/{id}/reschedule`) and convert with their new dates.
  */
 @Component({
   selector: 'app-mrp-gantt',
@@ -55,7 +55,7 @@ interface GanttRow {
     .bar { position: absolute; top: 6px; height: 24px; border-radius: 4px; color: #fff; font-size: 12px; line-height: 24px; padding: 0 6px; overflow: hidden; white-space: nowrap; box-sizing: border-box; touch-action: none }
     .bar.order { background: #0958d9; cursor: grab }
     .bar.order.released { background: #237804 }
-    .bar.planned { background: repeating-linear-gradient(45deg, #595959, #595959 6px, #434343 6px, #434343 12px); cursor: not-allowed }
+    .bar.planned { background: repeating-linear-gradient(45deg, #595959, #595959 6px, #434343 6px, #434343 12px); cursor: grab }
     .bar:focus-visible { outline: 3px solid #fa8c16; outline-offset: 1px }
     .bar.dragging { cursor: grabbing; opacity: .85; box-shadow: 0 2px 8px rgba(0,0,0,.4) }
     .bar.refused { background: #a8071a }
@@ -142,6 +142,11 @@ interface GanttRow {
         [nzMessage]="v.ok ? ('MFG_CC.RESCHEDULED' | translate) : ('MFG_CC.RESCHEDULE_REFUSED' | translate)"
         [nzDescription]="issueText(v)"
       ></nz-alert>
+      @if (refusedMove()) {
+        <button nz-button nzDanger type="button" style="margin-top: 8px" data-testid="book-anyway" (click)="bookAnyway()">
+          {{ 'MFG_CC.BOOK_ANYWAY' | translate }}
+        </button>
+      }
     }
 
     <nz-card style="margin-top: 16px" [nzTitle]="'MFG_CC.PLANNED_ORDERS' | translate">
@@ -269,6 +274,8 @@ export class MrpGanttComponent implements OnInit {
   protected readonly drag = signal<{ id: string; startX: number; deltaDays: number } | null>(null);
   protected readonly verdict = signal<RescheduleCheck | null>(null);
   protected readonly refusedId = signal<string | null>(null);
+  /** The refused move of a production order, which the planner may book anyway. */
+  protected readonly refusedMove = signal<{ id: string; target: GanttWindow } | null>(null);
   private readonly keyDelta = signal<{ id: string; deltaDays: number } | null>(null);
 
   protected readonly rows = computed<GanttRow[]>(() => {
@@ -288,7 +295,7 @@ export class MrpGanttComponent implements OnInit {
       kind: 'planned',
       status: p.status,
       window: { start: p.start_date.slice(0, 10), end: p.due_date.slice(0, 10) },
-      draggable: false,
+      draggable: true,
       pegged: null,
     }));
     return [...orders, ...planned];
@@ -411,6 +418,9 @@ export class MrpGanttComponent implements OnInit {
   protected issueText(check: RescheduleCheck): string {
     return check.issues
       .map((issue) => {
+        if (issue.code === 'server') {
+          return issue.message ?? '';
+        }
         const center = issue.workCenterId ? (this.facade.workCenterName().get(issue.workCenterId) ?? issue.workCenterId) : '';
         return this.i18n.instant(`MFG_CC.ISSUE_${issue.code.toUpperCase()}`, {
           center,
@@ -440,16 +450,53 @@ export class MrpGanttComponent implements OnInit {
     if (row === undefined) {
       return;
     }
-    this.facade.reschedule(orderId, shiftWindow(row.window, deltaDays)).subscribe({
-      next: ({ check }) => {
-        this.verdict.set(check);
-        this.refusedId.set(check.ok ? null : orderId);
-      },
-      error: () => {
-        this.verdict.set({ ok: false, issues: [] });
-        this.refusedId.set(orderId);
-        this.message.error(this.i18n.instant('MFG_CC.RESCHEDULE_ERROR'));
-      },
+    const target = shiftWindow(row.window, deltaDays);
+    this.refusedMove.set(null);
+
+    if (row.kind === 'planned') {
+      this.facade.reschedulePlannedOrder(orderId.slice(2), target).subscribe({
+        next: ({ error }) => {
+          this.verdict.set(error === null ? { ok: true, issues: [] } : { ok: false, issues: [{ code: 'server', message: error }] });
+          this.refusedId.set(error === null ? null : orderId);
+        },
+        error: () => this.fail(orderId),
+      });
+      return;
+    }
+
+    this.facade.reschedule(orderId, target).subscribe({
+      next: ({ check }) => this.settle(orderId, target, check),
+      error: () => this.fail(orderId),
     });
+  }
+
+  /** Books a refused move although a work centre cannot carry it (the API accepts it with `allow_overload`). */
+  protected bookAnyway(): void {
+    const move = this.refusedMove();
+    if (move === null) {
+      return;
+    }
+    this.refusedMove.set(null);
+    this.facade.reschedule(move.id, move.target, true).subscribe({
+      next: ({ check }) => this.settle(move.id, move.target, check),
+      error: () => this.fail(move.id),
+    });
+  }
+
+  /** Only a capacity refusal can be overridden; a status or date refusal cannot. */
+  protected canOverride(check: RescheduleCheck): boolean {
+    return !check.ok && check.issues.length > 0 && check.issues.every((i) => i.code === 'overload' || i.code === 'no_capacity' || i.code === 'server');
+  }
+
+  private settle(orderId: string, target: GanttWindow, check: RescheduleCheck): void {
+    this.verdict.set(check);
+    this.refusedId.set(check.ok ? null : orderId);
+    this.refusedMove.set(this.canOverride(check) ? { id: orderId, target } : null);
+  }
+
+  private fail(orderId: string): void {
+    this.verdict.set({ ok: false, issues: [] });
+    this.refusedId.set(orderId);
+    this.message.error(this.i18n.instant('MFG_CC.RESCHEDULE_ERROR'));
   }
 }

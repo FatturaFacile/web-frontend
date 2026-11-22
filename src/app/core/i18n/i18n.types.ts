@@ -1,5 +1,24 @@
 export type SupportedLanguage = 'en' | 'it' | 'de' | 'fr';
 
+/** Where the tenant operates: it selects the regional variant of a language (it-CH, de-CH, fr-CH, it-IT). */
+export type TranslationRegion = 'CH' | 'IT';
+
+const REGIONAL_VARIANTS: Readonly<Record<TranslationRegion, readonly SupportedLanguage[]>> = {
+  CH: ['it', 'de', 'fr'],
+  IT: ['it'],
+};
+
+/** The dictionary to load for a language in a region: the regional variant the API ships, else the language itself. */
+export function dictionaryLocale(language: SupportedLanguage, region: TranslationRegion | null): string {
+  return region !== null && REGIONAL_VARIANTS[region].includes(language) ? `${language}-${region}` : language;
+}
+
+/** The region of a tenant country (ISO code): Switzerland and Italy have regional dictionaries. */
+export function regionOfCountry(country: string | null | undefined): TranslationRegion | null {
+  const code = country?.toUpperCase();
+  return code === 'CH' || code === 'IT' ? code : null;
+}
+
 export interface LanguageOption {
   readonly code: SupportedLanguage;
   readonly label: string;

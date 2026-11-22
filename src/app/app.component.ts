@@ -1,10 +1,12 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, effect, inject, OnInit } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRouteSnapshot, NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { NzLayoutModule } from 'ng-zorro-antd/layout';
 import { filter, map } from 'rxjs';
 import { AuthApiService } from '@core/api/auth-api.service';
 import { AuthStore } from '@core/auth/auth.store';
+import { I18nService } from '@core/i18n/i18n.service';
+import { regionOfCountry } from '@core/i18n/i18n.types';
 import { AppStore } from '@core/state/app.store';
 import { DisplayPreferencesService } from '@core/theme/display-preferences.service';
 import { ImpersonationBannerComponent } from '@core/iam/impersonation-banner.component';
@@ -54,6 +56,10 @@ export class AppComponent implements OnInit {
   private readonly authApi = inject(AuthApiService, { optional: true });
   private readonly displayPreferences = inject(DisplayPreferencesService, { optional: true });
   private readonly router = inject(Router);
+  private readonly i18n = inject(I18nService);
+
+  /** Swiss and Italian tenants get the regional dictionary of their language (it-CH, de-CH, fr-CH, it-IT). */
+  private readonly regionSync = effect(() => this.i18n.setRegion(regionOfCountry(this.authStore.activeJurisdiction())));
 
   /** Public pages (RMA estimate/tracking) render without the shell, even for signed-in staff. */
   readonly publicPage = toSignal(

@@ -18,6 +18,7 @@ import {
 import {
   catchError,
   concatMap,
+  defer,
   EMPTY,
   finalize,
   forkJoin,
@@ -25,9 +26,12 @@ import {
   map,
   Observable,
   of,
+  repeat,
+  retry,
   Subscription,
   switchMap,
   tap,
+  throwError,
   timer,
   toArray,
 } from 'rxjs';
@@ -44,12 +48,22 @@ import {
 
 export const DEFAULT_POLL_MS = 15_000;
 const MIN_POLL_MS = 5_000;
+/** While the stream is open only the parts of the cockpit it does not carry are refreshed. */
+const SSE_REFRESH_MS = 60_000;
+const STREAM_RECONNECT_MS = 1_000;
+const STREAM_RETRY_MS = 60_000;
 type StatusQuery = QueryFilterParams & { status?: string };
 
 export interface RescheduleOutcome {
   check: RescheduleCheck;
-  /** The order as saved; `null` when the check refused the move (nothing was sent to the API). */
+  /** The order as saved; `null` when the move was refused (by the check here or by the API). */
   order: MfgProductionOrderResource | null;
+}
+
+export interface PlannedRescheduleOutcome {
+  /** The planned order as saved; `null` when the API refused the move. */
+  plannedOrder: MfgPlannedOrderResource | null;
+  error: string | null;
 }
 
 export interface BatchReleaseResult {
@@ -77,6 +91,11 @@ interface PostingDraft {
   /** `orderId:operationId` plus the booked values: a retry of the same booking has the same key. */
   key: string;
   uuid: string;
+}
+
+/** `true` for a refusal of the API (validation or business rule, HTTP 422). */
+export function isUnprocessable(error: unknown): boolean {
+  return (error as { status?: number } | null)?.status === 422;
 }
 
 export function apiMessage(error: unknown): string {
@@ -108,6 +127,10 @@ export class ManufacturingFacadeService {
   readonly pollMs = signal(DEFAULT_POLL_MS);
   readonly gateways = signal<MfgEdgeGateway[]>([]);
   private pollSub: Subscription | null = null;
+  private streamSub: Subscription | null = null;
+  /** Live mode on, and how the data arrive: pushed by the stream, polled, or not at all. */
+  readonly live = signal(false);
+  readonly connection = signal<'off' | 'polling' | 'sse'>('off');
 
   readonly pipeline = computed(() => pipelineStages(this.cockpit()?.orders.by_strategy ?? {}));
   readonly machineMatrix = computed(() => machineStateCounts(this.cockpit()?.machines.by_state ?? {}));
@@ -125,7 +148,7 @@ export class ManufacturingFacadeService {
   });
 
   constructor() {
-    this.destroyRef.onDestroy(() => this.stopPolling());
+    this.destroyRef.onDestroy(() => this.stopLive());
   }
 
   refreshCockpit(): Observable<MfgCockpit> {
@@ -176,6 +199,48 @@ export class ManufacturingFacadeService {
     this.pollSub?.unsubscribe();
     this.pollSub = null;
     this.polling.set(false);
+  }
+
+  /**
+   * Live mode: the machine states arrive as server-sent events (`GET /machines/stream`) and patch the matrix at once,
+   * while the rest of the cockpit is refreshed once a minute. The stream is reconnected when the server ends it at its
+   * deadline; when it cannot be opened the facade falls back to polling the whole cockpit every 15 s and tries the
+   * stream again after a minute.
+   */
+  startLive(): void {
+    this.stopLive();
+    this.live.set(true);
+    this.connection.set('polling');
+    this.startPolling(DEFAULT_POLL_MS);
+
+    this.streamSub = defer(() => this.cockpitApi.streamMachineStates())
+      .pipe(
+        tap((machines) => {
+          if (this.connection() !== 'sse') {
+            this.connection.set('sse');
+            this.startPolling(SSE_REFRESH_MS);
+          }
+          this.cockpit.update((cockpit) => (cockpit === null ? cockpit : { ...cockpit, machines }));
+          this.lastUpdated.set(Date.now());
+        }),
+        repeat({ delay: STREAM_RECONNECT_MS }),
+        retry({
+          delay: () => {
+            this.connection.set('polling');
+            this.startPolling(DEFAULT_POLL_MS);
+            return timer(STREAM_RETRY_MS);
+          },
+        }),
+      )
+      .subscribe();
+  }
+
+  stopLive(): void {
+    this.streamSub?.unsubscribe();
+    this.streamSub = null;
+    this.stopPolling();
+    this.live.set(false);
+    this.connection.set('off');
   }
 
   // --- Planning: planned orders, orders, capacity -----------------------------------------------------------------------
@@ -273,20 +338,47 @@ export class ManufacturingFacadeService {
     );
   }
 
-  reschedule(orderId: string, target: GanttWindow): Observable<RescheduleOutcome> {
-    return this.checkReschedule(orderId, target).pipe(
+  /**
+   * Books a move. The capacity is checked here first (so a refused drag costs no request) and again by the API, which
+   * answers 422 on an overload; either refusal comes back as a failed check. `allowOverload` skips both checks, for a
+   * planner who books the move on purpose.
+   */
+  reschedule(orderId: string, target: GanttWindow, allowOverload = false): Observable<RescheduleOutcome> {
+    const checked: Observable<RescheduleCheck> = allowOverload ? of({ ok: true, issues: [] }) : this.checkReschedule(orderId, target);
+
+    return checked.pipe(
       switchMap((check) => {
         if (!check.ok) {
           return of<RescheduleOutcome>({ check, order: null });
         }
-        return this.cockpitApi.rescheduleOrder(orderId, target.start, target.end).pipe(
+        return this.cockpitApi.rescheduleOrder(orderId, target.start, target.end, allowOverload).pipe(
           tap((res) => {
             this.orders.update((list) => list.map((o) => (o.id === orderId ? { ...o, ...res.data } : o)));
             this.operationsCache.delete(orderId);
             this.capacityCache.clear();
           }),
           map((res): RescheduleOutcome => ({ check, order: res.data })),
+          catchError((error: unknown) => {
+            if (isUnprocessable(error)) {
+              return of<RescheduleOutcome>({ check: { ok: false, issues: [{ code: 'server', message: apiMessage(error) }] }, order: null });
+            }
+            return throwError(() => error);
+          }),
         );
+      }),
+    );
+  }
+
+  /** Moves the dates of an MRP planned order (`POST /mrp/planned-orders/{id}/reschedule`); the API refuses a converted one. */
+  reschedulePlannedOrder(plannedOrderId: string, target: GanttWindow): Observable<PlannedRescheduleOutcome> {
+    return this.cockpitApi.reschedulePlannedOrder(plannedOrderId, target.start, target.end).pipe(
+      tap((res) => this.plannedOrders.update((list) => list.map((p) => (p.id === plannedOrderId ? { ...p, ...res.data } : p)))),
+      map((res): PlannedRescheduleOutcome => ({ plannedOrder: res.data, error: null })),
+      catchError((error: unknown) => {
+        if (isUnprocessable(error)) {
+          return of<PlannedRescheduleOutcome>({ plannedOrder: null, error: apiMessage(error) });
+        }
+        return throwError(() => error);
       }),
     );
   }
