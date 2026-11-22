@@ -470,6 +470,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'receivables',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'NAV.RECEIVABLES', title: 'PAGE_TITLE.RECEIVABLES_DASHBOARD' },
+    loadChildren: () =>
+      import('./features/receivables/receivables.routes').then((m) => m.RECEIVABLES_ROUTES),
+  },
+  {
     path: 'analytics',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.ANALYTICS', title: 'NAV.ANALYTICS' },

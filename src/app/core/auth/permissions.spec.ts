@@ -62,4 +62,15 @@ describe('canAccessModule', () => {
       expect(access.write.length, name).toBeGreaterThan(0);
     }
   });
+
+  it('lets every member read the receivables but only credit managers write them', () => {
+    expect(canAccessModule('receivables', 'read', ['sales'])).toBe(true);
+    expect(canAccessModule('receivables', 'read', ['accountant_readonly'])).toBe(true);
+    for (const role of ['owner', 'admin', 'accountant', 'sales_manager']) {
+      expect(canAccessModule('receivables', 'write', [role]), role).toBe(true);
+    }
+    expect(canAccessModule('receivables', 'write', ['sales'])).toBe(false);
+    expect(canAccessModule('receivables', 'write', ['accountant_readonly'])).toBe(false);
+    expect(canAccessModule('receivables', 'write', ['warehouse'])).toBe(false);
+  });
 });
