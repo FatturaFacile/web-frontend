@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { toHttpParams } from '../http/laravel-http.utils';
 import {
   CannedResponse,
+  CannedResponseParams,
   HelpdeskNotification,
   HelpdeskNotificationsResponse,
   KnowledgeArticle,
@@ -18,8 +19,10 @@ export class HelpdeskApiService {
   private readonly http = inject(HttpClient);
   private readonly base = `${environment.apiBaseUrl}/esm`;
 
-  getCannedResponses(): Observable<{ data: CannedResponse[] }> {
-    return this.http.get<{ data: CannedResponse[] }>(`${this.base}/helpdesk/canned-responses`);
+  getCannedResponses(params?: CannedResponseParams): Observable<{ data: CannedResponse[] }> {
+    return this.http.get<{ data: CannedResponse[] }>(`${this.base}/helpdesk/canned-responses`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
   }
 
   getMacros(): Observable<{ data: Macro[] }> {

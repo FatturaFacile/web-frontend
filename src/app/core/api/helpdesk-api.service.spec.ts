@@ -58,4 +58,16 @@ describe('HelpdeskApiService', () => {
     expect(read.request.method).toBe('POST');
     read.flush({ data: { id: 'n1' } });
   });
+
+  it('filters canned responses and knowledge base articles by locale', () => {
+    service.getCannedResponses({ locale: 'fr-CH' }).subscribe();
+    const canned = httpTesting.expectOne((r) => r.url === `${base}/helpdesk/canned-responses`);
+    expect(canned.request.params.get('locale')).toBe('fr-CH');
+    canned.flush({ data: [] });
+
+    service.getKnowledgeArticles({ locale: 'it-IT' }).subscribe();
+    const articles = httpTesting.expectOne((r) => r.url === `${base}/kb/articles`);
+    expect(articles.request.params.get('locale')).toBe('it-IT');
+    articles.flush({ data: [] });
+  });
 });
