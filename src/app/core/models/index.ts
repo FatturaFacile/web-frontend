@@ -2,6 +2,7 @@ export * from './api.models';
 export * from './auth.model';
 export * from './client.model';
 export * from './customer-360.model';
+export * from './customer-lifecycle.model';
 export * from './invoice.model';
 export * from './accounting.model';
 export * from './alerts.model';
