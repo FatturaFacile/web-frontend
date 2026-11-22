@@ -1030,6 +1030,18 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         ],
       },
       {
+        key: 'NAV.RECEIVABLES',
+        icon: 'fa-solid fa-money-bill-transfer',
+        module: 'receivables',
+        children: [
+          { key: 'NAV.RECEIVABLES_DASHBOARD', route: '/receivables', icon: 'fa-solid fa-chart-pie', module: 'receivables' },
+          { key: 'NAV.RECEIVABLES_ITEMS', route: '/receivables/items', icon: 'fa-solid fa-list-check', module: 'receivables' },
+          { key: 'NAV.RECEIVABLES_LEDGER', route: '/receivables/ledger', icon: 'fa-solid fa-book', module: 'receivables' },
+          { key: 'NAV.RECEIVABLES_CREDIT', route: '/receivables/credit', icon: 'fa-solid fa-scale-balanced', module: 'receivables' },
+          { key: 'NAV.RECEIVABLES_STATEMENT', route: '/receivables/statement', icon: 'fa-solid fa-file-invoice', module: 'receivables' },
+        ],
+      },
+      {
         key: 'NAV.ANALYTICS',
         icon: 'fa-solid fa-chart-line',
         module: 'analytics',

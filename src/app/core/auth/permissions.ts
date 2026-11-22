@@ -150,6 +150,13 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
     read: [...FINANCE_READERS, 'sales', 'sales_manager'],
     write: [...FINANCE, 'sales_manager'],
   },
+  // Accounts receivable and credit management (Mod 013). The API gates the routes with `module.access:invoicing`
+  // (every member reads) and refuses the writes of anyone who is not a credit manager (owner, admin, accountant,
+  // sales_manager), so the UI shows the write actions to those roles only.
+  receivables: {
+    read: ANY_MEMBER,
+    write: ['owner', 'admin', 'accountant', 'sales_manager'],
+  },
   shift_planning: {
     read: ['owner', 'admin', 'hr', 'production'],
     write: ['owner', 'admin', 'hr', 'production'],
