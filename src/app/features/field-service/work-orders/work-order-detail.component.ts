@@ -14,6 +14,7 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { applyServerErrors, FsmApiService, FsmWorkOrderDetail, FsmWorkOrderPart, I18nService, PermissionsService } from '@core';
 import { downloadBlob, MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import { SignReportModalComponent } from './sign-report-modal.component';
 import { ProductSelectComponent } from '../components/product-select/product-select.component';
 import { WORK_ORDER_STATUS_TAG_COLORS } from './field-work-orders.component';
 
@@ -48,6 +49,7 @@ export function partLineTotal(part: Pick<FsmWorkOrderPart, 'quantity' | 'unit_pr
     PageHeaderComponent,
     TranslatePipe,
     ProductSelectComponent,
+    SignReportModalComponent,
   ],
   templateUrl: './work-order-detail.component.html',
   styleUrl: './work-order-detail.component.scss',
@@ -87,6 +89,7 @@ export class WorkOrderDetailComponent implements OnInit {
     }
   });
   protected readonly billableTotal = computed(() => Number(this.report()?.billing.billable_total ?? 0));
+  protected readonly canSign = computed(() => this.canWrite() && this.order()?.status === 'on_site' && !this.report());
   protected readonly canInvoice = computed(() => {
     const report = this.report();
     return this.canWrite() && !!report && !report.invoice_id && this.order()?.status === 'completed' && this.billableTotal() > 0;
@@ -105,6 +108,7 @@ export class WorkOrderDetailComponent implements OnInit {
   protected readonly partError = signal<string | null>(null);
   protected readonly partSaving = signal(false);
 
+  protected readonly signOpen = signal(false);
   protected readonly invoiceOpen = signal(false);
   protected readonly invoiceSaving = signal(false);
   protected readonly invoiceError = signal<string | null>(null);
@@ -194,6 +198,14 @@ export class WorkOrderDetailComponent implements OnInit {
       next: (blob) => downloadBlob(blob, `${report.report_number}.pdf`),
       error: () => this.message.error(this.i18n.translate('FSM.REPORT.PDF_FAILED')),
     });
+  }
+
+  protected openSign(): void {
+    this.signOpen.set(true);
+  }
+
+  protected onSigned(): void {
+    this.load();
   }
 
   protected openInvoice(): void {

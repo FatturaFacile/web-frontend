@@ -1,0 +1,107 @@
+<nz-modal
+  [nzVisible]="open()"
+  [nzTitle]="'FSM.REPORT.SIGN_TITLE' | translate"
+  [nzOkText]="'FSM.REPORT.SIGN_CONFIRM' | translate"
+  [nzCancelText]="'COMMON.CANCEL' | translate"
+  [nzOkLoading]="saving()"
+  [nzOkDisabled]="!canSubmit()"
+  [nzMaskClosable]="false"
+  [nzWidth]="720"
+  (nzOnOk)="submit()"
+  (nzOnCancel)="open.set(false)"
+>
+  <ng-container *nzModalContent>
+    @if (formError()) {
+      <nz-alert class="srm-alert" nzType="error" nzShowIcon role="alert" data-testid="sign-error" [nzMessage]="formError()" />
+    }
+    <form nz-form nzLayout="vertical" [formGroup]="form" (ngSubmit)="submit()">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="srm-summary">{{ 'FSM.REPORT.SUMMARY' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldError('work_performed_summary')">
+          <textarea id="srm-summary" nz-input rows="3" maxlength="5000" formControlName="work_performed_summary"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+
+      <div class="srm-grid">
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="srm-labor">{{ 'FSM.REPORT.LABOR_HOURS' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldError('labor_hours')">
+            <nz-input-number nzId="srm-labor" formControlName="labor_hours" [nzMin]="0" [nzMax]="999" [nzStep]="0.25" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="srm-travel-hours">{{ 'FSM.REPORT.SIGN_TRAVEL_HOURS' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldError('travel_hours')">
+            <nz-input-number nzId="srm-travel-hours" formControlName="travel_hours" [nzMin]="0" [nzMax]="999" [nzStep]="0.25" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="srm-travel-km">{{ 'FSM.REPORT.SIGN_TRAVEL_KM' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldError('travel_km')">
+            <nz-input-number nzId="srm-travel-km" formControlName="travel_km" [nzMin]="0" [nzMax]="99999" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="srm-meter-hours">{{ 'FSM.REPORT.SIGN_METER_HOURS' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldError('meter_reading_hours')">
+            <nz-input-number nzId="srm-meter-hours" formControlName="meter_reading_hours" [nzMin]="0" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="srm-meter-cycles">{{ 'FSM.REPORT.SIGN_METER_CYCLES' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldError('meter_reading_cycles')">
+            <nz-input-number nzId="srm-meter-cycles" formControlName="meter_reading_cycles" [nzMin]="0" [nzPrecision]="0" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <label nz-checkbox formControlName="apply_callout_fee" data-testid="callout-fee">{{ 'FSM.REPORT.CALLOUT_FEE' | translate }}</label>
+
+      <h3 class="srm-sub">{{ 'FSM.REPORT.CHECKLIST' | translate }}</h3>
+      <div formArrayName="checklist">
+        @for (row of checklist.controls; track row; let i = $index) {
+          <div class="srm-row" [formGroupName]="i" data-testid="checklist-row">
+            <input nz-input class="srm-row-item" maxlength="200" formControlName="item" [attr.aria-label]="'FSM.REPORT.SIGN_CHECK_ITEM' | translate" />
+            <nz-select class="srm-row-result" formControlName="result" [attr.aria-label]="'FSM.REPORT.SIGN_CHECK_RESULT' | translate">
+              @for (r of results; track r) {
+                <nz-option [nzValue]="r" [nzLabel]="'FSM.REPORT.RESULT_' + r.toUpperCase() | translate" />
+              }
+            </nz-select>
+            <input nz-input class="srm-row-notes" maxlength="1000" formControlName="notes" [attr.aria-label]="'FSM.REPORT.SIGN_CHECK_NOTES' | translate" />
+            <button nz-button type="button" nzDanger (click)="removeRow(i)">{{ 'FSM.REPORT.SIGN_CHECK_REMOVE' | translate }}</button>
+          </div>
+        }
+      </div>
+      <button nz-button type="button" (click)="addRow()" data-testid="add-check">{{ 'FSM.REPORT.SIGN_CHECK_ADD' | translate }}</button>
+
+      <h3 class="srm-sub">{{ 'FSM.REPORT.SIGNER' | translate }}</h3>
+      <div class="srm-grid">
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="srm-signer">{{ 'SIGNATURE.SIGNER_NAME' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldError('customer_signer_name')">
+            <input id="srm-signer" nz-input maxlength="150" formControlName="customer_signer_name" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="srm-role">{{ 'SIGNATURE.SIGNER_ROLE' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldError('customer_signer_role')">
+            <input id="srm-role" nz-input maxlength="100" formControlName="customer_signer_role" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <p class="srm-sub">{{ 'FSM.REPORT.SIGNATURE' | translate }}</p>
+      <app-signature-pad (svgChange)="signatureSvg.set($event)" />
+
+      <div class="srm-gps">
+        <button nz-button type="button" (click)="captureLocation()" data-testid="capture-gps">{{ 'FSM.REPORT.SIGN_GPS' | translate }}</button>
+        @if (gps(); as g) {
+          <span data-testid="gps-value">{{ g.latitude.toFixed(5) }}, {{ g.longitude.toFixed(5) }}</span>
+        }
+        @if (gpsFailed()) {
+          <span class="srm-gps-error" role="alert">{{ 'FSM.REPORT.SIGN_GPS_FAILED' | translate }}</span>
+        }
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>

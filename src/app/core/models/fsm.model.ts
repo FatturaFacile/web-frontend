@@ -176,6 +176,36 @@ export interface FsmRecordedPart {
   stock_movement_id: string | null;
 }
 
+/** Optional reference to an already stored photo (path on the server), as the report contract accepts it. */
+export interface FsmReportPhotoRef {
+  path: string;
+  name?: string | null;
+  taken_at?: string | null;
+}
+
+/** Body of `POST /fsm/work-orders/{id}/service-report` (mirrors `SignServiceReportRules`). */
+export interface FsmSignReportPayload {
+  client_uuid?: string | null;
+  work_performed_summary: string;
+  checklist?: FsmChecklistItem[];
+  labor_hours: number;
+  travel_hours?: number | null;
+  travel_km?: number | null;
+  apply_callout_fee?: boolean;
+  meter_reading_hours?: number | null;
+  meter_reading_cycles?: number | null;
+  customer_signer_name: string;
+  customer_signer_role?: string | null;
+  signature_svg: string;
+  signed_at: string;
+  gps_latitude?: number | null;
+  gps_longitude?: number | null;
+  photos?: FsmReportPhotoRef[];
+  /** Ids of photos already uploaded to the work order (backend contract in progress, uuid list, max 20). */
+  photo_ids?: string[];
+  locale?: 'it-IT' | 'it-CH' | 'de-CH' | 'fr-CH' | 'en';
+}
+
 export interface FsmInvoicePayload {
   tax_rate: number;
   due_date?: string | null;

@@ -73,6 +73,21 @@ describe('FsmApiService', () => {
     part.flush({ data: {} });
   });
 
+  it('signs a service report with a POST to the work order', () => {
+    const payload = {
+      work_performed_summary: 'Done',
+      labor_hours: 1.5,
+      customer_signer_name: 'Rossi',
+      signature_svg: '<svg xmlns="http://www.w3.org/2000/svg"></svg>',
+      signed_at: '2026-03-02T10:00:00.000Z',
+    };
+    api.signReport('w1', payload).subscribe();
+    const req = http.expectOne(`${base}/work-orders/w1/service-report`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual(payload);
+    req.flush({ data: {} });
+  });
+
   it('downloads the report PDF as a blob and converts it to an invoice', () => {
     api.downloadReportPdf('r1').subscribe();
     const pdf = http.expectOne(`${base}/service-reports/r1/pdf`);

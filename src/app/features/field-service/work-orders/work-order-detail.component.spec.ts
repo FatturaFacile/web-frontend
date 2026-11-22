@@ -19,6 +19,8 @@ interface Harness {
   coveredParts: () => unknown[];
   canRecordParts: () => boolean;
   canInvoice: () => boolean;
+  canSign: () => boolean;
+  signOpen: { (): boolean; set(value: boolean): void };
   nextStep: () => string | null;
   signatureSrc: () => string | null;
   partForm: { patchValue(value: object): void };
@@ -27,6 +29,8 @@ interface Harness {
   recordPart(): void;
   downloadPdf(): void;
   openInvoice(): void;
+  openSign(): void;
+  onSigned(): void;
   convertToInvoice(): void;
 }
 
@@ -107,6 +111,7 @@ describe('WorkOrderDetailComponent', () => {
     recordPart: vi.fn(),
     downloadReportPdf: vi.fn(),
     invoiceReport: vi.fn(),
+    signReport: vi.fn(),
   };
   const message = { success: vi.fn(), error: vi.fn() };
   const el = (): HTMLElement => fixture.nativeElement as HTMLElement;
@@ -237,5 +242,34 @@ describe('WorkOrderDetailComponent', () => {
     await create(workOrder({ status: 'completed', service_report: report }));
     harness.convertToInvoice();
     expect(message.success).not.toHaveBeenCalled();
+  });
+
+  it('offers sign and close only to a writer while the technician is on site and nothing is signed', async () => {
+    await create(workOrder({ status: 'on_site' }));
+    expect(harness.canSign()).toBe(true);
+    expect(el().querySelector('[data-testid="sign-report"]')).not.toBeNull();
+    harness.openSign();
+    expect(harness.signOpen()).toBe(true);
+    TestBed.resetTestingModule();
+
+    await create(workOrder({ status: 'en_route' }));
+    expect(harness.canSign()).toBe(false);
+    expect(el().querySelector('[data-testid="sign-report"]')).toBeNull();
+    TestBed.resetTestingModule();
+
+    await create(workOrder({ status: 'on_site', service_report: report }));
+    expect(harness.canSign()).toBe(false);
+    TestBed.resetTestingModule();
+
+    await create(workOrder({ status: 'on_site' }), false);
+    expect(harness.canSign()).toBe(false);
+    expect(el().querySelector('[data-testid="sign-report"]')).toBeNull();
+  });
+
+  it('reloads the work order once the report is signed', async () => {
+    await create(workOrder({ status: 'on_site' }));
+    api.getWorkOrder.mockClear();
+    harness.onSigned();
+    expect(api.getWorkOrder).toHaveBeenCalledWith('w1');
   });
 });

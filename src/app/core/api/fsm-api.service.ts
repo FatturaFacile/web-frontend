@@ -20,6 +20,8 @@ import {
   FsmPreventiveRunResult,
   FsmRecordPartPayload,
   FsmRecordedPart,
+  FsmServiceReport,
+  FsmSignReportPayload,
   FsmWorkOrder,
   FsmWorkOrderDetail,
   FsmWorkOrderListParams,
@@ -68,6 +70,11 @@ export class FsmApiService {
   }
 
   // --- Service reports ---
+  /** Signs and closes the service report of an on-site work order (201 on create, 200 on an idempotent replay). */
+  signReport(workOrderId: string, payload: FsmSignReportPayload): Observable<FsmEnvelope<FsmServiceReport>> {
+    return this.http.post<FsmEnvelope<FsmServiceReport>>(`${this.base}/work-orders/${workOrderId}/service-report`, payload);
+  }
+
   downloadReportPdf(reportId: string): Observable<Blob> {
     return this.http.get(`${this.base}/service-reports/${reportId}/pdf`, { responseType: 'blob' });
   }

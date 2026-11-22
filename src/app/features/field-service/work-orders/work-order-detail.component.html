@@ -114,6 +114,9 @@
 
     <nz-card class="wod-card" [nzTitle]="'FSM.REPORT.TITLE' | translate" [nzExtra]="reportActions">
       <ng-template #reportActions>
+        @if (canSign()) {
+          <button nz-button nzType="primary" type="button" (click)="openSign()" data-testid="sign-report">{{ 'FSM.REPORT.SIGN_OPEN' | translate }}</button>
+        }
         @if (report(); as r) {
           @if (r.has_pdf) {
             <button nz-button type="button" (click)="downloadPdf()" data-testid="download-pdf">{{ 'FSM.REPORT.DOWNLOAD_PDF' | translate }}</button>
@@ -243,3 +246,7 @@
     </form>
   </ng-container>
 </nz-modal>
+
+@if (order(); as wo) {
+  <app-fsm-sign-report-modal [(open)]="signOpen" [workOrderId]="wo.id" (signed)="onSigned()" />
+}

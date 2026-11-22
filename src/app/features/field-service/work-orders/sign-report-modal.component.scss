@@ -1,0 +1,46 @@
+.srm-alert {
+  margin-bottom: 12px;
+}
+
+.srm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0 16px;
+}
+
+.srm-sub {
+  margin: 16px 0 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.srm-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.srm-row-item {
+  flex: 2 1 160px;
+}
+
+.srm-row-result {
+  flex: 0 0 150px;
+}
+
+.srm-row-notes {
+  flex: 2 1 160px;
+}
+
+.srm-gps {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.srm-gps-error {
+  color: var(--ant-error-color, #cf1322);
+}
