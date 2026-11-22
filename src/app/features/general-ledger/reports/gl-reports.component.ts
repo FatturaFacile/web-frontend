@@ -4,6 +4,7 @@ import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { TranslatePipe } from '@shared';
 import { GlLookupStore } from '../shared/gl-lookup.store';
 import { GlAccountLedgerComponent } from './gl-account-ledger.component';
+import { GlLedgerReportsStore } from './gl-ledger-reports.store';
 import { GlDimensionReportComponent } from './gl-dimension-report.component';
 import { GlStatementsComponent } from './gl-statements.component';
 import { GlTrialBalanceComponent } from './gl-trial-balance.component';
@@ -24,7 +25,7 @@ import { GlVatRegistersComponent } from './gl-vat-registers.component';
   ],
   template: `
     <nz-card>
-      <nz-tabs>
+      <nz-tabs [nzSelectedIndex]="store.activeTab()" (nzSelectedIndexChange)="store.setActiveTab($event)">
         <nz-tab [nzTitle]="'GL.REPORT_TRIAL_BALANCE' | translate"><app-gl-trial-balance /></nz-tab>
         <nz-tab [nzTitle]="'GL.REPORT_ACCOUNT_LEDGER' | translate"><app-gl-account-ledger /></nz-tab>
         <nz-tab [nzTitle]="'GL.REPORT_BALANCE_SHEET' | translate"><app-gl-statements [mode]="'balance-sheet'" /></nz-tab>
@@ -37,6 +38,7 @@ import { GlVatRegistersComponent } from './gl-vat-registers.component';
 })
 export class GlReportsComponent implements OnInit {
   private readonly lookups = inject(GlLookupStore);
+  protected readonly store = inject(GlLedgerReportsStore);
 
   ngOnInit(): void {
     this.lookups.load();

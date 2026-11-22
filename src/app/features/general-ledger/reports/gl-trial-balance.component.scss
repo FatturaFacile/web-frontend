@@ -17,3 +17,29 @@
 .select-md {
   min-width: 200px;
 }
+
+.select-sm {
+  min-width: 140px;
+}
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.drill {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  color: var(--ant-primary-color, #1677ff);
+  text-align: left;
+}
+
+.totals th,
+.totals td {
+  font-weight: 600;
+  border-top: 2px solid currentcolor;
+}

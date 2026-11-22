@@ -91,7 +91,8 @@ describe('GlJournalsComponent', () => {
     const fixture = await create('pending_approval');
     expect(api.getJournals).toHaveBeenCalledWith({ status: 'pending_approval', page: 1, per_page: 20 });
     const buttons = Array.from<HTMLButtonElement>(fixture.nativeElement.querySelectorAll('tbody button[nz-button]'));
-    expect(buttons.length).toBe(2);
+    // Inspect, approve and reject.
+    expect(buttons.length).toBe(3);
     expect(fixture.nativeElement.textContent).toContain('Manual journal');
   });
 
@@ -126,6 +127,38 @@ describe('GlJournalsComponent', () => {
     component.post(journal('draft'));
     expect(api.submitJournal).toHaveBeenCalledWith('j1');
     expect(accountingApi.postJournal).toHaveBeenCalledWith('j1');
+  });
+
+  it('reverses a posted entry in one click with a reversal date and a reason', async () => {
+    api.reverseJournalEntry.mockReturnValue(of({ success: true, data: journal('reversed') }));
+    const fixture = await create('posted');
+    const component = fixture.componentInstance as unknown as { reverse(e: GlJournalEntry): void };
+    component.reverse(journal('posted'));
+    expect(api.reverseJournalEntry).toHaveBeenCalledWith('j1', {
+      reversal_date: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+      reason: expect.any(String),
+    });
+  });
+
+  it('narrows the loaded page by ledger book', async () => {
+    const fixture = await create('posted');
+    expect(fixture.nativeElement.textContent).toContain('Manual journal');
+    const component = fixture.componentInstance as unknown as { setBook(book: '01' | '02' | '03' | null): void };
+    component.setBook('02');
+    await settle();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).not.toContain('Manual journal');
+    component.setBook('01');
+    await settle();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Manual journal');
+  });
+
+  it('opens the inspector with the entry lines', async () => {
+    const fixture = await create('posted');
+    const component = fixture.componentInstance as unknown as { inspect(e: GlJournalEntry): void; inspected(): GlJournalEntry | null };
+    component.inspect({ ...journal('posted'), lines: [] });
+    expect(component.inspected()?.id).toBe('j1');
   });
 
   it('does not offer the approval to the author or the submitter', async () => {

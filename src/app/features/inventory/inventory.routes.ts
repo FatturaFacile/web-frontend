@@ -84,6 +84,29 @@ export const INVENTORY_ROUTES: Routes = [
     ],
   },
   {
+    path: 'abc',
+    data: { breadcrumb: 'NAV.INVENTORY_ABC', title: 'PAGE_TITLE.INVENTORY_ABC' },
+    loadComponent: () =>
+      import('./counting/abc-planner.component').then((m) => m.AbcPlannerComponent),
+  },
+  {
+    path: 'counts',
+    data: { breadcrumb: 'NAV.INVENTORY_COUNT_SESSIONS', title: 'PAGE_TITLE.INVENTORY_COUNT_SESSIONS' },
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./counting/count-sessions.component').then((m) => m.CountSessionsComponent),
+      },
+      {
+        path: ':id/reconcile',
+        data: { breadcrumb: 'INVENTORY_COUNT.RECON.TITLE', title: 'INVENTORY_COUNT.RECON.TITLE' },
+        loadComponent: () =>
+          import('./counting/count-reconcile.component').then((m) => m.CountReconcileComponent),
+      },
+    ],
+  },
+  {
     path: 'book',
     data: { breadcrumb: 'Libro inventari', title: 'Libro inventari' },
     loadComponent: () =>

@@ -14,6 +14,16 @@
   width: 160px;
 }
 
+.select-md {
+  min-width: 200px;
+}
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
 .account-select {
   min-width: 320px;
 }

@@ -506,8 +506,13 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
       {
         key: 'NAV.GENERAL_LEDGER',
         icon: 'fa-solid fa-book',
-        route: '/general-ledger',
         module: 'ledger',
+        children: [
+          { key: 'NAV.GENERAL_LEDGER', route: '/general-ledger', icon: 'fa-solid fa-book' },
+          { key: 'GL.NAV_PRIMA_NOTA', route: '/general-ledger/prima-nota', icon: 'fa-solid fa-keyboard' },
+          { key: 'GL.REPORT_TRIAL_BALANCE', route: '/general-ledger/reports', icon: 'fa-solid fa-scale-balanced' },
+          { key: 'GL.NAV_YEAR_END_CLOSING', route: '/general-ledger/year-end-closing', icon: 'fa-solid fa-calendar-check' },
+        ],
       },
       {
         key: 'NAV.PEOPLE',
@@ -626,6 +631,30 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             module: 'shift_planning',
           },
           {
+            key: 'NAV.GELATO_WORKBENCH',
+            route: '/gelato',
+            icon: 'fa-solid fa-ice-cream',
+            module: 'artisanal_gelato',
+          },
+          {
+            key: 'NAV.GELATO_LOTS',
+            route: '/gelato/lots',
+            icon: 'fa-solid fa-temperature-half',
+            module: 'artisanal_gelato',
+          },
+          {
+            key: 'NAV.GELATO_GANACHE',
+            route: '/gelato/ganache',
+            icon: 'fa-solid fa-cookie-bite',
+            module: 'artisanal_gelato',
+          },
+          {
+            key: 'NAV.GELATO_SHOWCASE',
+            route: '/gelato/showcase',
+            icon: 'fa-solid fa-tv',
+            module: 'artisanal_gelato',
+          },
+          {
             key: 'NAV.HR_PAYROLL_DATA',
             route: '/hr/payroll-data',
             icon: 'fa-solid fa-address-card',
@@ -690,6 +719,18 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             key: 'NAV.INVENTORY_BOOK',
             route: '/inventory/book',
             icon: 'fa-solid fa-book',
+            module: 'inventory',
+          },
+          {
+            key: 'NAV.INVENTORY_ABC',
+            route: '/inventory/abc',
+            icon: 'fa-solid fa-arrow-down-a-z',
+            module: 'inventory',
+          },
+          {
+            key: 'NAV.INVENTORY_COUNT_SESSIONS',
+            route: '/inventory/counts',
+            icon: 'fa-solid fa-clipboard-check',
             module: 'inventory',
           },
           {

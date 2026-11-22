@@ -300,6 +300,11 @@ export interface TrialBalanceRow {
   closing_balance: string;
   comparison_debit?: string | null;
   comparison_credit?: string | null;
+  /** Two-column layout (`columns=2`): the closing balance on its side. */
+  debit_balance?: string;
+  credit_balance?: string;
+  /** API path of the account ledger (mastrino) of the account for the same range. */
+  drill_down?: string;
 }
 
 export interface LedgerTrialBalance {
