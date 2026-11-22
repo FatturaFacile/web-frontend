@@ -3,6 +3,7 @@
   [subtitle]="'projects.subtitle' | translate"
 >
   <div class="header-actions">
+    <a nz-button routerLink="portfolio" data-testid="projects-portfolio-link">{{ 'PORTFOLIO.NAV' | translate }}</a>
     <a nz-button routerLink="planning">{{ 'PRJ.LBL_PLANNING' | translate }}</a>
     <button nz-button nzType="primary" appIconAction="create" (click)="openCreateModal()"></button>
   </div>

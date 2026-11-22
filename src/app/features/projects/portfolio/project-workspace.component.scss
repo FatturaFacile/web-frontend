@@ -1,0 +1,163 @@
+:host {
+  display: block;
+  --ws-row-height: 36px;
+  --ws-header-height: 28px;
+}
+
+.ws-links {
+  display: flex;
+  gap: 16px;
+}
+
+.ws-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.ws-select {
+  min-width: 220px;
+}
+
+.ws-select-small {
+  min-width: 120px;
+}
+
+.ws-split {
+  display: flex;
+  max-height: 70vh;
+  overflow-y: auto;
+  border: 1px solid var(--ant-color-border-secondary, #f0f0f0);
+  border-radius: 6px;
+}
+
+.ws-tree {
+  flex: 0 0 var(--tree-width, 560px);
+  width: var(--tree-width, 560px);
+  overflow-x: hidden;
+}
+
+.ws-row {
+  display: grid;
+  grid-template-columns: 56px minmax(120px, 1fr) 56px 84px 36px auto;
+  align-items: center;
+  gap: 4px;
+  height: var(--ws-row-height);
+  padding: 0 8px;
+  border-bottom: 1px solid var(--ant-color-border-secondary, #f0f0f0);
+  box-sizing: border-box;
+  cursor: pointer;
+
+  &.selected {
+    background: var(--ant-color-primary-bg, #e6f4ff);
+  }
+
+  &.critical .ws-code {
+    color: var(--ant-color-error, #cf1322);
+    font-weight: 600;
+  }
+}
+
+.ws-tree-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  height: var(--ws-header-height);
+  background: var(--ant-color-fill-quaternary, #fafafa);
+  font-weight: 600;
+  cursor: default;
+}
+
+.ws-title {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ws-title-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  &.ws-parent {
+    font-weight: 600;
+  }
+}
+
+.ws-toggle,
+.ws-toggle-spacer {
+  flex: 0 0 18px;
+  width: 18px;
+}
+
+.ws-toggle,
+.ws-icon {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+
+  &:focus-visible {
+    outline: 2px solid var(--ant-color-primary, #1677ff);
+  }
+}
+
+.ws-num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.ws-actions {
+  display: flex;
+  gap: 2px;
+}
+
+.ws-divider {
+  flex: 0 0 6px;
+  cursor: col-resize;
+  background: var(--ant-color-border-secondary, #f0f0f0);
+  touch-action: none;
+
+  &:hover,
+  &:focus-visible {
+    background: var(--ant-color-primary, #1677ff);
+    outline: none;
+  }
+}
+
+.ws-gantt {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.ws-deps {
+  margin-top: 24px;
+}
+
+.ws-dep-form {
+  display: grid;
+  grid-template-columns: minmax(160px, 2fr) minmax(160px, 2fr) minmax(140px, 1fr) 120px auto;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.ws-hint {
+  color: var(--ant-color-text-secondary, rgba(0, 0, 0, 0.45));
+  font-size: 12px;
+}
+
+.ws-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 16px;
+}
+
+.ws-span {
+  grid-column: 1 / -1;
+}

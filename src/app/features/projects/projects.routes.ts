@@ -8,6 +8,21 @@ export const PROJECTS_ROUTES: Routes = [
     loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
   },
   {
+    path: 'portfolio',
+    data: { breadcrumb: 'PORTFOLIO.NAV', title: 'PORTFOLIO.TITLE' },
+    loadComponent: () => import('./portfolio/portfolio-overview.component').then((m) => m.PortfolioOverviewComponent),
+  },
+  {
+    path: ':id/wbs',
+    data: { breadcrumb: 'PORTFOLIO.WBS_NAV', title: 'PORTFOLIO.WORKSPACE' },
+    loadComponent: () => import('./portfolio/project-workspace.component').then((m) => m.ProjectWorkspaceComponent),
+  },
+  {
+    path: ':id/kanban',
+    data: { breadcrumb: 'PORTFOLIO.KANBAN_NAV', title: 'PORTFOLIO.KANBAN_TITLE' },
+    loadComponent: () => import('./portfolio/project-kanban.component').then((m) => m.ProjectKanbanComponent),
+  },
+  {
     path: ':id/evm',
     data: { breadcrumb: 'PROJECT_EVM.NAV', title: 'PROJECT_EVM.TITLE' },
     loadComponent: () =>
