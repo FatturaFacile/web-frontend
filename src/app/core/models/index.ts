@@ -70,6 +70,7 @@ export * from './business-intelligence.model';
 export * from './marketplace.model';
 export * from './platform.model';
 export * from './planning.model';
+export * from './analytical-accounting.model';
 export * from './budgeting.model';
 export * from './controlling.model';
 export * from './credit-management.model';
