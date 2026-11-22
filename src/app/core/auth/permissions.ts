@@ -156,6 +156,11 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
     grants: { read: ['shift_planning.*'], write: ['shift_planning.*'] },
   },
   shift_planning_self: { read: ANY_MEMBER, write: ANY_MEMBER },
+  // Resource planning and capacity saturation (Mod 079): planners write; members and accountants read the plan.
+  resource_planning: {
+    read: ['owner', 'admin', 'hr', 'project_manager', 'production', 'member', 'accountant'],
+    write: ['owner', 'admin', 'hr', 'project_manager', 'production'],
+  },
   artisanal_gelato: {
     read: ANY_MEMBER,
     write: ['owner', 'admin', 'production', 'technician', 'member'],

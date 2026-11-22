@@ -631,6 +631,24 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             module: 'shift_planning',
           },
           {
+            key: 'NAV.RESOURCE_PLANNING',
+            route: '/resource-planning',
+            icon: 'fa-solid fa-people-arrows',
+            module: 'resource_planning',
+          },
+          {
+            key: 'NAV.RESOURCE_PLANNING_UTILIZATION',
+            route: '/resource-planning/utilization',
+            icon: 'fa-solid fa-gauge-high',
+            module: 'resource_planning',
+          },
+          {
+            key: 'NAV.RESOURCE_PLANNING_SKILLS',
+            route: '/resource-planning/skills',
+            icon: 'fa-solid fa-medal',
+            module: 'resource_planning',
+          },
+          {
             key: 'NAV.GELATO_WORKBENCH',
             route: '/gelato',
             icon: 'fa-solid fa-ice-cream',
