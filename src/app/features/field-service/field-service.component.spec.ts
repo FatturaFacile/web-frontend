@@ -177,4 +177,22 @@ describe('FieldServiceComponent', () => {
 
     expect(mockMessage.error).toHaveBeenCalledWith('Network error');
   });
+
+  it('filters the grid by queue (team)', async () => {
+    fixture.detectChanges();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    mockTicketApi.getTickets.mockClear();
+
+    component.filterTeam.set(' team-7 ');
+    component.onSearch();
+    await new Promise((resolve) => setTimeout(resolve, 400));
+
+    expect(mockTicketApi.getTickets).toHaveBeenCalledWith(expect.objectContaining({ team_id: 'team-7' }));
+  });
+
+  it('starts on the paged grid and can switch to the at-risk queue', () => {
+    expect(component.view()).toBe('all');
+    component.view.set('at_risk');
+    expect(component.view()).toBe('at_risk');
+  });
 });

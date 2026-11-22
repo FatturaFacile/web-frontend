@@ -127,3 +127,34 @@
   margin-bottom: var(--space-1);
   font-weight: 500;
 }
+
+.drawer-layout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.drawer-main {
+  flex: 1 1 560px;
+  min-width: 0;
+}
+
+.drawer-aside {
+  flex: 0 1 300px;
+  min-width: 260px;
+  padding: var(--space-3);
+  background: var(--bg-card-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+}
+
+// Customer replies and internal notes are told apart by colour, side, icon and badge (never by colour alone).
+.message-customer {
+  margin-right: var(--space-6);
+  border-left: 4px solid var(--status-info);
+}
+
+.message-internal {
+  margin-left: var(--space-6);
+  border-left: 4px dashed var(--status-warning);
+}

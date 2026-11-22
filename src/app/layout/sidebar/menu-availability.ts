@@ -166,6 +166,8 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/helpdesk/knowledge-base',
   '/helpdesk/reports',
   '/helpdesk/service-delivery',
+  '/helpdesk/sla',
+  '/helpdesk/sla-admin',
   '/helpdesk/tools',
   '/hospitality',
   '/hospitality/availability',

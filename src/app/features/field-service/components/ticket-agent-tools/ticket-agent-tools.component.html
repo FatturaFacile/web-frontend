@@ -17,6 +17,23 @@
   </button>
 </div>
 
+<nz-divider [nzText]="'HELPDESK_SLA.REPLY_LANGUAGE' | translate" nzOrientation="left" />
+<div class="tat-row">
+  <nz-select
+    class="tat-select"
+    nzAllowClear
+    [ngModel]="locale() || null"
+    (ngModelChange)="changeLocale($event)"
+    [nzPlaceHolder]="'HELPDESK_SLA.ALL_LANGUAGES' | translate"
+    [attr.aria-label]="'HELPDESK_SLA.REPLY_LANGUAGE' | translate"
+    data-testid="locale-select"
+  >
+    @for (code of locales; track code) {
+      <nz-option [nzValue]="code" [nzLabel]="'HELPDESK_SLA.LOCALE_' + code.replace('-', '_').toUpperCase() | translate" />
+    }
+  </nz-select>
+</div>
+
 <nz-divider [nzText]="'TICKET_TOOLS.CANNED' | translate" nzOrientation="left" />
 <div class="tat-row">
   <nz-select
@@ -146,4 +163,7 @@
     [attr.aria-label]="'TICKET_TOOLS.KNOWLEDGE' | translate"
   />
   <button nz-button type="button" [disabled]="!articleId()" (click)="linkArticle()">{{ 'TICKET_TOOLS.LINK' | translate }}</button>
+  <button nz-button type="button" [disabled]="!articleId()" data-testid="insert-article" (click)="insertArticle()">
+    {{ 'HELPDESK_SLA.INSERT_ARTICLE' | translate }}
+  </button>
 </div>

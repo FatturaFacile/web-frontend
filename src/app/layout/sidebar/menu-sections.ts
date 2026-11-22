@@ -1229,6 +1229,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         module: 'service',
         children: [
           {
+            key: 'NAV.HD_SLA',
+            route: '/helpdesk/sla',
+            icon: 'fa-solid fa-stopwatch',
+            module: 'service',
+          },
+          {
             key: 'NAV.HD_REPORTS',
             route: '/helpdesk/reports',
             icon: 'fa-solid fa-chart-pie',
@@ -1262,6 +1268,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             key: 'NAV.HD_SERVICE_DELIVERY',
             route: '/helpdesk/service-delivery',
             icon: 'fa-solid fa-file-contract',
+            module: 'service',
+          },
+          {
+            key: 'NAV.HD_SLA_ADMIN',
+            route: '/helpdesk/sla-admin',
+            icon: 'fa-solid fa-sliders',
             module: 'service',
           },
         ],

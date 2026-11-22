@@ -1,6 +1,6 @@
 <nz-modal
   [nzVisible]="open()"
-  [nzWidth]="960"
+  [nzWidth]="1240"
   [nzFooter]="null"
   [nzTitle]="drawerTitle"
   (nzOnCancel)="close()"
@@ -9,12 +9,12 @@
     <div class="drawer-title">
       <div class="drawer-title-main">
         <span class="drawer-title-id">
-          {{ ticket()?.ticket_number ? '#' + ticket()?.ticket_number : 'Dettaglio Ticket' }}
+          {{ ticket()?.ticket_number ? '#' + ticket()?.ticket_number : ('HELPDESK_SLA.TICKET_DETAIL' | translate) }}
         </span>
         @if (ticket()) {
           <nz-tag [nzColor]="statusColor()">{{ ticket()?.status }}</nz-tag>
           <nz-tag [nzColor]="priorityColor()">{{ ticket()?.priority }}</nz-tag>
-          <nz-tag [nzColor]="slaColor()">SLA: {{ ticket()?.sla_state }}</nz-tag>
+          <nz-tag [nzColor]="slaColor()">{{ 'HELPDESK_SLA.SLA_STATE' | translate: { state: ticket()?.sla_state ?? '' } }}</nz-tag>
         }
       </div>
     </div>
@@ -22,7 +22,7 @@
 
   <ng-container *nzModalContent>
     <nz-spin [nzSpinning]="loading()">
-      @if (ticket()) {
+      @if (ticket(); as currentTicket) {
         <!-- Action Toolbar -->
         <div class="action-toolbar">
           <button nz-button nzSize="small" (click)="openStatusModal()">
@@ -47,13 +47,15 @@
         </div>
 
         <!-- Tabs: Dettagli, Conversazione, Cronologia -->
+        <div class="drawer-layout">
+        <div class="drawer-main">
         <nz-tabs>
           <!-- TAB 1: DETTAGLI & MODIFICA -->
           <nz-tab [nzTitle]="'TICKET_TOOLS.LBL_DETTAGLI_AND_MODIFICA' | translate">
             <nz-descriptions nzBordered [nzColumn]="2" nzSize="small" class="ticket-descriptions">
               <nz-descriptions-item [nzTitle]="'TICKET_TOOLS.LBL_CANALE' | translate">{{ ticket()?.channel || '-' }}</nz-descriptions-item>
               <nz-descriptions-item [nzTitle]="'TICKET_TOOLS.LBL_TIPO' | translate">{{ ticket()?.type || '-' }}</nz-descriptions-item>
-              <nz-descriptions-item [nzTitle]="'TICKET_TOOLS.LBL_ASSEGNATO_A' | translate">{{ ticket()?.assigned_to_id || 'Non assegnato' }}</nz-descriptions-item>
+              <nz-descriptions-item [nzTitle]="'TICKET_TOOLS.LBL_ASSEGNATO_A' | translate">{{ ticket()?.assigned_to_id || ('HELPDESK_SLA.UNASSIGNED' | translate) }}</nz-descriptions-item>
               <nz-descriptions-item [nzTitle]="'TICKET_TOOLS.LBL_TEAM' | translate">{{ ticket()?.service_team_id || '-' }}</nz-descriptions-item>
               <nz-descriptions-item [nzTitle]="'TICKET_TOOLS.LBL_CREAZIONE' | translate">{{ ticket()?.created_at | date:'dd/MM/yyyy HH:mm' }}</nz-descriptions-item>
               <nz-descriptions-item [nzTitle]="'TICKET_TOOLS.LBL_SCADENZA_RISPOSTA_SLA' | translate">
@@ -181,21 +183,33 @@
           </nz-tab>
 
           <!-- TAB 2: CONVERSAZIONE & NOTE -->
-          <nz-tab [nzTitle]="'Conversazione (' + messages().length + ')'">
+          <nz-tab [nzTitle]="'HELPDESK_SLA.TAB_CONVERSATION' | translate: { count: messages().length }">
             <!-- Messages timeline / list -->
             <div class="message-list">
               @if (messages().length === 0) {
                 <div class="empty-note">{{ 'TICKET_TOOLS.LBL_NESSUN_MESSAGGIO_PRESENTE' | translate }}</div>
               } @else {
                 @for (msg of messages(); track msg.id) {
-                  <div class="message" [class.message-internal]="msg.visibility === 'internal'">
+                  <div
+                    class="message"
+                    [class.message-internal]="msg.visibility === 'internal'"
+                    [class.message-customer]="msg.visibility !== 'internal'"
+                    [attr.data-visibility]="msg.visibility === 'internal' ? 'internal' : 'customer'"
+                    role="group"
+                    [attr.aria-label]="(msg.visibility === 'internal' ? 'HELPDESK_SLA.INTERNAL_NOTE_ARIA' : 'HELPDESK_SLA.CUSTOMER_REPLY_ARIA') | translate"
+                  >
                     <div class="message-head">
                       <div class="message-author">
+                        @if (msg.visibility === 'internal') {
+                          <i nz-icon nzType="lock" aria-hidden="true"></i>
+                        } @else {
+                          <i nz-icon nzType="mail" aria-hidden="true"></i>
+                        }
                         <strong>{{ msg.author_name || msg.author_type }}</strong>
                         @if (msg.visibility === 'internal') {
-                          <nz-tag nzColor="gold">{{ 'TICKET_TOOLS.LBL_NOTA_INTERNA' | translate }}</nz-tag>
+                          <nz-tag nzColor="gold">{{ 'HELPDESK_SLA.INTERNAL_NOTE_BADGE' | translate }}</nz-tag>
                         } @else {
-                          <nz-tag nzColor="blue">{{ 'TICKET_TOOLS.LBL_PUBBLICA' | translate }}</nz-tag>
+                          <nz-tag nzColor="blue">{{ 'HELPDESK_SLA.CUSTOMER_REPLY_BADGE' | translate }}</nz-tag>
                         }
                       </div>
                       <span class="message-date">
@@ -213,7 +227,7 @@
               }
             </div>
 
-            <nz-divider nzText="Aggiungi Risposta o Nota"></nz-divider>
+            <nz-divider [nzText]="'HELPDESK_SLA.ADD_REPLY_OR_NOTE' | translate"></nz-divider>
 
             <!-- Reply Form -->
             <form nz-form nzLayout="vertical" [formGroup]="replyForm" (ngSubmit)="postReply()">
@@ -250,7 +264,7 @@
           </nz-tab>
 
           <!-- TAB 3: CRONOLOGIA ATTIVITÀ -->
-          <nz-tab [nzTitle]="'Attività (' + activities().length + ')'">
+          <nz-tab [nzTitle]="'HELPDESK_SLA.TAB_ACTIVITY' | translate: { count: activities().length }">
             <div class="activity-list">
               @if (activities().length === 0) {
                 <div class="empty-note">{{ 'TICKET_TOOLS.LBL_NESSUNA_ATTIVITA_REGISTRATA' | translate }}</div>
@@ -267,7 +281,7 @@
                       <div class="activity-meta">
                         {{ act.created_at | date:'dd/MM/yyyy HH:mm' }}
                         @if (act.actor_user_id) {
-                          - Utente: {{ act.actor_user_id }}
+                          - {{ 'HELPDESK_SLA.ACTOR' | translate: { user: act.actor_user_id } }}
                         }
                       </div>
                     </nz-timeline-item>
@@ -279,16 +293,28 @@
 
           <!-- TAB 4: STRUMENTI AGENTE -->
           <nz-tab [nzTitle]="'TICKET_TOOLS.TAB' | translate">
-            @if (ticket(); as currentTicket) {
-              <app-ticket-agent-tools
-                [ticket]="currentTicket"
-                [messages]="messages()"
-                (changed)="onToolsChanged()"
-                (insertReply)="insertReply($event)"
-              />
-            }
+            <app-ticket-agent-tools
+              [ticket]="currentTicket"
+              [messages]="messages()"
+              (changed)="onToolsChanged()"
+              (insertReply)="insertReply($event)"
+            />
+          </nz-tab>
+
+          <!-- TAB 5: SLA, TEMPO E ESCALATION -->
+          <nz-tab [nzTitle]="'HELPDESK_SLA.TAB_SLA' | translate">
+            <app-ticket-sla-panel [ticket]="currentTicket" />
+            <nz-divider />
+            <app-ticket-time-log [ticket]="currentTicket" (logged)="onTimeLogged()" />
+            <nz-divider />
+            <app-ticket-handoff [ticket]="currentTicket" (handedOff)="onToolsChanged()" />
           </nz-tab>
         </nz-tabs>
+        </div>
+        <div class="drawer-aside">
+          <app-ticket-customer-context [ticketId]="currentTicket.id" [refreshToken]="contextRefresh()" />
+        </div>
+        </div>
       }
     </nz-spin>
   </ng-container>

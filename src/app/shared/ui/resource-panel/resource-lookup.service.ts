@@ -38,6 +38,7 @@ const LOOKUPS: Record<ResourceLookupName, LookupDefinition> = {
   },
   kbCategories: { path: '/esm/kb/categories', labelKeys: ['name'] },
   businessHours: { path: '/esm/helpdesk/business-hours', labelKeys: ['code', 'name'] },
+  escalationChains: { path: '/esm/helpdesk/escalation-chains', labelKeys: ['code', 'name'] },
   constructionSites: {
     path: '/construction/sites',
     labelKeys: ['code', 'name'],
