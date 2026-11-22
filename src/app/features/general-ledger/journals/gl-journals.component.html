@@ -13,6 +13,31 @@
         <nz-option [nzValue]="status" [nzLabel]="'GL.JOURNAL_STATUS_' + status.toUpperCase() | translate" />
       }
     </nz-select>
+    <label for="gl-journal-book">{{ 'GL.PN_BOOK' | translate }}</label>
+    <nz-select
+      id="gl-journal-book"
+      class="select-lg"
+      nzAllowClear
+      [ngModel]="bookFilter()"
+      (ngModelChange)="setBook($event)"
+      [nzPlaceHolder]="'GL.PN_ALL_BOOKS' | translate"
+    >
+      @for (code of books; track code) {
+        <nz-option [nzValue]="code" [nzLabel]="'GL.PN_BOOK_' + code | translate" />
+      }
+    </nz-select>
+    <label for="gl-journal-from">{{ 'GL.FROM' | translate }}</label>
+    <input id="gl-journal-from" nz-input type="date" [ngModel]="dateFrom()" (ngModelChange)="setDate('from', $event)" />
+    <label for="gl-journal-to">{{ 'GL.TO' | translate }}</label>
+    <input id="gl-journal-to" nz-input type="date" [ngModel]="dateTo()" (ngModelChange)="setDate('to', $event)" />
+    <input
+      nz-input
+      type="search"
+      [attr.aria-label]="'GL.PN_SEARCH_JOURNALS' | translate"
+      [placeholder]="'GL.PN_SEARCH_JOURNALS' | translate"
+      [ngModel]="textFilter()"
+      (ngModelChange)="setText($event)"
+    />
   </div>
 
   <app-base-table
@@ -37,6 +62,9 @@
   </ng-template>
   <ng-template #totalTpl let-entry>{{ entry.total_amount | money: currency() }}</ng-template>
   <ng-template #actionsTpl let-entry>
+      <button nz-button nzSize="small" type="button" data-testid="journal-inspect" (click)="inspect(entry)">
+        {{ 'GL.ACTION_INSPECT' | translate }}
+      </button>
       @if (canWrite) {
         @switch (entry.status) {
           @case ('draft') {
@@ -107,6 +135,13 @@
     </div>
   </ng-template>
 </nz-card>
+
+<app-gl-journal-inspector-drawer
+  [entry]="inspected()"
+  [canWrite]="canWrite"
+  (closed)="inspected.set(null)"
+  (storno)="reverse($event)"
+/>
 
 <nz-modal
   [nzVisible]="rejectTarget() !== null"

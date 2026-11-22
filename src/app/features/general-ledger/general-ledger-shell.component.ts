@@ -30,6 +30,7 @@ interface GlNavItem {
 })
 export class GeneralLedgerShellComponent {
   protected readonly items: GlNavItem[] = [
+    { path: 'prima-nota', labelKey: 'GL.NAV_PRIMA_NOTA' },
     { path: 'journals', labelKey: 'GL.NAV_JOURNALS' },
     { path: 'recurring', labelKey: 'GL.NAV_RECURRING' },
     { path: 'accruals', labelKey: 'GL.NAV_ACCRUALS' },
@@ -39,6 +40,7 @@ export class GeneralLedgerShellComponent {
     { path: 'budgets', labelKey: 'GL.NAV_BUDGETS' },
     { path: 'fx-revaluation', labelKey: 'GL.NAV_FX' },
     { path: 'close', labelKey: 'GL.NAV_CLOSE' },
+    { path: 'year-end-closing', labelKey: 'GL.NAV_YEAR_END_CLOSING' },
     { path: 'fiscal-years', labelKey: 'GL.NAV_FISCAL_YEARS' },
     { path: 'consolidation', labelKey: 'GL.NAV_CONSOLIDATION' },
     { path: 'localization', labelKey: 'GL.NAV_LOCALIZATION' },

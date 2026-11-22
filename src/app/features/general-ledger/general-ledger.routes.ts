@@ -35,6 +35,14 @@ export const GENERAL_LEDGER_ROUTES: Routes = [
         loadComponent: () => import('./journals/gl-journals.component').then((m) => m.GlJournalsComponent),
       },
       {
+        path: 'prima-nota',
+        loadComponent: () => import('./prima-nota/gl-prima-nota.component').then((m) => m.GlPrimaNotaComponent),
+      },
+      {
+        path: 'year-end-closing',
+        loadComponent: () => import('./close/gl-year-end-closing.component').then((m) => m.GlYearEndClosingComponent),
+      },
+      {
         path: 'recurring',
         loadComponent: () => import('./recurring/gl-recurring.component').then((m) => m.GlRecurringComponent),
       },

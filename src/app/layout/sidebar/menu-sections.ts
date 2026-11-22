@@ -506,8 +506,13 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
       {
         key: 'NAV.GENERAL_LEDGER',
         icon: 'fa-solid fa-book',
-        route: '/general-ledger',
         module: 'ledger',
+        children: [
+          { key: 'NAV.GENERAL_LEDGER', route: '/general-ledger', icon: 'fa-solid fa-book' },
+          { key: 'GL.NAV_PRIMA_NOTA', route: '/general-ledger/prima-nota', icon: 'fa-solid fa-keyboard' },
+          { key: 'GL.REPORT_TRIAL_BALANCE', route: '/general-ledger/reports', icon: 'fa-solid fa-scale-balanced' },
+          { key: 'GL.NAV_YEAR_END_CLOSING', route: '/general-ledger/year-end-closing', icon: 'fa-solid fa-calendar-check' },
+        ],
       },
       {
         key: 'NAV.PEOPLE',

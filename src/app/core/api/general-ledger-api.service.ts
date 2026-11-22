@@ -47,8 +47,10 @@ import {
   FxRevaluation,
   GlFiscalYear,
   GlJournalEntry,
+  LedgerBookCode,
   LedgerSettings,
   LedgerStatementReport,
+  ReverseJournalPayload,
   LedgerTrialBalance,
   RecurringJournal,
   RecurringStatus,
@@ -81,6 +83,10 @@ export interface DateRangeParams extends ReportDimensionFilter {
   to: string;
   compare_from?: string | null;
   compare_to?: string | null;
+  /** Ledger book: 01 statutory, 02 tax, 03 IFRS (default 01). */
+  ledger?: LedgerBookCode | null;
+  /** Trial balance layout: 2 (side balances) or 4 (opening, debit, credit, closing). */
+  columns?: 2 | 4 | null;
 }
 
 export interface AccountLedgerParams extends ReportDimensionFilter {
@@ -89,6 +95,7 @@ export interface AccountLedgerParams extends ReportDimensionFilter {
   to: string;
   page?: number;
   per_page?: number;
+  ledger?: LedgerBookCode | null;
 }
 
 /** General ledger endpoints that extend `AccountingApiService`: settings, four-eyes, close, FX, reports, budgets. */
@@ -151,8 +158,9 @@ export class GeneralLedgerApiService {
     return this.http.get<ApiResponse<GlJournalEntry>>(`${this.base}/journals/${id}`);
   }
 
-  reverseJournalEntry(id: string): Observable<ApiResponse<GlJournalEntry>> {
-    return this.http.post<ApiResponse<GlJournalEntry>>(`${this.base}/journals/${id}/reverse`, {});
+  /** Storno: the API needs a `reversal_date`; the optional body keeps the older call sites working. */
+  reverseJournalEntry(id: string, body: Partial<ReverseJournalPayload> = {}): Observable<ApiResponse<GlJournalEntry>> {
+    return this.http.post<ApiResponse<GlJournalEntry>>(`${this.base}/journals/${id}/reverse`, body);
   }
 
   submitJournal(id: string): Observable<ApiResponse<GlJournalEntry>> {

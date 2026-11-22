@@ -145,6 +145,7 @@ export * from './api/association-area-api.service';
 export * from './api/association-public-api.service';
 export * from './api/proposal-portal-api.service';
 export * from './api/general-ledger-api.service';
+export * from './api/general-ledger-prima-nota-api.service';
 export * from './api/treasury-ops-api.service';
 export * from './api/eam-ops-api.service';
 export * from './api/project-control-api.service';

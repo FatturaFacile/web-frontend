@@ -1,5 +1,6 @@
 import { Component, computed, inject, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -17,12 +18,17 @@ import {
   GeneralLedgerApiService,
   GlJournalEntry,
   I18nService,
+  LEDGER_BOOK_CODES,
+  LedgerBookCode,
+  ledgerBookOfType,
   PermissionsService,
   QueryFilterParams,
 } from '@core';
 import { BaseTableComponent, MoneyPipe, TableColumnDef, TranslatePipe, ModalActionsDirective } from '@shared';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { GlLookupStore } from '../shared/gl-lookup.store';
+import { todayIso } from '../prima-nota/prima-nota.util';
+import { GlJournalInspectorDrawerComponent } from './gl-journal-inspector-drawer.component';
 
 interface JournalGridFilter extends QueryFilterParams {
   status?: string;
@@ -41,6 +47,7 @@ const STATUS_COLORS: Record<ExtendedJournalStatus, string> = {
   styleUrl: './gl-journals.component.scss',
   imports: [
     BaseTableComponent,
+    GlJournalInspectorDrawerComponent,
     ModalActionsDirective,
     FormsModule,
     NzButtonModule,
@@ -66,8 +73,17 @@ export class GlJournalsComponent {
   protected readonly canWrite = inject(PermissionsService).canWrite('ledger');
 
   protected readonly statuses: ExtendedJournalStatus[] = ['draft', 'pending_approval', 'rejected', 'posted', 'reversed'];
-  protected readonly grid = new FetchGridModel<GlJournalEntry, JournalGridFilter>((query) => this.api.getJournals(query));
+  /** The API filters by status and period only: book, dates and text narrow the loaded page here. */
+  protected readonly grid = new FetchGridModel<GlJournalEntry, JournalGridFilter>((query) =>
+    this.api.getJournals(query).pipe(map((res) => ({ ...res, data: res.data.filter((entry) => this.matchesLocalFilters(entry)) }))),
+  );
   protected readonly statusFilter = signal<ExtendedJournalStatus | null>('pending_approval');
+  protected readonly books: readonly LedgerBookCode[] = LEDGER_BOOK_CODES;
+  protected readonly bookFilter = signal<LedgerBookCode | null>(null);
+  protected readonly dateFrom = signal('');
+  protected readonly dateTo = signal('');
+  protected readonly textFilter = signal('');
+  protected readonly inspected = signal<GlJournalEntry | null>(null);
 
   protected readonly rejectTarget = signal<GlJournalEntry | null>(null);
   protected rejectReason = '';
@@ -82,6 +98,11 @@ export class GlJournalsComponent {
     return [
       { key: 'entry_number', header: 'GL.COL_ENTRY', customCellTemplate: this.entryTpl() },
       { key: 'posting_date', header: 'GL.COL_DATE' },
+      {
+        key: 'ledger_type',
+        header: 'GL.PN_BOOK',
+        valueLabel: (value) => this.i18n.translate('GL.PN_BOOK_' + ledgerBookOfType(String(value))),
+      },
       { key: 'description', header: 'GL.COL_DESCRIPTION', customCellTemplate: this.descriptionTpl() },
       {
         key: 'status',
@@ -97,6 +118,12 @@ export class GlJournalsComponent {
   constructor() {
     this.lookups.load();
     this.grid.setPageSize(20);
+    // Drill-down from the account ledger: `?entry=<id>` opens the inspector of that entry, whatever its status.
+    const entryId = inject(ActivatedRoute).snapshot.queryParamMap.get('entry');
+    if (entryId) {
+      this.statusFilter.set(null);
+      this.api.getJournal(entryId).subscribe({ next: (res) => this.inspected.set(res.data) });
+    }
     this.grid.setFilter({ status: this.statusFilter() ?? undefined });
   }
 
@@ -127,8 +154,58 @@ export class GlJournalsComponent {
     this.run(this.api.approveJournal(entry.id), 'GL.JOURNAL_APPROVED');
   }
 
+  /** One-click storno: reverses the entry today, in its own book, with a standard reason. */
   protected reverse(entry: GlJournalEntry): void {
-    this.run(this.api.reverseJournalEntry(entry.id), 'GL.JOURNAL_REVERSED');
+    this.run(
+      this.api.reverseJournalEntry(entry.id, {
+        reversal_date: todayIso(),
+        reason: this.i18n.translate('GL.JOURNAL_STORNO_REASON'),
+      }),
+      'GL.JOURNAL_REVERSED',
+    );
+    this.inspected.set(null);
+  }
+
+  protected inspect(entry: GlJournalEntry): void {
+    this.inspected.set(entry);
+    // The list rows carry the lines; fall back to the detail endpoint when they are missing.
+    if (!entry.lines) {
+      this.api.getJournal(entry.id).subscribe({ next: (res) => this.inspected.set(res.data) });
+    }
+  }
+
+  protected setBook(book: LedgerBookCode | null): void {
+    this.bookFilter.set(book);
+    this.grid.reload();
+  }
+
+  protected setDate(which: 'from' | 'to', value: string): void {
+    (which === 'from' ? this.dateFrom : this.dateTo).set(value);
+    this.grid.reload();
+  }
+
+  protected setText(value: string): void {
+    this.textFilter.set(value);
+    this.grid.reload();
+  }
+
+  protected bookOf(entry: GlJournalEntry): LedgerBookCode {
+    return ledgerBookOfType(entry.ledger_type);
+  }
+
+  private matchesLocalFilters(entry: GlJournalEntry): boolean {
+    const book = this.bookFilter();
+    if (book && ledgerBookOfType(entry.ledger_type) !== book) {
+      return false;
+    }
+    if (this.dateFrom() && entry.posting_date < this.dateFrom()) {
+      return false;
+    }
+    if (this.dateTo() && entry.posting_date > this.dateTo()) {
+      return false;
+    }
+    const text = this.textFilter().trim().toLowerCase();
+    return !text || entry.entry_number.toLowerCase().includes(text) || entry.description.toLowerCase().includes(text);
   }
 
   protected openReject(entry: GlJournalEntry): void {
