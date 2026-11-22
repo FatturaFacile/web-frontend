@@ -1167,6 +1167,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             module: 'service',
           },
           {
+            key: 'NAV.FS_DISPATCHER',
+            route: '/field-service/dispatcher',
+            icon: 'fa-solid fa-map-location-dot',
+            module: 'service',
+          },
+          {
             key: 'NAV.REPORTS',
             route: '/field-service/reports',
             icon: 'fa-solid fa-screwdriver-wrench',
@@ -1182,6 +1188,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             key: 'NAV.FS_CONTRACTS',
             route: '/field-service/contracts',
             icon: 'fa-solid fa-file-contract',
+            module: 'service',
+          },
+          {
+            key: 'NAV.FS_EQUIPMENT',
+            route: '/field-service/equipment',
+            icon: 'fa-solid fa-gears',
             module: 'service',
           },
         ],

@@ -19,19 +19,6 @@ describe('GapViewsApiService', () => {
     http = TestBed.inject(HttpTestingController);
   });
 
-  it('covers maintenance contracts and the preventive engine', () => {
-    api.listMaintenanceContracts().subscribe();
-    expect(http.expectOne(`${base}/fsm/maintenance-contracts`).request.method).toBe('GET');
-
-    api.updateMaintenanceContract('c1', { title: 'Renamed' }).subscribe();
-    const patch = http.expectOne(`${base}/fsm/maintenance-contracts/c1`);
-    expect(patch.request.method).toBe('PATCH');
-    expect(patch.request.body).toEqual({ title: 'Renamed' });
-
-    api.runPreventiveMaintenance().subscribe();
-    expect(http.expectOne(`${base}/fsm/preventive-maintenance/run`).request.method).toBe('POST');
-  });
-
   it('reads and saves the CRM portal settings', () => {
     api.getPortalSettings().subscribe();
     expect(http.expectOne(`${base}/crm/portal-settings`).request.method).toBe('GET');

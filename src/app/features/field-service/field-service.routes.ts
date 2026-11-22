@@ -13,6 +13,12 @@ export const FIELD_SERVICE_ROUTES: Routes = [
       import('./field-service.component').then((m) => m.FieldServiceComponent),
   },
   {
+    path: 'dispatcher',
+    data: { breadcrumb: 'NAV.FS_DISPATCHER', title: 'NAV.FS_DISPATCHER' },
+    loadComponent: () =>
+      import('./dispatcher/dispatcher-board.component').then((m) => m.DispatcherBoardComponent),
+  },
+  {
     path: 'reports',
     data: { breadcrumb: 'BREADCRUMB.RAPPORTINI_INTERVENTO', title: 'PAGE_TITLE.RAPPORTINI' },
     loadComponent: () =>
@@ -25,9 +31,21 @@ export const FIELD_SERVICE_ROUTES: Routes = [
       import('./work-orders/field-work-orders.component').then((m) => m.FieldWorkOrdersComponent),
   },
   {
+    path: 'work-orders/:id',
+    data: { breadcrumb: 'NAV.FS_WORK_ORDERS', title: 'NAV.FS_WORK_ORDERS' },
+    loadComponent: () =>
+      import('./work-orders/work-order-detail.component').then((m) => m.WorkOrderDetailComponent),
+  },
+  {
     path: 'contracts',
     data: { breadcrumb: 'NAV.FS_CONTRACTS', title: 'NAV.FS_CONTRACTS' },
     loadComponent: () =>
       import('./contracts/maintenance-contracts.component').then((m) => m.MaintenanceContractsComponent),
+  },
+  {
+    path: 'equipment',
+    data: { breadcrumb: 'NAV.FS_EQUIPMENT', title: 'NAV.FS_EQUIPMENT' },
+    loadComponent: () =>
+      import('./equipment/equipment-service-history.component').then((m) => m.EquipmentServiceHistoryComponent),
   },
 ];

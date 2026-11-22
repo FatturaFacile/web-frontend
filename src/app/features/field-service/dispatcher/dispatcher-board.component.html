@@ -1,0 +1,202 @@
+<app-page-header [title]="'FSM.DISPATCH.TITLE' | translate" [subtitle]="'FSM.DISPATCH.SUBTITLE' | translate">
+  <div header-actions class="db-week">
+    <button nz-button type="button" (click)="shiftWeek(-1)" [attr.aria-label]="'FSM.DISPATCH.PREV_WEEK' | translate">&lsaquo;</button>
+    <button nz-button type="button" (click)="thisWeek()">{{ 'FSM.DISPATCH.THIS_WEEK' | translate }}</button>
+    <button nz-button type="button" (click)="shiftWeek(1)" [attr.aria-label]="'FSM.DISPATCH.NEXT_WEEK' | translate">&rsaquo;</button>
+    <button nz-button type="button" [nzLoading]="loading()" (click)="load()">{{ 'FSM.DISPATCH.REFRESH' | translate }}</button>
+  </div>
+</app-page-header>
+
+@if (loadError()) {
+  <nz-alert class="db-alert" nzType="error" nzShowIcon [nzMessage]="'FSM.DISPATCH.LOAD_ERROR' | translate" />
+}
+
+<div class="db-layout">
+  <nz-card class="db-queue" [nzTitle]="'FSM.DISPATCH.QUEUE' | translate" [nzExtra]="queueCount">
+    <ng-template #queueCount>
+      <nz-tag data-testid="count-queue">{{ filteredQueue().length }} / {{ queue().length }}</nz-tag>
+    </ng-template>
+
+    <form class="db-filters" (submit)="$event.preventDefault()" [attr.aria-label]="'FSM.DISPATCH.FILTERS' | translate">
+      <label>
+        <span>{{ 'FSM.DISPATCH.FILTER_PRIORITY' | translate }}</span>
+        <nz-select nzAllowClear [ngModel]="filters().priority || null" (ngModelChange)="setFilter('priority', $event)" name="priority" data-testid="filter-priority">
+          @for (p of priorities; track p) {
+            <nz-option [nzValue]="p" [nzLabel]="'FSM.PRIORITY.' + p.toUpperCase() | translate" />
+          }
+        </nz-select>
+      </label>
+      <label>
+        <span>{{ 'FSM.DISPATCH.FILTER_CONTRACT' | translate }}</span>
+        <nz-select nzAllowClear [ngModel]="filters().contractId || null" (ngModelChange)="setFilter('contractId', $event)" name="contract" [nzOptions]="contractOptions()" />
+      </label>
+      <label>
+        <span>{{ 'FSM.DISPATCH.FILTER_SKILL' | translate }}</span>
+        <nz-select nzAllowClear [ngModel]="filters().skill || null" (ngModelChange)="setFilter('skill', $event)" name="skill">
+          @for (s of skillOptions(); track s) {
+            <nz-option [nzValue]="s" [nzLabel]="s" />
+          }
+        </nz-select>
+      </label>
+      <label>
+        <span>{{ 'FSM.DISPATCH.FILTER_VAN' | translate }}</span>
+        <nz-select [ngModel]="filters().vanReadiness" (ngModelChange)="setVanFilter($event)" name="van" data-testid="filter-van">
+          <nz-option nzValue="all" [nzLabel]="'FSM.DISPATCH.ALL' | translate" />
+          <nz-option nzValue="ready" [nzLabel]="'FSM.DISPATCH.VAN_READY' | translate" />
+          <nz-option nzValue="not_ready" [nzLabel]="'FSM.DISPATCH.VAN_NOT_READY' | translate" />
+        </nz-select>
+      </label>
+      <label>
+        <span>{{ 'FSM.DISPATCH.FILTER_KIND' | translate }}</span>
+        <nz-select [ngModel]="filters().kind" (ngModelChange)="setKindFilter($event)" name="kind" data-testid="filter-kind">
+          <nz-option nzValue="all" [nzLabel]="'FSM.DISPATCH.ALL' | translate" />
+          <nz-option nzValue="preventive" [nzLabel]="'FSM.TYPE.PREVENTIVE' | translate" />
+          <nz-option nzValue="corrective" [nzLabel]="'FSM.DISPATCH.CORRECTIVE' | translate" />
+        </nz-select>
+      </label>
+      <button nz-button nzSize="small" type="button" (click)="resetFilters()">{{ 'FSM.DISPATCH.RESET_FILTERS' | translate }}</button>
+    </form>
+
+    <nz-spin [nzSpinning]="loading()">
+      <ul class="db-list" [attr.aria-label]="'FSM.DISPATCH.QUEUE' | translate">
+        @for (item of filteredQueue(); track item.work_order_id) {
+          <li class="db-item" [class.db-item-selected]="item.work_order_id === selectedId()" [attr.data-testid]="'queue-' + item.work_order_id">
+            <div class="db-item-head">
+              <strong>{{ item.work_order_number }}</strong>
+              <nz-tag [nzColor]="priorityColor(item.priority)">{{ 'FSM.PRIORITY.' + item.priority.toUpperCase() | translate }}</nz-tag>
+              <nz-tag>{{ kindOf(item) === 'preventive' ? ('FSM.TYPE.PREVENTIVE' | translate) : ('FSM.DISPATCH.CORRECTIVE' | translate) }}</nz-tag>
+            </div>
+            <p class="db-item-title">{{ item.title }}</p>
+            @if (item.site.address) {
+              <p class="db-item-meta">{{ item.site.address }}</p>
+            }
+            <div class="db-badges">
+              @if (item.service_contract_id) {
+                <nz-tag nzColor="geekblue">{{ contractLabel(item.service_contract_id) }}</nz-tag>
+              }
+              @for (skill of item.required_skills; track skill) {
+                <nz-tag nzColor="gold">{{ skill }}</nz-tag>
+              }
+              @if (item.required_parts.length > 0) {
+                @if (vanReady(item)) {
+                  <nz-tag nzColor="green" data-testid="van-ready">{{ 'FSM.DISPATCH.VAN_READY' | translate }}</nz-tag>
+                } @else {
+                  <nz-tag nzColor="orange" data-testid="van-not-ready">{{ 'FSM.DISPATCH.VAN_NOT_READY' | translate }}</nz-tag>
+                }
+              }
+            </div>
+            <div class="db-item-actions">
+              <button nz-button nzSize="small" type="button" [attr.aria-pressed]="item.work_order_id === selectedId()" (click)="toggleSelected(item)">
+                {{ 'FSM.DISPATCH.SHOW_FIT' | translate }}
+              </button>
+              @if (canWrite()) {
+                <button nz-button nzType="primary" nzSize="small" type="button" (click)="openAssign(item)">
+                  {{ 'FSM.DISPATCH.ASSIGN' | translate }}
+                </button>
+              }
+            </div>
+          </li>
+        } @empty {
+          <nz-empty [nzNotFoundContent]="'FSM.DISPATCH.QUEUE_EMPTY' | translate" />
+        }
+      </ul>
+    </nz-spin>
+  </nz-card>
+
+  <nz-card class="db-timeline" [nzTitle]="'FSM.DISPATCH.TIMELINE' | translate">
+    @if (selected(); as item) {
+      <nz-alert class="db-alert" nzType="info" nzShowIcon [nzMessage]="'FSM.DISPATCH.SELECTED_HINT' | translate: { number: item.work_order_number }" />
+    }
+    <app-dispatcher-gantt
+      [lanes]="lanes()"
+      [window]="window()"
+      [selected]="selected()"
+      (slotSelected)="onSlot($event)"
+      (laneAction)="onLaneAction($event)"
+      (blockSelected)="onBlock($event)"
+    />
+  </nz-card>
+</div>
+
+<nz-card class="db-map" [nzTitle]="'FSM.DISPATCH.MAP' | translate">
+  <app-dispatcher-map [lanes]="lanes()" [unassigned]="queue()" />
+</nz-card>
+
+<nz-modal
+  [nzVisible]="dialogTarget() !== null"
+  [nzTitle]="'FSM.DISPATCH.DIALOG_TITLE' | translate"
+  [nzOkText]="'FSM.DISPATCH.CONFIRM' | translate"
+  [nzCancelText]="'COMMON.CANCEL' | translate"
+  [nzOkLoading]="saving()"
+  [nzOkDisabled]="form.invalid || rangeInvalid()"
+  [nzMaskClosable]="false"
+  nzWidth="640px"
+  (nzOnOk)="submit()"
+  (nzOnCancel)="closeDialog()"
+>
+  <ng-container *nzModalContent>
+    @if (dialogTarget(); as target) {
+      <p class="db-dialog-wo">
+        <strong>{{ target.number }}</strong> - {{ target.title }}
+      </p>
+    }
+
+    @if (liveHasWarnings() && liveWarnings(); as warnings) {
+      <nz-alert class="db-alert" nzType="warning" nzShowIcon data-testid="live-warnings" [nzMessage]="'FSM.DISPATCH.WARNINGS' | translate" [nzDescription]="liveDetail">
+        <ng-template #liveDetail>
+          <ul>
+            @if (warnings.missingSkills.length > 0) {
+              <li>{{ 'FSM.DISPATCH.SKILLS_MISSING' | translate }}: {{ warnings.missingSkills.join(', ') }}</li>
+            }
+            @if (warnings.vanNotReady) {
+              <li>{{ 'FSM.DISPATCH.VAN_NOT_READY' | translate }}</li>
+            }
+            @if (warnings.technicianUnavailable) {
+              <li>{{ 'FSM.DISPATCH.UNAVAILABLE' | translate }}</li>
+            }
+          </ul>
+        </ng-template>
+      </nz-alert>
+    }
+
+    @if (blockerGroups().length > 0) {
+      <nz-alert class="db-alert" nzType="warning" nzShowIcon data-testid="blockers" [nzMessage]="'FSM.DISPATCH.BLOCKED' | translate" [nzDescription]="blockerDetail">
+        <ng-template #blockerDetail>
+          @for (group of blockerGroups(); track group.key) {
+            <p class="db-blocker-title">{{ blockerTitle(group.key) }}</p>
+            <ul>
+              @for (text of group.messages; track text) {
+                <li>{{ text }}</li>
+              }
+            </ul>
+          }
+        </ng-template>
+      </nz-alert>
+    }
+
+    <form nz-form nzLayout="vertical" [formGroup]="form">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="db-technician">{{ 'FSM.DISPATCH.TECHNICIAN' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select nzId="db-technician" formControlName="technician_id" nzShowSearch>
+            @for (lane of lanes(); track lane.technician_id) {
+              <nz-option [nzValue]="lane.technician_id" [nzLabel]="lane.name" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="db-start">{{ 'FSM.DISPATCH.START' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input id="db-start" type="datetime-local" formControlName="start" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="db-end">{{ 'FSM.DISPATCH.END' | translate }}</nz-form-label>
+        <nz-form-control [nzValidateStatus]="rangeInvalid() ? 'error' : ''" [nzErrorTip]="'FSM.DISPATCH.RANGE_INVALID' | translate">
+          <input nz-input id="db-end" type="datetime-local" formControlName="end" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>

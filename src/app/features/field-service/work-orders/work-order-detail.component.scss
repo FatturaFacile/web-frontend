@@ -1,0 +1,50 @@
+.wod-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.wod-alert {
+  margin: 12px 0;
+}
+
+.wod-card {
+  margin-bottom: 16px;
+}
+
+.wod-sub {
+  margin: 16px 0 8px;
+  font-size: 14px;
+}
+
+.wod-totals {
+  display: grid;
+  grid-template-columns: max-content max-content;
+  gap: 4px 16px;
+  margin: 12px 0;
+
+  dt {
+    font-weight: 600;
+  }
+
+  dd {
+    margin: 0;
+  }
+}
+
+.wod-part-form {
+  margin-top: 8px;
+  gap: 8px;
+}
+
+.wod-part-product {
+  min-width: 320px;
+}
+
+.wod-signature {
+  max-width: 360px;
+  max-height: 160px;
+  border: 1px solid var(--ant-color-border-secondary, #f0f0f0);
+  border-radius: 6px;
+  background: #fff;
+}

@@ -1,0 +1,68 @@
+:host {
+  display: block;
+}
+
+.map-toolbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.map-svg {
+  width: 100%;
+  max-height: 420px;
+  border: 1px solid var(--ant-color-border-secondary, #f0f0f0);
+  border-radius: 6px;
+}
+
+.map-bg {
+  fill: var(--ant-color-bg-container, #ffffff);
+}
+
+.map-label {
+  font-size: 11px;
+  fill: var(--ant-color-text, #262626);
+}
+
+.map-empty {
+  padding: 24px;
+  text-align: center;
+}
+
+.map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+  }
+}
+
+.pin {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+
+  &.queued {
+    border: 2px solid #595959;
+    background: #ffffff;
+  }
+}
+
+.route-title {
+  margin: 16px 0 8px;
+  font-size: 14px;
+}
+
+.route-note {
+  margin: 8px 0 0;
+  font-size: 12px;
+}
