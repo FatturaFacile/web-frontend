@@ -36,6 +36,11 @@
               <i nz-icon nzType="check-circle"></i> {{ 'TICKET_TOOLS.LBL_RISOLVI' | translate }}
             </button>
           }
+          @if (ticket()?.status !== 'closed' && ticket()?.status !== 'resolved') {
+            <button nz-button nzSize="small" (click)="escalateToFieldService()">
+              <i nz-icon nzType="tool"></i> {{ 'TICKET_TOOLS.LBL_FIELD_SERVICE' | translate }}
+            </button>
+          }
           @if (ticket()?.status !== 'closed') {
             <button nz-button nzSize="small" nzDanger appIconAction="close" (click)="confirmClose()"></button>
           }

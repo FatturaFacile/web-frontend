@@ -6,6 +6,7 @@ import {
   ApiResponse,
   AssignTicketRequest,
   AutoAssignRequest,
+  EscalateToFieldServiceRequest,
   BulkTicketRequest,
   BulkTicketResponse,
   ChangeTicketStatusRequest,
@@ -113,6 +114,11 @@ export class TicketApiService {
 
   splitTicket(id: string, payload: SplitTicketRequest): Observable<{ data: TicketResource }> {
     return this.http.post<{ data: TicketResource }>(`${this.base}/${id}/split`, payload);
+  }
+
+  /** Escalates a ticket to a field-service work order (diagnostic notes, planned start and technician are optional). */
+  escalateToFieldService(id: string, payload: EscalateToFieldServiceRequest): Observable<{ data: unknown }> {
+    return this.http.post<{ data: unknown }>(`${this.base}/${id}/escalate-to-field-service`, payload);
   }
 
   autoAssignTicket(id: string, payload: AutoAssignRequest): Observable<{ data: TicketResource }> {

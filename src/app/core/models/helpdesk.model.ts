@@ -35,6 +35,13 @@ export interface SplitTicketRequest {
   message_ids: string[];
 }
 
+/** Optional details of a ticket escalation to field service. */
+export interface EscalateToFieldServiceRequest {
+  diagnostic_notes?: string | null;
+  scheduled_start?: string | null;
+  technician_id?: string | null;
+}
+
 export interface AutoAssignRequest {
   team_id?: string | null;
   strategy: AutoAssignStrategy;

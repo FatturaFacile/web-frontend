@@ -20,6 +20,7 @@ import {
   applyServerErrors,
   AssignTicketRequest,
   ChangeTicketStatusRequest,
+  EscalateToFieldServiceRequest,
   HelpdeskTicketActivityResource,
   HelpdeskTicketMessageResource,
   ResolveTicketRequest,
@@ -410,6 +411,29 @@ export class TicketDetailDrawerComponent {
       },
       error: (err) => {
         this.message.error(err?.error?.detail || err?.message || this.translate.instant('TICKET_TOOLS.MSG_ERRORE_NELLA_RISOLUZIONE'));
+      },
+    });
+  }
+
+  protected escalateToFieldService(): void {
+    const id = this.ticketId();
+    if (!id) return;
+
+    this.modal.confirm({
+      nzTitle: this.translate.instant('TICKET_TOOLS.DLG_FIELD_SERVICE_TITLE'),
+      nzContent: this.translate.instant('TICKET_TOOLS.DLG_FIELD_SERVICE_BODY'),
+      nzOkText: this.translate.instant('TICKET_TOOLS.LBL_FIELD_SERVICE'),
+      nzOnOk: () => {
+        this.api.escalateToFieldService(id, {}).subscribe({
+          next: () => {
+            this.message.success(this.translate.instant('TICKET_TOOLS.MSG_FIELD_SERVICE_CREATED'));
+            this.loadTicket(id);
+            this.updated.emit();
+          },
+          error: (err) => {
+            this.message.error(err?.error?.detail || err?.message || this.translate.instant('TICKET_TOOLS.MSG_FIELD_SERVICE_FAILED'));
+          },
+        });
       },
     });
   }
