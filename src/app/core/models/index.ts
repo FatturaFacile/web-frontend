@@ -15,6 +15,7 @@ export * from './dashboard.model';
 export * from './dashboard-layout.model';
 export * from './document-branding.model';
 export * from './inventory.model';
+export * from './inventory-count.model';
 export * from './procurement.model';
 export * from './construction.model';
 export * from './professionals.model';

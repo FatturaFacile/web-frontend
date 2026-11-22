@@ -1,0 +1,221 @@
+<app-page-header
+  [title]="('INVENTORY_COUNT.RECON.TITLE' | translate) + (data()?.session.session_number ? ' ' + data()?.session.session_number : '')"
+/>
+
+<div class="iv-toolbar">
+  <a nz-button routerLink="/inventory/counts">{{ 'INVENTORY.ACTIONS.BACK_TO_LIST' | translate }}</a>
+</div>
+
+@if (errorKey(); as errKey) {
+  <nz-alert class="iv-alert" nzType="error" nzShowIcon [nzMessage]="'INVENTORY_COUNT.RECON.LOAD_ERROR' | translate" [nzDescription]="errKey | translate" [nzAction]="retryTpl" />
+  <ng-template #retryTpl>
+    <button nz-button nzSize="small" (click)="load()">{{ 'INVENTORY.ACTIONS.RETRY' | translate }}</button>
+  </ng-template>
+}
+
+@if (actionErrors().length) {
+  <nz-alert class="iv-alert" nzType="error" nzShowIcon [nzMessage]="actionErrors()[0]" data-testid="action-errors" />
+}
+
+@if (data(); as d) {
+  <!-- Summary -->
+  <nz-card class="iv-card" [nzLoading]="loading()">
+    <div class="iv-stats" data-testid="summary">
+      <nz-statistic [nzTitle]="'INVENTORY_COUNT.RECON.GROSS_VARIANCE' | translate" [nzValue]="(d.summary.gross_variance_value | number: '1.2-2') ?? ''" />
+      <nz-statistic [nzTitle]="'INVENTORY_COUNT.RECON.NET_VARIANCE' | translate" [nzValue]="(d.summary.net_variance_value | number: '1.2-2') ?? ''" />
+      <nz-statistic
+        [nzTitle]="'INVENTORY_COUNT.RECON.REQUIRED_LEVEL' | translate"
+        [nzValue]="d.summary.suggested_approval_level === null ? '-' : d.summary.suggested_approval_level"
+      />
+      <div>
+        <div class="iv-muted">{{ 'INVENTORY_COUNT.RECON.WITHIN_TOLERANCE' | translate }}</div>
+        <nz-tag [nzColor]="d.summary.within_tolerance ? 'success' : 'warning'" data-testid="tolerance-tag">{{
+          (d.summary.within_tolerance ? 'COMMON.YES' : 'COMMON.NO') | translate
+        }}</nz-tag>
+      </div>
+      <div>
+        <div class="iv-muted">{{ 'COMMON.STATUS' | translate }}</div>
+        <nz-tag [nzColor]="statusLabels[d.session.status].color">{{ statusLabels[d.session.status].key | translate }}</nz-tag>
+        @if (d.session.is_blind) {
+          <nz-tag>{{ 'INVENTORY_COUNT.SESSION.BLIND' | translate }}</nz-tag>
+        }
+      </div>
+    </div>
+    <p class="iv-muted">
+      {{ d.summary.counted_lines }} / {{ d.summary.lines }}
+      @if (d.summary.recount_pending_lines > 0) {
+        · <nz-tag nzColor="orange">{{ 'INVENTORY_COUNT.RECON.RECOUNT_PENDING' | translate }}: {{ d.summary.recount_pending_lines }}</nz-tag>
+      }
+    </p>
+    @if (canSubmit()) {
+      <button nz-button nzType="primary" [disabled]="busy()" (click)="submitDifferences()" data-testid="submit-differences-btn">
+        <nz-icon nzType="check" /> {{ 'INVENTORY_COUNT.SESSION.SUBMIT' | translate }}
+      </button>
+    }
+  </nz-card>
+
+  <!-- Lines -->
+  <nz-card class="iv-card" [nzTitle]="'INVENTORY_COUNT.RECON.TITLE' | translate" [nzExtra]="recountTpl">
+    <ng-template #recountTpl>
+      <button nz-button [disabled]="!canRecount()" (click)="recount()" data-testid="recount-btn">
+        <nz-icon nzType="reload" /> {{ 'INVENTORY_COUNT.RECON.RECOUNT' | translate }}
+      </button>
+    </ng-template>
+    <nz-table #linesTable [nzData]="lines()" nzSize="small" [nzPageSize]="50" data-testid="variance-lines">
+      <thead>
+        <tr>
+          <th scope="col" style="width: 40px">
+            <input
+              type="checkbox"
+              [checked]="allSelected()"
+              (change)="toggleAll($any($event.target).checked)"
+              [attr.aria-label]="'COMMON.SELECT' | translate"
+              data-testid="select-all"
+            />
+          </th>
+          <th scope="col">{{ 'INVENTORY_COUNT.COL.SKU' | translate }}</th>
+          <th scope="col">{{ 'INVENTORY_COUNT.COL.ITEM' | translate }}</th>
+          <th scope="col">{{ 'INVENTORY_COUNT.COL.BIN' | translate }}</th>
+          <th scope="col" class="iv-num">{{ 'INVENTORY_COUNT.RECON.SYSTEM_QTY' | translate }}</th>
+          <th scope="col" class="iv-num">{{ 'INVENTORY_COUNT.RECON.COUNTED_QTY' | translate }}</th>
+          <th scope="col" class="iv-num">{{ 'INVENTORY_COUNT.RECON.FINAL_QTY' | translate }}</th>
+          <th scope="col" class="iv-num">{{ 'INVENTORY_COUNT.RECON.VARIANCE_QTY' | translate }}</th>
+          <th scope="col" class="iv-num">{{ 'INVENTORY_COUNT.RECON.VARIANCE_VALUE' | translate }}</th>
+          <th scope="col" class="iv-num">{{ 'INVENTORY_COUNT.RECON.VARIANCE_PERCENT' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (l of linesTable.data; track l.id) {
+          <tr>
+            <td>
+              @if (l.is_counted && !l.recount_required) {
+                <input
+                  type="checkbox"
+                  [checked]="selectedIds().has(l.id)"
+                  (change)="toggleLine(l.id, $any($event.target).checked)"
+                  [attr.aria-label]="l.sku"
+                  data-testid="select-line"
+                />
+              }
+            </td>
+            <td>{{ l.sku }}</td>
+            <td>
+              {{ l.item_name }}
+              @if (l.recount_required) {
+                <nz-tag nzColor="orange">{{ 'INVENTORY_COUNT.RECON.RECOUNT_PENDING' | translate }}</nz-tag>
+              }
+              @if (l.recount_round > 0) {
+                <nz-tag>{{ 'INVENTORY_COUNT.RECON.ROUND' | translate }} {{ l.recount_round }}</nz-tag>
+              }
+            </td>
+            <td>{{ l.bin_barcode || l.warehouse_bin_id }}</td>
+            <td class="iv-num">{{ l.system_quantity | number: '1.0-4' }}</td>
+            <td class="iv-num">{{ l.counted_quantity === null ? '-' : (l.counted_quantity | number: '1.0-4') }}</td>
+            <td class="iv-num">{{ l.final_quantity === null ? '-' : (l.final_quantity | number: '1.0-4') }}</td>
+            <td class="iv-num iv-diff" [class]="varianceClass(l.variance_quantity)">{{ l.variance_quantity | number: '1.0-4' }}</td>
+            <td class="iv-num iv-diff" [class]="varianceClass(l.variance_value)">{{ l.variance_value | number: '1.2-2' }}</td>
+            <td class="iv-num" data-testid="variance-percent">
+              @if (l.variance_percentage_undefined || l.variance_percentage === null) {
+                {{ 'INVENTORY_COUNT.RECON.UNDEFINED' | translate }}
+              } @else {
+                {{ l.variance_percentage | number: '1.2-2' }}%
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+
+  <!-- Approval -->
+  @if (approvals().length) {
+    <nz-card class="iv-card" [nzTitle]="'INVENTORY_COUNT.RECON.REQUIRED_LEVEL' | translate">
+      <nz-steps [nzCurrent]="currentStep()" data-testid="approval-steps">
+        @for (a of approvals(); track a.id) {
+          <nz-step
+            [nzTitle]="levelLabels[a.level === 2 ? 2 : 1] | translate"
+            [nzStatus]="stepStatus(a.status)"
+            [nzDescription]="approvalStatusLabels[a.status].key | translate"
+          />
+        }
+      </nz-steps>
+      @for (a of approvals(); track a.id) {
+        @if (a.notes) {
+          <p class="iv-muted">{{ a.notes }}</p>
+        }
+        @if (a.status === 'pending' && decidable().has(a.level)) {
+          <div class="iv-actions iv-section-title" [attr.data-testid]="'decision-level-' + a.level">
+            <button nz-button nzType="primary" [disabled]="busy()" (click)="openDecision(a.level, 'approve')" data-testid="approve-btn">
+              <nz-icon nzType="check" /> {{ 'INVENTORY_COUNT.RECON.APPROVE' | translate }}
+            </button>
+            <button nz-button nzDanger [disabled]="busy()" (click)="openDecision(a.level, 'reject')" data-testid="reject-btn">
+              <nz-icon nzType="close" /> {{ 'INVENTORY_COUNT.RECON.REJECT' | translate }}
+            </button>
+          </div>
+        }
+      }
+    </nz-card>
+  }
+
+  <!-- Adjustment and ledger -->
+  @if (d.adjustment; as adj) {
+    <nz-card class="iv-card" [nzTitle]="'INVENTORY_COUNT.RECON.ADJUSTMENT' | translate">
+      <nz-descriptions nzBordered nzSize="small" [nzColumn]="{ xxl: 3, xl: 3, lg: 2, md: 2, sm: 1, xs: 1 }" data-testid="adjustment">
+        <nz-descriptions-item [nzTitle]="'INVENTORY_COUNT.RECON.ADJUSTMENT' | translate">
+          <code>{{ adj.adjustment_number }}</code> ({{ adj.id }})
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'COMMON.STATUS' | translate">{{ adj.status }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'INVENTORY_COUNT.RECON.NET_VARIANCE' | translate">{{
+          adj.net_valuation_change | number: '1.2-2'
+        }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'INVENTORY_COUNT.RECON.JOURNAL_ENTRY' | translate">
+          @if (adj.journal_entry_id) {
+            <code data-testid="journal-entry">{{ adj.journal_entry_id }}</code>
+          } @else {
+            -
+          }
+        </nz-descriptions-item>
+      </nz-descriptions>
+    </nz-card>
+  }
+
+  <!-- Audit trail -->
+  <nz-card class="iv-card" [nzTitle]="'INVENTORY_COUNT.RECON.EVENTS' | translate">
+    <nz-timeline data-testid="events">
+      @for (e of events(); track e.id) {
+        <nz-timeline-item>
+          <strong>{{ e.event }}</strong>
+          <span class="iv-muted"> · {{ e.created_at | date: 'medium' }}@if (e.user_id) { · {{ e.user_id }} }</span>
+        </nz-timeline-item>
+      }
+    </nz-timeline>
+  </nz-card>
+} @else if (loading()) {
+  <nz-card class="iv-card" [nzLoading]="true" />
+}
+
+<nz-modal
+  [nzVisible]="decision() !== null"
+  [nzTitle]="(decision()?.kind === 'reject' ? 'INVENTORY_COUNT.RECON.REJECT' : 'INVENTORY_COUNT.RECON.APPROVE') | translate"
+  [nzOkText]="(decision()?.kind === 'reject' ? 'INVENTORY_COUNT.RECON.REJECT' : 'INVENTORY_COUNT.RECON.APPROVE') | translate"
+  [nzOkDanger]="decision()?.kind === 'reject'"
+  [nzOkDisabled]="!decisionValid()"
+  [nzOkLoading]="busy()"
+  [nzCancelText]="'COMMON.CANCEL' | translate"
+  (nzOnCancel)="closeDecision()"
+  (nzOnOk)="confirmDecision()"
+>
+  <ng-container *nzModalContent>
+    <label for="decision-text">
+      {{ (decision()?.kind === 'reject' ? 'INVENTORY_COUNT.RECON.REJECT_REASON' : 'INVENTORY_COUNT.RECON.NOTES') | translate }}
+    </label>
+    <textarea
+      nz-input
+      id="decision-text"
+      rows="3"
+      [ngModel]="decisionText()"
+      (ngModelChange)="decisionText.set($event)"
+      data-testid="decision-text"
+    ></textarea>
+  </ng-container>
+</nz-modal>

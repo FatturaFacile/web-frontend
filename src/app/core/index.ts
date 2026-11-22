@@ -37,6 +37,7 @@ export * from './api/treasury-api.service';
 export * from './api/dashboard-api.service';
 export * from './api/inventory-api.service';
 export * from './api/inventory-valuation-api.service';
+export * from './api/inventory-count-api.service';
 export * from './api/procurement-api.service';
 export * from './api/construction-api.service';
 export * from './api/professionals-api.service';
