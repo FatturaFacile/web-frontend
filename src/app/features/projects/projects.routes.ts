@@ -8,6 +8,12 @@ export const PROJECTS_ROUTES: Routes = [
     loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
   },
   {
+    path: ':id/evm',
+    data: { breadcrumb: 'PROJECT_EVM.NAV', title: 'PROJECT_EVM.TITLE' },
+    loadComponent: () =>
+      import('./evm/project-evm-dashboard.component').then((m) => m.ProjectEvmDashboardComponent),
+  },
+  {
     path: ':id/control',
     data: { breadcrumb: 'PRJ.CONTROL_TITLE', title: 'PRJ.CONTROL_TITLE' },
     loadComponent: () =>
