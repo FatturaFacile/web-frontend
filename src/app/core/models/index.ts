@@ -31,6 +31,7 @@ export * from './field-operations.model';
 export * from './fsm.model';
 export * from './ticket.model';
 export * from './helpdesk.model';
+export * from './helpdesk-sla.model';
 export * from './project.model';
 export * from './asset.model';
 export * from './subscription.model';
