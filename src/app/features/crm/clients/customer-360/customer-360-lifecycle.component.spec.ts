@@ -62,20 +62,22 @@ describe('Customer360LifecycleComponent', () => {
           kpis,
         },
       });
-    http.expectOne((r) => r.url.endsWith('/crm/customers/a1/timeline')).flush({
-      data: [
-        {
-          type: 'ticket',
-          id: 't1',
-          occurred_at: '2026-03-01T10:00:00Z',
-          title: 'Chiller offline',
-          status: 'open',
-          amount: null,
-          reference: 'T-1',
-          label: 'Ticket',
-        },
-      ],
-    });
+    http
+      .expectOne((r) => r.url.endsWith('/crm/customers/a1/timeline'))
+      .flush({
+        data: [
+          {
+            type: 'ticket',
+            id: 't1',
+            occurred_at: '2026-03-01T10:00:00Z',
+            title: 'Chiller offline',
+            status: 'open',
+            amount: null,
+            reference: 'T-1',
+            label: 'Ticket',
+          },
+        ],
+      });
     fixture.detectChanges();
 
     const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
@@ -85,17 +87,24 @@ describe('Customer360LifecycleComponent', () => {
 
   it('reloads the timeline with the selected types', () => {
     const fixture = create();
-    http.expectOne((r) => r.url.endsWith('/crm/accounts')).flush({ data: { data: [{ id: 'a1' }] } });
-    http.expectOne((r) => r.url.endsWith('/360')).flush({
-      data: {
-        account: { id: 'a1', contact_id: 'c1', name: 'Rossi SA', tier: null, status: 'active' },
-        health: { health_index: 70, churn_risk: 'low', last_interaction_at: null },
-        kpis,
-      },
-    });
+    http
+      .expectOne((r) => r.url.endsWith('/crm/accounts'))
+      .flush({ data: { data: [{ id: 'a1' }] } });
+    http
+      .expectOne((r) => r.url.endsWith('/360'))
+      .flush({
+        data: {
+          account: { id: 'a1', contact_id: 'c1', name: 'Rossi SA', tier: null, status: 'active' },
+          health: { health_index: 70, churn_risk: 'low', last_interaction_at: null },
+          kpis,
+        },
+      });
     http.expectOne((r) => r.url.endsWith('/timeline')).flush({ data: [] });
 
-    (fixture.componentInstance as unknown as { applyFilter(types: string[]): void }).applyFilter(['ticket', 'invoice']);
+    (fixture.componentInstance as unknown as { applyFilter(types: string[]): void }).applyFilter([
+      'ticket',
+      'invoice',
+    ]);
     const filtered = http.expectOne((r) => r.url.endsWith('/timeline'));
     expect(filtered.request.params.getAll('types[]')).toEqual(['ticket', 'invoice']);
     filtered.flush({ data: [] });
@@ -106,11 +115,56 @@ describe('Customer360LifecycleComponent', () => {
     http.expectOne((r) => r.url.endsWith('/crm/accounts')).flush({ data: [] });
     fixture.detectChanges();
 
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('CRM.CUSTOMER360.LC_NO_ACCOUNT');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain(
+      'CRM.CUSTOMER360.LC_NO_ACCOUNT',
+    );
     http.expectNone((r) => r.url.endsWith('/360'));
   });
 
+  it('logs a visit as a meeting activity on the account and reloads the timeline', () => {
+    const fixture = create();
+    http.expectOne((r) => r.url.endsWith('/crm/accounts')).flush({ data: [{ id: 'a1' }] });
+    http
+      .expectOne((r) => r.url.endsWith('/360'))
+      .flush({
+        data: {
+          account: { id: 'a1', contact_id: 'c1', name: 'Rossi SA', tier: null, status: 'active' },
+          health: { health_index: 70, churn_risk: 'low', last_interaction_at: null },
+          kpis,
+        },
+      });
+    http.expectOne((r) => r.url.endsWith('/timeline')).flush({ data: [] });
+
+    const page = fixture.componentInstance as unknown as {
+      openAction(type: string): void;
+      subject: { set(value: string): void };
+      saveAction(): void;
+    };
+    page.openAction('meeting');
+    page.subject.set('On-site visit');
+    page.saveAction();
+
+    const post = http.expectOne((r) => r.method === 'POST' && r.url.endsWith('/crm/activities'));
+    expect(post.request.body).toEqual({
+      type: 'meeting',
+      subject: 'On-site visit',
+      due_date: null,
+      related_type: 'account',
+      related_id: 'a1',
+    });
+    post.flush({ data: {} });
+    http.expectOne((r) => r.url.endsWith('/timeline')).flush({ data: [] });
+  });
+
   it('exposes every backend timeline type', () => {
-    expect([...TIMELINE_TYPES]).toEqual(['activity', 'opportunity', 'invoice', 'ticket', 'work_order', 'contract', 'lead']);
+    expect([...TIMELINE_TYPES]).toEqual([
+      'activity',
+      'opportunity',
+      'invoice',
+      'ticket',
+      'work_order',
+      'contract',
+      'lead',
+    ]);
   });
 });

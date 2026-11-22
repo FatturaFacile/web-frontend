@@ -1,8 +1,18 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, input, OnInit, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  input,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzSelectModule } from 'ng-zorro-antd/select';
@@ -14,6 +24,7 @@ import {
   CustomerLifecycleApiService,
   CustomerLifecycleSummary,
   CustomerTimelineEvent,
+  QuickActionType,
   TIMELINE_TYPES,
   TimelineType,
 } from '@core';
@@ -32,6 +43,7 @@ import { TranslatePipe } from '@shared';
     RouterLink,
     NzButtonModule,
     NzEmptyModule,
+    NzInputModule,
     NzSelectModule,
     NzSkeletonModule,
     NzStatisticModule,
@@ -44,30 +56,93 @@ import { TranslatePipe } from '@shared';
       <nz-skeleton [nzActive]="true" />
     } @else if (summary(); as s) {
       <div class="actions">
-        <a nz-button routerLink="/crm/pipeline">{{ 'CRM.CUSTOMER360.LC_NEW_OPPORTUNITY' | translate }}</a>
-        <a nz-button routerLink="/field-service/tickets">{{ 'CRM.CUSTOMER360.LC_NEW_TICKET' | translate }}</a>
+        <a nz-button routerLink="/crm/pipeline">{{
+          'CRM.CUSTOMER360.LC_NEW_OPPORTUNITY' | translate
+        }}</a>
+        <a nz-button routerLink="/field-service/tickets">{{
+          'CRM.CUSTOMER360.LC_NEW_TICKET' | translate
+        }}</a>
+        <button nz-button type="button" (click)="openAction('meeting')">
+          {{ 'CRM.CUSTOMER360.QA_LOG_VISIT' | translate }}
+        </button>
+        <button nz-button type="button" (click)="openAction('follow_up')">
+          {{ 'CRM.CUSTOMER360.QA_FOLLOW_UP' | translate }}
+        </button>
       </div>
 
+      @if (action(); as current) {
+        <div class="quick">
+          <input
+            nz-input
+            [placeholder]="'CRM.CUSTOMER360.QA_SUBJECT' | translate"
+            [ngModel]="subject()"
+            (ngModelChange)="subject.set($event)"
+          />
+          @if (current === 'follow_up') {
+            <input
+              nz-input
+              type="date"
+              [attr.aria-label]="'CRM.CUSTOMER360.QA_DUE' | translate"
+              [ngModel]="dueDate()"
+              (ngModelChange)="dueDate.set($event)"
+            />
+          }
+          <button
+            nz-button
+            nzType="primary"
+            type="button"
+            [disabled]="saving() || !subject().trim()"
+            (click)="saveAction()"
+          >
+            {{ 'CRM.CUSTOMER360.QA_SAVE' | translate }}
+          </button>
+          <button nz-button type="button" (click)="action.set(null)">
+            {{ 'CRM.CUSTOMER360.QA_CANCEL' | translate }}
+          </button>
+          @if (failed()) {
+            <span class="error">{{ 'CRM.CUSTOMER360.QA_FAILED' | translate }}</span>
+          }
+        </div>
+      }
+
       <div class="kpis">
-        <nz-statistic [nzTitle]="'CRM.CUSTOMER360.LC_HEALTH' | translate" [nzValue]="s.health.health_index" />
+        <nz-statistic
+          [nzTitle]="'CRM.CUSTOMER360.LC_HEALTH' | translate"
+          [nzValue]="s.health.health_index"
+        />
         <div class="churn">
           <span>{{ 'CRM.CUSTOMER360.LC_CHURN' | translate }}</span>
           <nz-tag [nzColor]="churnColor()">{{ s.health.churn_risk ?? '—' }}</nz-tag>
         </div>
-        <nz-statistic [nzTitle]="'CRM.CUSTOMER360.LC_LTV' | translate" [nzValue]="s.kpis.lifetime_value" />
-        <nz-statistic [nzTitle]="'CRM.CUSTOMER360.LC_PIPELINE' | translate" [nzValue]="s.kpis.open_pipeline_value" />
+        <nz-statistic
+          [nzTitle]="'CRM.CUSTOMER360.LC_LTV' | translate"
+          [nzValue]="s.kpis.lifetime_value"
+        />
+        <nz-statistic
+          [nzTitle]="'CRM.CUSTOMER360.LC_PIPELINE' | translate"
+          [nzValue]="s.kpis.open_pipeline_value"
+        />
         <nz-statistic
           [nzTitle]="'CRM.CUSTOMER360.LC_OVERDUE' | translate"
           [nzValue]="s.kpis.overdue_receivable_amount"
         />
-        <nz-statistic [nzTitle]="'CRM.CUSTOMER360.LC_OPEN_TICKETS' | translate" [nzValue]="s.kpis.open_tickets" />
+        <nz-statistic
+          [nzTitle]="'CRM.CUSTOMER360.LC_OPEN_TICKETS' | translate"
+          [nzValue]="s.kpis.open_tickets"
+        />
         <nz-statistic
           [nzTitle]="'CRM.CUSTOMER360.LC_SLA_BREACH' | translate"
           [nzValue]="s.kpis.sla_breach_rate"
           nzSuffix="%"
         />
-        <nz-statistic [nzTitle]="'CRM.CUSTOMER360.LC_MTTR' | translate" [nzValue]="s.kpis.mttr_hours ?? '—'" />
-        <nz-statistic [nzTitle]="'CRM.CUSTOMER360.LC_CONTRACTS' | translate" [nzValue]="s.kpis.active_contracts" />
+        <nz-statistic
+          [nzTitle]="'CRM.CUSTOMER360.LC_MTTR' | translate"
+          [nzValue]="s.kpis.mttr_hours ?? '—'"
+        />
+        <nz-statistic
+          [nzTitle]="'CRM.CUSTOMER360.LC_CONTRACTS' | translate"
+          [nzValue]="s.kpis.active_contracts"
+        />
         <div class="churn">
           <span>{{ 'CRM.CUSTOMER360.LC_COVERAGE' | translate }}</span>
           <nz-tag>{{ coverageKey() | translate }}</nz-tag>
@@ -126,6 +201,15 @@ import { TranslatePipe } from '@shared';
       gap: 8px;
       margin-bottom: 16px;
     }
+    .quick {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .error {
+      color: #cf1322;
+    }
     .kpis {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -158,6 +242,11 @@ export class Customer360LifecycleComponent implements OnInit {
   protected readonly summary = signal<CustomerLifecycleSummary | null>(null);
   protected readonly events = signal<CustomerTimelineEvent[]>([]);
   protected readonly selectedTypes = signal<TimelineType[]>([]);
+  protected readonly action = signal<QuickActionType | null>(null);
+  protected readonly subject = signal('');
+  protected readonly dueDate = signal('');
+  protected readonly saving = signal(false);
+  protected readonly failed = signal(false);
 
   protected readonly churnColor = computed(() => {
     switch (this.summary()?.health.churn_risk) {
@@ -172,7 +261,8 @@ export class Customer360LifecycleComponent implements OnInit {
   });
 
   protected readonly coverageKey = computed(
-    () => `CRM.CUSTOMER360.LC_COVERAGE_${(this.summary()?.kpis.contract_coverage ?? 'none').toUpperCase()}`,
+    () =>
+      `CRM.CUSTOMER360.LC_COVERAGE_${(this.summary()?.kpis.contract_coverage ?? 'none').toUpperCase()}`,
   );
 
   private accountId: string | null = null;
@@ -201,6 +291,41 @@ export class Customer360LifecycleComponent implements OnInit {
           this.loadTimeline();
         },
         error: () => this.loading.set(false),
+      });
+  }
+
+  protected openAction(type: QuickActionType): void {
+    this.subject.set('');
+    this.dueDate.set('');
+    this.failed.set(false);
+    this.action.set(type);
+  }
+
+  protected saveAction(): void {
+    const type = this.action();
+    if (this.accountId === null || type === null || this.saving()) {
+      return;
+    }
+    this.saving.set(true);
+    this.failed.set(false);
+    this.api
+      .createActivity(
+        this.accountId,
+        type,
+        this.subject().trim(),
+        type === 'follow_up' && this.dueDate() ? this.dueDate() : null,
+      )
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.saving.set(false);
+          this.action.set(null);
+          this.loadTimeline();
+        },
+        error: () => {
+          this.saving.set(false);
+          this.failed.set(true);
+        },
       });
   }
 
