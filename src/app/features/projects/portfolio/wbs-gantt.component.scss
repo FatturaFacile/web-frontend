@@ -1,0 +1,103 @@
+:host {
+  display: block;
+}
+
+.gantt {
+  display: block;
+  user-select: none;
+  touch-action: none;
+}
+
+.header {
+  fill: var(--ant-color-fill-quaternary, #fafafa);
+}
+
+.tick {
+  stroke: var(--ant-color-border-secondary, #f0f0f0);
+}
+
+.tick-label {
+  font-size: 11px;
+  fill: var(--ant-color-text-secondary, rgba(0, 0, 0, 0.65));
+}
+
+.stripe {
+  fill: transparent;
+  stroke: var(--ant-color-border-secondary, #f0f0f0);
+  stroke-width: 0.5;
+}
+
+.today {
+  stroke: var(--ant-color-primary, #1677ff);
+  stroke-dasharray: 3 3;
+}
+
+.link {
+  fill: none;
+  stroke: var(--ant-color-text-tertiary, #8c8c8c);
+  stroke-width: 1.2;
+
+  &.critical {
+    stroke: var(--ant-color-error, #cf1322);
+  }
+}
+
+.arrow-head {
+  fill: var(--ant-color-text-tertiary, #8c8c8c);
+
+  &.critical {
+    fill: var(--ant-color-error, #cf1322);
+  }
+}
+
+.baseline {
+  fill: var(--ant-color-text-quaternary, #bfbfbf);
+}
+
+.bar {
+  cursor: grab;
+  outline: none;
+
+  .shape {
+    fill: var(--ant-color-primary-bg-hover, #91caff);
+    stroke: var(--ant-color-primary, #1677ff);
+  }
+
+  .progress {
+    fill: var(--ant-color-primary, #1677ff);
+    pointer-events: none;
+  }
+
+  .handle {
+    fill: transparent;
+    cursor: ew-resize;
+  }
+
+  &.critical {
+    .shape {
+      fill: var(--ant-color-error-bg-hover, #ffccc7);
+      stroke: var(--ant-color-error, #cf1322);
+    }
+
+    .progress {
+      fill: var(--ant-color-error, #cf1322);
+    }
+  }
+
+  &.milestone .shape {
+    fill: var(--ant-color-warning, #faad14);
+    stroke: var(--ant-color-warning-active, #d48806);
+  }
+
+  &.late .shape {
+    stroke-dasharray: 4 2;
+  }
+
+  &:focus-visible .shape {
+    stroke-width: 3;
+  }
+
+  &:active {
+    cursor: grabbing;
+  }
+}
