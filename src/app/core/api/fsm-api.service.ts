@@ -25,6 +25,7 @@ import {
   FsmWorkOrder,
   FsmWorkOrderDetail,
   FsmWorkOrderListParams,
+  FsmWorkOrderPhoto,
   FsmWorkOrderPayload,
 } from '../models';
 
@@ -67,6 +68,30 @@ export class FsmApiService {
 
   recordPart(id: string, payload: FsmRecordPartPayload): Observable<FsmEnvelope<FsmRecordedPart>> {
     return this.http.post<FsmEnvelope<FsmRecordedPart>>(`${this.base}/work-orders/${id}/parts`, payload);
+  }
+
+  // --- Work order photos ---
+  /** Uploads one technician photo (multipart, max 10 MB); `clientUuid` makes a retry idempotent. */
+  uploadPhoto(
+    workOrderId: string,
+    file: File,
+    meta: { clientUuid: string; stage?: 'before' | 'during' | 'after'; caption?: string },
+  ): Observable<FsmEnvelope<FsmWorkOrderPhoto>> {
+    const form = new FormData();
+    form.append('photo', file, file.name);
+    form.append('client_uuid', meta.clientUuid);
+    if (meta.stage) {
+      form.append('stage', meta.stage);
+    }
+    if (meta.caption) {
+      form.append('caption', meta.caption);
+    }
+    form.append('captured_at', new Date().toISOString());
+    return this.http.post<FsmEnvelope<FsmWorkOrderPhoto>>(`${this.base}/work-orders/${workOrderId}/photos`, form);
+  }
+
+  listPhotos(workOrderId: string): Observable<FsmEnvelope<FsmWorkOrderPhoto[]>> {
+    return this.http.get<FsmEnvelope<FsmWorkOrderPhoto[]>>(`${this.base}/work-orders/${workOrderId}/photos`);
   }
 
   // --- Service reports ---

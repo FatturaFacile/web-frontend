@@ -93,6 +93,33 @@
       <p class="srm-sub">{{ 'FSM.REPORT.SIGNATURE' | translate }}</p>
       <app-signature-pad (svgChange)="signatureSvg.set($event)" />
 
+      <p class="srm-sub">{{ 'FSM.REPORT.PHOTOS' | translate }}</p>
+      <div class="srm-photos">
+        <input
+          #photoInput
+          class="srm-photo-input"
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+          capture="environment"
+          multiple
+          data-testid="photo-input"
+          [attr.aria-label]="'FSM.REPORT.PHOTO_ADD' | translate"
+          (change)="onPhotosSelected($event)"
+        />
+        <button nz-button type="button" [nzLoading]="uploading()" (click)="photoInput.click()" data-testid="add-photo">
+          {{ 'FSM.REPORT.PHOTO_ADD' | translate }}
+        </button>
+        @for (photo of photos(); track photo.id) {
+          <span class="srm-photo" data-testid="photo-chip">
+            {{ photo.caption || photo.path.split('/').pop() }}
+            <button nz-button nzType="link" nzSize="small" type="button" (click)="removePhoto(photo.id)">{{ 'FSM.REPORT.SIGN_CHECK_REMOVE' | translate }}</button>
+          </span>
+        }
+        @if (photoError()) {
+          <span class="srm-photo-error" role="alert" data-testid="photo-error">{{ photoError() }}</span>
+        }
+      </div>
+
       <div class="srm-gps">
         <button nz-button type="button" (click)="captureLocation()" data-testid="capture-gps">{{ 'FSM.REPORT.SIGN_GPS' | translate }}</button>
         @if (gps(); as g) {

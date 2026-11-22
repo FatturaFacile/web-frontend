@@ -388,3 +388,14 @@ export interface FsmMeterResult {
   current_operating_hours: string;
   current_cycle_count: number;
 }
+
+/** A photo uploaded to a work order (`/fsm/work-orders/{id}/photos`). */
+export interface FsmWorkOrderPhoto {
+  id: string;
+  work_order_id: string;
+  path: string;
+  stage: 'before' | 'during' | 'after' | null;
+  caption: string | null;
+  captured_at: string | null;
+  url: string;
+}

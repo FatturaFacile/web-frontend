@@ -1,4 +1,5 @@
 import { Component, computed, inject, input, model, output, signal } from '@angular/core';
+import { catchError, concatMap, EMPTY, finalize, from } from 'rxjs';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -9,12 +10,15 @@ import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzSelectModule } from 'ng-zorro-antd/select';
-import { applyServerErrors, FsmApiService, FsmChecklistItem, FsmServiceReport, FsmSignReportPayload, I18nService, serverErrorMessage } from '@core';
+import { applyServerErrors, FsmApiService, FsmChecklistItem, FsmServiceReport, FsmSignReportPayload, FsmWorkOrderPhoto, I18nService, serverErrorMessage } from '@core';
 import { SignaturePadComponent, TranslatePipe } from '@shared';
 
 type ChecklistResult = FsmChecklistItem['result'];
 
 const RESULTS: readonly ChecklistResult[] = ['pass', 'fail', 'na'];
+
+/** The report contract accepts at most 20 photo ids. */
+const MAX_PHOTOS = 20;
 
 /** Backend locale codes by UI language. */
 const LOCALES: Record<string, NonNullable<FsmSignReportPayload['locale']>> = {
@@ -62,7 +66,10 @@ export class SignReportModalComponent {
   protected readonly signatureSvg = signal<string | null>(null);
   protected readonly gps = signal<{ latitude: number; longitude: number } | null>(null);
   protected readonly gpsFailed = signal(false);
-  protected readonly canSubmit = computed(() => this.signatureSvg() !== null && !this.saving());
+  protected readonly photos = signal<FsmWorkOrderPhoto[]>([]);
+  protected readonly uploading = signal(false);
+  protected readonly photoError = signal<string | null>(null);
+  protected readonly canSubmit = computed(() => this.signatureSvg() !== null && !this.saving() && !this.uploading());
 
   protected readonly form = this.fb.group({
     work_performed_summary: this.fb.control('', [Validators.required, Validators.maxLength(5000)]),
@@ -99,6 +106,36 @@ export class SignReportModalComponent {
 
   protected fieldError(path: string): string | null {
     return serverErrorMessage(this.form, path);
+  }
+
+  /** Uploads the chosen images one by one (the endpoint takes a single file) and keeps their ids for the report. */
+  protected onPhotosSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const room = MAX_PHOTOS - this.photos().length;
+    const files = Array.from(input.files ?? []).slice(0, Math.max(room, 0));
+    input.value = '';
+    if (files.length === 0) {
+      return;
+    }
+    this.photoError.set(null);
+    this.uploading.set(true);
+    from(files)
+      .pipe(
+        concatMap((file) =>
+          this.api.uploadPhoto(this.workOrderId(), file, { clientUuid: globalThis.crypto.randomUUID(), stage: 'after' }).pipe(
+            catchError(() => {
+              this.photoError.set(this.i18n.translate('FSM.REPORT.PHOTO_FAILED'));
+              return EMPTY;
+            }),
+          ),
+        ),
+        finalize(() => this.uploading.set(false)),
+      )
+      .subscribe((res) => this.photos.update((list) => [...list, res.data]));
+  }
+
+  protected removePhoto(id: string): void {
+    this.photos.update((list) => list.filter((p) => p.id !== id));
   }
 
   protected captureLocation(): void {
@@ -140,6 +177,7 @@ export class SignReportModalComponent {
       signed_at: new Date().toISOString(),
       gps_latitude: location?.latitude ?? null,
       gps_longitude: location?.longitude ?? null,
+      photo_ids: this.photos().length > 0 ? this.photos().map((p) => p.id) : undefined,
       locale: LOCALES[this.i18n.currentLanguage()] ?? 'en',
     };
     this.saving.set(true);

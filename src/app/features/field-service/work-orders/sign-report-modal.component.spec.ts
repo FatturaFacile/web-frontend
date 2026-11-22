@@ -22,6 +22,11 @@ interface Harness {
   removeRow(index: number): void;
   captureLocation(): void;
   submit(): void;
+  photos: () => { id: string }[];
+  uploading: () => boolean;
+  photoError: () => string | null;
+  onPhotosSelected(event: Event): void;
+  removePhoto(id: string): void;
 }
 
 const SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 180"><path d="M1 1 L2 2"/></svg>';
@@ -30,7 +35,7 @@ describe('SignReportModalComponent', () => {
   let fixture: ComponentFixture<SignReportModalComponent>;
   let harness: Harness;
 
-  const api = { signReport: vi.fn() };
+  const api = { signReport: vi.fn(), uploadPhoto: vi.fn() };
   const message = { success: vi.fn(), error: vi.fn() };
   const signed = vi.fn();
 
@@ -175,5 +180,44 @@ describe('SignReportModalComponent', () => {
     vi.stubGlobal('navigator', {});
     harness.captureLocation();
     expect(harness.gpsFailed()).toBe(true);
+  });
+
+  function pick(files: File[]): void {
+    harness.onPhotosSelected({ target: { files, value: 'x' } } as unknown as Event);
+  }
+
+  it('uploads the chosen photos one by one and sends their ids with the report', () => {
+    api.uploadPhoto
+      .mockReturnValueOnce(of({ data: { id: 'p1', path: 'a/1.jpg' } }))
+      .mockReturnValueOnce(of({ data: { id: 'p2', path: 'a/2.jpg' } }));
+    pick([new File(['a'], '1.jpg', { type: 'image/jpeg' }), new File(['b'], '2.jpg', { type: 'image/jpeg' })]);
+
+    expect(api.uploadPhoto).toHaveBeenCalledTimes(2);
+    expect(api.uploadPhoto.mock.calls[0]?.[0]).toBe('w1');
+    expect(api.uploadPhoto.mock.calls[0]?.[2]).toMatchObject({ stage: 'after', clientUuid: expect.any(String) });
+    expect(harness.photos().map((p) => p.id)).toEqual(['p1', 'p2']);
+    expect(harness.uploading()).toBe(false);
+
+    harness.removePhoto('p1');
+    fillValid();
+    harness.submit();
+    const payload = api.signReport.mock.calls[0]?.[1] as FsmSignReportPayload;
+    expect(payload.photo_ids).toEqual(['p2']);
+  });
+
+  it('keeps the other photos and shows an error when one upload fails', () => {
+    api.uploadPhoto
+      .mockReturnValueOnce(throwError(() => new HttpErrorResponse({ status: 500 })))
+      .mockReturnValueOnce(of({ data: { id: 'p2', path: 'a/2.jpg' } }));
+    pick([new File(['a'], '1.jpg'), new File(['b'], '2.jpg')]);
+
+    expect(harness.photos().map((p) => p.id)).toEqual(['p2']);
+    expect(harness.photoError()).toBe('FSM.REPORT.PHOTO_FAILED');
+  });
+
+  it('omits photo_ids when no photo was added', () => {
+    fillValid();
+    harness.submit();
+    expect((api.signReport.mock.calls[0]?.[1] as FsmSignReportPayload).photo_ids).toBeUndefined();
   });
 });

@@ -44,3 +44,18 @@
 .srm-gps-error {
   color: var(--ant-error-color, #cf1322);
 }
+
+.srm-photos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.srm-photo-input {
+  display: none;
+}
+
+.srm-photo-error {
+  color: var(--ant-color-error, #ff4d4f);
+}
