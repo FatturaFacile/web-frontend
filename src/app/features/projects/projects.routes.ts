@@ -23,6 +23,16 @@ export const PROJECTS_ROUTES: Routes = [
     loadComponent: () => import('./portfolio/project-kanban.component').then((m) => m.ProjectKanbanComponent),
   },
   {
+    path: 'wip',
+    data: { breadcrumb: 'PROJECT_BILLING.WIP_TITLE', title: 'PROJECT_BILLING.WIP_TITLE' },
+    loadComponent: () => import('./billing/wip-valuation.component').then((m) => m.WipValuationComponent),
+  },
+  {
+    path: ':id/billing',
+    data: { breadcrumb: 'PROJECT_BILLING.NAV', title: 'PROJECT_BILLING.TITLE' },
+    loadComponent: () => import('./billing/project-billing.component').then((m) => m.ProjectBillingComponent),
+  },
+  {
     path: ':id/evm',
     data: { breadcrumb: 'PROJECT_EVM.NAV', title: 'PROJECT_EVM.TITLE' },
     loadComponent: () =>
