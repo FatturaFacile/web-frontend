@@ -17,6 +17,7 @@ import { Customer360AddressesComponent } from './customer-360/customer-360-addre
 import { Customer360ConsentsComponent } from './customer-360/customer-360-consents.component';
 import { Customer360HierarchyComponent } from './customer-360/customer-360-hierarchy.component';
 import { Customer360InteractionsComponent } from './customer-360/customer-360-interactions.component';
+import { Customer360LifecycleComponent } from './customer-360/customer-360-lifecycle.component';
 import { Customer360PersonsComponent } from './customer-360/customer-360-persons.component';
 import { EntityAuditTimelineComponent } from '../../security/audit-trail/entity-audit-timeline.component';
 
@@ -48,6 +49,7 @@ interface TimelineEntry {
     Customer360ConsentsComponent,
     Customer360HierarchyComponent,
     Customer360InteractionsComponent,
+    Customer360LifecycleComponent,
     Customer360PersonsComponent,
   ],
   template: `
@@ -103,6 +105,10 @@ interface TimelineEntry {
         } @empty {
           <nz-empty />
         }
+      </nz-card>
+
+      <nz-card [nzTitle]="label('CRM.CUSTOMER360.LC_TITLE')" class="c360-card">
+        <app-customer-360-lifecycle [contactId]="id" />
       </nz-card>
 
       <nz-card [nzTitle]="label('CRM.CUSTOMER360.ADDRESSES')" class="c360-card">

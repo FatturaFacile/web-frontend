@@ -107,7 +107,7 @@ describe('Customer360Component', () => {
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('WO-9');
     // The addresses, persons, hierarchy, consents and interaction sections load their own data.
     http
-      .match((r) => /\/crm\/(contacts\/c1\/(addresses|persons|hierarchy|interactions)|consents)/.test(r.url))
+      .match((r) => /\/crm\/(contacts\/c1\/(addresses|persons|hierarchy|interactions)|consents|accounts)/.test(r.url))
       .forEach((r) => r.error(new ProgressEvent('error')));
     http.verify();
   });

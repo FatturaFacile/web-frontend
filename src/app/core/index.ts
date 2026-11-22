@@ -22,6 +22,7 @@ export * from './i18n';
 export * from './models';
 export * from './http/laravel-http.utils';
 export * from './api/client-api.service';
+export * from './api/customer-lifecycle-api.service';
 export * from './api/invoice-api.service';
 export * from './api/accounting-api.service';
 export * from './api/alerts-api.service';
