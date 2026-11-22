@@ -717,6 +717,18 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             module: 'inventory',
           },
           {
+            key: 'NAV.INVENTORY_ABC',
+            route: '/inventory/abc',
+            icon: 'fa-solid fa-arrow-down-a-z',
+            module: 'inventory',
+          },
+          {
+            key: 'NAV.INVENTORY_COUNT_SESSIONS',
+            route: '/inventory/counts',
+            icon: 'fa-solid fa-clipboard-check',
+            module: 'inventory',
+          },
+          {
             key: 'NAV.CUSTOMS',
             route: '/inventory/customs',
             icon: 'fa-solid fa-passport',
