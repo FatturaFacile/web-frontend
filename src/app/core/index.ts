@@ -51,6 +51,7 @@ export * from './api/field-service-api.service';
 export * from './api/fsm-api.service';
 export * from './api/ticket-api.service';
 export * from './api/helpdesk-api.service';
+export * from './api/helpdesk-sla-api.service';
 export * from './api/project-api.service';
 export * from './api/asset-api.service';
 export * from './api/subscription-api.service';

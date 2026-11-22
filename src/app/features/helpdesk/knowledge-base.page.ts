@@ -1,3 +1,4 @@
+import { HELPDESK_LOCALES } from '@core';
 import { act, col, cols, ResourcePageConfig, rf, req, tagCol } from '@shared';
 
 const VISIBILITY = ['internal', 'public'] as const;
@@ -15,6 +16,7 @@ const ARTICLE_FIELDS = [
   req(rf.textarea('content', { maxLength: 200000 })),
   rf.lookup('knowledge_category_id', 'kbCategories'),
   rf.select('visibility', VISIBILITY),
+  rf.select('locale', HELPDESK_LOCALES),
   rf.bool('is_published'),
   rf.tags('tags'),
   rf.text('change_note', { maxLength: 500 }),
@@ -30,10 +32,11 @@ export const KNOWLEDGE_BASE_PAGE: ResourcePageConfig = {
       module: 'service',
       list: {
         path: '/esm/kb/articles',
-        filters: [rf.text('q'), rf.select('visibility', VISIBILITY)],
+        filters: [rf.text('q'), rf.select('visibility', VISIBILITY), rf.select('locale', HELPDESK_LOCALES)],
         columns: [
           ...cols('article_number', 'title'),
           tagCol('visibility'),
+          tagCol('locale'),
           col('is_published', 'bool'),
           ...cols('current_version', 'views_count'),
         ],

@@ -65,9 +65,15 @@ export interface CannedResponse {
   title: string;
   category: string | null;
   body: string;
+  /** Language of the text (it-CH, de-CH, fr-CH, en, it-IT). */
+  locale?: string | null;
   is_shared: boolean;
   owner_user_id: string | null;
   created_at: string | null;
+}
+
+export interface CannedResponseParams {
+  locale?: string;
 }
 
 export interface MacroActions {
@@ -105,6 +111,8 @@ export interface KnowledgeArticle {
   knowledge_category_id: string | null;
   category_id: string | null;
   visibility: KnowledgeVisibility | string;
+  /** Language of the article (it-CH, de-CH, fr-CH, en, it-IT). */
+  locale?: string | null;
   is_published: boolean;
   published_at: string | null;
   current_version: number;
@@ -119,6 +127,7 @@ export interface KnowledgeArticle {
 export interface KnowledgeArticleParams {
   q?: string;
   visibility?: KnowledgeVisibility;
+  locale?: string;
   knowledge_category_id?: string;
   is_published?: boolean;
   page?: number;

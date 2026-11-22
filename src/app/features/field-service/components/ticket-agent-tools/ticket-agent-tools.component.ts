@@ -13,6 +13,7 @@ import {
   AutoAssignStrategy,
   CannedResponse,
   HelpdeskApiService,
+  HELPDESK_LOCALES,
   HelpdeskTicketMessageResource,
   I18nService,
   KnowledgeArticle,
@@ -68,6 +69,12 @@ export class TicketAgentToolsComponent implements OnInit {
   protected readonly links = signal<KnowledgeArticle[]>([]);
   protected readonly ticketOptions = signal<Option[]>([]);
   protected readonly articleOptions = signal<Option[]>([]);
+  /** The articles found by the last search, kept whole so one can be inserted in the reply. */
+  protected readonly foundArticles = signal<KnowledgeArticle[]>([]);
+
+  /** Language of the canned responses and knowledge base articles on offer; empty means every language. */
+  protected readonly locale = signal<string>('');
+  protected readonly locales = HELPDESK_LOCALES;
 
   protected readonly macroId = signal<string | null>(null);
   protected readonly cannedId = signal<string | null>(null);
@@ -85,7 +92,7 @@ export class TicketAgentToolsComponent implements OnInit {
 
   ngOnInit(): void {
     this.helpdesk.getMacros().subscribe({ next: (res) => this.macros.set(res.data ?? []), error: () => undefined });
-    this.helpdesk.getCannedResponses().subscribe({ next: (res) => this.canned.set(res.data ?? []), error: () => undefined });
+    this.loadCanned();
     this.settings.getTenantUsers().subscribe({ next: (res) => this.users.set(res.data ?? []), error: () => undefined });
     this.loadWatchers();
     this.loadLinks();
@@ -206,12 +213,36 @@ export class TicketAgentToolsComponent implements OnInit {
     );
   }
 
+  /** Changing the language narrows the canned responses and the articles to that language. */
+  protected changeLocale(locale: string | null): void {
+    this.locale.set(locale ?? '');
+    this.cannedId.set(null);
+    this.renderedBody.set(null);
+    this.articleId.set(null);
+    this.loadCanned();
+    this.searchArticles('');
+  }
+
   protected searchArticles(term: string): void {
-    this.helpdesk.getKnowledgeArticles({ q: term.trim() || undefined }).subscribe({
-      next: (res) =>
-        this.articleOptions.set((res.data ?? []).map((item) => ({ value: item.id, label: `${item.article_number} ${item.title}` }))),
-      error: () => this.articleOptions.set([]),
+    const locale = this.locale();
+    this.helpdesk.getKnowledgeArticles({ q: term.trim() || undefined, locale: locale || undefined }).subscribe({
+      next: (res) => {
+        this.foundArticles.set(res.data ?? []);
+        this.articleOptions.set((res.data ?? []).map((item) => ({ value: item.id, label: `${item.article_number} ${item.title}` })));
+      },
+      error: () => {
+        this.foundArticles.set([]);
+        this.articleOptions.set([]);
+      },
     });
+  }
+
+  /** Puts the summary of the selected article (its text when it has none) in the reply form. */
+  protected insertArticle(): void {
+    const article = this.foundArticles().find((item) => item.id === this.articleId());
+    if (article) {
+      this.insertReply.emit(article.summary || article.content);
+    }
   }
 
   protected linkArticle(): void {
@@ -231,6 +262,14 @@ export class TicketAgentToolsComponent implements OnInit {
     this.tickets.unlinkKnowledgeArticle(this.ticket().id, article.id).subscribe({
       next: () => this.loadLinks(),
       error: () => this.message.error(this.i18n.translate('TICKET_TOOLS.FAILED')),
+    });
+  }
+
+  private loadCanned(): void {
+    const locale = this.locale();
+    this.helpdesk.getCannedResponses(locale ? { locale } : undefined).subscribe({
+      next: (res) => this.canned.set(res.data ?? []),
+      error: () => this.canned.set([]),
     });
   }
 

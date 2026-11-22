@@ -36,6 +36,10 @@ import {
   TranslateService,
 } from '@core';
 import { downloadBlob, TranslatePipe, IconActionDirective, ModalActionsDirective } from '@shared';
+import { TicketCustomerContextComponent } from '../../../helpdesk/sla/ticket-customer-context.component';
+import { TicketHandoffComponent } from '../../../helpdesk/sla/ticket-handoff.component';
+import { TicketSlaPanelComponent } from '../../../helpdesk/sla/ticket-sla-panel.component';
+import { TicketTimeLogComponent } from '../../../helpdesk/sla/ticket-time-log.component';
 import { TicketAgentToolsComponent } from '../ticket-agent-tools/ticket-agent-tools.component';
 
 @Component({
@@ -62,6 +66,10 @@ import { TicketAgentToolsComponent } from '../ticket-agent-tools/ticket-agent-to
     NzDividerModule,
     NzIconModule,
     TicketAgentToolsComponent,
+    TicketCustomerContextComponent,
+    TicketHandoffComponent,
+    TicketSlaPanelComponent,
+    TicketTimeLogComponent,
     TranslatePipe,
   ],
   templateUrl: './ticket-detail-drawer.component.html',
@@ -83,6 +91,7 @@ export class TicketDetailDrawerComponent {
   protected readonly ticket = signal<TicketResource | null>(null);
   protected readonly messages = signal<HelpdeskTicketMessageResource[]>([]);
   protected readonly activities = signal<HelpdeskTicketActivityResource[]>([]);
+  protected readonly contextRefresh = signal(0);
 
   // Modals state
   protected readonly statusModalVisible = signal(false);
@@ -239,6 +248,12 @@ export class TicketDetailDrawerComponent {
       this.loadTicket(id);
       this.updated.emit();
     }
+  }
+
+  /** Time logged on the ticket changes the hours left on the contract shown in the customer panel. */
+  protected onTimeLogged(): void {
+    this.contextRefresh.update((value) => value + 1);
+    this.updated.emit();
   }
 
   protected insertReply(text: string): void {
