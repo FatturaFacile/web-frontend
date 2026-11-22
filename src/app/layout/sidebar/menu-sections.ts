@@ -626,6 +626,30 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             module: 'shift_planning',
           },
           {
+            key: 'NAV.GELATO_WORKBENCH',
+            route: '/gelato',
+            icon: 'fa-solid fa-ice-cream',
+            module: 'artisanal_gelato',
+          },
+          {
+            key: 'NAV.GELATO_LOTS',
+            route: '/gelato/lots',
+            icon: 'fa-solid fa-temperature-half',
+            module: 'artisanal_gelato',
+          },
+          {
+            key: 'NAV.GELATO_GANACHE',
+            route: '/gelato/ganache',
+            icon: 'fa-solid fa-cookie-bite',
+            module: 'artisanal_gelato',
+          },
+          {
+            key: 'NAV.GELATO_SHOWCASE',
+            route: '/gelato/showcase',
+            icon: 'fa-solid fa-tv',
+            module: 'artisanal_gelato',
+          },
+          {
             key: 'NAV.HR_PAYROLL_DATA',
             route: '/hr/payroll-data',
             icon: 'fa-solid fa-address-card',

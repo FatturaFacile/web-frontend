@@ -71,6 +71,7 @@ export * from './budgeting.model';
 export * from './controlling.model';
 export * from './credit-management.model';
 export * from './shift-planning.model';
+export * from './gelato.model';
 export * from './talent-learning.model';
 export * from './returns.model';
 export * from './tessera-sanitaria.model';

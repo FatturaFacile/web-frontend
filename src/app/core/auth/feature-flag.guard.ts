@@ -47,6 +47,7 @@ export const PREMATURE_OPEN_ISSUE_MODULES: Readonly<
   tessera_sanitaria: { issue: 299, routePrefix: '/tessera-sanitaria' },
   rent: { issue: 325, routePrefix: '/rent' },
   shift_planning: { issue: 173, routePrefix: '/shift-planning' },
+  artisanal_gelato: { issue: 644, routePrefix: '/gelato' },
 };
 
 /**

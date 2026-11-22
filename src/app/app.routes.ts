@@ -492,6 +492,12 @@ export const routes: Routes = [
     loadChildren: () => import('./features/shift-planning/shift-planning.routes').then((m) => m.SHIFT_PLANNING_ROUTES),
   },
   {
+    path: 'gelato',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'NAV.GELATO', title: 'PAGE_TITLE.GELATO' },
+    loadChildren: () => import('./features/gelato/gelato.routes').then((m) => m.GELATO_ROUTES),
+  },
+  {
     path: 'marketplace',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.MARKETPLACE', title: 'PAGE_TITLE.MARKETPLACE' },
