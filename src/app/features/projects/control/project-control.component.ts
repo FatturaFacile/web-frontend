@@ -32,6 +32,7 @@ import { PcToolsComponent } from './pc-tools.component';
     <app-page-header [title]="'PRJ.CONTROL_TITLE' | translate" [subtitle]="'PRJ.CONTROL_SUBTITLE' | translate" />
     <p><a routerLink="/projects">{{ 'PRJ.BACK_TO_PROJECTS' | translate }}</a></p>
     @if (projectId(); as id) {
+      <p><a [routerLink]="['/projects', id, 'evm']" data-testid="project-evm-link">{{ 'PROJECT_EVM.NAV' | translate }}</a></p>
       <nz-tabs>
         <nz-tab [nzTitle]="'PRJ.TAB_BUDGET' | translate"><app-pc-budget [projectId]="id" /></nz-tab>
         <nz-tab [nzTitle]="'PRJ.TAB_MILESTONES' | translate"><app-pc-milestones [projectId]="id" /></nz-tab>
