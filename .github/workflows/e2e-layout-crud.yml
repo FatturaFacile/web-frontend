@@ -45,12 +45,12 @@ jobs:
 
     steps:
       - name: Checkout web-frontend
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           path: web-frontend
 
       - name: Checkout web-api (main branch)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: FatturaFacile/web-api
           ref: main
@@ -66,7 +66,7 @@ jobs:
           coverage: none
 
       - name: Cache Composer Dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: web-api/vendor
           key: ${{ runner.os }}-composer-${{ hashFiles('web-api/composer.lock') }}
@@ -115,7 +115,7 @@ jobs:
           version: 12.18.0
 
       - name: Setup Node.js 22
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: 'pnpm'
@@ -147,7 +147,7 @@ jobs:
 
       - name: Upload Playwright Report & Failure Screenshots
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-layout-crud-artifacts-${{ github.run_number }}
           path: |
