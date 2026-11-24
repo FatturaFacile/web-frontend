@@ -168,6 +168,49 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         ],
       },
       {
+        key: 'NAV.MARKETING_AUTOMATION',
+        icon: 'fa-solid fa-envelopes-bulk',
+        module: 'marketing_automation',
+        children: [
+          {
+            key: 'NAV.MARKETING_DASHBOARD',
+            route: '/marketing-automation/dashboard',
+            icon: 'fa-solid fa-chart-line',
+            module: 'marketing_automation',
+          },
+          {
+            key: 'NAV.MARKETING_SEGMENTS',
+            route: '/marketing-automation/segments',
+            icon: 'fa-solid fa-chart-pie',
+            module: 'marketing_automation',
+          },
+          {
+            key: 'NAV.MARKETING_CAMPAIGNS',
+            route: '/marketing-automation/campaigns',
+            icon: 'fa-solid fa-bullhorn',
+            module: 'marketing_automation',
+          },
+          {
+            key: 'NAV.MARKETING_DESIGNER',
+            route: '/marketing-automation/designer',
+            icon: 'fa-solid fa-pen-ruler',
+            module: 'marketing_automation',
+          },
+          {
+            key: 'NAV.MARKETING_JOURNEY',
+            route: '/marketing-automation/journey',
+            icon: 'fa-solid fa-diagram-project',
+            module: 'marketing_automation',
+          },
+          {
+            key: 'NAV.MARKETING_CONSENT',
+            route: '/marketing-automation/consent',
+            icon: 'fa-solid fa-user-shield',
+            module: 'marketing_automation',
+          },
+        ],
+      },
+      {
         key: 'NAV.SALES',
         icon: 'fa-solid fa-file-invoice-dollar',
         module: 'invoicing',

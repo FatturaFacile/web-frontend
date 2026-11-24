@@ -81,6 +81,7 @@ export * from './api/tax-api.service';
 export * from './api/italian-vat-api.service';
 export * from './api/swiss-vat-api.service';
 export * from './api/leave-management-api.service';
+export * from './api/marketing-automation-api.service';
 export * from './api/warranty-rma-api.service';
 export * from './api/public-rma-api.service';
 export * from './lookups/lookup.service';
