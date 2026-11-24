@@ -414,6 +414,24 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             module: 'procurement',
           },
           {
+            key: 'NAV.PROCUREMENT_INVOICE_MATCHING',
+            route: '/procurement/invoice-matching',
+            icon: 'fa-solid fa-file-circle-check',
+            module: 'procurement',
+          },
+          {
+            key: 'NAV.PROCUREMENT_INVOICE_MATCHING_BLOCKED',
+            route: '/procurement/invoice-matching/blocked',
+            icon: 'fa-solid fa-file-circle-exclamation',
+            module: 'procurement',
+          },
+          {
+            key: 'NAV.PROCUREMENT_INVOICE_MATCHING_RULES',
+            route: '/procurement/invoice-matching/rules',
+            icon: 'fa-solid fa-scale-balanced',
+            module: 'procurement',
+          },
+          {
             key: 'NAV.PROC_ADMIN',
             route: '/procurement/admin',
             icon: 'fa-solid fa-sliders',
