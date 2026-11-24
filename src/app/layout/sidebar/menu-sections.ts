@@ -58,6 +58,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             module: 'crm',
           },
           {
+            key: 'NAV.SALES_PIPELINE',
+            route: '/crm/sales-pipeline',
+            icon: 'fa-solid fa-diagram-project',
+            module: 'crm',
+          },
+          {
             key: 'NAV.LEAD_SOURCES',
             route: '/crm/lead-sources',
             icon: 'fa-solid fa-plug',
@@ -164,6 +170,49 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             route: '/crm/automation',
             icon: 'fa-solid fa-diagram-project',
             module: 'crm',
+          },
+        ],
+      },
+      {
+        key: 'NAV.MARKETING_AUTOMATION',
+        icon: 'fa-solid fa-envelopes-bulk',
+        module: 'marketing_automation',
+        children: [
+          {
+            key: 'NAV.MARKETING_DASHBOARD',
+            route: '/marketing-automation/dashboard',
+            icon: 'fa-solid fa-chart-line',
+            module: 'marketing_automation',
+          },
+          {
+            key: 'NAV.MARKETING_SEGMENTS',
+            route: '/marketing-automation/segments',
+            icon: 'fa-solid fa-chart-pie',
+            module: 'marketing_automation',
+          },
+          {
+            key: 'NAV.MARKETING_CAMPAIGNS',
+            route: '/marketing-automation/campaigns',
+            icon: 'fa-solid fa-bullhorn',
+            module: 'marketing_automation',
+          },
+          {
+            key: 'NAV.MARKETING_DESIGNER',
+            route: '/marketing-automation/designer',
+            icon: 'fa-solid fa-pen-ruler',
+            module: 'marketing_automation',
+          },
+          {
+            key: 'NAV.MARKETING_JOURNEY',
+            route: '/marketing-automation/journey',
+            icon: 'fa-solid fa-diagram-project',
+            module: 'marketing_automation',
+          },
+          {
+            key: 'NAV.MARKETING_CONSENT',
+            route: '/marketing-automation/consent',
+            icon: 'fa-solid fa-user-shield',
+            module: 'marketing_automation',
           },
         ],
       },
@@ -411,6 +460,24 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             key: 'NAV.PROC_ORDERS',
             route: '/procurement/orders',
             icon: 'fa-solid fa-boxes-packing',
+            module: 'procurement',
+          },
+          {
+            key: 'NAV.PROCUREMENT_INVOICE_MATCHING',
+            route: '/procurement/invoice-matching',
+            icon: 'fa-solid fa-file-circle-check',
+            module: 'procurement',
+          },
+          {
+            key: 'NAV.PROCUREMENT_INVOICE_MATCHING_BLOCKED',
+            route: '/procurement/invoice-matching/blocked',
+            icon: 'fa-solid fa-file-circle-exclamation',
+            module: 'procurement',
+          },
+          {
+            key: 'NAV.PROCUREMENT_INVOICE_MATCHING_RULES',
+            route: '/procurement/invoice-matching/rules',
+            icon: 'fa-solid fa-scale-balanced',
             module: 'procurement',
           },
           {

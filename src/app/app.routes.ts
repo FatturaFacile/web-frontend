@@ -599,6 +599,20 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'marketing-automation',
+    canActivate: [
+      authGuard,
+      menuEnabledGuard,
+      featureFlagGuard('marketing_automation'),
+      moduleGuard('marketing_automation'),
+    ],
+    data: { breadcrumb: 'NAV.MARKETING_AUTOMATION', title: 'PAGE_TITLE.MARKETING_AUTOMATION' },
+    loadChildren: () =>
+      import('./features/marketing-automation/marketing-automation.routes').then(
+        (m) => m.MARKETING_AUTOMATION_ROUTES,
+      ),
+  },
+  {
     path: 'rebates',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.REBATES_MANAGEMENT', title: 'PAGE_TITLE.REBATES' },

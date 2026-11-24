@@ -110,6 +110,11 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
       write: ['leave_management.write', 'leave_management.approve', 'leave_management.*'],
     },
   },
+  // Marketing Automation (Mod 155): sales runs the outreach, every member reads the dashboards.
+  marketing_automation: {
+    read: ANY_MEMBER,
+    write: ['owner', 'admin', 'sales', 'sales_manager'],
+  },
   payroll: {
     read: MANAGERS,
     write: MANAGERS,

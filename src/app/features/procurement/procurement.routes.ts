@@ -94,6 +94,57 @@ export const PROCUREMENT_ROUTES: Routes = [
     loadComponent: () =>
       import('./fulfilment/dropship-detail-page.component').then((m) => m.DropshipDetailPageComponent),
   },
+  {
+    path: 'invoice-matching',
+    data: { breadcrumb: 'NAV.PROCUREMENT_INVOICE_MATCHING' },
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        data: {
+          breadcrumb: 'NAV.PROCUREMENT_INVOICE_MATCHING',
+          title: 'PAGE_TITLE.PROCUREMENT_INVOICE_MATCHING',
+        },
+        loadComponent: () =>
+          import('./invoice-matching/invoice-matching-workbench-page.component').then(
+            (m) => m.InvoiceMatchingWorkbenchPageComponent,
+          ),
+      },
+      {
+        path: 'blocked',
+        data: {
+          breadcrumb: 'NAV.PROCUREMENT_INVOICE_MATCHING_BLOCKED',
+          title: 'PAGE_TITLE.PROCUREMENT_INVOICE_MATCHING_BLOCKED',
+        },
+        loadComponent: () =>
+          import('./invoice-matching/invoice-matching-blocked-page.component').then(
+            (m) => m.InvoiceMatchingBlockedPageComponent,
+          ),
+      },
+      {
+        path: 'rules',
+        data: {
+          breadcrumb: 'NAV.PROCUREMENT_INVOICE_MATCHING_RULES',
+          title: 'PAGE_TITLE.PROCUREMENT_INVOICE_MATCHING_RULES',
+        },
+        loadComponent: () =>
+          import('./invoice-matching/tolerance-rules-page.component').then(
+            (m) => m.ToleranceRulesPageComponent,
+          ),
+      },
+      {
+        path: ':id',
+        data: {
+          breadcrumb: 'PAGE_TITLE.PROCUREMENT_INVOICE_MATCHING_DETAIL',
+          title: 'PAGE_TITLE.PROCUREMENT_INVOICE_MATCHING_DETAIL',
+        },
+        loadComponent: () =>
+          import('./invoice-matching/invoice-match-detail-page.component').then(
+            (m) => m.InvoiceMatchDetailPageComponent,
+          ),
+      },
+    ],
+  },
   procurementRoute('orders', 'Ordini & Ricevimenti', PROCUREMENT_ORDERS_PAGE),
   procurementRoute('admin', 'Regole & Analisi', PROCUREMENT_ADMIN_PAGE),
 ];
