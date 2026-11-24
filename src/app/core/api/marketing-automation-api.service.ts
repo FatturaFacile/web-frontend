@@ -25,7 +25,7 @@ import {
   SegmentPreview,
   TemplatePreview,
   UpdateConsentPayload,
-  EmailTemplate,
+  MarketingEmailTemplate,
 } from '../models';
 
 /** Mod 155 Marketing Automation API client. */
@@ -166,7 +166,7 @@ export class MarketingAutomationApiService {
 
   previewTemplate(
     locale: MarketingLocale,
-    template: EmailTemplate,
+    template: MarketingEmailTemplate,
     variant?: string | null,
   ): Observable<MarketingResponse<TemplatePreview>> {
     return this.http.post<MarketingResponse<TemplatePreview>>(`${this.base}/template-preview`, {

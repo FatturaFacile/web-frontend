@@ -92,7 +92,7 @@ export interface MarketingResponse<T> {
 }
 
 /** A text per language: a missing language falls back to Italian, then English. */
-export type LocalizedText = Partial<Record<MarketingLocale, string>>;
+export type MarketingLocalizedText = Partial<Record<MarketingLocale, string>>;
 
 export interface SegmentCriteria {
   recency_days_min?: number | null;
@@ -158,12 +158,12 @@ export interface EmailBlock {
   props: Record<string, unknown>;
 }
 
-export interface EmailTemplate {
-  subject?: LocalizedText;
-  preheader?: LocalizedText;
+export interface MarketingEmailTemplate {
+  subject?: MarketingLocalizedText;
+  preheader?: MarketingLocalizedText;
   blocks?: EmailBlock[];
-  mjml?: LocalizedText;
-  variants?: Record<string, Partial<EmailTemplate>>;
+  mjml?: MarketingLocalizedText;
+  variants?: Record<string, Partial<MarketingEmailTemplate>>;
   compiled?: Partial<Record<MarketingLocale, string>>;
 }
 
@@ -220,7 +220,7 @@ export interface MarketingCampaign {
   sender_email: string | null;
   sender_postal_address: string | null;
   provider: MailProviderCode;
-  template_mjml_json: EmailTemplate;
+  template_mjml_json: MarketingEmailTemplate;
   ab_test_split_variant_json: AbTestConfig | null;
   utm_campaign_code: string | null;
   attribution_model: AttributionModel;
@@ -244,7 +244,7 @@ export interface SaveCampaignPayload {
   sender_email?: string | null;
   sender_postal_address?: string | null;
   provider?: MailProviderCode;
-  template_mjml_json?: EmailTemplate | null;
+  template_mjml_json?: MarketingEmailTemplate | null;
   ab_test_split_variant_json?: AbTestConfig | null;
   utm_campaign_code?: string | null;
   attribution_model?: AttributionModel;

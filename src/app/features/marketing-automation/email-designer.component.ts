@@ -16,9 +16,9 @@ import {
   EMAIL_BLOCK_TYPES,
   EmailBlock,
   EmailBlockType,
-  EmailTemplate,
+  MarketingEmailTemplate,
   I18nService,
-  LocalizedText,
+  MarketingLocalizedText,
   MARKETING_LOCALES,
   MarketingBlueprint,
   MarketingCampaign,
@@ -339,10 +339,10 @@ export class EmailDesignerComponent implements OnInit {
   protected readonly blockTypes = EMAIL_BLOCK_TYPES;
   protected readonly locale = signal<MarketingLocale>(asMarketingLocale(this.i18n.currentLanguage()));
   protected readonly blocks = signal<EmailBlock[]>([]);
-  protected readonly subject = signal<LocalizedText>({});
-  protected readonly preheader = signal<LocalizedText>({});
+  protected readonly subject = signal<MarketingLocalizedText>({});
+  protected readonly preheader = signal<MarketingLocalizedText>({});
   protected readonly variants = signal<{ key: string; percent: number }[]>([]);
-  protected readonly variantSubjects = signal<Record<string, LocalizedText>>({});
+  protected readonly variantSubjects = signal<Record<string, MarketingLocalizedText>>({});
   protected readonly activeVariant = signal<string>('A');
   protected readonly winner = signal<'open_rate' | 'click_rate' | 'revenue'>('open_rate');
   protected readonly selectedIndex = signal<number | null>(null);
@@ -369,12 +369,12 @@ export class EmailDesignerComponent implements OnInit {
   });
 
   /** The template as it is sent to the API (the compiled HTML cache is rebuilt by the server). */
-  protected readonly template = computed<EmailTemplate>(() => {
+  protected readonly template = computed<MarketingEmailTemplate>(() => {
     const base = this.store.selectedCampaign()?.template_mjml_json ?? {};
     const rest = Object.fromEntries(
       Object.entries(base).filter(([key]) => key !== 'compiled' && key !== 'variants'),
-    ) as EmailTemplate;
-    const variants: Record<string, Partial<EmailTemplate>> = {};
+    ) as MarketingEmailTemplate;
+    const variants: Record<string, Partial<MarketingEmailTemplate>> = {};
     for (const variant of this.variants().slice(1)) {
       variants[variant.key] = { subject: this.variantSubjects()[variant.key] ?? {} };
     }
@@ -409,7 +409,7 @@ export class EmailDesignerComponent implements OnInit {
 
   protected applyTemplate(code: string | null): void {
     const blueprint = this.store.templates().find((b) => b.code === code);
-    const template = blueprint?.payload['template'] as EmailTemplate | undefined;
+    const template = blueprint?.payload['template'] as MarketingEmailTemplate | undefined;
     if (!template) {
       return;
     }
@@ -422,7 +422,7 @@ export class EmailDesignerComponent implements OnInit {
 
   protected summary(block: EmailBlock): string {
     const text = (block.props['text'] ?? block.props['label'] ?? block.props['name'] ?? block.props['alt']) as
-      | LocalizedText
+      | MarketingLocalizedText
       | string
       | undefined;
     return localized(text, this.locale()) || (block.props['src'] as string | undefined) || '';
@@ -519,7 +519,7 @@ export class EmailDesignerComponent implements OnInit {
   }
 
   protected textOf(block: EmailBlock, prop: string): string {
-    return localizedOwn(block.props[prop] as LocalizedText | undefined, this.locale());
+    return localizedOwn(block.props[prop] as MarketingLocalizedText | undefined, this.locale());
   }
 
   protected plainOf(block: EmailBlock, prop: string): string {
@@ -604,7 +604,7 @@ export class EmailDesignerComponent implements OnInit {
     const ab = campaign.ab_test_split_variant_json;
     this.variants.set(ab?.variants ?? []);
     this.winner.set(ab?.winner_criteria ?? 'open_rate');
-    const subjects: Record<string, LocalizedText> = {};
+    const subjects: Record<string, MarketingLocalizedText> = {};
     for (const [key, variant] of Object.entries(template.variants ?? {})) {
       subjects[key] = variant.subject ?? {};
     }
@@ -630,6 +630,6 @@ export class EmailDesignerComponent implements OnInit {
 }
 
 /** The text of exactly this language, with no fallback: the editor must show what is empty. */
-function localizedOwn(text: LocalizedText | undefined, locale: MarketingLocale): string {
+function localizedOwn(text: MarketingLocalizedText | undefined, locale: MarketingLocale): string {
   return text?.[locale] ?? '';
 }

@@ -6,7 +6,7 @@ import {
   JourneyConditionType,
   JourneyStep,
   JourneyStepType,
-  LocalizedText,
+  MarketingLocalizedText,
   MARKETING_LOCALES,
   MarketingBlueprint,
   MarketingLocale,
@@ -20,7 +20,7 @@ const FALLBACK_LOCALES: readonly MarketingLocale[] = ['it', 'en', 'de', 'fr'];
 
 /** The text of a language; a missing language falls back to Italian, English, German, French. */
 export function localized(
-  text: LocalizedText | string | null | undefined,
+  text: MarketingLocalizedText | string | null | undefined,
   locale: MarketingLocale,
 ): string {
   if (typeof text === 'string') {
@@ -168,7 +168,7 @@ export function newBlockId(): string {
 
 /** A new block with empty texts in every language. */
 export function newBlock(type: EmailBlockType): EmailBlock {
-  const empty = (): LocalizedText => ({ it: '', de: '', fr: '', en: '' });
+  const empty = (): MarketingLocalizedText => ({ it: '', de: '', fr: '', en: '' });
   const props: Record<string, unknown> = {};
   switch (type) {
     case 'heading':
@@ -212,8 +212,8 @@ export function productBlockFromCatalog(
   current?: EmailBlock,
 ): EmailBlock {
   const block = current ?? newBlock('product');
-  const name: LocalizedText = { ...(block.props['name'] as LocalizedText) };
-  const description: LocalizedText = { ...(block.props['description'] as LocalizedText) };
+  const name: MarketingLocalizedText = { ...(block.props['name'] as MarketingLocalizedText) };
+  const description: MarketingLocalizedText = { ...(block.props['description'] as MarketingLocalizedText) };
   // The catalog holds one language: it fills the language on screen and every language still empty.
   for (const language of MARKETING_LOCALES) {
     if (language === locale || !name[language]) {
@@ -265,7 +265,7 @@ export function setBlockText(
   locale: MarketingLocale,
   value: string,
 ): EmailBlock {
-  const current = (block.props[prop] as LocalizedText | undefined) ?? {};
+  const current = (block.props[prop] as MarketingLocalizedText | undefined) ?? {};
   return { ...block, props: { ...block.props, [prop]: { ...current, [locale]: value } } };
 }
 
@@ -280,7 +280,7 @@ export function missingLocales(blocks: readonly EmailBlock[]): MarketingLocale[]
     for (const value of Object.values(block.props)) {
       if (value && typeof value === 'object' && !Array.isArray(value)) {
         for (const locale of MARKETING_LOCALES) {
-          const text = (value as LocalizedText)[locale];
+          const text = (value as MarketingLocalizedText)[locale];
           if (typeof text === 'string' && text.trim() === '') {
             missing.add(locale);
           }

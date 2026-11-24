@@ -7,7 +7,7 @@ import {
   ComplianceStrategyInfo,
   ConsentEvent,
   DynamicCustomerSegment,
-  EmailTemplate,
+  MarketingEmailTemplate,
   JourneyStep,
   JourneyStepLog,
   MarketingAutomationApiService,
@@ -250,7 +250,7 @@ export const MarketingAutomationStore = signalStore(
 
       async saveTemplate(
         id: string,
-        template: EmailTemplate,
+        template: MarketingEmailTemplate,
         abTest: SaveCampaignPayload['ab_test_split_variant_json'],
       ): Promise<MarketingCampaign | null> {
         return attempt(async () => {
@@ -275,7 +275,7 @@ export const MarketingAutomationStore = signalStore(
 
       async previewTemplate(
         locale: MarketingLocale,
-        template: EmailTemplate,
+        template: MarketingEmailTemplate,
         variant?: string | null,
       ): Promise<void> {
         await attempt(async () => {

@@ -15,7 +15,7 @@ import {
   JourneyConditionType,
   JourneyStep,
   JourneyStepType,
-  LocalizedText,
+  MarketingLocalizedText,
   MarketingBlueprint,
   MarketingLocale,
   MARKETING_LOCALES,
@@ -339,7 +339,7 @@ export class JourneyBuilderComponent implements OnInit {
   protected applyBlueprint(code: string | null): void {
     const blueprint = this.store.journeys().find((b) => b.code === code);
     const source = (blueprint?.payload['steps'] ?? null) as
-      | (Partial<JourneyStep> & { labels?: LocalizedText })[]
+      | (Partial<JourneyStep> & { labels?: MarketingLocalizedText })[]
       | null;
     if (!source) {
       return;
@@ -365,7 +365,7 @@ export class JourneyBuilderComponent implements OnInit {
   }
 
   protected label(step: JourneyStep): string {
-    return localized(step.config['label'] as LocalizedText | undefined, this.locale()) || step.step_key;
+    return localized(step.config['label'] as MarketingLocalizedText | undefined, this.locale()) || step.step_key;
   }
 
   protected edgeKinds(step: JourneyStep): JourneyEdgeKind[] {
@@ -399,7 +399,7 @@ export class JourneyBuilderComponent implements OnInit {
   }
 
   protected textOf(step: JourneyStep, prop: string): string {
-    return ((step.config[prop] as LocalizedText | undefined) ?? {})[this.locale()] ?? '';
+    return ((step.config[prop] as MarketingLocalizedText | undefined) ?? {})[this.locale()] ?? '';
   }
 
   protected waitSummary(step: JourneyStep): string {
@@ -459,7 +459,7 @@ export class JourneyBuilderComponent implements OnInit {
     this.steps.update((steps) =>
       steps.map((step) =>
         step.step_key === key
-          ? { ...step, config: { ...step.config, [prop]: { ...((step.config[prop] as LocalizedText | undefined) ?? {}), [locale]: value } } }
+          ? { ...step, config: { ...step.config, [prop]: { ...((step.config[prop] as MarketingLocalizedText | undefined) ?? {}), [locale]: value } } }
           : step,
       ),
     );
