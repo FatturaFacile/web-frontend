@@ -8,6 +8,7 @@ export * from './accounting.model';
 export * from './alerts.model';
 export * from './banking.model';
 export * from './crm.model';
+export * from './sales-pipeline.model';
 export * from './lead.model';
 export * from './expenses.model';
 export * from './settings.model';
