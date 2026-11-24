@@ -141,6 +141,7 @@ export * from './iso20022.model';
 export * from './audit-trail.model';
 export * from './gap-views.model';
 export * from './payables.model';
+export * from './agent-commissions.model';
 export * from './receivables.model';
 export * from './leave-management.model';
 export * from './marketing-automation.model';

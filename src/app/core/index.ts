@@ -130,6 +130,7 @@ export * from './api/credit-management-api.service';
 export * from './api/shift-planning-api.service';
 export * from './api/resource-planning-api.service';
 export * from './api/payables-api.service';
+export * from './api/agent-commissions-api.service';
 export * from './api/receivables-api.service';
 export * from './api/gelato-api.service';
 export * from './api/talent-learning-api.service';

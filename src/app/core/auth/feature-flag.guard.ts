@@ -52,6 +52,7 @@ export const PREMATURE_OPEN_ISSUE_MODULES: Readonly<
   italian_vat: { issue: 163, routePrefix: '/italian-vat' },
   swiss_vat: { issue: 164, routePrefix: '/swiss-vat' },
   leave_management: { issue: 174, routePrefix: '/leave-management' },
+  agent_commissions: { issue: 338, routePrefix: '/agent-commissions' },
   marketing_automation: { issue: 401, routePrefix: '/marketing-automation' },
 };
 

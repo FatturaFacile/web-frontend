@@ -222,6 +222,30 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
   // the payment are reserved to owner and admin.
   payables: { read: FINANCE_READERS, write: FINANCE },
   payables_approval: { read: FINANCE_READERS, write: MANAGERS },
+  // Sales commissions and agent management (Mod 041): commissions are part of someone's pay. Owners, administrators,
+  // accountants and sales managers read and maintain the conditions; the approval, invoicing and payment of a statement,
+  // the fiscal parameters and the compliance exports are the `settle` ability, reserved to finance.
+  agent_commissions: {
+    read: [...FINANCE_READERS, 'sales_manager'],
+    write: [...FINANCE, 'sales_manager'],
+    grants: {
+      read: [
+        'agent_commissions.read',
+        'agent_commissions.write',
+        'agent_commissions.settle',
+        'agent_commissions.*',
+      ],
+      write: ['agent_commissions.write', 'agent_commissions.settle', 'agent_commissions.*'],
+    },
+  },
+  agent_commissions_settle: {
+    read: FINANCE,
+    write: FINANCE,
+    grants: {
+      read: ['agent_commissions.settle', 'agent_commissions.*'],
+      write: ['agent_commissions.settle', 'agent_commissions.*'],
+    },
+  },
   shift_planning: {
     read: ['owner', 'admin', 'hr', 'production'],
     write: ['owner', 'admin', 'hr', 'production'],

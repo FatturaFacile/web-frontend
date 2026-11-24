@@ -488,6 +488,55 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
           },
         ],
       },
+      {
+        key: 'NAV.AGENT_COMMISSIONS',
+        icon: 'fa-solid fa-hand-holding-dollar',
+        module: 'agent_commissions',
+        children: [
+          {
+            key: 'NAV.AGENT_COMMISSIONS_AGENTS',
+            route: '/agent-commissions',
+            icon: 'fa-solid fa-user-tie',
+            module: 'agent_commissions',
+          },
+          {
+            key: 'NAV.AGENT_COMMISSIONS_RULES',
+            route: '/agent-commissions/rules',
+            icon: 'fa-solid fa-sitemap',
+            module: 'agent_commissions',
+          },
+          {
+            key: 'NAV.AGENT_COMMISSIONS_LEDGER',
+            route: '/agent-commissions/ledger',
+            icon: 'fa-solid fa-book',
+            module: 'agent_commissions',
+          },
+          {
+            key: 'NAV.AGENT_COMMISSIONS_ENASARCO',
+            route: '/agent-commissions/enasarco',
+            icon: 'fa-solid fa-shield-halved',
+            module: 'agent_commissions',
+          },
+          {
+            key: 'NAV.AGENT_COMMISSIONS_STATEMENTS',
+            route: '/agent-commissions/statements',
+            icon: 'fa-solid fa-file-invoice-dollar',
+            module: 'agent_commissions',
+          },
+          {
+            key: 'NAV.AGENT_COMMISSIONS_EXPORTS',
+            route: '/agent-commissions/exports',
+            icon: 'fa-solid fa-file-export',
+            module: 'agent_commissions_settle',
+          },
+          {
+            key: 'NAV.AGENT_COMMISSIONS_SETTINGS',
+            route: '/agent-commissions/settings',
+            icon: 'fa-solid fa-sliders',
+            module: 'agent_commissions',
+          },
+        ],
+      },
     ],
   },
   {

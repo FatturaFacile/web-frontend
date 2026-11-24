@@ -585,6 +585,20 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'agent-commissions',
+    canActivate: [
+      authGuard,
+      menuEnabledGuard,
+      featureFlagGuard('agent_commissions'),
+      moduleGuard('agent_commissions'),
+    ],
+    data: { breadcrumb: 'NAV.AGENT_COMMISSIONS', title: 'PAGE_TITLE.AGENT_COMMISSIONS_AGENTS' },
+    loadChildren: () =>
+      import('./features/agent-commissions/agent-commissions.routes').then(
+        (m) => m.AGENT_COMMISSIONS_ROUTES,
+      ),
+  },
+  {
     path: 'marketing-automation',
     canActivate: [
       authGuard,
