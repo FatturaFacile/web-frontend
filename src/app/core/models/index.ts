@@ -142,3 +142,4 @@ export * from './gap-views.model';
 export * from './payables.model';
 export * from './receivables.model';
 export * from './leave-management.model';
+export * from './marketing-automation.model';
