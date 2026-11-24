@@ -58,6 +58,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             module: 'crm',
           },
           {
+            key: 'NAV.SALES_PIPELINE',
+            route: '/crm/sales-pipeline',
+            icon: 'fa-solid fa-diagram-project',
+            module: 'crm',
+          },
+          {
             key: 'NAV.LEAD_SOURCES',
             route: '/crm/lead-sources',
             icon: 'fa-solid fa-plug',

@@ -111,6 +111,7 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/crm/leads',
   '/crm/partners',
   '/crm/portal-settings',
+  '/crm/sales-pipeline',
   '/crm/prm-config',
   '/crm/suppliers',
   '/crm/territory-accounts',

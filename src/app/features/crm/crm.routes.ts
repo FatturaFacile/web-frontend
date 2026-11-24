@@ -116,6 +116,12 @@ export const CRM_ROUTES: Routes = [
       import('./automation/automation.component').then((m) => m.AutomationComponent),
   },
   {
+    path: 'sales-pipeline',
+    data: { breadcrumb: 'SALESPIPE.TITLE', title: 'SALESPIPE.TITLE' },
+    loadComponent: () =>
+      import('./sales-pipeline/sales-pipeline.page').then((m) => m.SalesPipelinePageComponent),
+  },
+  {
     path: 'pipeline',
     data: { breadcrumb: 'BREADCRUMB.PIPELINE_AND_OPPORTUNITA', title: 'PAGE_TITLE.PIPELINE' },
     loadComponent: () => import('./pipeline/pipeline.component').then((m) => m.PipelineComponent),
