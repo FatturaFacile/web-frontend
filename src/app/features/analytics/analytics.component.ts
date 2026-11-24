@@ -1,0 +1,442 @@
+import { Component, OnInit, inject, signal, computed, TemplateRef, viewChild } from '@angular/core';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { CurrencyPipe, DatePipe } from '@angular/common';
+import { NzTabsModule } from 'ng-zorro-antd/tabs';
+import { NzCardModule } from 'ng-zorro-antd/card';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzTagModule } from 'ng-zorro-antd/tag';
+import { NzTableModule } from 'ng-zorro-antd/table';
+import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
+import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzFormModule } from 'ng-zorro-antd/form';
+import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzSelectModule } from 'ng-zorro-antd/select';
+import { NzSwitchModule } from 'ng-zorro-antd/switch';
+import { NzAlertModule } from 'ng-zorro-antd/alert';
+import { NzSpinModule } from 'ng-zorro-antd/spin';
+import { NzStatisticModule } from 'ng-zorro-antd/statistic';
+import { NzGridModule } from 'ng-zorro-antd/grid';
+import {
+  AnalyticsApiService,
+  applyServerErrors,
+  isValidationError,
+  AnalyticsKpiReport,
+  AnalyticsPeriodPreset,
+  AnalyticsReportDefinition,
+  BreakdownEntry,
+  DueCalendarEntry,
+  FetchGridModel,
+  RevenueComparisonData,
+  TranslateService,
+} from '@core';
+import { BaseTableComponent, PageHeaderComponent, TableColumnDef, TranslatePipe, ModalActionsDirective, IconActionDirective, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+
+@Component({
+  selector: 'app-analytics',
+  styleUrl: './analytics.component.scss',
+  imports: [
+    BaseTableComponent,
+    GridExportDirective,
+    GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
+    ModalActionsDirective,
+    IconActionDirective,
+    FormsModule,
+    ReactiveFormsModule,
+    DatePipe,
+    CurrencyPipe,
+    NzTabsModule,
+    NzCardModule,
+    NzButtonModule,
+    NzTagModule,
+    NzTableModule,
+    NzModalModule,
+    NzFormModule,
+    NzInputModule,
+    NzSelectModule,
+    NzSwitchModule,
+    NzAlertModule,
+    NzSpinModule,
+    NzStatisticModule,
+    NzGridModule,
+    PageHeaderComponent,
+    TranslatePipe,
+  ],
+  templateUrl: './analytics.component.html',
+})
+export class AnalyticsComponent implements OnInit {
+  private readonly translate = inject(TranslateService);
+  private readonly analyticsApi = inject(AnalyticsApiService);
+  private readonly fb = inject(FormBuilder);
+  private readonly message = inject(NzMessageService);
+  private readonly modal = inject(NzModalService);
+
+  readonly selectedTab = signal<number>(0);
+  readonly isLoading = signal<boolean>(false);
+  readonly isActionLoading = signal<boolean>(false);
+
+  // KPIs
+  readonly kpiReport = signal<AnalyticsKpiReport | null>(null);
+  readonly selectedPeriodPreset = signal<AnalyticsPeriodPreset>('month_to_date');
+  readonly selectedCompare = signal<'none' | 'previous_period' | 'previous_year'>('previous_period');
+
+  // Due Calendar
+  readonly dueEntries = signal<DueCalendarEntry[]>([]);
+  readonly filterDirection = signal<'all' | 'inflow' | 'outflow'>('all');
+  readonly filterOverdueOnly = signal<boolean>(false);
+  readonly dueCalendarSummary = computed(() => {
+    const list = this.dueEntries();
+    let totalInflow = 0;
+    let totalOutflow = 0;
+    let overdueCount = 0;
+
+    for (const item of list) {
+      if (item.direction === 'inflow') {
+        totalInflow += item.amount;
+      } else {
+        totalOutflow += item.amount;
+      }
+      if (item.is_overdue) {
+        overdueCount++;
+      }
+    }
+    return {
+      totalInflow,
+      totalOutflow,
+      netLiquidity: totalInflow - totalOutflow,
+      overdueCount,
+    };
+  });
+
+  readonly filteredDueEntries = computed(() => {
+    let list = this.dueEntries();
+    const dir = this.filterDirection();
+    if (dir !== 'all') {
+      list = list.filter((e) => e.direction === dir);
+    }
+    if (this.filterOverdueOnly()) {
+      list = list.filter((e) => e.is_overdue);
+    }
+    return list;
+  });
+
+  // Revenue & Breakdown
+  readonly revenueComparison = signal<RevenueComparisonData | null>(null);
+  readonly selectedComparisonYear = signal<number>(new Date().getFullYear());
+  readonly breakdownEntries = signal<BreakdownEntry[]>([]);
+  readonly selectedDimension = signal<string>('category');
+
+  // Custom Report Definitions
+  readonly reportGrid = new FetchGridModel<AnalyticsReportDefinition>((query) => this.analyticsApi.getReportDefinitions(query));
+
+  private readonly reportKpisTpl = viewChild<TemplateRef<{ $implicit: AnalyticsReportDefinition; value: unknown }>>('reportKpisTpl');
+  private readonly reportPeriodTpl = viewChild<TemplateRef<{ $implicit: AnalyticsReportDefinition; value: unknown }>>('reportPeriodTpl');
+  private readonly reportSharedTpl = viewChild<TemplateRef<{ $implicit: AnalyticsReportDefinition; value: unknown }>>('reportSharedTpl');
+  private readonly reportActionsTpl = viewChild<TemplateRef<{ $implicit: AnalyticsReportDefinition }>>('reportActionsTpl');
+
+  readonly reportColumns = computed<TableColumnDef<AnalyticsReportDefinition>[]>(() => [
+    { key: 'name', header: 'COMMON.NAME' },
+    { key: 'description', header: 'COMMON.DESCRIPTION' },
+    { key: 'kpis', header: 'ANALYTICS.KPIS', filterable: false, sortable: false, groupable: false, customCellTemplate: this.reportKpisTpl() },
+    {
+      key: 'period_preset',
+      header: 'ANALYTICS.PERIOD',
+      valueLabel: (value) => this.periodLabel(value),
+      customCellTemplate: this.reportPeriodTpl(),
+    },
+    {
+      key: 'is_shared',
+      serverKey: 'sharing_state',
+      header: 'ANALYTICS.SHARED',
+      valueLabel: (value) => this.translate.instant(value === 'shared' ? 'COMMON.YES' : 'COMMON.NO'),
+      customCellTemplate: this.reportSharedTpl(),
+    },
+  ]);
+
+  /** Translation of a period preset (the value the API stores), falling back to the preset itself. */
+  periodLabel(preset: string): string {
+    const keys: Record<string, string> = {
+      month_to_date: 'ANALYTICS.PERIOD_MTD',
+      last_month: 'ANALYTICS.PERIOD_LAST_MONTH',
+      quarter_to_date: 'ANALYTICS.PERIOD_QTD',
+      year_to_date: 'ANALYTICS.PERIOD_YTD',
+      last_30_days: 'ANALYTICS.PERIOD_LAST_30',
+    };
+    return keys[preset] ? this.translate.instant(keys[preset]) : preset;
+  }
+  readonly selectedReportResult = signal<AnalyticsKpiReport | null>(null);
+  readonly isReportModalVisible = signal<boolean>(false);
+  readonly editingReportId = signal<string | null>(null);
+
+  // BI Data Feed
+  readonly biFeedDataset = signal<string>('invoices');
+  readonly biFeedData = signal<Record<string, unknown>[]>([]);
+  readonly biFeedColumns = computed(() => {
+    const data = this.biFeedData();
+    if (data.length === 0) return [];
+    return Object.keys(data[0]);
+  });
+
+  readonly reportForm: FormGroup = this.fb.group({
+    name: ['', [Validators.required, Validators.maxLength(150)]],
+    description: ['', [Validators.maxLength(2000)]],
+    kpis: [['sales', 'margin'], [Validators.required]],
+    period_preset: ['last_month', [Validators.required]],
+    compare: ['previous_year'],
+    is_shared: [false],
+  });
+
+  readonly availableKpis = [
+    { label: 'Net Sales', value: 'sales' },
+    { label: 'Purchases', value: 'purchases' },
+    { label: 'Gross Margin', value: 'margin' },
+    { label: 'Receivables Aging', value: 'receivables-aging' },
+    { label: 'Payables Aging', value: 'payables-aging' },
+    { label: 'Stock Valuation', value: 'stock-value' },
+    { label: 'Project Margin', value: 'project-margin' },
+    { label: 'HR Headcount', value: 'hr-headcount' },
+  ];
+
+  ngOnInit(): void {
+    this.loadKpis();
+    this.loadDueCalendar();
+    this.loadRevenueComparison();
+    this.loadBreakdown();
+    this.loadBiFeed();
+  }
+
+  loadKpis(): void {
+    this.isLoading.set(true);
+    this.analyticsApi
+      .getKpis({
+        period_preset: this.selectedPeriodPreset(),
+        compare: this.selectedCompare(),
+      })
+      .subscribe({
+        next: (res) => {
+          this.kpiReport.set(res.data);
+          this.isLoading.set(false);
+        },
+        error: () => {
+          this.isLoading.set(false);
+        },
+      });
+  }
+
+  onPeriodChange(preset: AnalyticsPeriodPreset): void {
+    this.selectedPeriodPreset.set(preset);
+    this.loadKpis();
+  }
+
+  onCompareChange(compare: 'none' | 'previous_period' | 'previous_year'): void {
+    this.selectedCompare.set(compare);
+    this.loadKpis();
+  }
+
+  exportKpisCsv(): void {
+    this.analyticsApi
+      .exportKpisCsv({
+        period_preset: this.selectedPeriodPreset(),
+        compare: this.selectedCompare(),
+      })
+      .subscribe({
+        next: (blob) => {
+          this.downloadBlob(blob, `kpis-${this.selectedPeriodPreset()}.csv`);
+          this.message.success(this.translate.instant('ANALYTICS.MSG_KPI_EXPORT_COMPLETED'));
+        },
+        error: () => {
+          this.message.error(this.translate.instant('ANALYTICS.MSG_EXPORT_FAILED'));
+        },
+      });
+  }
+
+  loadDueCalendar(): void {
+    this.analyticsApi.getDueCalendar().subscribe({
+      next: (res) => {
+        this.dueEntries.set(res.data || []);
+      },
+      error: () => undefined, // the error interceptor already notifies the user,
+    });
+  }
+
+  loadRevenueComparison(): void {
+    this.analyticsApi.getRevenueComparison(this.selectedComparisonYear()).subscribe({
+      next: (res) => {
+        this.revenueComparison.set(res.data);
+      },
+      error: () => undefined, // the error interceptor already notifies the user,
+    });
+  }
+
+  loadBreakdown(): void {
+    this.analyticsApi.getBreakdown(this.selectedDimension(), this.selectedComparisonYear()).subscribe({
+      next: (res) => {
+        this.breakdownEntries.set(res.data || []);
+      },
+      error: () => undefined, // the error interceptor already notifies the user,
+    });
+  }
+
+  onDimensionChange(dim: string): void {
+    this.selectedDimension.set(dim);
+    this.loadBreakdown();
+  }
+
+  loadReportDefinitions(): void {
+    this.reportGrid.reload();
+  }
+
+  openCreateReportModal(): void {
+    this.editingReportId.set(null);
+    this.reportForm.reset({
+      name: '',
+      description: '',
+      kpis: ['sales', 'margin'],
+      period_preset: 'last_month',
+      compare: 'previous_year',
+      is_shared: false,
+    });
+    this.isReportModalVisible.set(true);
+  }
+
+  openEditReportModal(report: AnalyticsReportDefinition): void {
+    this.editingReportId.set(report.id);
+    this.reportForm.setValue({
+      name: report.name,
+      description: report.description || '',
+      kpis: report.kpis,
+      period_preset: report.period_preset,
+      compare: report.compare || 'none',
+      is_shared: report.is_shared,
+    });
+    this.isReportModalVisible.set(true);
+  }
+
+  closeReportModal(): void {
+    this.isReportModalVisible.set(false);
+  }
+
+  saveReportDefinition(): void {
+    if (this.reportForm.invalid) {
+      this.reportForm.markAllAsTouched();
+      return;
+    }
+
+    const payload = this.reportForm.value;
+    const editingId = this.editingReportId();
+
+    this.isActionLoading.set(true);
+    if (editingId) {
+      this.analyticsApi.updateReportDefinition(editingId, payload).subscribe({
+        next: () => {
+          this.isActionLoading.set(false);
+          this.isReportModalVisible.set(false);
+          this.message.success(this.translate.instant('ANALYTICS.MSG_REPORT_UPDATED_SUCCESSFULLY'));
+          this.loadReportDefinitions();
+        },
+        error: (err: unknown) => {
+          this.isActionLoading.set(false);
+          if (isValidationError(err)) {
+            applyServerErrors(this.reportForm, err);
+            return;
+          }
+          this.message.error(this.translate.instant('ANALYTICS.MSG_FAILED_TO_UPDATE_REPORT'));
+        },
+      });
+    } else {
+      this.analyticsApi.createReportDefinition(payload).subscribe({
+        next: () => {
+          this.isActionLoading.set(false);
+          this.isReportModalVisible.set(false);
+          this.message.success(this.translate.instant('ANALYTICS.MSG_REPORT_CREATED_SUCCESSFULLY'));
+          this.loadReportDefinitions();
+        },
+        error: (err: unknown) => {
+          this.isActionLoading.set(false);
+          if (isValidationError(err)) {
+            applyServerErrors(this.reportForm, err);
+            return;
+          }
+          this.message.error(this.translate.instant('ANALYTICS.MSG_FAILED_TO_CREATE_REPORT'));
+        },
+      });
+    }
+  }
+
+  deleteReportDefinition(report: AnalyticsReportDefinition): void {
+    this.modal.confirm({
+      nzTitle: this.translate.instant('ANALYTICS.DLG_DELETE_REPORT_DEFINITION'),
+      nzContent: this.translate.instant('ANALYTICS.DLG_ARE_YOU_SURE_YOU_WANT_TO', { name: report.name }),
+      nzOkText: this.translate.instant('ANALYTICS.DLG_DELETE'),
+      nzOkDanger: true,
+      nzOnOk: () => {
+        this.analyticsApi.deleteReportDefinition(report.id).subscribe({
+          next: () => {
+            this.message.success(this.translate.instant('ANALYTICS.MSG_REPORT_DELETED'));
+            this.loadReportDefinitions();
+          },
+          error: () => {
+            this.message.error(this.translate.instant('ANALYTICS.MSG_FAILED_TO_DELETE_REPORT'));
+          },
+        });
+      },
+    });
+  }
+
+  runReport(report: AnalyticsReportDefinition): void {
+    this.isActionLoading.set(true);
+    this.analyticsApi.runReportDefinition(report.id).subscribe({
+      next: (res) => {
+        this.selectedReportResult.set(res.data);
+        this.isActionLoading.set(false);
+        this.message.success(this.translate.instant('ANALYTICS.MSG_REPORT_EXECUTED_SUCCESSFULLY', { name: report.name }));
+      },
+      error: () => {
+        this.isActionLoading.set(false);
+        this.message.error(this.translate.instant('ANALYTICS.MSG_FAILED_TO_EXECUTE_REPORT'));
+      },
+    });
+  }
+
+  exportReportCsv(report: AnalyticsReportDefinition): void {
+    this.analyticsApi.exportReportDefinition(report.id).subscribe({
+      next: (blob) => {
+        this.downloadBlob(blob, `${report.name.toLowerCase().replace(/\s+/g, '-')}.csv`);
+        this.message.success(this.translate.instant('ANALYTICS.MSG_EXPORT_COMPLETED'));
+      },
+      error: () => {
+        this.message.error(this.translate.instant('ANALYTICS.MSG_FAILED_TO_EXPORT_REPORT'));
+      },
+    });
+  }
+
+  loadBiFeed(): void {
+    this.analyticsApi.getReportingFeed(this.biFeedDataset(), { top: 20, skip: 0 }).subscribe({
+      next: (res) => {
+        this.biFeedData.set(res.data || []);
+      },
+      error: () => undefined, // the error interceptor already notifies the user,
+    });
+  }
+
+  onBiDatasetChange(dataset: string): void {
+    this.biFeedDataset.set(dataset);
+    this.loadBiFeed();
+  }
+
+  /**
+   * Whether a KPI change is a loss. The server sends decimals as strings, so the sign is read from the text
+   * and no floating point comparison is made.
+   */
+  isLoss(change: string | number | null | undefined): boolean {
+    return String(change ?? '').trim().startsWith('-');
+  }
+
+  private downloadBlob(blob: Blob, filename: string): void {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  }
+}

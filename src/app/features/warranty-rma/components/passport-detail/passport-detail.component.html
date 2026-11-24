@@ -1,0 +1,195 @@
+@if (store.detailLoading() && !store.passport()) {
+  <nz-spin nzSimple [nzTip]="'COMMON.LOADING' | translate" />
+} @else if (store.detailError()) {
+  <p class="rma-form-error" role="alert">{{ 'RMA.ERRORS.LOAD_FAILED' | translate }}</p>
+} @else if (store.passport(); as p) {
+  <app-page-header [title]="p.serial_number" [subtitle]="'RMA.PASSPORT.TITLE' | translate" />
+
+  <nz-card [nzTitle]="'RMA.LOOKUP.WARRANTY' | translate" [nzExtra]="lookupLink">
+    <nz-descriptions
+      nzBordered
+      nzSize="small"
+      [nzColumn]="{ xxl: 3, xl: 3, lg: 2, md: 2, sm: 1, xs: 1 }"
+    >
+      <nz-descriptions-item [nzTitle]="'RMA.FIELDS.CUSTOMER' | translate">{{
+        p.customer?.name ?? '-'
+      }}</nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="'RMA.PASSPORT.JURISDICTION' | translate">{{
+        p.jurisdiction
+      }}</nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="'RMA.PASSPORT.CUSTOMER_TYPE' | translate">{{
+        'RMA.CUSTOMER_TYPE.' + p.customer_type.toUpperCase() | translate
+      }}</nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="'RMA.PASSPORT.DELIVERY_DATE' | translate">{{
+        p.delivery_date | date: 'mediumDate'
+      }}</nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="'RMA.LOOKUP.START' | translate">{{
+        p.warranty_start_date | date: 'mediumDate'
+      }}</nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="'RMA.LOOKUP.EXPIRY' | translate">
+        <strong>{{ p.warranty_expiry_date | date: 'mediumDate' }}</strong>
+      </nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="'RMA.LOOKUP.POLICY' | translate">{{
+        'RMA.POLICY.' + p.warranty_policy_type.toUpperCase() | translate
+      }}</nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="'RMA.LOOKUP.SOURCE' | translate">{{
+        'RMA.SOURCE.' + p.warranty_source.toUpperCase() | translate
+      }}</nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="'RMA.PASSPORT.CONTRACT_MONTHS' | translate">
+        {{ p.contract_warranty_months ?? '-' }}
+        @if (p.contract_clause_reference) {
+          ({{ p.contract_clause_reference }})
+        }
+      </nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="'RMA.PASSPORT.FIRMWARE' | translate">{{
+        p.installed_firmware_version ?? '-'
+      }}</nz-descriptions-item>
+    </nz-descriptions>
+  </nz-card>
+  <ng-template #lookupLink>
+    <button nz-button nzSize="small" type="button" (click)="editOpen.set(true)">
+      <i class="fa-solid fa-pen" aria-hidden="true"></i>&nbsp;{{ 'RMA.PASSPORT.EDIT' | translate }}
+    </button>
+    &nbsp;
+    <a routerLink="/warranty-rma/lookup" [queryParams]="{ serial: p.serial_number }">{{
+      'RMA.PASSPORT.CHECK_WARRANTY' | translate
+    }}</a>
+  </ng-template>
+
+  <nz-card
+    class="pd-card"
+    [nzTitle]="'RMA.PASSPORT.EXTENSIONS' | translate"
+    [nzExtra]="addExtension"
+  >
+    <nz-table
+      #extTable
+      [nzData]="p.extensions"
+      [nzFrontPagination]="false"
+      nzSize="small"
+      [nzNoResult]="'RMA.PASSPORT.NO_EXTENSIONS' | translate"
+    >
+      <thead>
+        <tr>
+          <th scope="col">{{ 'RMA.EXTENSION.NAME' | translate }}</th>
+          <th scope="col">{{ 'RMA.EXTENSION.MONTHS' | translate }}</th>
+          <th scope="col">{{ 'RMA.EXTENSION.STARTS_AT' | translate }}</th>
+          <th scope="col">{{ 'RMA.EXTENSION.ENDS_AT' | translate }}</th>
+          <th scope="col">{{ 'RMA.EXTENSION.REFERENCE' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (e of extTable.data; track e.id) {
+          <tr>
+            <td>{{ e.name }}</td>
+            <td>{{ e.months }}</td>
+            <td>{{ e.starts_at | date: 'mediumDate' }}</td>
+            <td>{{ e.ends_at | date: 'mediumDate' }}</td>
+            <td>{{ e.reference ?? '-' }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+  <ng-template #addExtension>
+    <button nz-button nzType="primary" type="button" (click)="extensionOpen.set(true)">
+      <i class="fa-solid fa-plus" aria-hidden="true"></i>&nbsp;{{
+        'RMA.PASSPORT.ADD_EXTENSION' | translate
+      }}
+    </button>
+  </ng-template>
+
+  <nz-card class="pd-card" [nzTitle]="'RMA.PASSPORT.GENEALOGY' | translate">
+    @if (store.genealogy(); as g) {
+      <nz-tabs>
+        <nz-tab [nzTitle]="'RMA.PASSPORT.AS_BUILT' | translate">
+          <ng-container *ngTemplateOutlet="componentTable; context: { $implicit: g.as_built }" />
+        </nz-tab>
+        <nz-tab [nzTitle]="'RMA.PASSPORT.AS_MAINTAINED' | translate">
+          <ng-container
+            *ngTemplateOutlet="componentTable; context: { $implicit: g.as_maintained }"
+          />
+        </nz-tab>
+        <nz-tab [nzTitle]="'RMA.PASSPORT.HISTORY' | translate">
+          <nz-table
+            #histTable
+            [nzData]="g.history"
+            [nzFrontPagination]="false"
+            nzSize="small"
+            [nzNoResult]="'RMA.PASSPORT.NO_HISTORY' | translate"
+          >
+            <thead>
+              <tr>
+                <th scope="col">{{ 'COMMON.DATE' | translate }}</th>
+                <th scope="col">{{ 'RMA.PASSPORT.REPLACED' | translate }}</th>
+                <th scope="col">{{ 'RMA.PASSPORT.REPLACEMENT' | translate }}</th>
+                <th scope="col">{{ 'RMA.FIELDS.RMA_NUMBER' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (h of histTable.data; track $index) {
+                <tr>
+                  <td>{{ h.at | date: 'medium' }}</td>
+                  <td>
+                    {{
+                      componentLabel(g.as_built.concat(g.as_maintained), h.replaced_component_id)
+                    }}
+                  </td>
+                  <td>
+                    {{ componentLabel(g.as_built.concat(g.as_maintained), h.new_component_id) }}
+                  </td>
+                  <td>
+                    @if (h.rma_order_id) {
+                      <a routerLink="/warranty-rma/bench" [queryParams]="{ rma: h.rma_order_id }">{{
+                        'RMA.PASSPORT.OPEN_RMA' | translate
+                      }}</a>
+                    } @else {
+                      -
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </nz-table>
+        </nz-tab>
+      </nz-tabs>
+    }
+  </nz-card>
+
+  <ng-template #componentTable let-rows>
+    <nz-table
+      #compTable
+      [nzData]="rows"
+      [nzFrontPagination]="false"
+      nzSize="small"
+      [nzNoResult]="'RMA.PASSPORT.NO_COMPONENTS' | translate"
+    >
+      <thead>
+        <tr>
+          <th scope="col">{{ 'RMA.FIELDS.POSITION' | translate }}</th>
+          <th scope="col">{{ 'RMA.FIELDS.COMPONENT_SERIAL' | translate }}</th>
+          <th scope="col">{{ 'RMA.FIELDS.ROLE' | translate }}</th>
+          <th scope="col">{{ 'RMA.PASSPORT.INSTALLED_AT' | translate }}</th>
+          <th scope="col">{{ 'RMA.PASSPORT.REMOVED_AT' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (c of compTable.data; track c.id) {
+          <tr [class.pd-removed]="!!c.removed_at">
+            <td>{{ c.position }}</td>
+            <td>{{ c.component_serial }}</td>
+            <td>{{ c.role ?? '-' }}</td>
+            <td>{{ (c.installed_at | date: 'mediumDate') ?? '-' }}</td>
+            <td>{{ (c.removed_at | date: 'mediumDate') ?? '-' }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </ng-template>
+
+  <app-edit-passport-dialog [(open)]="editOpen" [passport]="p" />
+  <app-add-extension-dialog
+    [(open)]="extensionOpen"
+    [passportId]="p.id"
+    [defaultStart]="p.warranty_expiry_date"
+  />
+}

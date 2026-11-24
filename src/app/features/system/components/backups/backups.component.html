@@ -1,0 +1,98 @@
+<app-page-header
+  [title]="'system.backups.title' | translate"
+  [subtitle]="'system.backups.subtitle' | translate"
+/>
+
+<nz-card>
+  <div class="toolbar">
+    <span class="toolbar-title">{{ 'system.backups.cardTitle' | translate }}</span>
+    <span class="spacer"></span>
+    <button nz-button type="button" (click)="isUploadModalVisible.set(true)">
+      <nz-icon nzType="upload" /> {{ 'system.backups.actions.restoreData' | translate }}
+    </button>
+    <button
+      nz-button
+      nzType="primary"
+      type="button"
+      (click)="createBackup()"
+      [nzLoading]="isCreating()"
+    >
+      <nz-icon nzType="database" /> {{ 'system.backups.messages.started' | translate }}
+    </button>
+  </div>
+
+  <app-base-table [grid]="grid" [columns]="columns()" [actionsTemplate]="actionsTpl" [exportFileName]="'backups'" />
+
+  <ng-template #dateTpl let-val="value">
+    {{ val | date: "dd.MM.yyyy HH:mm:ss" }}
+  </ng-template>
+
+  <ng-template #sizeTpl let-val="value">
+    {{ formatBytes(val) }}
+  </ng-template>
+
+  <ng-template #statusTpl let-val="value">
+    <nz-tag
+      [nzColor]="val === 'completed' ? 'success' : val === 'pending' || val === 'processing' ? 'processing' : 'error'"
+    >
+      {{ 'system.backups.status.' + val | translate }}
+    </nz-tag>
+  </ng-template>
+
+  <ng-template #actionsTpl let-b>
+    <div class="actions-group">
+      <button
+        nz-button
+        nzType="text"
+        nzSize="small"
+        type="button"
+        (click)="download(b)"
+        [title]="'system.backups.actions.download' | translate"
+      >
+        <nz-icon nzType="download" />
+      </button>
+      <button
+        nz-button
+        nzType="text"
+        nzSize="small"
+        type="button"
+        nz-popconfirm
+        [nzPopconfirmTitle]="'system.backups.confirmRestore' | translate"
+        [nzOkText]="'system.backups.actions.restoreData' | translate"
+        [nzCancelText]="'common.actions.cancel' | translate"
+        (nzOnConfirm)="restore(b)"
+        [title]="'system.backups.actions.restore' | translate"
+      >
+        <nz-icon nzType="cloud-download" />
+      </button>
+      <button
+        nz-button
+        nzType="text"
+        nzDanger
+        nzSize="small"
+        type="button"
+        nz-popconfirm
+        [nzPopconfirmTitle]="'system.backups.confirmDelete' | translate"
+        [nzOkText]="'common.actions.delete' | translate"
+        [nzCancelText]="'common.actions.cancel' | translate"
+        appIconAction="delete"
+        (nzOnConfirm)="delete(b)"
+      ></button>
+    </div>
+  </ng-template>
+</nz-card>
+
+<nz-modal appModalActions
+  [(nzVisible)]="isUploadModalVisible"
+  [nzTitle]="'system.backups.modal.title' | translate"
+  (nzOnCancel)="isUploadModalVisible.set(false)"
+  (nzOnOk)="submitUploadRestore()"
+  okAction="confirm"
+  [nzOkDisabled]="!uploadFile()"
+  [nzOkLoading]="isUploading()"
+>
+  <ng-container *nzModalContent>
+    <p>{{ 'system.backups.modal.description' | translate }}</p>
+    <input type="file" (change)="onFileSelected($event)" accept=".zip" />
+  </ng-container>
+</nz-modal>

@@ -1,0 +1,579 @@
+<app-page-header
+  [title]="'Produzione & MRP'"
+  [subtitle]="'Pianificazione ordini di produzione, distinte base, cicli di lavoro e fabbisogni materiali'"
+/>
+
+<!-- KPI Statistics Cards -->
+<div nz-row [nzGutter]="16" class="mb-4">
+  <div nz-col [nzSpan]="6">
+    <nz-card>
+      <nz-statistic
+        [nzValue]="kpiTotalOrders()"
+        [nzTitle]="'Totale Ordini'"
+        [nzPrefix]="iconOrders"
+      ></nz-statistic>
+      <ng-template #iconOrders><span nz-icon nzType="tool"></span></ng-template>
+    </nz-card>
+  </div>
+  <div nz-col [nzSpan]="6">
+    <nz-card>
+      <nz-statistic
+        [nzValue]="kpiInProgressOrders()"
+        [nzTitle]="'In Lavorazione'"
+        [nzValueStyle]="{ color: 'var(--status-warning)' }"
+        [nzPrefix]="iconProgress"
+      ></nz-statistic>
+      <ng-template #iconProgress><span nz-icon nzType="sync" nzSpin></span></ng-template>
+    </nz-card>
+  </div>
+  <div nz-col [nzSpan]="6">
+    <nz-card>
+      <nz-statistic
+        [nzValue]="kpiCompletedOrders()"
+        [nzTitle]="'Completati / Chiusi'"
+        [nzValueStyle]="{ color: 'var(--status-success)' }"
+        [nzPrefix]="iconDone"
+      ></nz-statistic>
+      <ng-template #iconDone><span nz-icon nzType="check-circle"></span></ng-template>
+    </nz-card>
+  </div>
+  <div nz-col [nzSpan]="6">
+    <nz-card>
+      <nz-statistic
+        [nzValue]="kpiTotalBoms()"
+        [nzTitle]="'Distinte Base Attive'"
+        [nzPrefix]="iconBom"
+      ></nz-statistic>
+      <ng-template #iconBom><span nz-icon nzType="apartment"></span></ng-template>
+    </nz-card>
+  </div>
+</div>
+
+<nz-card>
+  <nz-tabs [nzSelectedIndex]="selectedTab()" (nzSelectedIndexChange)="selectedTab.set($event)">
+    <!-- TAB 1: ORDINI DI PRODUZIONE -->
+    <nz-tab [nzTitle]="'MFG.LBL_ORDINI_DI_PRODUZIONE' | translate">
+      <div class="toolbar">
+        <div class="toolbar-group">
+          <nz-input-wrapper class="search-box">
+            <nz-icon nzInputPrefix nzType="search" />
+            <input
+              type="text"
+              nz-input
+              [placeholder]="'MFG.LBL_CERCA_ORDINE_ARTICOLO' | translate"
+              [ngModel]="ordersSearch()"
+              (ngModelChange)="searchOrders($event)"
+            />
+          </nz-input-wrapper>
+
+          <nz-select
+            [ngModel]="ordersStatusFilter()"
+            (ngModelChange)="filterOrdersByStatus($event)"
+            [nzPlaceHolder]="'common.allStatuses' | translate"
+            nzAllowClear
+            class="status-filter"
+          >
+            <nz-option nzValue="planned" [nzLabel]="'MFG.LBL_PIANIFICATO' | translate"></nz-option>
+            <nz-option nzValue="released" [nzLabel]="'MFG.LBL_RILASCIATO' | translate"></nz-option>
+            <nz-option nzValue="in_progress" [nzLabel]="'MFG.LBL_IN_LAVORAZIONE' | translate"></nz-option>
+            <nz-option nzValue="completed" [nzLabel]="'MFG.LBL_COMPLETATO' | translate"></nz-option>
+            <nz-option nzValue="closed" [nzLabel]="'MFG.LBL_CHIUSO' | translate"></nz-option>
+            <nz-option nzValue="cancelled" [nzLabel]="'MFG.LBL_ANNULLATO' | translate"></nz-option>
+          </nz-select>
+
+          <button nz-button nzType="default" (click)="ordersGrid.reload()">
+            <span nz-icon nzType="reload"></span>
+          </button>
+        </div>
+
+        <button nz-button nzType="primary" (click)="openCreateOrderModal()" appIconAction="create"></button>
+      </div>
+
+      <app-base-table
+        [grid]="ordersGrid"
+        [columns]="orderColumns()"
+        [scroll]="{ x: '900px' }"
+        size="middle"
+        exportFileName="production-orders"
+        [actionsTemplate]="ordersActions"
+      />
+
+      <ng-template #ordersActions let-o>
+                @if (o.status === 'planned') {
+                  <button nz-button nzType="link" nzSize="small" (click)="releaseOrder(o)">
+                    {{ 'MFG.LBL_RILASCIA' | translate }}
+                  </button>
+                  <button nz-button nzType="link" nzDanger nzSize="small" (click)="cancelOrder(o)" appIconAction="cancel"></button>
+                }
+                @if (o.status === 'released') {
+                  <button nz-button nzType="link" nzSize="small" (click)="startOrder(o)">
+                    {{ 'MFG.LBL_AVVIA' | translate }}
+                  </button>
+                }
+                @if (o.status === 'in_progress') {
+                  <button nz-button nzType="link" nzSize="small" (click)="completeOrder(o)">
+                    {{ 'MFG.LBL_COMPLETA' | translate }}
+                  </button>
+                }
+                @if (o.status === 'completed') {
+                  <button nz-button nzType="link" nzSize="small" (click)="closeOrder(o)">
+                    {{ 'MFG.LBL_CHIUDI_E_SALDA' | translate }}
+                  </button>
+                }
+                @if (o.status === 'closed' || o.status === 'cancelled') {
+                  <span class="text-muted small">{{ 'MFG.LBL_ARCHIVIATO' | translate }}</span>
+                }
+      </ng-template>
+    </nz-tab>
+
+    <!-- TAB 2: DISTINTE BASE (BOMs) -->
+    <nz-tab [nzTitle]="'MFG.LBL_DISTINTE_BASE_BOM' | translate">
+      <div class="toolbar">
+        <div class="toolbar-group">
+          <nz-input-wrapper class="search-box">
+            <nz-icon nzInputPrefix nzType="search" />
+            <input
+              type="text"
+              nz-input
+              [placeholder]="'MFG.LBL_CERCA_DISTINTA' | translate"
+              [ngModel]="bomsSearch()"
+              (ngModelChange)="searchBoms($event)"
+            />
+          </nz-input-wrapper>
+
+          <button nz-button nzType="default" (click)="bomsGrid.reload()">
+            <span nz-icon nzType="reload"></span>
+          </button>
+        </div>
+
+        <button nz-button nzType="primary" (click)="openCreateBomModal()" appIconAction="create"></button>
+      </div>
+      <p class="text-muted">{{ 'MFG.BOM_DRAFT_HINT' | translate }}</p>
+
+      <app-base-table
+        [grid]="bomsGrid"
+        [columns]="bomColumns()"
+        [scroll]="{ x: '900px' }"
+        size="middle"
+        exportFileName="boms"
+        [actionsTemplate]="bomsActions"
+      />
+
+      <ng-template #bomsActions let-b>
+                <button nz-button nzType="link" nzSize="small" (click)="explodeBom(b)">
+                  {{ 'MFG.LBL_ESPLODI' | translate }}
+                </button>
+                @if (b.status === 'draft') {
+                  <button
+                    nz-button
+                    nzType="link"
+                    nzSize="small"
+                    [disabled]="!canActivateBom()"
+                    [attr.title]="canActivateBom() ? null : ('MFG.BOM_ACTIVATE_FORBIDDEN' | translate)"
+                    (click)="activateBom(b)"
+                  >
+                    {{ 'MFG.LBL_ATTIVA' | translate }}
+                  </button>
+                }
+                @if (b.status === 'active') {
+                  <button nz-button nzType="link" nzSize="small" (click)="reviseBom(b)">
+                    {{ 'MFG.LBL_NUOVA_REV' | translate }}
+                  </button>
+                }
+      </ng-template>
+    </nz-tab>
+
+    <!-- TAB 3: PIANIFICAZIONE FABBISOGNI (MRP) -->
+    <nz-tab [nzTitle]="'MFG.LBL_MRP_AND_FABBISOGNI' | translate">
+      <div class="toolbar">
+        <h4 class="section-title">{{ 'MFG.LBL_ELABORAZIONI_MRP_MATERIAL_REQUIREMENTS_PLANNING' | translate }}</h4>
+        <button nz-button nzType="primary" (click)="openRunMrpModal()">
+          <span nz-icon nzType="calculator"></span> {{ 'MFG.LBL_ESEGUI_CALCOLO_MRP' | translate }}
+        </button>
+      </div>
+
+      <app-base-table
+        [grid]="mrpGrid"
+        [columns]="mrpColumns()"
+        [scroll]="{ x: '900px' }"
+        size="middle"
+        exportFileName="mrp-runs"
+      />
+
+      <nz-divider nzText="Ordini Pianificati Generati da MRP"></nz-divider>
+
+      <app-base-table
+        [grid]="plannedGrid"
+        [columns]="plannedColumns()"
+        [scroll]="{ x: '900px' }"
+        size="small"
+        exportFileName="planned-orders"
+        [actionsTemplate]="plannedActions"
+      />
+
+      <ng-template #plannedActions let-p>
+                @if (p.status === 'planned' && p.order_type === 'make') {
+                  <button nz-button nzType="link" nzSize="small" (click)="convertPlannedOrder(p)">
+                    {{ 'MFG.LBL_CONVERTI_IN_ODP' | translate }}
+                  </button>
+                }
+      </ng-template>
+
+      <nz-divider nzText="Mancanze & Fabbisogni Rilevati"></nz-divider>
+
+      <app-base-table
+        [grid]="shortagesGrid"
+        [columns]="shortageColumns()"
+        [scroll]="{ x: '900px' }"
+        size="small"
+        exportFileName="shortages"
+      />
+    </nz-tab>
+
+    <!-- TAB 4: CENTRI DI LAVORO & CICLI -->
+    <nz-tab [nzTitle]="'MFG.LBL_CENTRI_DI_LAVORO_AND_CICLI' | translate">
+      <div class="toolbar">
+        <h4 class="section-title">{{ 'MFG.LBL_CENTRI_DI_LAVORO' | translate }}</h4>
+        <button nz-button nzType="primary" (click)="openCreateWorkCenterModal()" appIconAction="create"></button>
+      </div>
+
+      <app-base-table
+        [grid]="workCentersGrid"
+        [columns]="workCenterColumns()"
+        [scroll]="{ x: '900px' }"
+        size="middle"
+        exportFileName="work-centers"
+      />
+
+      <nz-divider nzText="Cicli di Lavorazione (Routings)"></nz-divider>
+
+      <app-base-table
+        [grid]="routingsGrid"
+        [columns]="routingColumns()"
+        [scroll]="{ x: '900px' }"
+        size="middle"
+        exportFileName="routings"
+      />
+    </nz-tab>
+  </nz-tabs>
+</nz-card>
+
+<!-- MODAL: CREA ORDINE DI PRODUZIONE -->
+<nz-modal appModalActions
+  [nzVisible]="isCreateOrderModalVisible()"
+  [nzTitle]="'MFG.LBL_CREA_ORDINE_DI_PRODUZIONE' | translate"
+  [nzOkLoading]="isSubmittingOrder()"
+  (nzOnCancel)="isCreateOrderModalVisible.set(false)"
+  (nzOnOk)="submitCreateOrder()"
+  nzWidth="600px"
+  okAction="create"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="orderForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'MFG.LBL_ID_ARTICOLO_DA_PRODURRE_UUID' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(orderForm, 'mfg_item_id')">
+          <input
+            nz-input
+            formControlName="mfg_item_id"
+            placeholder="Es. 9e6a0d4b-70c8-47fb-a3d5-d0ff097a82dc"
+            (input)="onOrderItemChange($any($event.target).value)"
+          />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'MFG.ORDER_BOM' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(orderForm, 'bom_id')">
+          <nz-select formControlName="bom_id" nzAllowClear [nzPlaceHolder]="'MFG.ORDER_BOM_AUTO' | translate">
+            @for (b of orderBoms(); track b.id) {
+              <nz-option [nzValue]="b.id" [nzLabel]="b.bom_number + ' - Rev. ' + b.revision"></nz-option>
+            }
+          </nz-select>
+        </nz-form-control>
+        @if (orderBomsChecked() && orderBoms().length === 0) {
+          <p class="text-muted" role="alert">{{ 'MFG.ORDER_NO_ACTIVE_BOM' | translate }}</p>
+        }
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'MFG.LBL_QUANTITA_DA_PRODURRE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(orderForm, 'target_quantity')">
+          <nz-input-number class="w-full" formControlName="target_quantity" [nzMin]="1" [nzStep]="1"></nz-input-number>
+        </nz-form-control>
+      </nz-form-item>
+
+      <div nz-row [nzGutter]="16">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'MFG.LBL_DATA_INIZIO_PREVISTA' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="errorTip(orderForm, 'planned_start_date')">
+              <nz-date-picker class="w-full" formControlName="planned_start_date"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'MFG.LBL_DATA_FINE_PREVISTA' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="errorTip(orderForm, 'planned_end_date')">
+              <nz-date-picker class="w-full" formControlName="planned_end_date"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'MFG.LBL_NOTE_DI_PRODUZIONE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(orderForm, 'notes')">
+          <textarea nz-input formControlName="notes" rows="3" [placeholder]="'MFG.LBL_ISTRUZIONI_O_DETTAGLI_PER_IL_REPARTO' | translate"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: ANNULLA ORDINE DI PRODUZIONE -->
+<nz-modal appModalActions
+  [nzVisible]="cancellingOrder() !== null"
+  [nzTitle]="'MFG.CANCEL_TITLE' | translate"
+  [nzOkLoading]="isCancellingOrder()"
+  [nzOkDisabled]="!cancelReason().trim()"
+  [nzOkDanger]="true"
+  (nzOnCancel)="cancellingOrder.set(null)"
+  (nzOnOk)="confirmCancelOrder()"
+  okAction="confirm"
+>
+  <ng-container *nzModalContent>
+    <p>
+      <strong>{{ cancellingOrder()?.order_number }}</strong> - {{ 'MFG.CANCEL_HINT' | translate }}
+    </p>
+    <nz-form-item>
+      <nz-form-label nzRequired nzFor="cancel-reason">{{ 'MFG.CANCEL_REASON' | translate }}</nz-form-label>
+      <nz-form-control>
+        <textarea
+          nz-input
+          id="cancel-reason"
+          rows="3"
+          maxlength="500"
+          [ngModel]="cancelReason()"
+          (ngModelChange)="cancelReason.set($event)"
+        ></textarea>
+      </nz-form-control>
+    </nz-form-item>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: CREA DISTINTA BASE (BOM) -->
+<nz-modal appModalActions
+  [nzVisible]="isCreateBomModalVisible()"
+  [nzTitle]="'MFG.LBL_CREA_DISTINTA_BASE_BOM' | translate"
+  [nzOkLoading]="isSubmittingBom()"
+  (nzOnCancel)="isCreateBomModalVisible.set(false)"
+  (nzOnOk)="submitCreateBom()"
+  nzWidth="750px"
+  okAction="create"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="bomForm" nzLayout="vertical">
+      <div nz-row [nzGutter]="16">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ 'MFG.LBL_NUMERO_DISTINTA' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="errorTip(bomForm, 'bom_number')">
+              <input nz-input formControlName="bom_number" placeholder="Es. BOM-ASY-001" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'MFG.LBL_NOME_DISTINTA' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="errorTip(bomForm, 'name')">
+              <input nz-input formControlName="name" [placeholder]="'MFG.LBL_ES_ASSEMBLATO_PRINCIPALE' | translate" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <div nz-row [nzGutter]="16">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'MFG.LBL_ID_ARTICOLO_FINITO_UUID' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="errorTip(bomForm, 'mfg_item_id')">
+              <input nz-input formControlName="mfg_item_id" [placeholder]="'MFG.LBL_UUID_ARTICOLO' | translate" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ 'MFG.LBL_REVISIONE' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="errorTip(bomForm, 'revision')">
+              <input nz-input formControlName="revision" placeholder="A" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ 'MFG.LBL_UNITA_DI_MISURA' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="errorTip(bomForm, 'uom')">
+              <input nz-input formControlName="uom" placeholder="PZ" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <nz-divider nzText="Componenti della Distinta"></nz-divider>
+
+      <div formArrayName="components">
+        @for (row of bomComponentsFormArray.controls; track $index) {
+          <div [formGroupName]="$index" class="line-row">
+            <div class="line-main">
+              <input nz-input formControlName="component_item_id" [nzStatus]="row.get('component_item_id')?.touched && row.get('component_item_id')?.invalid ? 'error' : ''" [placeholder]="'MFG.LBL_UUID_COMPONENTE_MATERIA_PRIMA' | translate" />
+            </div>
+            <div>
+              <nz-input-number class="w-full" formControlName="quantity_per" [nzStatus]="row.get('quantity_per')?.touched && row.get('quantity_per')?.invalid ? 'error' : ''" [nzMin]="0.001" [nzStep]="1" [nzPlaceHolder]="'common.quantityPerUnit' | translate"></nz-input-number>
+            </div>
+            <div class="line-notes">
+              <input nz-input formControlName="notes" [placeholder]="'MFG.LBL_NOTE_POSIZIONE' | translate" />
+            </div>
+            <button nz-button nzType="text" nzDanger (click)="removeComponentRow($index)" appIconAction="delete"></button>
+          </div>
+        }
+      </div>
+
+      <button nz-button nzType="dashed" nzBlock (click)="addComponentRow()" class="add-line" appIconAction="add"></button>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: ESEGUI MRP -->
+<nz-modal appModalActions
+  [nzVisible]="isRunMrpModalVisible()"
+  [nzTitle]="'MFG.LBL_ESEGUI_CALCOLO_MRP' | translate"
+  [nzOkLoading]="isSubmittingMrp()"
+  (nzOnCancel)="isRunMrpModalVisible.set(false)"
+  (nzOnOk)="submitRunMrp()"
+  nzWidth="500px"
+  okAction="confirm"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="mrpForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label>{{ 'MFG.LBL_TIPO_DI_ELABORAZIONE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(mrpForm, 'run_type')">
+          <nz-select class="w-full" formControlName="run_type">
+            <nz-option nzValue="regenerative" [nzLabel]="'MFG.LBL_RIGENERATIVO_COMPLETO_TUTTI_GLI_ORDINI' | translate"></nz-option>
+            <nz-option nzValue="net_change" [nzLabel]="'MFG.LBL_VARIAZIONE_NETTA_NET_CHANGE' | translate"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'MFG.LBL_INIZIO_ORIZZONTE_DI_PIANIFICAZIONE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(mrpForm, 'horizon_start_date')">
+          <nz-date-picker class="w-full" formControlName="horizon_start_date"></nz-date-picker>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'MFG.LBL_FINE_ORIZZONTE_DI_PIANIFICAZIONE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(mrpForm, 'horizon_end_date')">
+          <nz-date-picker class="w-full" formControlName="horizon_end_date"></nz-date-picker>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: CREA CENTRO DI LAVORO -->
+<nz-modal appModalActions
+  [nzVisible]="isCreateWorkCenterModalVisible()"
+  [nzTitle]="'MFG.LBL_NUOVO_CENTRO_DI_LAVORO' | translate"
+  [nzOkLoading]="isSubmittingWorkCenter()"
+  (nzOnCancel)="isCreateWorkCenterModalVisible.set(false)"
+  (nzOnOk)="submitCreateWorkCenter()"
+  nzWidth="500px"
+  okAction="create"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="workCenterForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'MFG.LBL_CODICE_CENTRO' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(workCenterForm, 'work_center_code')">
+          <input nz-input formControlName="work_center_code" placeholder="Es. WC-TAGLIO-01" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'MFG.LBL_NOME_CENTRO' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(workCenterForm, 'name')">
+          <input nz-input formControlName="name" [placeholder]="'MFG.LBL_ES_STAZIONE_TAGLIO_LASER' | translate" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <div nz-row [nzGutter]="16">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ 'MFG.LBL_CAPACITA_ORE_GIORNO' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="errorTip(workCenterForm, 'capacity_hours_per_day')">
+              <nz-input-number class="w-full" formControlName="capacity_hours_per_day" [nzMin]="1" [nzMax]="24"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ 'MFG.LBL_COSTO_ORARIO_H' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="errorTip(workCenterForm, 'hourly_cost_rate')">
+              <nz-input-number class="w-full" formControlName="hourly_cost_rate" [nzMin]="0"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: ESPLOSIONE DISTINTA BASE -->
+<nz-modal appModalActions
+  [nzVisible]="isExplodeModalVisible()"
+  [nzTitle]="'Albero Esploso: ' + selectedBomName()"
+  (nzOnCancel)="isExplodeModalVisible.set(false)"
+  [nzFooter]="null"
+  nzWidth="700px"
+>
+  <ng-container *nzModalContent>
+    <pre class="bom-json">{{ explodedBomData() | json }}</pre>
+  </ng-container>
+</nz-modal>
+
+<!-- Cell templates shared by the grids (value = cell value, $implicit = row) -->
+<ng-template #strongTpl let-v="value"><strong>{{ v }}</strong></ng-template>
+<ng-template #dateTpl let-v="value">{{ v | date: 'dd/MM/yyyy' }}</ng-template>
+<ng-template #dateTimeTpl let-v="value">{{ v | date: 'dd/MM/yyyy HH:mm' }}</ng-template>
+<ng-template #moneyTpl let-v="value">
+  @if (v !== null && v !== undefined) {
+    <span>{{ v | money: 'EUR' }}</span>
+  } @else {
+    <span class="text-muted">-</span>
+  }
+</ng-template>
+<ng-template #orderStatusTpl let-v="value"><nz-tag [nzColor]="getOrderStatusColor(v)">{{ v | uppercase }}</nz-tag></ng-template>
+<ng-template #bomStatusTpl let-v="value"><nz-tag [nzColor]="getBomStatusColor(v)">{{ v | uppercase }}</nz-tag></ng-template>
+<ng-template #mrpStatusTpl let-v="value"><nz-tag [nzColor]="v === 'completed' ? 'success' : 'processing'">{{ v | uppercase }}</nz-tag></ng-template>
+<ng-template #revisionTpl let-v="value"><nz-tag nzColor="blue">Rev. {{ v }}</nz-tag></ng-template>
+<ng-template #plainTagTpl let-v="value"><nz-tag>{{ v }}</nz-tag></ng-template>
+<ng-template #planTypeTpl let-v="value"><nz-tag [nzColor]="v === 'make' ? 'blue' : 'green'">{{ v }}</nz-tag></ng-template>
+<ng-template #warningTagTpl let-v="value"><nz-tag nzColor="warning">{{ v }}</nz-tag></ng-template>
+<ng-template #activeTagTpl let-v="value"><nz-tag [nzColor]="v === 'active' ? 'success' : 'default'">{{ v | uppercase }}</nz-tag></ng-template>
+<ng-template #successTagTpl let-v="value"><nz-tag nzColor="success">{{ v | uppercase }}</nz-tag></ng-template>
+<ng-template #dashTpl let-v="value">{{ v || '-' }}</ng-template>
+<ng-template #hoursTpl let-v="value">{{ v }} h</ng-template>
+<ng-template #levelTpl let-v="value">Lvl {{ v }}</ng-template>
+<ng-template #componentsTpl let-v="value">{{ v }} elementi</ng-template>
+<ng-template #operationsTpl let-v="value">{{ v }} fasi</ng-template>
+<ng-template #yesNoTpl let-v="value">
+  @if (v) {
+    <nz-tag nzColor="green">{{ 'common.yes' | translate }}</nz-tag>
+  } @else {
+    <span class="text-muted">{{ 'common.no' | translate }}</span>
+  }
+</ng-template>

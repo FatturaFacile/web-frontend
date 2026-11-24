@@ -1,0 +1,90 @@
+<app-page-header
+  [title]="'alerts.title' | translate"
+  [subtitle]="'alerts.subtitle' | translate"
+/>
+
+<nz-card>
+  <div class="toolbar">
+    <input
+      class="search"
+      nz-input
+      type="search"
+      [placeholder]="'alerts.searchPlaceholder' | translate"
+      [ngModel]="grid.filterParams().search"
+      (ngModelChange)="onSearchChange($event)"
+    />
+
+    <nz-select
+      class="filter"
+      nzAllowClear
+      [nzPlaceHolder]="'COMMON.SELECT' | translate"
+      [ngModel]="grid.filterParams().severity"
+      (ngModelChange)="onSeverityFilterChange($event)"
+    >
+      <nz-option nzValue="info" [nzLabel]="'alerts.lblInformativo' | translate" />
+      <nz-option nzValue="warning" [nzLabel]="'alerts.lblAttenzione' | translate" />
+      <nz-option nzValue="critical" [nzLabel]="'alerts.lblCritico' | translate" />
+    </nz-select>
+
+    <span class="spacer"></span>
+    <button nz-button nzType="primary" type="button" appIconAction="add" (click)="create()"></button>
+  </div>
+
+  <app-base-table [grid]="grid" [columns]="columns()" [actionsTemplate]="actionsTpl" />
+
+  <!-- Cell Templates -->
+  <ng-template #titleTpl let-alert>
+    <strong>{{ alert.title }}</strong>
+    @if (alert.message) {
+      <div class="alert-desc">{{ alert.message }}</div>
+    }
+  </ng-template>
+
+  <ng-template #severityTpl let-alert>
+    <nz-tag [nzColor]="getSeverityColor(alert.severity)">
+      {{ alert.severity | uppercase }}
+    </nz-tag>
+  </ng-template>
+
+  <ng-template #statusTpl let-alert>
+    <nz-tag [nzColor]="alert.is_active ? 'success' : 'default'">
+      {{ (alert.is_active ? "common.status.active" : "common.status.inactive") | translate }}
+    </nz-tag>
+  </ng-template>
+
+  <ng-template #dateTpl let-val="value">
+    {{ val | date: "dd.MM.yyyy HH:mm" }}
+  </ng-template>
+
+  <!-- Actions Template -->
+  <ng-template #actionsTpl let-alert>
+    <div class="actions-group">
+      <button
+        nz-button
+        nzType="text"
+        nzSize="small"
+        type="button"
+        appIconAction="edit"
+        (click)="edit(alert)"
+      ></button>
+      <button
+        nz-button
+        nzType="text"
+        nzDanger
+        nzSize="small"
+        type="button"
+        nz-popconfirm
+        [nzPopconfirmTitle]="'alerts.confirmDelete' | translate"
+        appIconAction="delete"
+        (nzOnConfirm)="delete(alert)"
+      ></button>
+    </div>
+  </ng-template>
+</nz-card>
+
+<app-alert-form-drawer
+  [alert]="selectedAlert()"
+  [open]="drawerOpen()"
+  (openChange)="drawerOpen.set($event)"
+  (saved)="grid.reload()"
+/>

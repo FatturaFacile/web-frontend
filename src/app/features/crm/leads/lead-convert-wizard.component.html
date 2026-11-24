@@ -1,0 +1,267 @@
+<nz-modal
+  [nzVisible]="open()"
+  [nzTitle]="('CRM.LEADS.CONVERT.TITLE' | translate) + ': ' + leadName()"
+  [nzWidth]="760"
+  [nzFooter]="footerTpl"
+  [nzMaskClosable]="false"
+  (nzOnCancel)="close()"
+>
+  <ng-container *nzModalContent>
+    @if (result(); as r) {
+      <nz-result nzStatus="success" [nzTitle]="'CRM.LEADS.CONVERT.SUCCESS' | translate">
+        <div nz-result-content>
+          <dl class="summary">
+            <dt>{{ 'CRM.LEADS.CONVERT.CONTACT' | translate }}</dt>
+            <dd>
+              <a routerLink="/crm/clients" (click)="close()">{{ r.contact_id }}</a>
+            </dd>
+            <dt>{{ 'CRM.LEADS.CONVERT.ACCOUNT' | translate }}</dt>
+            <dd>{{ r.account.name || r.account.id }}</dd>
+            <dt>{{ 'CRM.LEADS.CONVERT.OPPORTUNITY' | translate }}</dt>
+            <dd>
+              {{
+                r.opportunity
+                  ? r.opportunity.name || r.opportunity.id
+                  : ('CRM.LEADS.CONVERT.NO_OPPORTUNITY' | translate)
+              }}
+            </dd>
+          </dl>
+        </div>
+      </nz-result>
+    } @else {
+      <nz-steps [nzCurrent]="step()" nzSize="small" class="steps">
+        <nz-step [nzTitle]="'CRM.LEADS.CONVERT.STEP_CONTACT' | translate" />
+        <nz-step [nzTitle]="'CRM.LEADS.CONVERT.STEP_ACCOUNT' | translate" />
+        <nz-step [nzTitle]="'CRM.LEADS.CONVERT.STEP_OPPORTUNITY' | translate" />
+        <nz-step [nzTitle]="'CRM.LEADS.CONVERT.STEP_CONFIRM' | translate" />
+      </nz-steps>
+
+      @if (formError()) {
+        <nz-alert class="form-error" nzType="error" nzShowIcon [nzMessage]="formError()!" />
+      }
+
+      <form nz-form nzLayout="vertical" [formGroup]="form" (ngSubmit)="$event.preventDefault()">
+        @switch (step()) {
+          @case (0) {
+            <nz-radio-group
+              class="block"
+              [nzName]="'contact-mode'"
+              [attr.aria-label]="'CRM.LEADS.CONVERT.CONTACT_MODE' | translate"
+              [ngModelOptions]="{ standalone: true }"
+              [ngModel]="contactMode()"
+              (ngModelChange)="setContactMode($event)"
+            >
+              <label for="lead-convert-wizard-new" appRadioControl nz-radio nzValue="new">{{
+                'CRM.LEADS.CONVERT.NEW_CONTACT' | translate
+              }}</label>
+              <label for="lead-convert-wizard-existing" appRadioControl nz-radio nzValue="existing">{{
+                'CRM.LEADS.CONVERT.EXISTING_CONTACT' | translate
+              }}</label>
+            </nz-radio-group>
+
+            @if (matches().length) {
+              <nz-alert
+                class="hint"
+                nzType="info"
+                nzShowIcon
+                [nzMessage]="
+                  'CRM.LEADS.CONVERT.MATCH_FOUND' | translate: { count: matches().length }
+                "
+              />
+            }
+
+            @if (contactMode() === 'existing') {
+              <nz-form-item>
+                <nz-form-label nzFor="existing_contact">{{
+                  'CRM.LEADS.CONVERT.PICK_CONTACT' | translate
+                }}</nz-form-label>
+                <nz-form-control [nzErrorTip]="fieldError('existing_contact_id') ?? ''">
+                  <nz-select
+                    nzId="existing_contact"
+                    nzShowSearch
+                    nzServerSearch
+                    nzAllowClear
+                    [nzLoading]="searching()"
+                    [nzPlaceHolder]="'CRM.LEADS.CONVERT.SEARCH_CONTACT' | translate"
+                    [ngModelOptions]="{ standalone: true }"
+                    [ngModel]="contactId()"
+                    (ngModelChange)="setContact($event)"
+                    (nzOnSearch)="searchContacts($event)"
+                  >
+                    @for (c of contactOptions(); track c.id) {
+                      <nz-option [nzValue]="c.id" [nzLabel]="contactLabel(c)" />
+                    }
+                  </nz-select>
+                </nz-form-control>
+              </nz-form-item>
+            }
+
+            <nz-form-item>
+              <nz-form-label nzFor="contact_role">{{
+                'CRM.LEADS.CONVERT.CONTACT_ROLE' | translate
+              }}</nz-form-label>
+              <nz-form-control [nzErrorTip]="fieldError('contact_role') ?? ''">
+                <nz-select nzId="contact_role" formControlName="contact_role">
+                  @for (r of contactRoles; track r) {
+                    <nz-option [nzValue]="r" [nzLabel]="roleLabel(r)" />
+                  }
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+          }
+          @case (1) {
+            <nz-form-item>
+              <nz-form-label nzFor="new_account_name">{{
+                'CRM.LEADS.CONVERT.ACCOUNT_NAME' | translate
+              }}</nz-form-label>
+              <nz-form-control [nzErrorTip]="fieldError('new_account_name') ?? ''">
+                <input nz-input id="new_account_name" formControlName="new_account_name" />
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+              <nz-form-label nzFor="existing_account_id">{{
+                'CRM.LEADS.CONVERT.EXISTING_ACCOUNT_ID' | translate
+              }}</nz-form-label>
+              <nz-form-control [nzErrorTip]="fieldError('existing_account_id') ?? ''">
+                <input nz-input id="existing_account_id" formControlName="existing_account_id" />
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+              <nz-form-label nzFor="account_tier">{{
+                'CRM.LEADS.CONVERT.ACCOUNT_TIER' | translate
+              }}</nz-form-label>
+              <nz-form-control [nzErrorTip]="fieldError('account_tier') ?? ''">
+                <nz-select nzId="account_tier" formControlName="account_tier">
+                  @for (t of accountTiers; track t) {
+                    <nz-option [nzValue]="t" [nzLabel]="tierLabel(t)" />
+                  }
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+          }
+          @case (2) {
+            <nz-form-item>
+              <nz-form-control>
+                <span class="switch">
+                  <nz-switch nzId="create_opportunity" formControlName="create_opportunity" />
+                  <label for="create_opportunity">{{
+                    'CRM.LEADS.CONVERT.CREATE_OPPORTUNITY' | translate
+                  }}</label>
+                </span>
+              </nz-form-control>
+            </nz-form-item>
+            @if (form.controls.create_opportunity.value) {
+              <nz-form-item>
+                <nz-form-label nzFor="opportunity_name">{{
+                  'CRM.LEADS.CONVERT.OPPORTUNITY_NAME' | translate
+                }}</nz-form-label>
+                <nz-form-control [nzErrorTip]="fieldError('opportunity_name') ?? ''">
+                  <input nz-input id="opportunity_name" formControlName="opportunity_name" />
+                </nz-form-control>
+              </nz-form-item>
+              <nz-form-item>
+                <nz-form-label nzFor="opportunity_amount">{{
+                  'CRM.LEADS.CONVERT.OPPORTUNITY_AMOUNT' | translate
+                }}</nz-form-label>
+                <nz-form-control [nzErrorTip]="fieldError('opportunity_amount') ?? ''">
+                  <nz-input-number
+                    nzId="opportunity_amount"
+                    [nzMin]="0"
+                    formControlName="opportunity_amount"
+                  />
+                </nz-form-control>
+              </nz-form-item>
+              <nz-form-item>
+                <nz-form-label nzFor="expected_close_date">{{
+                  'CRM.LEADS.CONVERT.EXPECTED_CLOSE' | translate
+                }}</nz-form-label>
+                <nz-form-control [nzErrorTip]="fieldError('expected_close_date') ?? ''">
+                  <nz-date-picker
+                    nzId="expected_close_date"
+                    formControlName="expected_close_date"
+                  />
+                </nz-form-control>
+              </nz-form-item>
+              <nz-form-item>
+                <nz-form-label>{{ 'CRM.LEADS.CONVERT.OWNER' | translate }}</nz-form-label>
+                <nz-form-control [nzErrorTip]="fieldError('owner_user_id') ?? ''">
+                  <app-lead-assignee-select
+                    [label]="'CRM.LEADS.CONVERT.OWNER' | translate"
+                    [value]="form.controls.owner_user_id.value"
+                    (valueChange)="form.controls.owner_user_id.setValue($event)"
+                  />
+                </nz-form-control>
+              </nz-form-item>
+            }
+          }
+          @case (3) {
+            <dl class="summary">
+              <dt>{{ 'CRM.LEADS.CONVERT.CONTACT' | translate }}</dt>
+              <dd>
+                {{
+                  contactMode() === 'existing'
+                    ? selectedContactLabel()
+                    : ('CRM.LEADS.CONVERT.NEW_CONTACT' | translate)
+                }}
+                ({{ roleLabel(form.controls.contact_role.value) }})
+              </dd>
+              <dt>{{ 'CRM.LEADS.CONVERT.ACCOUNT' | translate }}</dt>
+              <dd>
+                {{
+                  form.controls.existing_account_id.value || form.controls.new_account_name.value
+                }}
+                ({{ tierLabel(form.controls.account_tier.value) }})
+              </dd>
+              <dt>{{ 'CRM.LEADS.CONVERT.OPPORTUNITY' | translate }}</dt>
+              <dd>
+                {{
+                  form.controls.create_opportunity.value
+                    ? form.controls.opportunity_name.value
+                    : ('CRM.LEADS.CONVERT.NO_OPPORTUNITY' | translate)
+                }}
+              </dd>
+            </dl>
+          }
+        }
+      </form>
+    }
+  </ng-container>
+
+  <ng-template #footerTpl>
+    @if (result()) {
+      <button nz-button nzType="primary" type="button" (click)="close()">
+        {{ 'COMMON.CLOSE' | translate }}
+      </button>
+    } @else {
+      <button nz-button type="button" (click)="close()">{{ 'COMMON.CANCEL' | translate }}</button>
+      @if (step() > 0) {
+        <button nz-button type="button" [disabled]="submitting()" (click)="prev()">
+          {{ 'COMMON.BACK' | translate }}
+        </button>
+      }
+      @if (step() < 3) {
+        <button
+          nz-button
+          nzType="primary"
+          type="button"
+          [disabled]="!canContinue()"
+          (click)="next()"
+        >
+          {{ 'COMMON.NEXT' | translate }}
+        </button>
+      } @else {
+        <button
+          nz-button
+          nzType="primary"
+          type="button"
+          data-testid="convert-submit"
+          [nzLoading]="submitting()"
+          [disabled]="submitting()"
+          (click)="submit()"
+        >
+          {{ 'CRM.LEADS.CONVERT.SUBMIT' | translate }}
+        </button>
+      }
+    }
+  </ng-template>
+</nz-modal>

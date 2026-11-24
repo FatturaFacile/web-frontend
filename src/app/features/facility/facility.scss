@@ -1,0 +1,217 @@
+.toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+
+  .spacer {
+    flex: 1;
+  }
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.main-card {
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.muted {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.split {
+  display: grid;
+  grid-template-columns: minmax(260px, 340px) 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.building-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+
+  &.active {
+    background: var(--ff-color-hover);
+  }
+}
+
+.feedback {
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+
+  &.ok {
+    color: var(--ff-color-success);
+    background: var(--ff-color-success-bg);
+    border-color: var(--ff-color-success);
+  }
+
+  &.bad {
+    color: var(--ff-color-danger);
+    background: var(--ff-color-danger-bg);
+    border-color: var(--ff-color-danger);
+  }
+}
+
+.conflict-list {
+  margin: 4px 0 0;
+  padding-left: 18px;
+}
+
+.timeline {
+  --hours: 14;
+  min-width: 720px;
+
+  .timeline-head,
+  .timeline-row {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    align-items: stretch;
+  }
+
+  .timeline-head .hours {
+    display: grid;
+    grid-template-columns: repeat(var(--hours), 1fr);
+    font-size: 12px;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--ff-color-border);
+  }
+
+  .timeline-row {
+    border-bottom: 1px solid var(--ff-color-border);
+    min-height: 40px;
+
+    .label {
+      padding: 8px;
+      font-size: 13px;
+    }
+
+    .track {
+      position: relative;
+      cursor: pointer;
+      background-image: linear-gradient(to right, var(--ff-color-border) 1px, transparent 1px);
+      background-size: calc(100% / var(--hours)) 100%;
+    }
+
+    .slot {
+      position: absolute;
+      top: 6px;
+      bottom: 6px;
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 12px;
+      color: var(--ff-color-on-primary);
+      overflow: hidden;
+      white-space: nowrap;
+      background: var(--ff-color-primary);
+
+      &.checked_in {
+        background: var(--ff-color-success);
+      }
+
+      &.mine {
+        outline: 2px solid var(--ff-color-warning);
+      }
+    }
+  }
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(220px, 1fr));
+  gap: 12px;
+  overflow-x: auto;
+
+  .column {
+    background: var(--ff-color-surface-alt);
+    border-radius: 8px;
+    padding: 8px;
+    min-height: 200px;
+  }
+
+  .column-title {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .ticket {
+    background: var(--ff-color-bg);
+    border: 1px solid var(--ff-color-border);
+    border-left: 4px solid var(--ff-color-border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+    cursor: pointer;
+
+    &.urgent {
+      border-left-color: var(--ff-color-danger);
+    }
+
+    &.high {
+      border-left-color: var(--ff-color-warning);
+    }
+
+    &.normal {
+      border-left-color: var(--ff-color-primary);
+    }
+
+    &.overdue .due {
+      color: var(--ff-color-danger);
+      font-weight: 600;
+    }
+  }
+}
+
+.checklist-item {
+  display: grid;
+  grid-template-columns: 1fr 180px;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--ff-color-border);
+  align-items: center;
+}
+
+.comment {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--ff-color-border);
+}
+
+.tree-node {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+
+  &.active {
+    background: var(--ff-color-hover);
+  }
+}

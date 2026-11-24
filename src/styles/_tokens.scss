@@ -1,0 +1,120 @@
+// Design tokens. The values live in src/design-tokens/ff.tokens.json (W3C Design Tokens) and are generated into
+// _generated-tokens.scss as --ff-* custom properties: light on :root, dark on [data-theme='dark'], the three density
+// profiles on [data-density]. ThemeService sets both attributes and, for a tenant with a brand colour, overrides the
+// --ff-color-primary and --ff-color-accent families at runtime.
+//
+// The names below are the original ones, kept as aliases of the --ff-* tokens so every existing component keeps
+// working. New code should use the --ff-* names. Components use only these variables, never a literal colour.
+@use 'generated-tokens';
+
+:root {
+  // Brand constants that do not change with the theme
+  --brand-teal: #0f766e;
+  --brand-cyan: #14b8a6;
+  --brand-emerald: #047857;
+  --brand-dark: #0f172a;
+  --brand-slate: #1e293b;
+
+  // Primary action
+  --primary-color: var(--ff-color-primary);
+  --primary-hover: var(--ff-color-primary-hover);
+  --primary-active: var(--ff-color-primary-active);
+  --primary-focus: var(--ff-color-focus);
+  --primary-light: var(--ff-color-primary-subtle);
+  --primary-contrast: var(--ff-color-on-primary);
+
+  // Surfaces
+  --bg-primary: var(--ff-color-bg);
+  --bg-card: var(--ff-color-surface);
+  --bg-card-secondary: var(--ff-color-surface-alt);
+  --bg-elevated: var(--ff-color-surface-raised);
+  --bg-hover: var(--ff-color-hover);
+  --bg-selected: var(--ff-color-selected);
+  --header-bg: var(--ff-color-header);
+  --sidebar-bg: var(--ff-color-sidebar);
+  --sidebar-border: var(--ff-color-sidebar-border);
+  --sidebar-text: var(--ff-color-sidebar-text);
+  --sidebar-text-active: var(--ff-color-sidebar-text-active);
+  --sidebar-item-hover: var(--ff-color-sidebar-hover);
+  --sidebar-item-active: var(--ff-color-sidebar-active);
+  --overlay-bg: var(--ff-color-overlay);
+
+  // Text
+  --text-primary: var(--ff-color-text);
+  --text-secondary: var(--ff-color-text-secondary);
+  --text-muted: var(--ff-color-text-muted);
+  --text-disabled: var(--ff-color-text-disabled);
+  --text-link: var(--ff-color-text-link);
+
+  // Borders
+  --border-color: var(--ff-color-border);
+  --border-input: var(--ff-color-border-input);
+  --border-light: var(--ff-color-border-subtle);
+
+  // Status: foreground on its own soft background (>= 4.5:1)
+  --status-success: var(--ff-color-success);
+  --status-success-bg: var(--ff-color-success-bg);
+  --status-warning: var(--ff-color-warning);
+  --status-warning-bg: var(--ff-color-warning-bg);
+  --status-danger: var(--ff-color-danger);
+  --status-danger-bg: var(--ff-color-danger-bg);
+  --status-info: var(--ff-color-info);
+  --status-info-bg: var(--ff-color-info-bg);
+  --status-neutral: var(--ff-color-neutral);
+  --status-neutral-bg: var(--ff-color-neutral-bg);
+
+  // KPI
+  --kpi-revenue: var(--primary-color);
+  --kpi-pending: var(--ff-color-warning);
+  --kpi-orders: var(--ff-color-success);
+  --kpi-compliance: #6d28d9;
+
+  // Printed artefacts that must stay black on white in both themes (Swiss QR bill, signature pad)
+  --qr-ink: #000000;
+  --qr-paper: #ffffff;
+  --swiss-red: #ff0000;
+
+  // Elevation
+  --card-shadow: var(--ff-shadow-card);
+  --elevated-shadow: var(--ff-shadow-elevated);
+
+  // Scrollbars
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: var(--ff-color-scrollbar-thumb);
+
+  // Paper-like surface for content that must stay dark-on-light in both themes (signature pad, QR codes)
+  --paper-surface: var(--ff-color-paper);
+
+  // Shape and spacing (4px base grid)
+  --radius-sm: var(--ff-radius-sm);
+  --radius-md: var(--ff-radius-md);
+  --radius-lg: var(--ff-radius-lg);
+  --space-1: var(--ff-space-1);
+  --space-2: var(--ff-space-2);
+  --space-3: var(--ff-space-3);
+  --space-4: var(--ff-space-4);
+  --space-5: var(--ff-space-5);
+  --space-6: var(--ff-space-6);
+
+  // Typography
+  --font-family: var(--ff-font-family-base);
+  --font-mono: var(--ff-font-family-mono);
+  --font-size-xs: var(--ff-font-size-xs);
+  --font-size-sm: var(--ff-font-size-sm);
+  --font-size-md: var(--ff-font-size-md);
+  --font-size-lg: var(--ff-font-size-lg);
+  --font-size-xl: var(--ff-font-size-xl);
+  --font-size-2xl: var(--ff-font-size-2xl);
+
+  // Layout
+  --sidebar-width: 260px;
+  --sidebar-width-collapsed: 72px;
+  --header-height: 56px;
+  --content-max-width: 1680px;
+  --z-sidebar: 100;
+  --z-header: 90;
+}
+
+[data-theme='dark'] {
+  --kpi-compliance: #a78bfa;
+}

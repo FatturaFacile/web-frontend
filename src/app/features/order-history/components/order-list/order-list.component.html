@@ -1,0 +1,56 @@
+<app-page-header [title]="'ORDERS.TITLE' | translate" [subtitle]="'ORDERS.SUBTITLE' | translate" />
+
+<div nz-row [nzGutter]="16" class="stats-row">
+  <div nz-col [nzSpan]="8">
+    <nz-card>
+      <nz-statistic [nzValue]="grid.totalCount()" [nzTitle]="'ORDERS.COUNT' | translate" />
+    </nz-card>
+  </div>
+  <div nz-col [nzSpan]="8">
+    <nz-card>
+      <nz-statistic
+        [nzValue]="totalRevenue() | appCurrency"
+        [nzTitle]="'ORDERS.REVENUE' | translate"
+      />
+    </nz-card>
+  </div>
+</div>
+
+<app-base-table
+  [grid]="grid"
+  [columns]="columns()"
+  [actionsTemplate]="actionsTpl"
+  [exportFileName]="'orders'"
+  (rowClick)="select($event)"
+/>
+
+<ng-template #referenceTpl let-order>
+  <nz-tag nzColor="blue">{{ order.referenceNumber }}</nz-tag>
+</ng-template>
+<ng-template #createdAtTpl let-order>{{ order.createdAt | date: "dd/MM/yyyy HH:mm" }}</ng-template>
+<ng-template #totalTpl let-order>
+  <strong>{{ order.totalAmount | appCurrency }}</strong>
+</ng-template>
+<ng-template #actionsTpl let-order>
+  <button type="button" class="select-btn" (click)="select(order); $event.stopPropagation()">
+    {{ "COMMON.SELECT" | translate }}
+  </button>
+</ng-template>
+
+@if (selectedOrder(); as selected) {
+  <nz-card [nzTitle]="'ORDERS.SELECTED_TITLE' | translate" class="detail-card">
+    <p><strong>ID:</strong> {{ selected.id }}</p>
+    <p>
+      <strong>{{ "ORDERS.COL_REF" | translate }}:</strong> {{ selected.referenceNumber }}
+    </p>
+    <p>
+      <strong>{{ "COMMON.TOTAL" | translate }}:</strong> {{ selected.totalAmount | appCurrency }}
+    </p>
+    <h4>{{ "ORDERS.ITEMS_LABEL" | translate }}</h4>
+    <ul>
+      @for (item of selected.items; track item.id) {
+        <li>{{ item.productName }} - {{ item.quantity }} x {{ item.unitPrice | appCurrency }}</li>
+      }
+    </ul>
+  </nz-card>
+}

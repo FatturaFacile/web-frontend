@@ -1,0 +1,114 @@
+<nz-card>
+  <div class="toolbar">
+    <nz-select
+      class="status-filter"
+      nzAllowClear
+      [attr.aria-label]="'TR.STATUS' | translate"
+      [nzPlaceHolder]="'TR.ALL_STATUSES' | translate"
+      [(ngModel)]="statusFilter"
+      (ngModelChange)="onStatusChange($event)"
+    >
+      @for (status of statuses; track status) {
+        <nz-option [nzValue]="status" [nzLabel]="'TR.PROPOSAL_STATUS_' + status.toUpperCase() | translate" />
+      }
+    </nz-select>
+    <span class="spacer"></span>
+    @if (canWrite) {
+      <button nz-button nzType="primary" type="button" (click)="openCreate()" appIconAction="create"></button>
+    }
+  </div>
+
+  @if (excluded().length > 0) {
+    <nz-alert class="excluded-alert" nzType="warning" nzShowIcon nzCloseable [nzMessage]="'TR.PROPOSAL_EXCLUDED' | translate" [nzDescription]="excludedList" (nzOnClose)="excluded.set([])" />
+    <ng-template #excludedList>
+      @for (item of excluded(); track item.invoice_id) {
+        <div>{{ item.invoice_number }}: {{ item.reason }}</div>
+      }
+    </ng-template>
+  }
+
+  <app-base-table [grid]="grid" [columns]="columns()" [actionsTemplate]="actionsTpl" [scroll]="{ x: '1100px' }" [exportFileName]="'payment-proposals'" />
+  <ng-template #amountTpl let-proposal>{{ proposal.total_amount | money: proposal.currency }}</ng-template>
+  <ng-template #statusTpl let-proposal>
+    <nz-tag [nzColor]="statusColor(proposal.status)">{{ 'TR.PROPOSAL_STATUS_' + proposal.status.toUpperCase() | translate }}</nz-tag>
+    @if (proposal.rejection_reason) {
+      <div class="muted">{{ proposal.rejection_reason }}</div>
+    }
+  </ng-template>
+  <ng-template #actionsTpl let-proposal>
+    @if (canWrite && proposal.status === 'draft') {
+      @if (proposal.created_by !== userId) {
+        <button nz-button nzSize="small" nzType="primary" type="button" (click)="approve(proposal)">{{ 'TR.APPROVE' | translate }}</button>
+      }
+      <button nz-button nzSize="small" nzDanger type="button" (click)="openReject(proposal)">{{ 'TR.REJECT' | translate }}</button>
+    }
+    @if (proposal.status === 'converted' && proposal.payment_batch_id) {
+      <button nz-button nzSize="small" type="button" (click)="downloadPain001(proposal)">{{ 'TR.DOWNLOAD_PAIN001' | translate }}</button>
+    }
+  </ng-template>
+</nz-card>
+
+<nz-modal appModalActions
+  [nzVisible]="createOpen()"
+  [nzTitle]="'TR.PROPOSAL_NEW' | translate"
+  [nzOkLoading]="saving()"
+  (nzOnOk)="create()"
+  okAction="create"
+  [nzOkDisabled]="form.invalid"
+  (nzOnCancel)="createOpen.set(false)"
+>
+  <ng-container *nzModalContent>
+    @for (message of formErrors(); track message) {
+      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" />
+    }
+    <form nz-form nzLayout="vertical" [formGroup]="form">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="pp-bank">{{ 'TR.BANK_ACCOUNT' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="form.controls.bank_account_id.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
+          <nz-select id="pp-bank" formControlName="bank_account_id">
+            @for (account of banks.bankAccounts(); track account.id) {
+              <nz-option [nzValue]="account.id" [nzLabel]="account.bank_name + ' ' + account.iban" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="pp-exec">{{ 'TR.EXECUTION_DATE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="form.controls.execution_date.errors?.['serverError'] ?? (form.controls.execution_date.hasError('required') ? ('TR.REQUIRED' | translate) : ('COMMON.VALIDATION.DATE_NOT_IN_PAST' | translate))">
+          <input id="pp-exec" nz-input type="date" formControlName="execution_date" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="pp-due">{{ 'TR.DUE_UNTIL' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="form.controls.due_until.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
+          <input id="pp-due" nz-input type="date" formControlName="due_until" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="pp-format">{{ 'TR.FORMAT' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select id="pp-format" formControlName="format">
+            @for (format of formats; track format) {
+              <nz-option [nzValue]="format" [nzLabel]="'TR.FORMAT_' + format.toUpperCase() | translate" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <label for="tr-payment-proposals-include-discounts" nzId="tr-payment-proposals-include-discounts" nz-checkbox formControlName="include_discounts">{{ 'TR.INCLUDE_DISCOUNTS' | translate }}</label>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<nz-modal appModalActions
+  [nzVisible]="rejectTarget() !== null"
+  [nzTitle]="'TR.REJECT' | translate"
+  [nzOkDanger]="true"
+  [nzOkDisabled]="!rejectReason.trim()"
+  (nzOnOk)="confirmReject()"
+  (nzOnCancel)="rejectTarget.set(null)"
+>
+  <ng-container *nzModalContent>
+    <label for="pp-reject-reason">{{ 'TR.REJECTION_REASON' | translate }}</label>
+    <textarea id="pp-reject-reason" nz-input rows="3" [(ngModel)]="rejectReason" maxlength="500"></textarea>
+  </ng-container>
+</nz-modal>

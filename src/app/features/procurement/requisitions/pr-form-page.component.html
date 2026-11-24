@@ -1,0 +1,412 @@
+<div class="pr-form-page">
+  <div class="form-top-nav">
+    <a nz-button routerLink="/procurement/requisitions">
+      <span nz-icon nzType="arrow-left" aria-hidden="true"></span>
+      {{ 'PR.BACK_TO_LIST' | translate }}
+    </a>
+  </div>
+
+  <app-page-header
+    [title]="(isEditMode() ? 'PR.EDIT_TITLE' : 'PR.CREATE_TITLE') | translate"
+    [subtitle]="'PR.FORM.SUBTITLE' | translate"
+  />
+
+  @if (formError()) {
+    <nz-alert nzType="error" nzShowIcon [nzMessage]="formError() ?? ''" />
+  }
+
+  <nz-spin [nzSpinning]="loading()">
+    <form nz-form nzLayout="vertical" [formGroup]="form" class="pr-form-layout">
+      <div class="form-main-column">
+        <nz-card [nzTitle]="'PR.FORM.HEADER_SECTION' | translate" class="form-card">
+          <div class="header-fields-grid">
+            <nz-form-item class="full-span">
+              <nz-form-label nzRequired nzFor="pr-title-input">
+                {{ 'PR.FIELD.TITLE' | translate }}
+              </nz-form-label>
+              <nz-form-control [nzErrorTip]="fieldError('title') || ('PR.FORM.REQUIRED_FIELD' | translate)">
+                <input
+                  id="pr-title-input"
+                  nz-input
+                  formControlName="title"
+                  [placeholder]="'PR.FORM.TITLE_PLACEHOLDER' | translate"
+                  data-testid="pr-title-input"
+                />
+              </nz-form-control>
+            </nz-form-item>
+
+            <nz-form-item>
+              <nz-form-label nzRequired>{{ 'PR.FIELD.COST_CENTER' | translate }}</nz-form-label>
+              <nz-form-control
+                [nzErrorTip]="fieldError('cost_center_id') || ('PR.FORM.REQUIRED_FIELD' | translate)"
+              >
+                <nz-select
+                  nzShowSearch
+                  formControlName="cost_center_id"
+                  [nzPlaceHolder]="'PR.FORM.SELECT_COST_CENTER' | translate"
+                  [attr.aria-label]="'PR.FIELD.COST_CENTER' | translate"
+                  data-testid="pr-cost-center-select"
+                >
+                  @for (cc of store.costCenters(); track cc.id) {
+                    <nz-option [nzValue]="cc.id" [nzLabel]="cc.label" />
+                  }
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+
+            <nz-form-item>
+              <nz-form-label>{{ 'PR.FIELD.PROJECT' | translate }}</nz-form-label>
+              <nz-form-control>
+                <nz-select
+                  nzShowSearch
+                  nzAllowClear
+                  formControlName="project_id"
+                  [nzPlaceHolder]="'PR.FORM.SELECT_PROJECT' | translate"
+                  [attr.aria-label]="'PR.FIELD.PROJECT' | translate"
+                  data-testid="pr-project-select"
+                >
+                  @for (proj of store.projects(); track proj.id) {
+                    <nz-option [nzValue]="proj.id" [nzLabel]="proj.label" />
+                  }
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+
+            <nz-form-item>
+              <nz-form-label nzRequired>{{ 'PR.FIELD.URGENCY' | translate }}</nz-form-label>
+              <nz-form-control>
+                <nz-select
+                  formControlName="urgency"
+                  [attr.aria-label]="'PR.FIELD.URGENCY' | translate"
+                  data-testid="pr-urgency-select"
+                >
+                  @for (opt of urgencies; track opt.value) {
+                    <nz-option [nzValue]="opt.value" [nzLabel]="opt.labelKey | translate" />
+                  }
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+
+            <nz-form-item>
+              <nz-form-label nzRequired>{{ 'PR.FIELD.DELIVERY_DATE' | translate }}</nz-form-label>
+              <nz-form-control
+                [nzErrorTip]="fieldError('requested_delivery_date') || ('PR.FORM.REQUIRED_FIELD' | translate)"
+              >
+                <nz-date-picker
+                  formControlName="requested_delivery_date"
+                  [attr.aria-label]="'PR.FIELD.DELIVERY_DATE' | translate"
+                  class="full-width"
+                />
+              </nz-form-control>
+            </nz-form-item>
+
+            <nz-form-item>
+              <nz-form-label nzRequired>{{ 'PR.FIELD.CURRENCY' | translate }}</nz-form-label>
+              <nz-form-control>
+                <nz-select
+                  formControlName="currency"
+                  [attr.aria-label]="'PR.FIELD.CURRENCY' | translate"
+                  data-testid="pr-currency-select"
+                >
+                  @for (curr of currencies; track curr) {
+                    <nz-option [nzValue]="curr" [nzLabel]="curr" />
+                  }
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+
+            <nz-form-item class="full-span">
+              <nz-form-label nzRequired nzFor="pr-justification-input">
+                {{ 'PR.FIELD.JUSTIFICATION' | translate }}
+              </nz-form-label>
+              <nz-form-control
+                [nzErrorTip]="fieldError('economic_justification') || ('PR.FORM.REQUIRED_FIELD' | translate)"
+              >
+                <textarea
+                  id="pr-justification-input"
+                  nz-input
+                  rows="3"
+                  formControlName="economic_justification"
+                  [placeholder]="'PR.FORM.JUSTIFICATION_PLACEHOLDER' | translate"
+                  data-testid="pr-justification-input"
+                ></textarea>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </nz-card>
+
+        <nz-card [nzTitle]="'PR.FORM.LINES_SECTION' | translate" [nzExtra]="linesToolbarTpl" class="form-card">
+          <ng-template #linesToolbarTpl>
+            <div class="lines-header-actions">
+              <small class="shortcut-hint">{{ 'PR.FORM.KEYBOARD_HINT' | translate }}</small>
+              <button
+                nz-button
+                type="button"
+                (click)="addLine(false)"
+                data-testid="pr-add-line-btn"
+              >
+                <span nz-icon nzType="plus" aria-hidden="true"></span>
+                {{ 'PR.FORM.ADD_LINE' | translate }}
+              </button>
+            </div>
+          </ng-template>
+
+          <div formArrayName="lines" class="lines-grid">
+            @for (lineCtrl of linesArray.controls; track lineCtrl; let i = $index) {
+              <div [formGroupName]="i" class="line-row-card" [attr.data-testid]="'pr-line-row-' + i">
+                <div class="line-row-header">
+                  <div class="line-row-index">
+                    <span class="row-badge">#{{ i + 1 }}</span>
+                    <nz-radio-group formControlName="mode" nzSize="small">
+                      <label [attr.for]="'pr-form-page-catalog-' + $index" appRadioControl nz-radio-button nzValue="catalog">
+                        {{ 'PR.LINE.MODE_CATALOG' | translate }}
+                      </label>
+                      <label [attr.for]="'pr-form-page-free-text-' + $index" appRadioControl nz-radio-button nzValue="free_text">
+                        {{ 'PR.LINE.MODE_FREE_TEXT' | translate }}
+                      </label>
+                    </nz-radio-group>
+
+                    @if (hasLineOverride(i)) {
+                      <nz-tag nzColor="blue">{{ 'PR.LINE.OVERRIDE_ACTIVE' | translate }}</nz-tag>
+                    }
+                  </div>
+
+                  <div class="line-row-controls">
+                    <button
+                      nz-button
+                      nzSize="small"
+                      type="button"
+                      (click)="toggleLineOverride(i)"
+                    >
+                      {{ 'PR.LINE.OVERRIDE_TOGGLE' | translate }}
+                    </button>
+
+                    <button
+                      nz-button
+                      nzSize="small"
+                      nzDanger
+                      type="button"
+                      (click)="removeLine(i)"
+                      [attr.aria-label]="'PR.LINE.REMOVE' | translate"
+                    >
+                      <span nz-icon nzType="delete" aria-hidden="true"></span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="line-fields-grid">
+                  @if (lineMode(i) === 'catalog') {
+                    <div class="line-field line-item-wide">
+                      <span class="inline-label">{{ 'PR.LINE.CATALOG_ITEM' | translate }}</span>
+                      <nz-select
+                        nzShowSearch
+                        nzServerSearch
+                        nzAllowClear
+                        formControlName="catalog_item_id"
+                        [nzLoading]="catalogSearching()"
+                        (nzOnSearch)="onCatalogSearch($event)"
+                        [nzPlaceHolder]="'PR.LINE.CATALOG_SEARCH_PLACEHOLDER' | translate"
+                        [attr.aria-label]="'PR.LINE.CATALOG_ITEM' | translate"
+                        [attr.data-testid]="'pr-line-catalog-' + i"
+                      >
+                        @for (item of catalogItems(); track item.id) {
+                          <nz-option [nzValue]="item.id" [nzLabel]="item.label" />
+                        }
+                      </nz-select>
+                      @if (lineFieldError(i, 'description')) {
+                        <small class="field-error">{{ lineFieldError(i, 'description') }}</small>
+                      }
+                    </div>
+                  } @else {
+                    <div class="line-field">
+                      <label class="inline-label" [for]="'line-code-' + i">
+                        {{ 'PR.LINE.ITEM_CODE' | translate }}
+                      </label>
+                      <input
+                        [id]="'line-code-' + i"
+                        nz-input
+                        formControlName="item_code"
+                        [placeholder]="'PR.LINE.ITEM_CODE_PLACEHOLDER' | translate"
+                      />
+                    </div>
+
+                    <div class="line-field line-desc-wide">
+                      <label class="inline-label" [for]="'line-desc-' + i">
+                        {{ 'PR.LINE.DESCRIPTION' | translate }} *
+                      </label>
+                      <input
+                        #freeTextDescInput
+                        [id]="'line-desc-' + i"
+                        nz-input
+                        formControlName="description"
+                        [placeholder]="'PR.LINE.DESCRIPTION_PLACEHOLDER' | translate"
+                        [attr.data-testid]="'pr-line-desc-' + i"
+                      />
+                      @if (lineFieldError(i, 'description')) {
+                        <small class="field-error">{{ lineFieldError(i, 'description') }}</small>
+                      }
+                    </div>
+                  }
+
+                  <div class="line-field">
+                    <span class="inline-label">{{ 'PR.LINE.QTY' | translate }} *</span>
+                    <nz-input-number
+                      formControlName="quantity"
+                      [nzMin]="0.0001"
+                      [nzStep]="1"
+                      [attr.aria-label]="'PR.LINE.QTY' | translate"
+                      [attr.data-testid]="'pr-line-qty-' + i"
+                      class="full-width"
+                    />
+                  </div>
+
+                  <div class="line-field">
+                    <label class="inline-label" [for]="'line-uom-' + i">
+                      {{ 'PR.LINE.UOM' | translate }} *
+                    </label>
+                    <input
+                      [id]="'line-uom-' + i"
+                      nz-input
+                      formControlName="uom"
+                      [attr.data-testid]="'pr-line-uom-' + i"
+                    />
+                  </div>
+
+                  <div class="line-field">
+                    <span class="inline-label">{{ 'PR.LINE.UNIT_PRICE' | translate }} *</span>
+                    <nz-input-number
+                      formControlName="estimated_unit_price"
+                      [nzMin]="0"
+                      [nzStep]="10"
+                      [nzPrecision]="2"
+                      (keydown.enter)="onLineEnterKey(i, $event)"
+                      [attr.aria-label]="'PR.LINE.UNIT_PRICE' | translate"
+                      [attr.data-testid]="'pr-line-price-' + i"
+                      class="full-width"
+                    />
+                  </div>
+
+                  <div class="line-field line-subtotal-box">
+                    <span class="inline-label">{{ 'PR.LINE.SUBTOTAL' | translate }}</span>
+                    <strong class="subtotal-amount" [attr.data-testid]="'pr-line-subtotal-' + i">
+                      {{ lineSubtotal(i) | money: activeCurrency() }}
+                    </strong>
+                  </div>
+                </div>
+
+                @if (isOverrideExpanded(i)) {
+                  <div class="line-override-panel">
+                    <div class="line-field">
+                      <span class="inline-label">{{ 'PR.LINE.OVERRIDE_COST_CENTER' | translate }}</span>
+                      <nz-select
+                        nzShowSearch
+                        nzAllowClear
+                        formControlName="cost_center_id"
+                        [nzPlaceHolder]="'PR.LINE.INHERIT_HEADER' | translate"
+                        [attr.aria-label]="'PR.LINE.OVERRIDE_COST_CENTER' | translate"
+                      >
+                        @for (cc of store.costCenters(); track cc.id) {
+                          <nz-option [nzValue]="cc.id" [nzLabel]="cc.label" />
+                        }
+                      </nz-select>
+                    </div>
+
+                    <div class="line-field">
+                      <span class="inline-label">{{ 'PR.LINE.OVERRIDE_PROJECT' | translate }}</span>
+                      <nz-select
+                        nzShowSearch
+                        nzAllowClear
+                        formControlName="project_id"
+                        [nzPlaceHolder]="'PR.LINE.INHERIT_HEADER' | translate"
+                        [attr.aria-label]="'PR.LINE.OVERRIDE_PROJECT' | translate"
+                      >
+                        @for (proj of store.projects(); track proj.id) {
+                          <nz-option [nzValue]="proj.id" [nzLabel]="proj.label" />
+                        }
+                      </nz-select>
+                    </div>
+
+                    <div class="line-field">
+                      <label class="inline-label" [for]="'line-notes-' + i">
+                        {{ 'PR.LINE.NOTES' | translate }}
+                      </label>
+                      <input
+                        [id]="'line-notes-' + i"
+                        nz-input
+                        formControlName="notes"
+                        (keydown.enter)="onLineEnterKey(i, $event)"
+                      />
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </nz-card>
+      </div>
+
+      <aside class="form-sidebar-column">
+        <div class="sticky-sidebar">
+          <nz-card class="summary-card">
+            <div class="summary-row">
+              <span>{{ 'PR.FORM.LINE_COUNT' | translate }}</span>
+              <strong>{{ linesArray.length }}</strong>
+            </div>
+            <div class="summary-row summary-total-row">
+              <span>{{ 'PR.FORM.ESTIMATED_TOTAL' | translate }}</span>
+              <strong class="grand-total-amount" data-testid="pr-grand-total">
+                {{ grandTotal() | money: activeCurrency() }}
+              </strong>
+            </div>
+          </nz-card>
+
+          <app-pr-budget-indicator-card
+            [preview]="store.budgetPreview()"
+            [loading]="store.loadingBudget()"
+            [currency]="activeCurrency()"
+            [hasCostCenter]="hasCostCenter()"
+            [estimatedTotal]="grandTotal()"
+            [error]="store.budgetPreviewError()"
+          />
+
+          <nz-card class="actions-card">
+            <div class="form-actions-stack">
+              @if (store.isBudgetHardBlocked()) {
+                <nz-alert
+                  nzType="error"
+                  nzShowIcon
+                  [nzMessage]="'PR.BUDGET.SUBMIT_BLOCKED_HINT' | translate"
+                />
+              }
+
+              <button
+                nz-button
+                nzType="default"
+                type="button"
+                [nzLoading]="saving()"
+                (click)="saveDraft()"
+                data-testid="pr-save-draft-btn"
+              >
+                <span nz-icon nzType="save" aria-hidden="true"></span>
+                {{ 'PR.FORM.SAVE_DRAFT' | translate }}
+              </button>
+
+              <button
+                nz-button
+                nzType="primary"
+                type="button"
+                [disabled]="isSubmitDisabled()"
+                [nzLoading]="saving()"
+                (click)="submitForApproval()"
+                data-testid="pr-submit-approval-btn"
+              >
+                <span nz-icon nzType="send" aria-hidden="true"></span>
+                {{ 'PR.FORM.SUBMIT_FOR_APPROVAL' | translate }}
+              </button>
+            </div>
+          </nz-card>
+        </div>
+      </aside>
+    </form>
+  </nz-spin>
+</div>

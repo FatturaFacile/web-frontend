@@ -1,0 +1,514 @@
+<app-page-header
+  [title]="'assets.lblAssetManagementCespitiAndEam' | translate"
+  [subtitle]="'assets.subtitle' | translate"
+>
+  <div class="header-actions">
+    <a nz-button nzType="default" routerLink="/assets/depreciation">
+      <nz-icon nzType="calculator" />
+      {{ label('eam.registry.yearEndBatch') }}
+    </a>
+    <a nz-button nzType="default" routerLink="/assets/register">
+      <nz-icon nzType="file-text" />
+      {{ label('eam.registry.officialRegister') }}
+    </a>
+    <button nz-button nzType="default" (click)="openAcquireModal()">
+      <nz-icon nzType="link" />
+      {{ label('eam.registry.acquireFromInvoice') }}
+    </button>
+    <button nz-button nzType="primary" appIconAction="create" (click)="openCreateModal()"></button>
+  </div>
+</app-page-header>
+
+<nz-card>
+  <div class="filter-bar">
+    <div class="search-box">
+      <nz-input-wrapper>
+        <nz-icon nzInputPrefix nzType="search" />
+        <input
+          type="text"
+          nz-input
+          [placeholder]="'assets.lblSearchByAssetCodeSerialName' | translate"
+          [value]="searchTerm()"
+          (input)="onSearch($event)"
+        />
+      </nz-input-wrapper>
+    </div>
+
+    <div class="select-filters">
+      <nz-select
+        class="filter-select"
+        [nzPlaceHolder]="'Status: All'"
+        nzAllowClear
+        [ngModel]="statusFilter()"
+        (ngModelChange)="onStatusChange($event)"
+      >
+        @for (st of statusOptions; track st) {
+          <nz-option [nzValue]="st" [nzLabel]="label('eam.status.' + st)"></nz-option>
+        }
+      </nz-select>
+
+      <button nz-button nzType="default" (click)="loadAssets()">
+        <nz-icon nzType="reload" />
+        {{ 'assets.lblRefresh' | translate }}
+      </button>
+    </div>
+  </div>
+
+  <app-base-table [grid]="grid" [columns]="columns()" [actionsTemplate]="actionsTpl" exportFileName="assets" />
+
+  <ng-template #nameTpl let-a>
+    <div class="asset-info">
+      <button type="button" class="asset-title" (click)="openDetail(a)">{{ a.name }}</button>
+      <span class="asset-sub">
+        {{ a.asset_number || 'N/A' }}
+        @if (a.serial_number) { &bull; SN: {{ a.serial_number }} }
+        @if (a.purchase_invoice_number) { &bull; {{ label('eam.field.purchaseInvoiceNumber') }}: {{ a.purchase_invoice_number }} }
+        @if (a.fiscal_jurisdiction) { &bull; {{ a.fiscal_jurisdiction }} }
+        @if (a.incentive_regime && a.incentive_regime !== 'none') {
+          <nz-tag nzColor="gold">{{ a.incentive_regime }}</nz-tag>
+        }
+      </span>
+    </div>
+  </ng-template>
+  <ng-template #statusTpl let-a>
+    <nz-tag [nzColor]="getStatusColor(a.status)">{{ label('eam.status.' + (a.status || 'registered')) }}</nz-tag>
+  </ng-template>
+  <ng-template #conditionTpl let-a>
+    <nz-tag>{{ a.condition || 'good' }}</nz-tag>
+  </ng-template>
+  <ng-template #costTpl let-a>{{ a.acquisition_cost | money: a.currency }}</ng-template>
+  <ng-template #carryingTpl let-a>
+    <strong>{{ a.carrying_amount ? (a.carrying_amount | money: a.currency) : (a.acquisition_cost | money: a.currency) }}</strong>
+  </ng-template>
+  <ng-template #rateTpl let-a>{{ a.depreciation_rate_percent ? a.depreciation_rate_percent + '%' : '—' }}</ng-template>
+  <ng-template #actionsTpl let-a>
+    <nz-space>
+      <button *nzSpaceItem nz-button nzType="link" nzSize="small" (click)="openDetail(a)">
+        {{ 'assets.lblManage' | translate }}
+      </button>
+      <button *nzSpaceItem nz-button nzType="text" nzSize="small" (click)="viewQrCode(a)">
+        <nz-icon nzType="qrcode" />
+        {{ 'assets.lblQrTag' | translate }}
+      </button>
+      @if (a.status === 'registered' || a.status === 'acquired') {
+        <button *nzSpaceItem nz-button nzType="text" nzSize="small" (click)="capitalize(a)">
+          {{ 'assets.lblCapitalize' | translate }}
+        </button>
+      }
+      @if (a.status === 'capitalized') {
+        <button *nzSpaceItem nz-button nzType="text" nzSize="small" (click)="commission(a)">
+          {{ 'assets.lblInService' | translate }}
+        </button>
+      }
+    </nz-space>
+  </ng-template>
+</nz-card>
+
+<!-- Create Fixed Asset Registry Card Modal -->
+<nz-modal appModalActions
+  [nzVisible]="createModalVisible()"
+  [nzTitle]="'assets.lblRecordNewFixedAsset' | translate"
+  okAction="create"
+  (nzOnCancel)="createModalVisible.set(false)"
+  [nzOkDisabled]="assetForm.invalid"
+  (nzOnOk)="submitCreateAsset()"
+  [nzOkLoading]="saving()"
+  [nzWidth]="760"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="assetForm" nzLayout="vertical">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
+
+      <div class="form-row">
+        <nz-form-item class="form-col">
+          <nz-form-label nzRequired>{{ 'assets.lblAssetName' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <input nz-input formControlName="name" [placeholder]="'assets.lblEGPrecisionCncMachine' | translate" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item class="form-col">
+          <nz-form-label nzRequired>{{ 'assets.lblCategory' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-select formControlName="category_id">
+              @for (cat of categories(); track cat.id) {
+                <nz-option [nzValue]="cat.id" [nzLabel]="cat.name"></nz-option>
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="form-row">
+        <nz-form-item class="form-col">
+          <nz-form-label>{{ label('eam.field.assetNumber') }}</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="asset_number" maxlength="60" placeholder="Auto: AST-YYYY-00001" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item class="form-col">
+          <nz-form-label>{{ 'assets.lblSerialNumber' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="serial_number" maxlength="100" placeholder="SN-987654" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item class="form-col">
+          <nz-form-label>{{ label('eam.field.purchaseInvoiceNumber') }}</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="purchase_invoice_number" maxlength="100" placeholder="FT-2026-0042" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="form-row">
+        <nz-form-item class="form-col">
+          <nz-form-label>{{ label('eam.field.location') }}</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="location_id" nzAllowClear>
+              @for (loc of locations(); track loc.id) {
+                <nz-option [nzValue]="loc.id" [nzLabel]="(loc.code ? loc.code + ' - ' : '') + (loc.name || loc.id)"></nz-option>
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item class="form-col">
+          <nz-form-label>{{ label('eam.field.costCenter') }}</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="cost_center_id" maxlength="64" placeholder="CC-PROD-01" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item class="form-col">
+          <nz-form-label>{{ 'assets.lblCondition' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="condition">
+              <nz-option nzValue="new" [nzLabel]="'assets.lblNew' | translate"></nz-option>
+              <nz-option nzValue="excellent" [nzLabel]="'assets.lblExcellent' | translate"></nz-option>
+              <nz-option nzValue="good" [nzLabel]="'assets.lblGood' | translate"></nz-option>
+              <nz-option nzValue="fair" [nzLabel]="'assets.lblFair' | translate"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="form-row">
+        <nz-form-item class="form-col">
+          <nz-form-label>Acquisition Date</nz-form-label>
+          <nz-form-control>
+            <input nz-input type="date" formControlName="acquisition_date" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item class="form-col">
+          <nz-form-label>{{ label('eam.field.inServiceDate') }}</nz-form-label>
+          <nz-form-control>
+            <input nz-input type="date" formControlName="in_service_date" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item class="form-col">
+          <nz-form-label>Currency</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="currency">
+              <nz-option nzValue="CHF" nzLabel="CHF"></nz-option>
+              <nz-option nzValue="EUR" nzLabel="EUR"></nz-option>
+              <nz-option nzValue="USD" nzLabel="USD"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="form-row">
+        <nz-form-item class="form-col">
+          <nz-form-label nzRequired>Acquisition Cost</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-input-number class="w-full" formControlName="acquisition_cost" [nzMin]="1" [nzStep]="500"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item class="form-col">
+          <nz-form-label>Salvage Value</nz-form-label>
+          <nz-form-control>
+            <nz-input-number class="w-full" formControlName="salvage_value" [nzMin]="0" [nzStep]="100"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item class="form-col">
+          <nz-form-label>{{ 'assets.lblUsefulLifeYears' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-input-number class="w-full" formControlName="useful_life_years" [nzMin]="1" [nzMax]="100"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <nz-divider [nzText]="label('eam.book.tax')"></nz-divider>
+
+      <div class="form-row">
+        <nz-form-item class="form-col">
+          <nz-form-label>{{ label('eam.field.fiscalJurisdiction') }}</nz-form-label>
+          <nz-form-control>
+            <nz-select
+              formControlName="fiscal_jurisdiction"
+              (ngModelChange)="onCreateJurisdictionChange($event)"
+            >
+              <nz-option nzValue="CH" nzLabel="Switzerland (AFC / ESTV Merkblatt A 1995)"></nz-option>
+              <nz-option nzValue="IT" nzLabel="Italy (D.M. 31/12/1988 & TUIR)"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item class="form-col">
+          <nz-form-label>{{ label('eam.field.fiscalRatePreset') }}</nz-form-label>
+          <nz-form-control>
+            <nz-select
+              formControlName="fiscal_rate_id"
+              nzAllowClear
+              nzShowSearch
+              (ngModelChange)="onCreateFiscalRateSelected($event)"
+            >
+              @for (rate of filteredCreateRates(); track rate.id) {
+                <nz-option
+                  [nzValue]="rate.id"
+                  [nzLabel]="rate.category_code + ' - ' + rate.category_name + ' (' + rate.linear_rate_percent + '% / ' + (rate.declining_rate_percent || '-') + '%)'"
+                ></nz-option>
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      @if (selectedFiscalRate(); as rate) {
+        <nz-alert
+          class="mb-3"
+          nzType="info"
+          nzShowIcon
+          [nzMessage]="(rate.legal_reference || rate.regime_code) + ' — Linear: ' + rate.linear_rate_percent + '% | Declining: ' + (rate.declining_rate_percent || 'N/A') + '%'"
+        ></nz-alert>
+      }
+
+      <div class="form-row">
+        <nz-form-item class="form-col">
+          <nz-form-label>{{ 'assets.lblDepreciationMethod' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="depreciation_method">
+              <nz-option nzValue="straight_line" [nzLabel]="'assets.lblStraightLine' | translate"></nz-option>
+              <nz-option nzValue="declining_balance" [nzLabel]="'assets.lblDecliningBalance' | translate"></nz-option>
+              <nz-option nzValue="double_declining_balance" [nzLabel]="'assets.lblDoubleDeclining' | translate"></nz-option>
+              <nz-option nzValue="units_of_production" [nzLabel]="'assets.lblUnitsOfProduction' | translate"></nz-option>
+              <nz-option nzValue="immediate_expensing" [nzLabel]="label('eam.field.immediateExpensing')"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item class="form-col">
+          <nz-form-label>{{ label('eam.field.proRataConvention') }}</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="pro_rata_convention">
+              <nz-option nzValue="daily" nzLabel="Daily (Actual Days / Pro-Rata)"></nz-option>
+              <nz-option nzValue="monthly" nzLabel="Monthly"></nz-option>
+              <nz-option nzValue="half_year" nzLabel="Half-Year / 50% Year 1"></nz-option>
+              <nz-option nzValue="full" nzLabel="Full Year"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      @if (createJurisdiction() === 'IT') {
+        <div class="form-row">
+          <nz-form-item class="form-col">
+            <nz-form-label>{{ label('eam.field.incentiveRegime') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select formControlName="incentive_regime">
+                <nz-option nzValue="none" nzLabel="None"></nz-option>
+                <nz-option nzValue="transition_4_0_tangible" nzLabel="Transizione 4.0 Beni Materiali"></nz-option>
+                <nz-option nzValue="transition_4_0_intangible" nzLabel="Transizione 4.0 Immateriali"></nz-option>
+                <nz-option nzValue="transition_5_0" nzLabel="Transizione 5.0 (Green)"></nz-option>
+                <nz-option nzValue="super_ammortamento" nzLabel="Super-Ammortamento (+30%)"></nz-option>
+                <nz-option nzValue="iper_ammortamento" nzLabel="Iper-Ammortamento (+150%)"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+          <nz-form-item class="form-col">
+            <nz-form-label>{{ label('eam.field.incentiveRate') }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number class="w-full" formControlName="incentive_rate_percent" [nzMin]="0" [nzMax]="500"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      }
+
+      <div class="form-flags">
+        @if (createJurisdiction() === 'CH') {
+          <span nz-checkbox formControlName="immediate_expensing_applied">{{ label('eam.field.immediateExpensing') }}</span>
+        }
+        <span nz-checkbox formControlName="capitalize_immediately">{{ 'assets.lblCapitalize' | translate }}</span>
+      </div>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'assets.lblDescription' | translate }}</nz-form-label>
+        <nz-form-control>
+          <textarea nz-input formControlName="description" rows="2" [placeholder]="'assets.lblSpecificationsAndTechnicalDetails' | translate"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- Acquire from Vendor Purchase Invoice Modal -->
+<nz-modal appModalActions
+  [nzVisible]="acquireModalVisible()"
+  [nzTitle]="label('eam.registry.pendingInvoices')"
+  [nzOkDisabled]="!selectedInvoiceLine() || acquireForm.invalid"
+  [nzOkLoading]="acquiringLine()"
+  (nzOnCancel)="acquireModalVisible.set(false)"
+  (nzOnOk)="submitAcquireFromInvoiceLine()"
+  [nzWidth]="840"
+>
+  <ng-container *nzModalContent>
+    <div class="acquire-toolbar">
+      <span nz-checkbox [ngModel]="onlyCapitalLines()" (ngModelChange)="toggleOnlyCapitalLines($event)">
+        Show only lines flagged as Capital Assets
+      </span>
+      <button nz-button nzType="default" nzSize="small" (click)="loadPendingInvoiceLines()">
+        <nz-icon nzType="reload" />
+        {{ 'assets.lblRefresh' | translate }}
+      </button>
+    </div>
+
+    <nz-table
+      #invoiceLinesTable
+      [nzData]="pendingInvoiceLines()"
+      [nzLoading]="loadingPendingLines()"
+      [nzFrontPagination]="false"
+      nzSize="small"
+    >
+      <thead>
+        <tr>
+          <th>Invoice #</th>
+          <th>Date</th>
+          <th>Description</th>
+          <th>Amount</th>
+          <th>Capital Flag</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (line of invoiceLinesTable.data; track line.id) {
+          <tr>
+            <td><strong>{{ line.invoice_number || '—' }}</strong></td>
+            <td>{{ line.invoice_date || '—' }}</td>
+            <td>{{ line.description || '—' }}</td>
+            <td>{{ line.line_total || '0.00' }} {{ line.currency }}</td>
+            <td>
+              <nz-tag [nzColor]="line.is_capital_asset ? 'blue' : 'default'">
+                {{ line.is_capital_asset ? 'Capital' : 'Expense/Other' }}
+              </nz-tag>
+            </td>
+            <td>
+              <button
+                nz-button
+                [nzType]="selectedInvoiceLine()?.id === line.id ? 'primary' : 'default'"
+                nzSize="small"
+                (click)="selectInvoiceLine(line)"
+              >
+                Select
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+
+    @if (selectedInvoiceLine(); as line) {
+      <nz-divider [nzText]="line.invoice_number + ' - ' + (line.description || 'Selected Line')"></nz-divider>
+      <form nz-form [formGroup]="acquireForm" nzLayout="vertical">
+        <div class="form-row">
+          <nz-form-item class="form-col">
+            <nz-form-label nzRequired>{{ 'assets.lblCategory' | translate }}</nz-form-label>
+            <nz-form-control>
+              <nz-select formControlName="category_id">
+                @for (cat of categories(); track cat.id) {
+                  <nz-option [nzValue]="cat.id" [nzLabel]="cat.name"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+          <nz-form-item class="form-col">
+            <nz-form-label>{{ label('eam.field.fiscalJurisdiction') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select formControlName="fiscal_jurisdiction" (ngModelChange)="acquireJurisdiction.set($event)">
+                <nz-option nzValue="CH" nzLabel="CH (AFC)"></nz-option>
+                <nz-option nzValue="IT" nzLabel="IT (D.M. 1988)"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+          <nz-form-item class="form-col">
+            <nz-form-label>{{ label('eam.field.fiscalRatePreset') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select formControlName="fiscal_rate_id" nzAllowClear>
+                @for (rate of filteredAcquireRates(); track rate.id) {
+                  <nz-option [nzValue]="rate.id" [nzLabel]="rate.category_code + ' - ' + rate.category_name"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div class="form-row">
+          <nz-form-item class="form-col">
+            <nz-form-label>{{ label('eam.field.inServiceDate') }}</nz-form-label>
+            <nz-form-control>
+              <input nz-input type="date" formControlName="in_service_date" />
+            </nz-form-control>
+          </nz-form-item>
+          <nz-form-item class="form-col">
+            <nz-form-label>{{ label('eam.field.location') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select formControlName="location_id" nzAllowClear>
+                @for (loc of locations(); track loc.id) {
+                  <nz-option [nzValue]="loc.id" [nzLabel]="loc.name || loc.code || loc.id"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+          <nz-form-item class="form-col">
+            <nz-form-label>{{ label('eam.field.costCenter') }}</nz-form-label>
+            <nz-form-control>
+              <input nz-input formControlName="cost_center_id" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </form>
+    }
+  </ng-container>
+</nz-modal>
+
+<!-- Asset QR Code Modal using ng-zorro nz-qrcode -->
+<nz-modal appModalActions
+  [nzVisible]="qrModalVisible()"
+  [nzTitle]="'assets.lblAssetQrTagAndBarcode' | translate"
+  [nzFooter]="null"
+  (nzOnCancel)="qrModalVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    @if (currentTag(); as tag) {
+      <div class="qr-container">
+        <nz-qrcode [nzValue]="getQrString()" [nzSize]="200"></nz-qrcode>
+        <div class="qr-meta">
+          <h4>{{ tag.asset_number }}</h4>
+          <p class="barcode-line">Barcode ({{ tag.barcode_symbology }}): <code>{{ tag.barcode_value }}</code></p>
+          <p class="payload-line">{{ getQrString() }}</p>
+        </div>
+      </div>
+    }
+  </ng-container>
+</nz-modal>
+
+<!-- Detail Drawer -->
+@if (selectedAsset()) {
+  <app-asset-detail-drawer
+    [asset]="selectedAsset()!"
+    [visible]="drawerVisible()"
+    (closed)="closeDetail()"
+    (assetChanged)="loadAssets()"
+  ></app-asset-detail-drawer>
+}

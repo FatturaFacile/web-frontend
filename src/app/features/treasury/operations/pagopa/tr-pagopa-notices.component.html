@@ -1,0 +1,105 @@
+<nz-card>
+  <p>{{ 'TR.PAGOPA_HINT' | translate }}</p>
+  <div class="toolbar">
+    @if (canWrite) {
+      <button nz-button nzType="primary" type="button" (click)="openCreate()">{{ 'TR.PAGOPA_NEW' | translate }}</button>
+    }
+    <nz-select
+      class="status-filter"
+      nzAllowClear
+      [attr.aria-label]="'TR.STATUS' | translate"
+      [nzPlaceHolder]="'TR.ALL_STATUSES' | translate"
+      [(ngModel)]="statusFilter"
+      (ngModelChange)="onStatusChange($event)"
+    >
+      @for (status of statuses; track status) {
+        <nz-option [nzValue]="status" [nzLabel]="statusLabel(status)" />
+      }
+    </nz-select>
+  </div>
+  <app-base-table [grid]="grid" [columns]="columns()" [actionsTemplate]="actionsTpl" [scroll]="{ x: '1100px' }" [exportFileName]="'pagopa-notices'" />
+  <ng-template #amountTpl let-notice let-value="value">{{ value | money: notice.currency || currency() }}</ng-template>
+  <ng-template #statusTpl let-notice><nz-tag [nzColor]="statusColor(notice.status)">{{ statusLabel(notice.status) }}</nz-tag></ng-template>
+  <ng-template #actionsTpl let-notice>
+    <button nz-button nzSize="small" type="button" (click)="showQr(notice)">{{ 'TR.PAGOPA_QR' | translate }}</button>
+    @if (canWrite && notice.status === 'pending') {
+      <button nz-button nzSize="small" type="button" nz-popconfirm [nzPopconfirmTitle]="'TR.PAGOPA_MARK_PAID_CONFIRM' | translate" (nzOnConfirm)="markPaid(notice)">
+        {{ 'TR.PAGOPA_MARK_PAID' | translate }}
+      </button>
+      <button nz-button nzSize="small" nzDanger type="button" nz-popconfirm [nzPopconfirmTitle]="'TR.PAGOPA_CANCEL_CONFIRM' | translate" (nzOnConfirm)="cancel(notice)">
+        {{ 'TR.PAGOPA_CANCEL' | translate }}
+      </button>
+    }
+  </ng-template>
+</nz-card>
+
+<nz-modal appModalActions
+  [nzVisible]="modalOpen()"
+  [nzTitle]="'TR.PAGOPA_NEW' | translate"
+  nzWidth="720px"
+  [nzOkLoading]="saving()"
+  (nzOnOk)="save()"
+  okAction="save"
+  [nzOkDisabled]="form.invalid"
+  (nzOnCancel)="modalOpen.set(false)"
+>
+  <ng-container *nzModalContent>
+    @for (message of formErrors(); track message) {
+      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" />
+    }
+    <form nz-form nzLayout="vertical" [formGroup]="form">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="pp-debtor">{{ 'TR.DEBTOR' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="form.controls.debtor_name.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
+          <input id="pp-debtor" nz-input formControlName="debtor_name" maxlength="150" />
+        </nz-form-control>
+      </nz-form-item>
+      <div class="form-row">
+        <nz-form-item>
+          <nz-form-label nzFor="pp-debtor-fc">{{ 'TR.PAGOPA_DEBTOR_FISCAL_CODE' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="form.controls.debtor_fiscal_code.errors?.['serverError'] ?? ('TR.PAGOPA_FISCAL_CODE_INVALID' | translate)">
+            <input id="pp-debtor-fc" nz-input formControlName="debtor_fiscal_code" maxlength="16" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="pp-creditor-fc">{{ 'TR.PAGOPA_CREDITOR_FISCAL_CODE' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="form.controls.creditor_fiscal_code.errors?.['serverError'] ?? ('TR.PAGOPA_CREDITOR_FISCAL_CODE_INVALID' | translate)">
+            <input id="pp-creditor-fc" nz-input formControlName="creditor_fiscal_code" maxlength="11" inputmode="numeric" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <div class="form-row">
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="pp-amount">{{ 'TR.AMOUNT' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="form.controls.amount.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
+            <nz-input-number class="w-full" id="pp-amount" formControlName="amount" [nzMin]="0.01" [nzPrecision]="2" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="pp-due">{{ 'TR.DUE_DATE' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="form.controls.due_date.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
+            <input id="pp-due" nz-input type="date" formControlName="due_date" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="pp-causale">{{ 'TR.PAGOPA_CAUSALE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="form.controls.causale.errors?.['serverError'] ?? ('TR.REQUIRED' | translate)">
+          <input id="pp-causale" nz-input formControlName="causale" maxlength="140" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<nz-modal appModalActions [nzVisible]="qrNotice() !== null" [nzTitle]="'TR.PAGOPA_QR' | translate" [nzFooter]="null" (nzOnCancel)="closeQr()">
+  <ng-container *nzModalContent>
+    @if (qrNotice(); as notice) {
+      <p>{{ 'TR.PAGOPA_NOTICE_CODE' | translate }}: {{ notice.notice_code }}</p>
+    }
+    <p>{{ 'TR.PAGOPA_QR_HINT' | translate }}</p>
+    @if (qrPayload(); as payload) {
+      <code class="qr-payload">{{ payload }}</code>
+    }
+  </ng-container>
+</nz-modal>

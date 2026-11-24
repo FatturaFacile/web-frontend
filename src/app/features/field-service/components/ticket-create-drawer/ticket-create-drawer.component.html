@@ -1,0 +1,158 @@
+<nz-modal appModalActions
+  [nzVisible]="open()"
+  [nzWidth]="720"
+  [nzFooter]="null"
+  [nzTitle]="'ticketCreateDrawer.lblNuovoTicketDiAssistenza' | translate"
+  (nzOnCancel)="close()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form nzLayout="vertical" [formGroup]="form" (ngSubmit)="submit()">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="title">{{ 'ticketCreateDrawer.lblTitoloOggetto' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="titleError">
+          <input
+            nz-input
+            id="title"
+            formControlName="title"
+            [placeholder]="'ticketCreateDrawer.lblDescrizioneSinteticaDelProblemaORichiesta' | translate"
+          />
+          <ng-template #titleError let-control>
+            @if (getErrorMessage('title')) {
+              {{ getErrorMessage('title') }}
+            } @else if (control.hasError('required')) {
+              {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+            } @else if (control.hasError('maxlength')) {
+              {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+            }
+          </ng-template>
+        </nz-form-control>
+      </nz-form-item>
+
+      <div class="form-row">
+        <nz-form-item>
+          <nz-form-label nzFor="priority">{{ 'ticketCreateDrawer.lblPriorita' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-select id="priority" formControlName="priority">
+              <nz-option nzValue="low" [nzLabel]="'ticketCreateDrawer.lblBassa' | translate"></nz-option>
+              <nz-option nzValue="medium" [nzLabel]="'ticketCreateDrawer.lblMedia' | translate"></nz-option>
+              <nz-option nzValue="high" [nzLabel]="'ticketCreateDrawer.lblAlta' | translate"></nz-option>
+              <nz-option nzValue="critical" [nzLabel]="'ticketCreateDrawer.lblCritica' | translate"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzFor="channel">{{ 'ticketCreateDrawer.lblCanaleDiIngresso' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-select id="channel" formControlName="channel">
+              <nz-option nzValue="portal" [nzLabel]="'ticketCreateDrawer.lblPortaleClienti' | translate"></nz-option>
+              <nz-option nzValue="email" nzLabel="Email"></nz-option>
+              <nz-option nzValue="phone" [nzLabel]="'ticketCreateDrawer.lblTelefono' | translate"></nz-option>
+              <nz-option nzValue="chat" [nzLabel]="'ticketCreateDrawer.lblChat' | translate"></nz-option>
+              <nz-option nzValue="field" [nzLabel]="'ticketCreateDrawer.lblInterventoSulCampo' | translate"></nz-option>
+              <nz-option nzValue="api" [nzLabel]="'ticketCreateDrawer.lblIntegrazioneApi' | translate"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="form-row">
+        <nz-form-item>
+          <nz-form-label nzFor="impact">{{ 'ticketCreateDrawer.lblImpatto' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-select id="impact" formControlName="impact">
+              <nz-option nzValue="low" [nzLabel]="'ticketCreateDrawer.lblBassoSingoloUtente' | translate"></nz-option>
+              <nz-option nzValue="medium" [nzLabel]="'ticketCreateDrawer.lblMedioDipartimento' | translate"></nz-option>
+              <nz-option nzValue="high" [nzLabel]="'ticketCreateDrawer.lblAltoInteraAzienda' | translate"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzFor="urgency">{{ 'ticketCreateDrawer.lblUrgenza' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-select id="urgency" formControlName="urgency">
+              <nz-option nzValue="low" [nzLabel]="'ticketCreateDrawer.lblBassa' | translate"></nz-option>
+              <nz-option nzValue="medium" [nzLabel]="'ticketCreateDrawer.lblNormale' | translate"></nz-option>
+              <nz-option nzValue="high" [nzLabel]="'ticketCreateDrawer.lblImmediata' | translate"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="form-row">
+        <nz-form-item>
+          <nz-form-label nzFor="contact_email">{{ 'ticketCreateDrawer.lblEmailContatto' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="emailError">
+            <input
+              nz-input
+              id="contact_email"
+              type="email"
+              formControlName="contact_email"
+              [placeholder]="'ticketCreateDrawer.lblClienteEsempioCh' | translate"
+            />
+            <ng-template #emailError let-control>
+              @if (getErrorMessage('contact_email')) {
+                {{ getErrorMessage('contact_email') }}
+              } @else if (control.hasError('email')) {
+                {{ 'COMMON.VALIDATION.INVALID_EMAIL' | translate }}
+              } @else if (control.hasError('maxlength')) {
+                {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+              }
+            </ng-template>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzFor="contact_phone">{{ 'ticketCreateDrawer.lblTelefonoContatto' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.INVALID_VALUE' | translate">
+            <input
+              nz-input
+              id="contact_phone"
+              formControlName="contact_phone"
+              placeholder="+39 02 1234567"
+            />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <nz-form-item>
+        <nz-form-label nzFor="description">{{ 'ticketCreateDrawer.lblDescrizioneDettagliata' | translate }}</nz-form-label>
+        <nz-form-control>
+          <textarea
+            nz-input
+            id="description"
+            rows="4"
+            formControlName="description"
+            [placeholder]="'ticketCreateDrawer.lblDettagliDelProblemaPassaggiPerRiprodurre' | translate"
+          ></textarea>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzFor="tags">{{ 'ticketCreateDrawer.lblTag' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select
+            id="tags"
+            nzMode="tags"
+            formControlName="tags"
+            [nzPlaceHolder]="'common.addTagsHint' | translate"
+          >
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <div class="form-actions">
+        <button nz-button type="button" appIconAction="cancel" (click)="close()"></button>
+        <button
+          nz-button
+          nzType="primary"
+          type="submit"
+          appIconAction="create"
+          [nzLoading]="isSaving()"
+          [disabled]="form.invalid"
+        ></button>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>

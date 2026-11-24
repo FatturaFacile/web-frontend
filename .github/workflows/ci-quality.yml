@@ -1,0 +1,129 @@
+name: Frontend Quality & Merge Gates
+
+on:
+  pull_request:
+    branches: [main, master, develop, dev]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'e2e/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'angular.json'
+      - 'vitest.config.ts'
+      - 'playwright.config.ts'
+      - '.github/workflows/ci-quality.yml'
+  push:
+    branches: [main, master, dev]
+  schedule:
+    # Weekly security audit every Monday at 04:00 UTC
+    - cron: '0 4 * * 1'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend-quality-and-unit:
+    name: Frontend Lint, Strict Build & Vitest Coverage Gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 12.18.0
+
+      - name: Install Node Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run ESLint
+        run: pnpm run lint
+
+      - name: Run Angular Strict Production Build
+        run: pnpm run build
+
+      - name: Run Vitest Unit & Component Tests with Coverage Gate (>=70%)
+        run: pnpm run test:ci
+
+  e2e-critical-flows:
+    name: Playwright Critical E2E Test Suite
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 12.18.0
+
+      - name: Install Node Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate local HTTPS certificate
+        run: >-
+          openssl req -x509 -newkey rsa:2048 -nodes -days 1 -subj "/CN=localhost"
+          -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
+          -keyout certs/localhost.key -out certs/localhost.crt
+
+      - name: Install Playwright Browsers with System Dependencies
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run Playwright E2E Tests
+        run: pnpm exec playwright test e2e/inventory.spec.ts e2e/invoicing.spec.ts e2e/payments.spec.ts e2e/layout-full-audit.spec.ts --project=chromium
+
+      - name: Upload Playwright Report on Failure
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 15
+
+  security-audit:
+    name: NPM Dependency Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 12.18.0
+
+      - name: Run NPM Security Audit Gate
+        run: pnpm audit --audit-level=high
+
+      - name: Generate Weekly SARIF / JSON Audit Report
+        if: github.event_name == 'schedule'
+        run: |
+          mkdir -p reports
+          pnpm audit --json > reports/npm-security-audit.json || true
+        continue-on-error: true
+
+      - name: Upload Weekly Security Artifact
+        if: github.event_name == 'schedule'
+        uses: actions/upload-artifact@v7
+        with:
+          name: frontend-security-audit-report
+          path: reports/npm-security-audit.json
+          retention-days: 30

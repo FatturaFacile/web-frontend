@@ -1,0 +1,21 @@
+:host {
+  display: block;
+}
+
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  column-gap: var(--space-4);
+}
+
+.settings-card {
+  margin-top: var(--space-4);
+}
+
+.form-alert {
+  margin-bottom: var(--space-4);
+}
+
+.form-actions {
+  margin-top: var(--space-4);
+}

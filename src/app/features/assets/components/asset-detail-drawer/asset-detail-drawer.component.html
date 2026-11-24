@@ -1,0 +1,661 @@
+<nz-modal
+  [nzVisible]="visible()"
+  [nzWidth]="1040"
+  [nzFooter]="null"
+  [nzTitle]="(asset().name || 'Asset') + ' (' + (asset().asset_number || 'N/A') + ')'"
+  (nzOnCancel)="onClose()"
+>
+  <ng-container *nzModalContent>
+    <div class="drawer-actions">
+      @if (asset().status === 'registered' || asset().status === 'acquired') {
+        <button nz-button nzType="primary" nzSize="small" (click)="capitalize()">
+          <nz-icon nzType="check" />
+          {{ 'assets.lblCapitalize' | translate }}
+        </button>
+      }
+      @if (asset().status === 'capitalized') {
+        <button nz-button nzType="primary" nzSize="small" (click)="commission()">
+          <nz-icon nzType="check-circle" />
+          {{ 'assets.lblInService' | translate }}
+        </button>
+      }
+      @if (asset().status !== 'disposed' && asset().status !== 'sold' && asset().status !== 'retired') {
+        <button nz-button nzType="default" nzSize="small" (click)="openImprovementModal()">
+          <nz-icon nzType="plus" />
+          {{ label('eam.events.improve') }}
+        </button>
+        <button nz-button nzType="default" nzSize="small" (click)="openValuationModal()">
+          <nz-icon nzType="warning" />
+          {{ label('eam.events.impairOrRevalue') }}
+        </button>
+        <button nz-button nzType="default" nzDanger nzSize="small" (click)="openDisposalModal()">
+          <nz-icon nzType="delete" />
+          {{ label('eam.events.dispose') }}
+        </button>
+      }
+    </div>
+
+    <nz-tabs>
+      <!-- TAB 1: OVERVIEW -->
+      <nz-tab [nzTitle]="'assetDetailDrawer.lblOverviewAndMetrics' | translate">
+        <div class="tab-content">
+          <nz-descriptions nzBordered [nzColumn]="2" nzSize="small">
+            <nz-descriptions-item [nzTitle]="'assetDetailDrawer.lblAssetName' | translate">{{ asset().name || '—' }}</nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="label('eam.field.assetNumber')">{{ asset().asset_number || '—' }}</nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'assetDetailDrawer.lblSerialNumber' | translate">{{ asset().serial_number || '—' }}</nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="label('eam.field.purchaseInvoiceNumber')">{{ asset().purchase_invoice_number || '—' }}</nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'assetDetailDrawer.lblStatus' | translate">
+              <nz-badge nzStatus="processing" [nzText]="label('eam.status.' + (asset().status || 'registered'))"></nz-badge>
+            </nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="label('eam.field.fiscalJurisdiction')">
+              <nz-tag [nzColor]="asset().fiscal_jurisdiction === 'IT' ? 'geekblue' : 'red'">
+                {{ asset().fiscal_jurisdiction || 'CH' }}
+              </nz-tag>
+            </nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'assetDetailDrawer.lblAcquisitionDate' | translate">{{ asset().acquisition_date || '—' }}</nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="label('eam.field.inServiceDate')">{{ asset().in_service_date || '—' }}</nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'assetDetailDrawer.lblDepreciationMethod' | translate">
+              {{ asset().depreciation_method || 'straight_line' }}
+              @if (asset().pro_rata_convention) { ({{ asset().pro_rata_convention }}) }
+            </nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'assetDetailDrawer.lblUsefulLife' | translate">{{ asset().useful_life_years ? asset().useful_life_years + ' years' : '—' }}</nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'assetDetailDrawer.lblAcquisitionCost' | translate">
+              <strong>{{ asset().acquisition_cost | money: asset().currency }}</strong>
+            </nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'assetDetailDrawer.lblCarryingAmount' | translate">
+              <strong class="text-primary">
+                {{ asset().carrying_amount ? (asset().carrying_amount | money: asset().currency) : (asset().acquisition_cost | money: asset().currency) }}
+              </strong>
+            </nz-descriptions-item>
+            @if (asset().incentive_regime && asset().incentive_regime !== 'none') {
+              <nz-descriptions-item [nzTitle]="label('eam.field.incentiveRegime')" [nzSpan]="2">
+                <nz-tag nzColor="gold">{{ asset().incentive_regime }}</nz-tag>
+                Rate: {{ asset().incentive_rate_percent || '0' }}%
+                @if (asset().incentive_tax_credit_total) {
+                  &bull; {{ asset().incentive_tax_credit_total | money: asset().currency }}
+                }
+              </nz-descriptions-item>
+            }
+          </nz-descriptions>
+
+          @if (asset().description) {
+            <div class="desc-box">
+              <h4>{{ 'assetDetailDrawer.lblDescriptionAndNotes' | translate }}</h4>
+              <p>{{ asset().description }}</p>
+            </div>
+          }
+        </div>
+      </nz-tab>
+
+      <!-- TAB 2: PARALLEL BOOKS (STATUTORY, TAX CH/IT, MANAGERIAL) -->
+      <nz-tab [nzTitle]="'assetDetailDrawer.lblParallelBooks' | translate">
+        <div class="tab-content">
+          <p class="tab-info">{{ 'assetDetailDrawer.lblMultiStandardAssetDepreciationStatutoryIt' | translate }}</p>
+
+          <nz-table
+            #booksTable
+            [nzData]="books()"
+            [nzLoading]="loadingBooks()"
+            [nzFrontPagination]="false"
+            nzSize="small"
+          >
+            <thead>
+              <tr>
+                <th [nzSortFn]="'ledger_type' | gridSort" [nzFilters]="'ledger_type' | gridFilterList: booksTable.nzData" [nzFilterFn]="'ledger_type' | gridFilterFn">{{ 'assetDetailDrawer.lblLedgerStandard' | translate }}</th>
+                <th [nzSortFn]="'depreciation_method' | gridSort">{{ 'assetDetailDrawer.lblDeprMethod' | translate }}</th>
+                <th>{{ 'assetDetailDrawer.lblUsefulLife' | translate }}</th>
+                <th>{{ 'assetDetailDrawer.lblRate' | translate }}</th>
+                <th>Rules</th>
+                <th [nzSortFn]="'cost' | gridSort">{{ 'assetDetailDrawer.lblCost' | translate }}</th>
+                <th [nzSortFn]="'accumulated_depreciation' | gridSort">{{ 'assetDetailDrawer.lblAccumDepr' | translate }}</th>
+                <th [nzSortFn]="'net_book_value' | gridSort">{{ 'assetDetailDrawer.lblNetBookValue' | translate }}</th>
+                <th>{{ 'assetDetailDrawer.lblPostsToGl' | translate }}</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (b of booksTable.data; track b.id) {
+                <tr>
+                  <td>
+                    <nz-tag [nzColor]="getLedgerTypeColor(b.ledger_type)">{{ b.ledger_type }}</nz-tag>
+                    @if (b.fiscal_regime) {
+                      <div class="sub-tag">{{ b.fiscal_regime }}</div>
+                    }
+                  </td>
+                  <td>{{ b.depreciation_method }}</td>
+                  <td>{{ b.useful_life_months ? b.useful_life_months + 'm' : '—' }}</td>
+                  <td>{{ b.rate_percent ? b.rate_percent + '%' : '—' }}</td>
+                  <td>
+                    @if (b.first_year_half_rate) { <nz-tag nzColor="cyan">50% Yr1</nz-tag> }
+                    @if (b.immediate_expensing) { <nz-tag nzColor="volcano">Immediate</nz-tag> }
+                    @if (b.fiscal_incentive_regime && b.fiscal_incentive_regime !== 'none') {
+                      <nz-tag nzColor="gold">{{ b.fiscal_incentive_regime }}</nz-tag>
+                    }
+                  </td>
+                  <td>{{ b.cost | money: asset().currency }}</td>
+                  <td>{{ b.accumulated_depreciation | money: asset().currency }}</td>
+                  <td><strong>{{ b.net_book_value | money: asset().currency }}</strong></td>
+                  <td>
+                    <nz-tag [nzColor]="b.posts_to_gl ? 'green' : 'default'">
+                      {{ b.posts_to_gl ? 'Yes' : 'No' }}
+                    </nz-tag>
+                  </td>
+                  <td>
+                    <button nz-button nzType="link" nzSize="small" (click)="openConfigureBookModal(b)">
+                      <nz-icon nzType="setting" />
+                      {{ label('eam.book.configure') }}
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </nz-table>
+        </div>
+      </nz-tab>
+
+      <!-- TAB 3: PARALLEL MULTI-YEAR SCHEDULES + POSTED SCHEDULES -->
+      <nz-tab [nzTitle]="'assetDetailDrawer.lblDepreciationSchedule' | translate">
+        <div class="tab-content">
+          <div class="parallel-toolbar">
+            <strong>{{ label('eam.schedule.compareTitle') }}</strong>
+            <div class="parallel-controls">
+              <nz-select [ngModel]="schedulePeriodType()" (ngModelChange)="onSchedulePeriodTypeChange($event)" nzSize="small">
+                <nz-option nzValue="yearly" nzLabel="Yearly"></nz-option>
+                <nz-option nzValue="quarterly" nzLabel="Quarterly"></nz-option>
+                <nz-option nzValue="monthly" nzLabel="Monthly"></nz-option>
+              </nz-select>
+              <button nz-button nzSize="small" (click)="loadParallelSchedules()">
+                <nz-icon nzType="reload" />
+              </button>
+            </div>
+          </div>
+
+          <nz-table
+            [nzData]="parallelSchedules()?.rows || []"
+            [nzLoading]="loadingParallelSchedules()"
+            [nzFrontPagination]="true"
+            [nzPageSize]="10"
+            nzSize="small"
+            class="mb-4"
+          >
+            <thead>
+              <tr>
+                <th>Period</th>
+                <th nzAlign="right">{{ label('eam.schedule.statutoryAmount') }}</th>
+                <th nzAlign="right">Civil NBV</th>
+                <th nzAlign="right">{{ label('eam.schedule.taxAmount') }}</th>
+                <th nzAlign="right">Fiscal NBV</th>
+                <th nzAlign="right">{{ label('eam.schedule.tempDiff') }}</th>
+                <th nzAlign="right">{{ label('eam.schedule.incentiveCredit') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of parallelSchedules()?.rows || []; track row.period_code) {
+                <tr>
+                  <td><strong>{{ row.period_code }}</strong></td>
+                  <td nzAlign="right">{{ row.civil_depreciation | money: asset().currency }}</td>
+                  <td nzAlign="right">{{ row.civil_closing | money: asset().currency }}</td>
+                  <td nzAlign="right">{{ row.fiscal_depreciation | money: asset().currency }}</td>
+                  <td nzAlign="right">{{ row.fiscal_closing | money: asset().currency }}</td>
+                  <td nzAlign="right">{{ row.temporary_difference | money: asset().currency }}</td>
+                  <td nzAlign="right">{{ row.incentive_tax_credit | money: asset().currency }}</td>
+                </tr>
+              }
+            </tbody>
+          </nz-table>
+
+          <nz-divider nzText="Posted Schedules"></nz-divider>
+          <app-base-table [grid]="schedulesGrid" [columns]="scheduleColumns()" [scroll]="{ x: '900px' }" size="small" exportFileName="depreciation-schedules" />
+        </div>
+      </nz-tab>
+
+      <!-- TAB 4: EXTRAORDINARY EVENTS & HISTORY -->
+      <nz-tab [nzTitle]="label('eam.events.tabTitle')">
+        <div class="tab-content">
+          <div class="events-toolbar">
+            <button nz-button nzType="default" nzSize="small" (click)="openImprovementModal()">
+              <nz-icon nzType="plus" />
+              {{ label('eam.events.improve') }}
+            </button>
+            <button nz-button nzType="default" nzSize="small" (click)="openValuationModal()">
+              <nz-icon nzType="warning" />
+              {{ label('eam.events.impairOrRevalue') }}
+            </button>
+            <button nz-button nzType="default" nzDanger nzSize="small" (click)="openDisposalModal()">
+              <nz-icon nzType="delete" />
+              {{ label('eam.events.dispose') }}
+            </button>
+          </div>
+
+          <nz-divider [nzText]="label('eam.events.improve')"></nz-divider>
+          <nz-table [nzData]="history().improvements || []" [nzLoading]="loadingHistory()" [nzFrontPagination]="false" nzSize="small">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Date</th>
+                <th>Invoice Ref.</th>
+                <th>Description</th>
+                <th nzAlign="right">Amount</th>
+                <th>Extra Months</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (imp of history().improvements || []; track imp.id) {
+                <tr>
+                  <td><strong>{{ imp.improvement_number }}</strong></td>
+                  <td>{{ imp.improvement_date }}</td>
+                  <td>{{ imp.purchase_invoice_number || '—' }}</td>
+                  <td>{{ imp.description }}</td>
+                  <td nzAlign="right"><strong>{{ imp.amount | money: asset().currency }}</strong></td>
+                  <td>+{{ imp.extends_useful_life_months }}m</td>
+                  <td><nz-tag>{{ imp.status }}</nz-tag></td>
+                </tr>
+              }
+            </tbody>
+          </nz-table>
+
+          <nz-divider [nzText]="label('eam.events.impairOrRevalue')"></nz-divider>
+          <nz-table [nzData]="history().valuations" [nzLoading]="loadingHistory()" [nzFrontPagination]="false" nzSize="small">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Date</th>
+                <th>Type</th>
+                <th nzAlign="right">Before</th>
+                <th nzAlign="right">Adjustment</th>
+                <th nzAlign="right">After</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (val of history().valuations; track val.id) {
+                <tr>
+                  <td>{{ val.valuation_number }}</td>
+                  <td>{{ val.valuation_date }}</td>
+                  <td><nz-tag [nzColor]="val.valuation_type === 'impairment' ? 'volcano' : 'green'">{{ val.valuation_type }}</nz-tag></td>
+                  <td nzAlign="right">{{ val.carrying_amount_before | money: asset().currency }}</td>
+                  <td nzAlign="right">{{ val.adjustment_amount | money: asset().currency }}</td>
+                  <td nzAlign="right"><strong>{{ val.carrying_amount_after | money: asset().currency }}</strong></td>
+                  <td><nz-tag>{{ val.status }}</nz-tag></td>
+                  <td>
+                    @if (val.valuation_type === 'impairment' && val.status !== 'reversed') {
+                      <button nz-button nzType="link" nzSize="small" (click)="reverseImpairment(val)">Reverse</button>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </nz-table>
+
+          <nz-divider [nzText]="label('eam.events.dispose')"></nz-divider>
+          <nz-table [nzData]="history().disposals" [nzLoading]="loadingHistory()" [nzFrontPagination]="false" nzSize="small">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Sales Invoice</th>
+                <th nzAlign="right">Proceeds</th>
+                <th nzAlign="right">Civil Gain/Loss</th>
+                <th nzAlign="right">Fiscal Gain/Loss</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (disp of history().disposals; track disp.id) {
+                <tr>
+                  <td><strong>{{ disp.disposal_number }}</strong></td>
+                  <td>{{ disp.disposal_date }}</td>
+                  <td><nz-tag>{{ disp.disposal_type }}</nz-tag></td>
+                  <td>{{ disp.disposal_document_number || '—' }}</td>
+                  <td nzAlign="right">{{ disp.proceeds_amount | money: asset().currency }}</td>
+                  <td nzAlign="right"><strong>{{ disp.gain_loss_amount | money: asset().currency }}</strong></td>
+                  <td nzAlign="right">{{ disp.fiscal_gain_loss_amount ? (disp.fiscal_gain_loss_amount | money: asset().currency) : '—' }}</td>
+                </tr>
+              }
+            </tbody>
+          </nz-table>
+        </div>
+      </nz-tab>
+
+      <!-- TAB 5: MAINTENANCE WORK ORDERS -->
+      <nz-tab [nzTitle]="'assetDetailDrawer.lblMaintenance' | translate">
+        <div class="tab-content">
+          <app-base-table [grid]="workOrdersGrid" [columns]="workOrderColumns()" [scroll]="{ x: '900px' }" size="small" exportFileName="work-orders" />
+        </div>
+      </nz-tab>
+    </nz-tabs>
+  </ng-container>
+</nz-modal>
+
+<!-- Configure Parallel Book Modal -->
+<nz-modal
+  [nzVisible]="configureBookVisible()"
+  [nzTitle]="label('eam.book.configure') + ' (' + (editingBook()?.ledger_type || '') + ')'"
+  [nzOkLoading]="savingBook()"
+  [nzOkDisabled]="bookForm.invalid"
+  (nzOnCancel)="configureBookVisible.set(false)"
+  (nzOnOk)="submitConfigureBook()"
+  [nzWidth]="660"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="bookForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label>{{ label('eam.field.fiscalRatePreset') }}</nz-form-label>
+        <nz-form-control>
+          <nz-select [ngModel]="null" [ngModelOptions]="{ standalone: true }" (ngModelChange)="applyFiscalPresetToBook($event)" nzAllowClear nzPlaceHolder="Apply AFC / D.M. 1988 preset...">
+            @for (r of fiscalRates(); track r.id) {
+              <nz-option [nzValue]="r.id" [nzLabel]="r.jurisdiction + ' | ' + r.category_code + ' - ' + r.category_name"></nz-option>
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <div class="form-row">
+        <nz-form-item class="form-col">
+          <nz-form-label>Fiscal Regime</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="fiscal_regime">
+              <nz-option nzValue="civil_linear" nzLabel="Civil / Statutory Linear"></nz-option>
+              <nz-option nzValue="ch_afc_degressive" nzLabel="CH AFC Declining Balance (Buchwert)"></nz-option>
+              <nz-option nzValue="ch_afc_linear" nzLabel="CH AFC Straight-Line (Anschaffungswert)"></nz-option>
+              <nz-option nzValue="ch_afc_immediate" nzLabel="CH AFC Immediate Expensing (Sofortabschreibung)"></nz-option>
+              <nz-option nzValue="it_dm_1988" nzLabel="IT D.M. 31/12/1988 (50% Yr1)"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item class="form-col">
+          <nz-form-label>{{ 'assetDetailDrawer.lblDeprMethod' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="depreciation_method">
+              <nz-option nzValue="straight_line" nzLabel="Straight Line"></nz-option>
+              <nz-option nzValue="declining_balance" nzLabel="Declining Balance"></nz-option>
+              <nz-option nzValue="double_declining_balance" nzLabel="Double Declining"></nz-option>
+              <nz-option nzValue="immediate_expensing" nzLabel="Immediate Expensing"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="form-row">
+        <nz-form-item class="form-col">
+          <nz-form-label>Useful Life (Months)</nz-form-label>
+          <nz-form-control>
+            <nz-input-number class="w-full" formControlName="useful_life_months" [nzMin]="1"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item class="form-col">
+          <nz-form-label>{{ 'assetDetailDrawer.lblRate' | translate }} (%)</nz-form-label>
+          <nz-form-control>
+            <nz-input-number class="w-full" formControlName="rate_percent" [nzMin]="0" [nzMax]="100"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item class="form-col">
+          <nz-form-label>Pro-Memoria Value</nz-form-label>
+          <nz-form-control>
+            <nz-input-number class="w-full" formControlName="pro_memoria_value" [nzMin]="0"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="form-row">
+        <nz-form-item class="form-col">
+          <nz-form-label>Pro-Rata Convention</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="pro_rata_convention">
+              <nz-option nzValue="daily" nzLabel="Daily"></nz-option>
+              <nz-option nzValue="monthly" nzLabel="Monthly"></nz-option>
+              <nz-option nzValue="half_year" nzLabel="Half-Year"></nz-option>
+              <nz-option nzValue="full" nzLabel="Full Year"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item class="form-col">
+          <nz-form-label>Declining Factor</nz-form-label>
+          <nz-form-control>
+            <nz-input-number class="w-full" formControlName="declining_balance_factor" [nzMin]="0.1" [nzMax]="10"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="form-flags">
+        <span nz-checkbox formControlName="first_year_half_rate">50% First-Year Reduction (IT)</span>
+        <span nz-checkbox formControlName="switch_to_straight_line">Switch to Straight-Line</span>
+        <span nz-checkbox formControlName="immediate_expensing">Immediate Expensing</span>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- Capital Improvement Modal -->
+<nz-modal
+  [nzVisible]="improvementModalVisible()"
+  [nzTitle]="label('eam.events.improve')"
+  [nzOkLoading]="savingImprovement()"
+  [nzOkDisabled]="improvementForm.invalid"
+  (nzOnCancel)="improvementModalVisible.set(false)"
+  (nzOnOk)="submitImprovement()"
+  [nzWidth]="600"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="improvementForm" nzLayout="vertical">
+      <div class="form-row">
+        <nz-form-item class="form-col">
+          <nz-form-label nzRequired>Date</nz-form-label>
+          <nz-form-control>
+            <input nz-input type="date" formControlName="improvement_date" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item class="form-col">
+          <nz-form-label nzRequired>Amount ({{ asset().currency }})</nz-form-label>
+          <nz-form-control>
+            <nz-input-number class="w-full" formControlName="amount" [nzMin]="0.01" [nzStep]="500"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <div class="form-row">
+        <nz-form-item class="form-col">
+          <nz-form-label>{{ label('eam.field.purchaseInvoiceNumber') }}</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="purchase_invoice_number" placeholder="FT-2026-0088" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item class="form-col">
+          <nz-form-label>Extend Useful Life (Months)</nz-form-label>
+          <nz-form-control>
+            <nz-input-number class="w-full" formControlName="extends_useful_life_months" [nzMin]="0"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <nz-form-item>
+        <nz-form-label nzRequired>Description</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="description" placeholder="Spindle motor upgrade / extraordinary overhaul" />
+        </nz-form-control>
+      </nz-form-item>
+      <div class="form-flags">
+        <span nz-checkbox formControlName="affects_tax_book">{{ label('eam.events.applyToTaxBook') }}</span>
+        <span nz-checkbox formControlName="auto_post_to_gl">Post GL Journal Entry</span>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- Impairment / Revaluation Modal -->
+<nz-modal
+  [nzVisible]="valuationModalVisible()"
+  [nzTitle]="label('eam.events.impairOrRevalue')"
+  [nzOkLoading]="savingValuation()"
+  [nzOkDisabled]="valuationForm.invalid"
+  (nzOnCancel)="valuationModalVisible.set(false)"
+  (nzOnOk)="submitValuation()"
+  [nzWidth]="560"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="valuationForm" nzLayout="vertical">
+      <div class="form-row">
+        <nz-form-item class="form-col">
+          <nz-form-label>Type</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="valuation_type">
+              <nz-option nzValue="impairment" nzLabel="Impairment (Svalutazione Durevole)"></nz-option>
+              <nz-option nzValue="revaluation" nzLabel="Revaluation (Rivalutazione)"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item class="form-col">
+          <nz-form-label>Date</nz-form-label>
+          <nz-form-control>
+            <input nz-input type="date" formControlName="valuation_date" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <div class="form-row">
+        <nz-form-item class="form-col">
+          <nz-form-label nzRequired>Fair Value ({{ asset().currency }})</nz-form-label>
+          <nz-form-control>
+            <nz-input-number class="w-full" formControlName="fair_value" [nzMin]="0"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item class="form-col">
+          <nz-form-label>Value in Use ({{ asset().currency }})</nz-form-label>
+          <nz-form-control>
+            <nz-input-number class="w-full" formControlName="value_in_use" [nzMin]="0"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <nz-form-item>
+        <nz-form-label>Reason</nz-form-label>
+        <nz-form-control>
+          <textarea nz-input formControlName="reason" rows="2"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+      <div class="form-flags">
+        <span nz-checkbox formControlName="apply_to_tax_book">{{ label('eam.events.applyToTaxBook') }}</span>
+        <span nz-checkbox formControlName="auto_post_to_gl">Post GL Journal Entry</span>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- Disposal / Scrapping Modal with Live Gain/Loss Preview -->
+<nz-modal
+  [nzVisible]="disposalModalVisible()"
+  [nzTitle]="label('eam.events.dispose')"
+  [nzOkLoading]="savingDisposal()"
+  [nzOkDisabled]="disposalForm.invalid"
+  (nzOnCancel)="disposalModalVisible.set(false)"
+  (nzOnOk)="submitDisposal()"
+  [nzWidth]="680"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="disposalForm" nzLayout="vertical">
+      <div class="form-row">
+        <nz-form-item class="form-col">
+          <nz-form-label>Disposal Type</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="disposal_type" (ngModelChange)="previewDisposal()">
+              <nz-option nzValue="sale" nzLabel="Sale (Cessione con Fattura)"></nz-option>
+              <nz-option nzValue="scrap" nzLabel="Scrapping (Rottamazione)"></nz-option>
+              <nz-option nzValue="retirement" nzLabel="Retirement (Dismissione)"></nz-option>
+              <nz-option nzValue="donation" nzLabel="Donation"></nz-option>
+              <nz-option nzValue="theft_loss" nzLabel="Theft / Casualty Loss"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item class="form-col">
+          <nz-form-label>Disposal Date</nz-form-label>
+          <nz-form-control>
+            <input nz-input type="date" formControlName="disposal_date" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item class="form-col">
+          <nz-form-label>Disposed (%)</nz-form-label>
+          <nz-form-control>
+            <nz-input-number class="w-full" formControlName="disposed_percentage" [nzMin]="1" [nzMax]="100"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="form-row">
+        <nz-form-item class="form-col">
+          <nz-form-label>Sale Proceeds ({{ asset().currency }})</nz-form-label>
+          <nz-form-control>
+            <nz-input-number class="w-full" formControlName="proceeds_amount" [nzMin]="0"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item class="form-col">
+          <nz-form-label>Disposal Costs ({{ asset().currency }})</nz-form-label>
+          <nz-form-control>
+            <nz-input-number class="w-full" formControlName="disposal_costs" [nzMin]="0"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item class="form-col">
+          <nz-form-label>Sales Invoice / Disposal Doc.</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="disposal_document_number" placeholder="FV-2026-0099" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="form-row">
+        <nz-form-item class="form-col">
+          <nz-form-label>Reason / Notes</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="reason" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item class="form-col">
+          <nz-form-label>Tax Gain Spread (Years, IT Art. 86)</nz-form-label>
+          <nz-form-control>
+            <nz-input-number class="w-full" formControlName="fiscal_gain_spread_years" [nzMin]="1" [nzMax]="5"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="preview-action-row">
+        <span nz-checkbox formControlName="auto_post_to_gl">Post GL Disposal & Gain/Loss Entries</span>
+        <button nz-button nzType="default" nzSize="small" type="button" [nzLoading]="loadingDisposalPreview()" (click)="previewDisposal()">
+          <nz-icon nzType="calculator" />
+          {{ label('eam.events.previewDisposal') }}
+        </button>
+      </div>
+
+      @if (disposalPreview(); as prev) {
+        <nz-descriptions nzBordered [nzColumn]="2" nzSize="small" class="mt-3">
+          <nz-descriptions-item nzTitle="Civil Carrying Amount">
+            {{ prev.civil.carrying_amount | money: asset().currency }}
+          </nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="prev.civil.is_gain ? label('eam.events.capitalGain') : label('eam.events.capitalLoss')">
+            <nz-tag [nzColor]="prev.civil.is_gain ? 'green' : prev.civil.is_loss ? 'red' : 'default'">
+              {{ prev.civil.gain_loss_amount | money: asset().currency }}
+            </nz-tag>
+          </nz-descriptions-item>
+          <nz-descriptions-item nzTitle="Fiscal Carrying Amount">
+            {{ prev.fiscal.carrying_amount | money: asset().currency }}
+          </nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'Fiscal ' + (prev.fiscal.is_gain ? label('eam.events.capitalGain') : label('eam.events.capitalLoss'))">
+            <nz-tag [nzColor]="prev.fiscal.is_gain ? 'green' : prev.fiscal.is_loss ? 'red' : 'default'">
+              {{ prev.fiscal.gain_loss_amount | money: asset().currency }}
+            </nz-tag>
+          </nz-descriptions-item>
+        </nz-descriptions>
+      }
+    </form>
+  </ng-container>
+</nz-modal>
+
+<ng-template #periodTpl let-s><strong>{{ s.period_code }}</strong></ng-template>
+<ng-template #scheduleLedgerTpl let-s><nz-tag [nzColor]="getLedgerTypeColor(s.ledger_type)">{{ s.ledger_type }}</nz-tag></ng-template>
+<ng-template #openingTpl let-s>{{ s.opening_book_value | money: asset().currency }}</ng-template>
+<ng-template #depreciationTpl let-s><strong class="text-danger">{{ s.depreciation_amount | money: asset().currency }}</strong></ng-template>
+<ng-template #closingTpl let-s>{{ s.closing_book_value | money: asset().currency }}</ng-template>
+<ng-template #accumulatedTpl let-s>{{ s.accumulated_depreciation | money: asset().currency }}</ng-template>
+<ng-template #scheduleStatusTpl let-s><nz-tag [nzColor]="s.status === 'posted' ? 'green' : 'blue'">{{ s.status }}</nz-tag></ng-template>
+<ng-template #woNumberTpl let-wo><strong>{{ wo.work_order_number || 'WO-N/A' }}</strong></ng-template>
+<ng-template #woTypeTpl let-wo><nz-tag>{{ wo.maintenance_type }}</nz-tag></ng-template>
+<ng-template #woPriorityTpl let-wo><nz-tag nzColor="blue">{{ wo.priority }}</nz-tag></ng-template>
+<ng-template #woStatusTpl let-wo><nz-tag>{{ wo.status }}</nz-tag></ng-template>
+<ng-template #woDateTpl let-wo>{{ wo.scheduled_date || '—' }}</ng-template>
+<ng-template #woCostTpl let-wo>{{ wo.total_cost ? (wo.total_cost | money: asset().currency) : '—' }}</ng-template>

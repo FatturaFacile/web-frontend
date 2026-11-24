@@ -1,0 +1,64 @@
+:host {
+  display: block;
+}
+
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.filter {
+  min-width: 200px;
+}
+
+.muted {
+  color: var(--ant-text-color-secondary, rgba(0, 0, 0, 0.45));
+}
+
+.reason-list {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+
+  li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+  }
+}
+
+.capa-board {
+  margin: 16px 0;
+}
+
+.why {
+  margin-bottom: 6px;
+}
+
+.audit-point {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--ant-color-border-secondary, rgb(0 0 0 / 6%));
+}
+
+.dvr-card {
+  margin-top: 16px;
+}
+
+.hse-hint {
+  color: var(--ant-color-warning, #faad14);
+}

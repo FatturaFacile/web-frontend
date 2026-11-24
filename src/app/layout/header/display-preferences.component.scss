@@ -1,0 +1,85 @@
+.prefs-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 220px;
+  padding: var(--space-4);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elevated-shadow);
+}
+
+fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+legend {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-2);
+}
+.choice {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+}
+
+.swatches {
+  display: flex;
+  gap: var(--space-3);
+}
+.swatch {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  background: var(--swatch);
+
+  input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    margin: 0;
+    cursor: pointer;
+  }
+  &:has(input:checked) {
+    outline: 2px solid var(--text-primary);
+    outline-offset: 2px;
+  }
+  &:has(input:focus-visible) {
+    outline: 3px solid var(--primary-focus);
+    outline-offset: 3px;
+  }
+  // Brand swatches show the fixed brand colours the user can pick; they are data and do not follow the theme.
+  &[data-brand-swatch='teal'] {
+    --swatch: #0f766e;
+  }
+  &[data-brand-swatch='indigo'] {
+    --swatch: #4338ca;
+  }
+  &[data-brand-swatch='purple'] {
+    --swatch: #7e22ce;
+  }
+  &[data-brand-swatch='amber'] {
+    --swatch: #b45309;
+  }
+}
+
+.reset {
+  align-self: flex-start;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--primary-color);
+  text-decoration: underline;
+  cursor: pointer;
+}

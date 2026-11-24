@@ -1,0 +1,881 @@
+<app-page-header
+  [title]="'DMS.TITLE' | translate"
+  [subtitle]="'DMS.SUBTITLE' | translate"
+>
+</app-page-header>
+
+<nz-card class="dms-card">
+  <nz-tabs [nzSelectedIndex]="selectedTabIndex()" (nzSelectedIndexChange)="onTabChange($event)">
+    <!-- TAB 1: ARCHIVIO DOCUMENTI -->
+    <nz-tab [nzTitle]="'DMS.TAB_DOCUMENTS' | translate">
+      <div class="tab-toolbar">
+        <div class="filter-group">
+          <input
+            nz-input
+            [placeholder]="'DMS.SEARCH_DOCUMENTS' | translate"
+            [ngModel]="searchTitle()"
+            (ngModelChange)="searchTitle.set($event); loadDocuments()"
+            class="filter-input"
+          />
+
+          <nz-select
+            [ngModel]="selectedFolderId()"
+            (ngModelChange)="selectedFolderId.set($event); loadDocuments()"
+            [nzPlaceHolder]="'common.allFolders' | translate"
+            class="filter-select"
+          >
+            <nz-option nzValue="" [nzLabel]="'DMS.LBL_TUTTE_LE_CARTELLE' | translate"></nz-option>
+            @for (folder of folders(); track folder.id) {
+              <nz-option [nzValue]="folder.id" [nzLabel]="folder.name"></nz-option>
+            }
+          </nz-select>
+
+          <nz-select
+            [ngModel]="selectedDocType()"
+            (ngModelChange)="selectedDocType.set($event); loadDocuments()"
+            [nzPlaceHolder]="'common.allTypes' | translate"
+            class="filter-select"
+          >
+            <nz-option nzValue="" [nzLabel]="'DMS.LBL_TUTTI_I_TIPI' | translate"></nz-option>
+            <nz-option nzValue="Invoice" [nzLabel]="'DMS.LBL_FATTURE' | translate"></nz-option>
+            <nz-option nzValue="Contract" [nzLabel]="'DMS.LBL_CONTRATTI' | translate"></nz-option>
+            <nz-option nzValue="DeliveryNote" nzLabel="DDT"></nz-option>
+            <nz-option nzValue="Receipt" [nzLabel]="'DMS.LBL_RICEVUTE' | translate"></nz-option>
+            <nz-option nzValue="CustomsDossier" [nzLabel]="'DMS.LBL_DOGANA' | translate"></nz-option>
+            <nz-option nzValue="Other" [nzLabel]="'DMS.LBL_ALTRO' | translate"></nz-option>
+          </nz-select>
+
+          <button nz-button nzType="default" (click)="refreshDocuments()">
+            <span nz-icon nzType="reload"></span>
+            {{ 'COMMON.RELOAD' | translate }}
+          </button>
+        </div>
+
+        <button nz-button nzType="primary" appIconAction="create" (click)="openCreateDocModal()"></button>
+      </div>
+
+      <app-base-table
+        [grid]="grid"
+        [columns]="documentColumns()"
+        [actionsTemplate]="docActionsTpl"
+        exportFileName="documents"
+      />
+
+      <ng-template #titleTpl let-doc>
+      <button
+        type="button"
+        class="link-button"
+        (click)="openDrawer(doc)"
+      >
+        <strong>{{ doc.title }}</strong>
+      </button>
+      @if (doc.description) {
+        <div class="text-muted">{{ doc.description }}</div>
+      }
+      </ng-template>
+      <ng-template #typeTpl let-doc>
+      <nz-tag>{{ doc.document_type || 'Altro' }}</nz-tag>
+      </ng-template>
+      <ng-template #versionTpl let-doc>
+      @if (doc.latest_version) {
+        <div>{{ doc.latest_version.original_name }}</div>
+        <div class="text-muted">
+          v{{ doc.latest_version.version_number }} &bull;
+          {{ (doc.latest_version.size / 1024) | number: '1.0-1' }} KB
+        </div>
+      } @else if (doc.current_version) {
+        <span class="text-muted">v{{ doc.current_version }}</span>
+      } @else {
+        <span class="text-muted">-</span>
+      }
+      </ng-template>
+      <ng-template #statusTpl let-doc>
+      <nz-tag [nzColor]="getStatusColor(doc.status)">
+        {{ doc.status | uppercase }}
+      </nz-tag>
+      @if (doc.is_checked_out) {
+        <nz-tag nzColor="warning">{{ 'DMS.LBL_CHECK_OUT' | translate }}</nz-tag>
+      }
+      </ng-template>
+      <ng-template #protectionTpl let-doc>
+      @if (doc.legal_hold) {
+        <nz-tag nzColor="error">
+          <span nz-icon nzType="lock"></span>
+          {{ 'DMS.LBL_LEGAL_HOLD' | translate }}
+        </nz-tag>
+      } @else {
+        <span class="text-muted">-</span>
+      }
+      </ng-template>
+      <ng-template #docActionsTpl let-doc>
+      <nz-space>
+        <button
+          *nzSpaceItem
+          nz-button
+          nzType="default"
+          nzSize="small"
+          (click)="openDrawer(doc)"
+        >
+          <span nz-icon nzType="eye"></span>
+        </button>
+
+        @if (!doc.checked_out_by) {
+          <button
+            *nzSpaceItem
+            nz-button
+            nzType="default"
+            nzSize="small"
+            (click)="openCheckOutModal(doc)"
+          >
+            <span nz-icon nzType="edit"></span>
+            {{ 'DMS.LBL_CHECK_OUT_2' | translate }}
+          </button>
+        } @else {
+          <button
+            *nzSpaceItem
+            nz-button
+            nzType="primary"
+            nzSize="small"
+            (click)="openCheckInModal(doc)"
+          >
+            <span nz-icon nzType="upload"></span>
+            {{ 'DMS.LBL_CHECK_IN' | translate }}
+          </button>
+        }
+
+        <button
+          *nzSpaceItem
+          nz-button
+          nzType="default"
+          nzSize="small"
+          data-testid="start-approval"
+          (click)="openApprovalModal(doc)"
+        >
+          <span nz-icon nzType="audit"></span>
+          {{ 'DMS.LBL_START_APPROVAL' | translate }}
+        </button>
+
+        @if (!doc.legal_hold) {
+          <button
+            *nzSpaceItem
+            nz-button
+            nzType="default"
+            nzSize="small"
+            (click)="openLegalHoldModal(doc)"
+          >
+            <span nz-icon nzType="lock"></span>
+          </button>
+        } @else {
+          <button
+            *nzSpaceItem
+            nz-button
+            nzType="default"
+            nzSize="small"
+            (click)="releaseLegalHold(doc)"
+          >
+            <span nz-icon nzType="check"></span>
+            {{ 'DMS.LBL_SBLOCCA' | translate }}
+          </button>
+        }
+
+        <button
+          *nzSpaceItem
+          nz-button
+          nzDanger
+          nzSize="small"
+          (click)="deleteDocument(doc)"
+          appIconAction="delete"
+        ></button>
+      </nz-space>
+      </ng-template>
+    </nz-tab>
+
+    <!-- TAB 2: CARTELLE & GERARCHIA -->
+    <nz-tab [nzTitle]="'DMS.TAB_FOLDERS' | translate">
+      <div class="tab-toolbar">
+        <button nz-button nzType="primary" appIconAction="create" (click)="openCreateFolderModal()"></button>
+        <button nz-button nzType="default" (click)="loadFolders()">
+          <span nz-icon nzType="reload"></span>
+          {{ 'COMMON.RELOAD' | translate }}
+        </button>
+      </div>
+
+      <nz-table appGridExport
+        [nzData]="folders()"
+        [nzFrontPagination]="true"
+        [nzLoading]="foldersLoading()" #gridTbl21>
+        <thead>
+          <tr>
+            <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: gridTbl21.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'COMMON.NAME' | translate }}</th>
+            <th>{{ 'DMS.ACCESS_ROLES' | translate }}</th>
+            <th>{{ 'DMS.DOCUMENTS_COUNT' | translate }}</th>
+            <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (folder of folders(); track folder.id) {
+            <tr>
+              <td>
+                <strong>{{ folder.name }}</strong>
+              </td>
+              <td>
+                @if (folder.access_roles && folder.access_roles.length > 0) {
+                  @for (role of folder.access_roles; track role) {
+                    <nz-tag>{{ role }}</nz-tag>
+                  }
+                } @else {
+                  <nz-tag nzColor="default">{{ 'DMS.LBL_TUTTI_I_RUOLI' | translate }}</nz-tag>
+                }
+              </td>
+              <td>{{ folder.documents_count ?? '-' }}</td>
+              <td nzAlign="right">
+                <button nz-button nzDanger nzSize="small" (click)="deleteFolder(folder)" appIconAction="delete"></button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <!-- TAB 3: POLICY DI CONSERVAZIONE (RETENTION) -->
+    <nz-tab [nzTitle]="'DMS.TAB_RETENTION' | translate">
+      <div class="tab-toolbar">
+        <button nz-button nzType="primary" appIconAction="create" (click)="openCreatePolicyModal()"></button>
+        <button nz-button nzType="default" (click)="loadRetentionPolicies()">
+          <span nz-icon nzType="reload"></span>
+          {{ 'COMMON.RELOAD' | translate }}
+        </button>
+      </div>
+
+      <nz-table appGridExport
+        [nzData]="retentionPolicies()"
+        [nzFrontPagination]="true"
+        [nzLoading]="retentionLoading()" #gridTbl22>
+        <thead>
+          <tr>
+            <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: gridTbl22.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'COMMON.NAME' | translate }}</th>
+            <th [nzSortFn]="'document_type' | gridSort" [nzFilters]="'document_type' | gridFilterList: gridTbl22.nzData" [nzFilterFn]="'document_type' | gridFilterFn">{{ 'DMS.DOC_TYPE' | translate }}</th>
+            <th [nzSortFn]="'retention_months' | gridSort" [nzFilters]="'retention_months' | gridFilterList: gridTbl22.nzData" [nzFilterFn]="'retention_months' | gridFilterFn">{{ 'DMS.RETENTION_PERIOD' | translate }}</th>
+            <th [nzSortFn]="'action' | gridSort" [nzFilters]="'action' | gridFilterList: gridTbl22.nzData" [nzFilterFn]="'action' | gridFilterFn">{{ 'DMS.RETENTION_ACTION' | translate }}</th>
+            <th>{{ 'COMMON.STATUS' | translate }}</th>
+            <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (policy of retentionPolicies(); track policy.id) {
+            <tr>
+              <td>
+                <strong>{{ policy.name }}</strong>
+              </td>
+              <td>
+                <nz-tag>{{ policy.document_type || 'Tutti' }}</nz-tag>
+              </td>
+              <td>{{ policy.retention_months }} mesi ({{ policy.retention_months / 12 }} anni)</td>
+              <td>
+                <nz-tag [nzColor]="policy.action === 'archive' ? 'processing' : 'error'">
+                  {{ policy.action | uppercase }}
+                </nz-tag>
+              </td>
+              <td>
+                <nz-tag [nzColor]="policy.is_active ? 'success' : 'default'">
+                  {{ policy.is_active ? 'ATTIVA' : 'DISATTIVA' }}
+                </nz-tag>
+              </td>
+              <td nzAlign="right">
+                <button nz-button nzDanger nzSize="small" (click)="deleteRetentionPolicy(policy)" appIconAction="delete"></button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <!-- TAB 4: TAGS & IMPOSTAZIONI AI / OCR -->
+    <nz-tab [nzTitle]="'DMS.TAB_AI_SETTINGS' | translate">
+      <div class="ai-tab-container">
+        <div class="section-box">
+          <h4>{{ 'DMS.AI_CONFIG' | translate }}</h4>
+          <div class="ai-controls">
+            <div class="control-row">
+              <span class="control-label">{{ 'DMS.ENABLE_OCR' | translate }}</span>
+              <nz-switch
+                [ngModel]="aiSettings().is_ocr_enabled"
+                (ngModelChange)="aiSettings().is_ocr_enabled = $event"
+              ></nz-switch>
+            </div>
+
+            <div class="control-row">
+              <span class="control-label">{{ 'DMS.MIN_CONFIDENCE' | translate }} (%)</span>
+              <nz-input-number
+                [ngModel]="aiSettings().min_confidence"
+                (ngModelChange)="aiSettings().min_confidence = $event"
+                [nzMin]="50"
+                [nzMax]="100"
+              ></nz-input-number>
+            </div>
+
+            <div class="control-row">
+              <span class="control-label">{{ 'DMS.AUTO_TAGGING' | translate }}</span>
+              <nz-switch
+                [ngModel]="aiSettings().auto_tagging"
+                (ngModelChange)="aiSettings().auto_tagging = $event"
+              ></nz-switch>
+            </div>
+
+            <button nz-button nzType="primary" appIconAction="save" (click)="saveAiSettings()" class="mt-3"></button>
+          </div>
+        </div>
+
+        <div class="section-box">
+          <div class="tab-toolbar">
+            <h4>{{ 'DMS.TAGS_MANAGEMENT' | translate }}</h4>
+            <button nz-button nzType="primary" nzSize="small" appIconAction="create" (click)="openCreateTagModal()"></button>
+          </div>
+
+          <nz-table appGridExport [nzData]="tags()" [nzFrontPagination]="true" [nzLoading]="tagsLoading()" #gridTbl23>
+            <thead>
+              <tr>
+                <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: gridTbl23.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'COMMON.NAME' | translate }}</th>
+                <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: gridTbl23.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'VISITORS.BADGE' | translate }}</th>
+                <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (tag of tags(); track tag.id) {
+                <tr>
+                  <td>{{ tag.name }}</td>
+                  <td>
+                    <nz-tag [nzColor]="tag.color || 'blue'">{{ tag.name }}</nz-tag>
+                  </td>
+                  <td nzAlign="right">
+                    <button nz-button nzDanger nzSize="small" (click)="deleteTag(tag)" appIconAction="delete"></button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </nz-table>
+        </div>
+      </div>
+    </nz-tab>
+  </nz-tabs>
+</nz-card>
+
+<!-- MODAL: CARICA NUOVO DOCUMENTO -->
+<nz-modal appModalActions
+  okAction="create"
+  [nzVisible]="createDocModalVisible()"
+  [nzTitle]="'DMS.NEW_DOCUMENT' | translate"
+  [nzOkLoading]="createDocSubmitting()"
+  (nzOnCancel)="createDocModalVisible.set(false)"
+  [nzOkDisabled]="docForm.invalid || !docFile() || !!docFileError()"
+  (nzOnOk)="submitCreateDoc()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="docForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'DMS.DOC_TITLE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(docForm, 'title')">
+          <input nz-input formControlName="title" [placeholder]="'DMS.LBL_ES_FATTURA_FORNITORE_120' | translate" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'DMS.DOC_TYPE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(docForm, 'document_type')">
+          <nz-select formControlName="document_type">
+            <nz-option nzValue="Invoice" nzLabel="Fattura"></nz-option>
+            <nz-option nzValue="Contract" [nzLabel]="'DMS.LBL_CONTRATTO' | translate"></nz-option>
+            <nz-option nzValue="DeliveryNote" nzLabel="DDT"></nz-option>
+            <nz-option nzValue="Receipt" [nzLabel]="'DMS.LBL_RICEVUTA_SPESA' | translate"></nz-option>
+            <nz-option nzValue="CustomsDossier" [nzLabel]="'DMS.LBL_DOGANA_IT_CH' | translate"></nz-option>
+            <nz-option nzValue="Other" [nzLabel]="'DMS.LBL_ALTRO' | translate"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'DMS.FOLDER' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(docForm, 'folder_id')">
+          <nz-select formControlName="folder_id">
+            <nz-option nzValue="" [nzLabel]="'DMS.LBL_CARTELLA_RADICE' | translate"></nz-option>
+            @for (folder of folders(); track folder.id) {
+              <nz-option [nzValue]="folder.id" [nzLabel]="folder.name"></nz-option>
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'COMMON.DESCRIPTION' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(docForm, 'description')">
+          <textarea nz-input rows="2" formControlName="description"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'DMS.FILE' | translate }}</nz-form-label>
+        <nz-form-control [nzValidateStatus]="docFileError() ? 'error' : ''" [nzErrorTip]="docFileError() | translate">
+          <input type="file" [accept]="acceptedFileTypes" (change)="onDocFileSelected($event)" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'DMS.COMMENT' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(docForm, 'comment')">
+          <input nz-input formControlName="comment" maxlength="500" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: CHECK-OUT -->
+<nz-modal appModalActions
+  [nzVisible]="checkOutModalVisible()"
+  [nzTitle]="'DMS.CHECK_OUT_TITLE' | translate"
+  [nzOkLoading]="checkOutSubmitting()"
+  (nzOnCancel)="checkOutModalVisible.set(false)"
+  (nzOnOk)="submitCheckOut()"
+>
+  <ng-container *nzModalContent>
+    <p>{{ 'DMS.CHECK_OUT_CONFIRM' | translate }} <strong>{{ checkOutDoc()?.title }}</strong>?</p>
+    <nz-form-item>
+      <nz-form-label>{{ 'DMS.NOTE' | translate }}</nz-form-label>
+      <nz-form-control>
+        <input nz-input maxlength="500" [ngModel]="checkOutNote()" (ngModelChange)="checkOutNote.set($event)" />
+      </nz-form-control>
+    </nz-form-item>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: CHECK-IN -->
+<nz-modal appModalActions
+  [nzVisible]="checkInModalVisible()"
+  [nzTitle]="'DMS.CHECK_IN_TITLE' | translate"
+  [nzOkLoading]="checkInSubmitting()"
+  (nzOnCancel)="checkInModalVisible.set(false)"
+  [nzOkDisabled]="!checkInFile() || !!checkInFileError()"
+  (nzOnOk)="submitCheckIn()"
+>
+  <ng-container *nzModalContent>
+    <p>{{ 'DMS.CHECK_IN_CONFIRM' | translate }} <strong>{{ checkInDoc()?.title }}</strong></p>
+    <nz-form-item>
+      <nz-form-label>{{ 'DMS.UPDATED_FILE' | translate }}</nz-form-label>
+      <nz-form-control [nzValidateStatus]="checkInFileError() ? 'error' : ''" [nzErrorTip]="checkInFileError() | translate">
+        <input type="file" [accept]="acceptedFileTypes" (change)="onCheckInFileSelected($event)" />
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label>{{ 'DMS.COMMENT' | translate }}</nz-form-label>
+      <nz-form-control>
+        <input nz-input maxlength="500" [ngModel]="checkInComment()" (ngModelChange)="checkInComment.set($event)" />
+      </nz-form-control>
+    </nz-form-item>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: LEGAL HOLD -->
+<nz-modal appModalActions
+  [nzVisible]="legalHoldModalVisible()"
+  [nzTitle]="'DMS.LEGAL_HOLD_TITLE' | translate"
+  [nzOkLoading]="legalHoldSubmitting()"
+  (nzOnCancel)="legalHoldModalVisible.set(false)"
+  [nzOkDisabled]="!legalHoldReason().trim()"
+  (nzOnOk)="submitLegalHold()"
+>
+  <ng-container *nzModalContent>
+    <p>{{ 'DMS.LEGAL_HOLD_NOTICE' | translate }}</p>
+    <nz-form-item>
+      <nz-form-label nzRequired>{{ 'DMS.REASON' | translate }}</nz-form-label>
+      <nz-form-control>
+        <textarea
+          nz-input
+          rows="2"
+          maxlength="500"
+          [ngModel]="legalHoldReason()"
+          (ngModelChange)="legalHoldReason.set($event)"
+          [placeholder]="'DMS.LBL_ES_ORDINANZA_DI_CUSTODIA_DOCUMENTALE_PER' | translate"
+        ></textarea>
+      </nz-form-control>
+    </nz-form-item>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: CREA CARTELLA -->
+<nz-modal appModalActions
+  okAction="create"
+  [nzVisible]="createFolderModalVisible()"
+  [nzTitle]="'DMS.NEW_FOLDER' | translate"
+  [nzOkLoading]="folderSubmitting()"
+  (nzOnCancel)="createFolderModalVisible.set(false)"
+  [nzOkDisabled]="folderForm.invalid"
+  (nzOnOk)="submitCreateFolder()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="folderForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'COMMON.NAME' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(folderForm, 'name')">
+          <input nz-input formControlName="name" [placeholder]="'DMS.LBL_ES_BILANCI_E_DICHIARAZIONI' | translate" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: CREA POLICY RETENTION -->
+<nz-modal appModalActions
+  okAction="create"
+  [nzVisible]="createPolicyModalVisible()"
+  [nzTitle]="'DMS.NEW_POLICY' | translate"
+  [nzOkLoading]="policySubmitting()"
+  (nzOnCancel)="createPolicyModalVisible.set(false)"
+  [nzOkDisabled]="policyForm.invalid"
+  (nzOnOk)="submitCreatePolicy()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="policyForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'COMMON.NAME' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(policyForm, 'name')">
+          <input nz-input formControlName="name" [placeholder]="'DMS.LBL_ES_CONSERVAZIONE_10_ANNI_FISCALE' | translate" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'DMS.DOC_TYPE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(policyForm, 'document_type')">
+          <nz-select formControlName="document_type">
+            <nz-option nzValue="Invoice" [nzLabel]="'DMS.LBL_INVOICE' | translate"></nz-option>
+            <nz-option nzValue="Contract" [nzLabel]="'DMS.LBL_CONTRACT' | translate"></nz-option>
+            <nz-option nzValue="Receipt" [nzLabel]="'DMS.LBL_RECEIPT' | translate"></nz-option>
+            <nz-option nzValue="DeliveryNote" [nzLabel]="'DMS.LBL_DELIVERYNOTE' | translate"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'DMS.RETENTION_MONTHS' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(policyForm, 'retention_months')">
+          <nz-input-number formControlName="retention_months" [nzMin]="1" [nzMax]="360"></nz-input-number>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: CREA TAG -->
+<nz-modal appModalActions
+  okAction="create"
+  [nzVisible]="createTagModalVisible()"
+  [nzTitle]="'DMS.NEW_TAG' | translate"
+  [nzOkLoading]="tagSubmitting()"
+  (nzOnCancel)="createTagModalVisible.set(false)"
+  [nzOkDisabled]="tagForm.invalid"
+  (nzOnOk)="submitCreateTag()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="tagForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'COMMON.NAME' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(tagForm, 'name')">
+          <input nz-input formControlName="name" [placeholder]="'DMS.LBL_ES_CONFIDENZIALE' | translate" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- DRAWER: DETTAGLIO DOCUMENTO, VERSIONI & OCR EXTRACTION -->
+<nz-modal appModalActions
+  [nzVisible]="drawerVisible()"
+  [nzWidth]="900"
+  [nzFooter]="null"
+  [nzTitle]="selectedDocument()?.title || ('DMS.DOCUMENT_DETAILS' | translate)"
+  (nzOnCancel)="drawerVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    @if (selectedDocument(); as doc) {
+      <nz-descriptions [nzColumn]="1" nzBordered nzSize="small" class="mb-4">
+        <nz-descriptions-item [nzTitle]="'DMS.DOC_TYPE' | translate">
+          <nz-tag>{{ doc.document_type }}</nz-tag>
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'DMS.FOLDER' | translate">
+          {{ doc.folder_name || 'Cartella radice' }}
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'COMMON.STATUS' | translate">
+          <nz-tag [nzColor]="getStatusColor(doc.status)">{{ doc.status | uppercase }}</nz-tag>
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'DMS.PROTECTION' | translate">
+          @if (doc.legal_hold) {
+            <nz-tag nzColor="error">{{ 'DMS.LBL_LEGAL_HOLD_ATTIVO' | translate }}</nz-tag>
+          } @else {
+            <span>{{ 'DMS.LBL_NESSUN_BLOCCO' | translate }}</span>
+          }
+        </nz-descriptions-item>
+      </nz-descriptions>
+
+      <!-- VERSIONI -->
+      <h4 class="mt-4">{{ 'DMS.VERSIONS_HISTORY' | translate }}</h4>
+      <nz-table appGridExport [nzData]="docVersions()" [nzFrontPagination]="false" [nzShowPagination]="false" #gridTbl24>
+        <thead>
+          <tr>
+            <th [nzSortFn]="'version_number' | gridSort" [nzFilters]="'version_number' | gridFilterList: gridTbl24.nzData" [nzFilterFn]="'version_number' | gridFilterFn">{{ 'DMS.LBL_VER' | translate }}</th>
+            <th [nzSortFn]="'original_name' | gridSort" [nzFilters]="'original_name' | gridFilterList: gridTbl24.nzData" [nzFilterFn]="'original_name' | gridFilterFn">{{ 'DMS.LBL_FILE' | translate }}</th>
+            <th>SHA-256</th>
+            <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (v of docVersions(); track v.id) {
+            <tr>
+              <td>v{{ v.version_number }}</td>
+              <td>
+                <strong>{{ v.original_name }}</strong>
+                <div class="text-muted">{{ (v.size / 1024) | number: '1.0-1' }} KB</div>
+              </td>
+              <td>
+                <code class="hash-code">{{ v.sha256?.slice(0, 12) }}...</code>
+              </td>
+              <td nzAlign="right">
+                <button nz-button nzType="default" nzSize="small" data-test="download-version" (click)="downloadVersion(v)">
+                  <span nz-icon nzType="download"></span>
+                  {{ 'DMS.LBL_DOWNLOAD' | translate }}
+                </button>
+                <button nz-button nzType="default" nzSize="small" (click)="verifySha256(v)">
+                  <span nz-icon nzType="audit"></span>
+                  {{ 'DMS.LBL_VERIFICA' | translate }}
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+
+      <!-- EXTRAZIONI AI / OCR -->
+      <h4 class="mt-4">{{ 'DMS.OCR_EXTRACTIONS' | translate }}</h4>
+      @if (docExtractions().length > 0) {
+        <nz-table appGridExport [nzData]="docExtractions()" [nzFrontPagination]="false" [nzShowPagination]="false" #gridTbl25>
+          <thead>
+            <tr>
+              <th [nzSortFn]="'field_name' | gridSort" [nzFilters]="'field_name' | gridFilterList: gridTbl25.nzData" [nzFilterFn]="'field_name' | gridFilterFn">{{ 'DMS.LBL_CAMPO' | translate }}</th>
+              <th [nzSortFn]="'extracted_value' | gridSort" [nzFilters]="'extracted_value' | gridFilterList: gridTbl25.nzData" [nzFilterFn]="'extracted_value' | gridFilterFn">{{ 'DMS.LBL_VALORE_RILEVATO' | translate }}</th>
+              <th [nzSortFn]="'confidence' | gridSort" [nzFilters]="'confidence' | gridFilterList: gridTbl25.nzData" [nzFilterFn]="'confidence' | gridFilterFn">{{ 'DMS.LBL_CONFIDENZA' | translate }}</th>
+              <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (extr of docExtractions(); track extr.id) {
+              <tr>
+                <td>{{ extr.field_name }}</td>
+                <td>
+                  <strong>{{ extr.extracted_value }}</strong>
+                </td>
+                <td>
+                  <nz-tag [nzColor]="extr.confidence >= 85 ? 'success' : 'warning'">
+                    {{ extr.confidence }}%
+                  </nz-tag>
+                </td>
+                <td nzAlign="right">
+                  <nz-space>
+                    <button
+                      *nzSpaceItem
+                      nz-button
+                      nzType="primary"
+                      nzSize="small"
+                      (click)="confirmExtraction(extr)"
+                      appIconAction="confirm"
+                    ></button>
+                    <button
+                      *nzSpaceItem
+                      nz-button
+                      nzDanger
+                      nzSize="small"
+                      (click)="rejectExtraction(extr)"
+                      appIconAction="close"
+                    ></button>
+                  </nz-space>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      } @else {
+        <p class="text-muted">{{ 'DMS.LBL_NESSUNA_ESTRAZIONE_OCR_DISPONIBILE' | translate }}</p>
+      }
+
+      <!-- OCR: stato, nuova esecuzione e testo estratto -->
+      <div class="tab-toolbar mt-4">
+        <h4>{{ 'DMS.OCR_RUNS' | translate }}</h4>
+        <button nz-button nzType="default" nzSize="small" [nzLoading]="ocrBusy()" data-testid="run-ocr" (click)="runOcr()">
+          <span nz-icon nzType="reload"></span>
+          {{ 'DMS.LBL_RUN_OCR' | translate }}
+        </button>
+      </div>
+      @if (docOcrJobs().length > 0) {
+        <nz-table appGridExport [nzData]="docOcrJobs()" [nzFrontPagination]="false" [nzShowPagination]="false">
+          <thead>
+            <tr>
+              <th>{{ 'DMS.LBL_OCR_STATUS' | translate }}</th>
+              <th>{{ 'DMS.LBL_OCR_ENGINE' | translate }}</th>
+              <th>{{ 'DMS.LBL_CONFIDENZA' | translate }}</th>
+              <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (job of docOcrJobs(); track job.id) {
+              <tr>
+                <td>
+                  <nz-tag [nzColor]="job.status === 'completed' ? 'success' : job.status === 'failed' ? 'error' : 'processing'">
+                    {{ 'DMS.OCR_STATUS_' + job.status.toUpperCase() | translate }}
+                  </nz-tag>
+                  @if (job.failure_reason) {
+                    <div class="text-muted">{{ job.failure_reason }}</div>
+                  }
+                </td>
+                <td>{{ job.engine || '-' }}</td>
+                <td>{{ job.confidence ?? '-' }}</td>
+                <td nzAlign="right">
+                  <nz-space>
+                    @if (job.status === 'completed') {
+                      <button *nzSpaceItem nz-button nzSize="small" data-testid="show-ocr-text" (click)="showOcrText(job)">
+                        {{ 'DMS.LBL_OCR_TEXT' | translate }}
+                      </button>
+                    }
+                    @if (job.status === 'failed') {
+                      <button *nzSpaceItem nz-button nzSize="small" nzType="primary" data-testid="retry-ocr" (click)="retryOcr(job)">
+                        {{ 'DMS.LBL_OCR_RETRY' | translate }}
+                      </button>
+                    }
+                  </nz-space>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+        @if (ocrTextJob(); as textJob) {
+          <pre class="ocr-text" data-testid="ocr-text">{{ textJob.text_content }}</pre>
+        }
+      } @else {
+        <p class="text-muted">{{ 'DMS.LBL_NO_OCR_RUNS' | translate }}</p>
+      }
+
+      <!-- LINK ENTITÀ ERP -->
+      <div class="tab-toolbar mt-4">
+        <h4>{{ 'DMS.LINKED_ENTITIES' | translate }}</h4>
+        <button nz-button nzType="default" nzSize="small" appIconAction="add" (click)="openLinkModal()"></button>
+      </div>
+      @if (docLinks().length > 0) {
+        <nz-table appGridExport [nzData]="docLinks()" [nzFrontPagination]="false" [nzShowPagination]="false" #gridTbl26>
+          <thead>
+            <tr>
+              <th>{{ 'DMS.LBL_TIPO' | translate }}</th>
+              <th [nzSortFn]="'label' | gridSort" [nzFilters]="'label' | gridFilterList: gridTbl26.nzData" [nzFilterFn]="'label' | gridFilterFn">{{ 'DMS.LBL_RIFERIMENTO' | translate }}</th>
+              <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (l of docLinks(); track l.id) {
+              <tr>
+                <td>
+                  <nz-tag>{{ 'DMS.LINK_TYPE_' + l.linkable_type.toUpperCase() | translate }}</nz-tag>
+                </td>
+                <td>{{ l.label || l.linkable_id }}</td>
+                <td nzAlign="right">
+                  <button nz-button nzDanger nzSize="small" (click)="removeLink(l)" appIconAction="delete"></button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      } @else {
+        <p class="text-muted">{{ 'DMS.LBL_NESSUN_COLLEGAMENTO_PRESENTE' | translate }}</p>
+      }
+
+      <!-- AUDIT LOG -->
+      <h4 class="mt-4">{{ 'DMS.AUDIT_LOG' | translate }}</h4>
+      <nz-table appGridExport [nzData]="docAuditTrail()" [nzFrontPagination]="false" [nzShowPagination]="false" #gridTbl27>
+        <thead>
+          <tr>
+            <th [nzSortFn]="'event_type' | gridSort" [nzFilters]="'event_type' | gridFilterList: gridTbl27.nzData" [nzFilterFn]="'event_type' | gridFilterFn">{{ 'DMS.LBL_EVENTO' | translate }}</th>
+            <th [nzSortFn]="'actor_name' | gridSort" [nzFilters]="'actor_name' | gridFilterList: gridTbl27.nzData" [nzFilterFn]="'actor_name' | gridFilterFn">{{ 'DMS.LBL_UTENTE' | translate }}</th>
+            <th [nzSortFn]="'created_at' | gridSort" [nzFilters]="'created_at' | gridFilterList: gridTbl27.nzData" [nzFilterFn]="'created_at' | gridFilterFn">{{ 'DMS.LBL_DATA' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (a of docAuditTrail(); track a.id) {
+            <tr>
+              <td>
+                <nz-tag>{{ a.event_type }}</nz-tag>
+              </td>
+              <td>{{ a.actor_name || a.actor_id || 'Sistema' }}</td>
+              <td>{{ a.created_at | date: 'dd/MM/yyyy HH:mm' }}</td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    }
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: COLLEGA ENTITÀ GESTIONALE -->
+<nz-modal appModalActions
+  okAction="add"
+  [nzVisible]="linkModalVisible()"
+  [nzTitle]="'DMS.LINK_ENTITY_TITLE' | translate"
+  (nzOnCancel)="linkModalVisible.set(false)"
+  [nzOkDisabled]="linkForm.invalid"
+  (nzOnOk)="submitLink()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="linkForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'DMS.ENTITY_TYPE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(linkForm, 'linkable_type')">
+          <nz-select formControlName="linkable_type">
+            @for (type of linkTargetTypes; track type) {
+              <nz-option [nzValue]="type" [nzLabel]="'DMS.LINK_TYPE_' + type.toUpperCase() | translate"></nz-option>
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'DMS.ENTITY_ID' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(linkForm, 'linkable_id')">
+          <input nz-input formControlName="linkable_id" [placeholder]="'DMS.LBL_UUID_DELL_ENTITA' | translate" />
+        </nz-form-control>
+      </nz-form-item>
+
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: AVVIA APPROVAZIONE -->
+<nz-modal appModalActions
+  okAction="add"
+  [nzVisible]="approvalModalVisible()"
+  [nzTitle]="'DMS.START_APPROVAL_TITLE' | translate"
+  (nzOnCancel)="approvalModalVisible.set(false)"
+  [nzOkDisabled]="approvalTemplateId() === '' || approvalSubmitting()"
+  (nzOnOk)="submitApproval()"
+>
+  <ng-container *nzModalContent>
+    <nz-form-item>
+      <nz-form-label nzRequired>{{ 'DMS.APPROVAL_TEMPLATE' | translate }}</nz-form-label>
+      <nz-form-control>
+        <nz-select [ngModel]="approvalTemplateId()" (ngModelChange)="approvalTemplateId.set($event)" [nzPlaceHolder]="'DMS.APPROVAL_TEMPLATE_PLACEHOLDER' | translate">
+          @for (template of approvalTemplates(); track template.id) {
+            <nz-option [nzValue]="template.id" [nzLabel]="template.name"></nz-option>
+          }
+        </nz-select>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label>{{ 'DMS.APPROVAL_NOTE' | translate }}</nz-form-label>
+      <nz-form-control>
+        <textarea nz-input rows="3" maxlength="1000" [ngModel]="approvalNote()" (ngModelChange)="approvalNote.set($event)"></textarea>
+      </nz-form-control>
+    </nz-form-item>
+  </ng-container>
+</nz-modal>

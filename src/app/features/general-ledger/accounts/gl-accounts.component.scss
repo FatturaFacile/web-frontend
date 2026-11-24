@@ -1,0 +1,33 @@
+:host {
+  display: block;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.search-input {
+  max-width: 260px;
+}
+
+.type-filter {
+  min-width: 180px;
+}
+
+.checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+}
+
+nz-alert {
+  margin-bottom: var(--space-3);
+}

@@ -1,0 +1,47 @@
+:host {
+  display: block;
+  margin: var(--space-6) auto;
+  max-width: 800px;
+  padding: 0 var(--space-4);
+}
+
+.signing-card {
+  width: 100%;
+}
+
+.signing-text {
+  white-space: pre-wrap;
+  max-height: 50vh;
+  overflow: auto;
+  padding: var(--space-4);
+  border: 1px solid var(--ff-color-border);
+  border-radius: 4px;
+  margin-bottom: var(--space-3);
+}
+
+.signing-hash {
+  font-size: 12px;
+  word-break: break-all;
+  opacity: 0.7;
+}
+
+.signing-signers {
+  list-style: none;
+  padding: 0;
+}
+
+.signing-actions {
+  display: flex;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.signing-decline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.signing-error {
+  margin-top: var(--space-3);
+}

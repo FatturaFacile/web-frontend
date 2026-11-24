@@ -1,0 +1,333 @@
+<div class="pr-detail-page" [class.pr-detail-embedded]="embedded()">
+  @if (!embedded()) {
+    <div class="detail-top-nav">
+      <a nz-button routerLink="/procurement/requisitions">
+        <span nz-icon nzType="arrow-left" aria-hidden="true"></span>
+        {{ 'PR.BACK_TO_LIST' | translate }}
+      </a>
+    </div>
+
+    <app-page-header
+      [title]="detail()?.requisition_number || ('PR.DETAIL.TITLE' | translate)"
+      [subtitle]="detail()?.title || ('PR.DETAIL.SUBTITLE' | translate)"
+    />
+  }
+
+  @if (store.error() && !detail()) {
+    <nz-alert
+      nzType="error"
+      nzShowIcon
+      [nzMessage]="'PR.LOAD_ERROR' | translate"
+      [nzDescription]="store.error() ?? ''"
+    />
+  }
+
+  <nz-spin [nzSpinning]="loading()">
+    @if (detail(); as req) {
+      <div class="detail-content">
+        <nz-card class="header-card">
+          <div class="detail-title-row">
+            <div class="title-block">
+              <span class="pr-number-badge">{{ req.requisition_number }}</span>
+              <h2 class="pr-heading">{{ req.title }}</h2>
+            </div>
+            <div class="status-tags">
+              <nz-tag [nzColor]="urgencyColor(req.urgency)">
+                {{ urgencyLabel(req.urgency) | translate }}
+              </nz-tag>
+              <nz-tag [nzColor]="statusColor(req.status)" data-testid="pr-detail-status-tag">
+                {{ statusLabel(req.status) | translate }}
+              </nz-tag>
+            </div>
+          </div>
+
+          <nz-descriptions nzBordered nzSize="small" [nzColumn]="{ xs: 1, sm: 2, lg: 3 }">
+            <nz-descriptions-item [nzTitle]="'PR.COL_REQUESTER' | translate">
+              {{ req.requester_name }}
+            </nz-descriptions-item>
+
+            <nz-descriptions-item [nzTitle]="'PR.FIELD.COST_CENTER' | translate">
+              @if (req.cost_center_code || req.cost_center_name) {
+                {{ req.cost_center_code }}
+                @if (req.cost_center_code && req.cost_center_name) {
+                  —
+                }
+                {{ req.cost_center_name }}
+              } @else {
+                —
+              }
+            </nz-descriptions-item>
+
+            <nz-descriptions-item [nzTitle]="'PR.FIELD.PROJECT' | translate">
+              @if (req.project_code || req.project_name) {
+                {{ req.project_code }}
+                @if (req.project_code && req.project_name) {
+                  —
+                }
+                {{ req.project_name }}
+              } @else {
+                —
+              }
+            </nz-descriptions-item>
+
+            <nz-descriptions-item [nzTitle]="'PR.FIELD.DELIVERY_DATE' | translate">
+              {{ req.requested_delivery_date | appDate: 'mediumDate' }}
+            </nz-descriptions-item>
+
+            <nz-descriptions-item [nzTitle]="'PR.FIELD.CURRENCY' | translate">
+              {{ req.currency }}
+            </nz-descriptions-item>
+
+            <nz-descriptions-item [nzTitle]="'PR.COL_ESTIMATED_TOTAL' | translate">
+              <strong>{{ req.estimated_total | money: req.currency }}</strong>
+            </nz-descriptions-item>
+
+            <nz-descriptions-item [nzTitle]="'PR.DETAIL.CREATED_AT' | translate">
+              {{ req.created_at | appDate: 'dateTime' }}
+            </nz-descriptions-item>
+
+            <nz-descriptions-item [nzTitle]="'PR.FIELD.JUSTIFICATION' | translate" [nzSpan]="2">
+              {{ req.economic_justification || '—' }}
+            </nz-descriptions-item>
+          </nz-descriptions>
+        </nz-card>
+
+        @if (req.budget_check_snapshot || req.cost_center_id) {
+          <app-pr-budget-indicator-card
+            [preview]="req.budget_check_snapshot"
+            [currency]="req.currency"
+            [hasCostCenter]="!!req.cost_center_id"
+            [estimatedTotal]="req.estimated_total"
+          />
+        }
+
+        <nz-card [nzTitle]="'PR.DETAIL.LINES_TITLE' | translate" class="section-card">
+          <nz-table
+            #linesTable
+            [nzData]="req.lines"
+            [nzFrontPagination]="false"
+            [nzShowPagination]="false"
+            nzSize="small"
+            [nzScroll]="{ x: '840px' }"
+          >
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">{{ 'PR.LINE.ITEM' | translate }}</th>
+                <th scope="col">{{ 'PR.LINE.OVERRIDE' | translate }}</th>
+                <th scope="col">{{ 'PR.LINE.QTY_REQUESTED' | translate }}</th>
+                <th scope="col">{{ 'PR.LINE.QTY_CONVERTED' | translate }}</th>
+                <th scope="col">{{ 'PR.LINE.QTY_REMAINING' | translate }}</th>
+                <th scope="col">{{ 'PR.LINE.UOM' | translate }}</th>
+                <th scope="col">{{ 'PR.LINE.UNIT_PRICE' | translate }}</th>
+                <th scope="col">{{ 'PR.LINE.SUBTOTAL' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (line of linesTable.data; track line.id) {
+                <tr>
+                  <td>{{ line.line_number }}</td>
+                  <td>
+                    <div class="line-item-cell">
+                      <span class="line-desc">{{ line.description }}</span>
+                      <div class="line-meta">
+                        @if (line.item_code) {
+                          <nz-tag>{{ line.item_code }}</nz-tag>
+                        }
+                        <nz-tag [nzColor]="line.catalog_item_id ? 'blue' : 'default'">
+                          {{
+                            (line.catalog_item_id ? 'PR.LINE.MODE_CATALOG' : 'PR.LINE.MODE_FREE_TEXT')
+                              | translate
+                          }}
+                        </nz-tag>
+                      </div>
+                      @if (line.notes) {
+                        <small class="line-notes">{{ line.notes }}</small>
+                      }
+                    </div>
+                  </td>
+                  <td>
+                    @if (line.cost_center_name || line.project_name) {
+                      <div class="override-meta">
+                        @if (line.cost_center_name) {
+                          <span>{{ line.cost_center_name }}</span>
+                        }
+                        @if (line.project_name) {
+                          <small>{{ line.project_name }}</small>
+                        }
+                      </div>
+                    } @else {
+                      —
+                    }
+                  </td>
+                  <td class="num-cell">{{ line.quantity }}</td>
+                  <td class="num-cell">{{ line.converted_quantity }}</td>
+                  <td class="num-cell">{{ line.remaining_quantity }}</td>
+                  <td>{{ line.uom }}</td>
+                  <td class="num-cell">{{ line.estimated_unit_price | money: req.currency }}</td>
+                  <td class="num-cell">
+                    <strong>{{ line.line_total | money: req.currency }}</strong>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </nz-table>
+        </nz-card>
+
+        <app-pr-approval-tracker
+          [steps]="req.approval_steps"
+          [logs]="req.approval_logs"
+          [status]="req.status"
+          [currency]="req.currency"
+        />
+
+        <nz-card [nzTitle]="'PR.DETAIL.LINKED_DOCUMENTS_TITLE' | translate" class="section-card">
+          @if (req.document_links.length > 0) {
+            <div class="linked-docs-list" data-testid="pr-linked-documents">
+              @for (link of req.document_links; track link.id) {
+                @let routeTarget = docLinkRoute(link);
+                <a
+                  class="linked-doc-chip"
+                  [routerLink]="routeTarget.commands"
+                  [queryParams]="routeTarget.queryParams ?? null"
+                >
+                  <nz-tag [nzColor]="link.document_type === 'rfq' ? 'purple' : 'geekblue'">
+                    {{
+                      (link.document_type === 'rfq' ? 'PR.LINK_TYPE_RFQ' : 'PR.LINK_TYPE_PO')
+                        | translate
+                    }}
+                  </nz-tag>
+                  <span class="doc-number">{{ link.document_number }}</span>
+                  <nz-tag>{{ link.status }}</nz-tag>
+                  @if (link.created_at) {
+                    <small class="doc-date">{{ link.created_at | appDate: 'mediumDate' }}</small>
+                  }
+                </a>
+              }
+            </div>
+          } @else {
+            <nz-empty [nzNotFoundContent]="'PR.DETAIL.NO_LINKED_DOCUMENTS' | translate" />
+          }
+        </nz-card>
+      </div>
+
+      @if (canApprove() || canEdit() || canConvert()) {
+        <div class="sticky-action-bar" data-testid="pr-sticky-action-bar">
+          <div class="sticky-info">
+            <span class="sticky-pr-number">{{ req.requisition_number }}</span>
+            <span class="sticky-total">{{ req.estimated_total | money: req.currency }}</span>
+          </div>
+
+          <div class="sticky-buttons">
+            @if (canEdit()) {
+              <button nz-button type="button" (click)="editRequisition(req)">
+                <span nz-icon nzType="edit" aria-hidden="true"></span>
+                {{ 'PR.ACTION_EDIT' | translate }}
+              </button>
+            }
+
+            @if (canDelete()) {
+              <button
+                nz-button
+                nzDanger
+                type="button"
+                nz-popconfirm
+                [nzPopconfirmTitle]="'PR.DELETE_CONFIRM' | translate"
+                (nzOnConfirm)="deleteRequisition()"
+                [nzLoading]="busy()"
+              >
+                <span nz-icon nzType="delete" aria-hidden="true"></span>
+                {{ 'PR.ACTION_DELETE' | translate }}
+              </button>
+            }
+
+            @if (canSubmit()) {
+              <button
+                nz-button
+                nzType="primary"
+                type="button"
+                [disabled]="isSubmitHardBlocked()"
+                [nzLoading]="busy()"
+                (click)="submitRequisition()"
+                data-testid="pr-detail-submit-btn"
+              >
+                <span nz-icon nzType="send" aria-hidden="true"></span>
+                {{ 'PR.ACTION_SUBMIT' | translate }}
+              </button>
+            }
+
+            @if (canConvert()) {
+              <button
+                nz-button
+                nzType="primary"
+                type="button"
+                (click)="goToConvert(req)"
+                data-testid="pr-detail-convert-btn"
+              >
+                <span nz-icon nzType="swap" aria-hidden="true"></span>
+                {{ 'PR.ACTION_CONVERT' | translate }}
+              </button>
+            }
+
+            @if (canApprove()) {
+              <button
+                nz-button
+                nzDanger
+                type="button"
+                [disabled]="busy()"
+                (click)="openRejectModal()"
+                data-testid="pr-detail-reject-btn"
+              >
+                <span nz-icon nzType="close" aria-hidden="true"></span>
+                {{ 'PR.ACTION_REJECT' | translate }}
+              </button>
+
+              <button
+                nz-button
+                nzType="primary"
+                type="button"
+                [nzLoading]="busy()"
+                (click)="approveRequisition()"
+                data-testid="pr-detail-approve-btn"
+              >
+                <span nz-icon nzType="thunderbolt" aria-hidden="true"></span>
+                {{ 'PR.DETAIL.ONE_CLICK_APPROVE' | translate }}
+              </button>
+            }
+          </div>
+        </div>
+      }
+    }
+  </nz-spin>
+
+  <nz-modal
+    [nzVisible]="rejectModalVisible()"
+    [nzTitle]="'PR.REJECT_MODAL.TITLE' | translate"
+    [nzOkText]="'PR.REJECT_MODAL.CONFIRM' | translate"
+    [nzCancelText]="'PR.ACTION_CANCEL' | translate"
+    [nzOkDanger]="true"
+    [nzOkLoading]="busy()"
+    (nzOnCancel)="closeRejectModal()"
+    (nzOnOk)="confirmReject()"
+  >
+    <ng-container *nzModalContent>
+      <form nz-form nzLayout="vertical" [formGroup]="rejectForm">
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="pr-reject-reason">
+            {{ 'PR.REJECT_MODAL.REASON_LABEL' | translate }}
+          </nz-form-label>
+          <nz-form-control [nzErrorTip]="'PR.REJECT_MODAL.REASON_ERROR' | translate">
+            <textarea
+              id="pr-reject-reason"
+              nz-input
+              rows="4"
+              formControlName="reason"
+              [placeholder]="'PR.REJECT_MODAL.REASON_PLACEHOLDER' | translate"
+              data-testid="pr-reject-reason-input"
+            ></textarea>
+          </nz-form-control>
+        </nz-form-item>
+      </form>
+    </ng-container>
+  </nz-modal>
+</div>

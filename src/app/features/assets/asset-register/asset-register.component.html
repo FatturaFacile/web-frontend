@@ -1,0 +1,170 @@
+<app-page-header [title]="label('eam.registry.officialRegister')" [subtitle]="label('eam.register.legalBasis')">
+  <div class="header-actions no-print">
+    <a nz-button nzType="default" routerLink="/assets">
+      <nz-icon nzType="arrow-left" />
+      {{ label('eam.registry.title') }}
+    </a>
+    <a nz-button nzType="default" routerLink="/assets/depreciation">
+      <nz-icon nzType="calculator" />
+      {{ label('eam.registry.yearEndBatch') }}
+    </a>
+  </div>
+</app-page-header>
+
+<nz-card class="mb-4 no-print">
+  <div class="register-toolbar">
+    <div class="toolbar-field">
+      <span>Fiscal Year</span>
+      <nz-input-number [ngModel]="year()" (ngModelChange)="year.set($event)" [nzMin]="2000" [nzMax]="2099"></nz-input-number>
+    </div>
+
+    <div class="toolbar-field">
+      <span>Book</span>
+      <nz-select [ngModel]="ledgerType()" (ngModelChange)="ledgerType.set($event)">
+        <nz-option nzValue="statutory" [nzLabel]="label('eam.book.statutory')"></nz-option>
+        <nz-option nzValue="tax" [nzLabel]="label('eam.book.tax')"></nz-option>
+      </nz-select>
+    </div>
+
+    <div class="toolbar-field">
+      <span>{{ label('eam.field.fiscalJurisdiction') }}</span>
+      <nz-select [ngModel]="jurisdiction()" (ngModelChange)="jurisdiction.set($event)">
+        <nz-option nzValue="CH" nzLabel="CH (Art. 958c CO)"></nz-option>
+        <nz-option nzValue="IT" nzLabel="IT (Art. 16 DPR 600/73)"></nz-option>
+      </nz-select>
+    </div>
+
+    <button nz-button nzType="primary" [nzLoading]="loading()" (click)="loadRegister()">
+      <nz-icon nzType="reload" />
+      {{ 'assets.lblRefresh' | translate }}
+    </button>
+
+    <div class="toolbar-exports">
+      <button nz-button nzType="default" (click)="printRegister()">
+        <nz-icon nzType="file-text" />
+        {{ label('eam.register.print') }}
+      </button>
+      <button nz-button nzType="default" [nzLoading]="exportingCsv()" (click)="downloadCsv()">
+        <nz-icon nzType="file-excel" />
+        {{ label('eam.register.exportCsv') }}
+      </button>
+      <button nz-button nzType="primary" [nzLoading]="exportingPdf()" (click)="downloadPdf()">
+        <nz-icon nzType="file-pdf" />
+        {{ label('eam.register.exportPdf') }}
+      </button>
+    </div>
+  </div>
+</nz-card>
+
+@if (complianceHeader(); as header) {
+  <nz-alert
+    nzType="info"
+    nzShowIcon
+    class="mb-4"
+    [nzMessage]="header.legal_reference"
+    [nzDescription]="header.legal_name + ' | Jurisdiction: ' + header.jurisdiction + ' | Fiscal Year: ' + header.year + ' | Book: ' + header.ledger_type + ' | Generated: ' + header.generated_at"
+  ></nz-alert>
+}
+
+@if (totals(); as t) {
+  <nz-card class="mb-4">
+    <nz-descriptions nzBordered [nzColumn]="4" nzSize="small">
+      <nz-descriptions-item nzTitle="Total Assets">{{ totalAssets() }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Closing Cost">{{ t.cost_end | money: currency() }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Year Additions / Impr.">{{ t.additions | money: currency() }} / {{ t.improvements_year | money: currency() }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Year Depreciation">{{ t.depreciation_year | money: currency() }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Accumulated Depr. End">{{ t.accumulated_end | money: currency() }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Value Adjustments">{{ t.value_adjustments | money: currency() }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Net Book Value End" [nzSpan]="2">
+        <strong>{{ t.net_book_value_end | money: currency() }}</strong>
+      </nz-descriptions-item>
+    </nz-descriptions>
+  </nz-card>
+}
+
+<nz-card class="mb-4">
+  <nz-table
+    [nzData]="rows()"
+    [nzLoading]="loading()"
+    [nzFrontPagination]="true"
+    [nzPageSize]="50"
+    [nzScroll]="{ x: '1300px' }"
+    nzSize="small"
+  >
+    <thead>
+      <tr>
+        <th>Code</th>
+        <th>Asset</th>
+        <th>Category</th>
+        <th>Jurisd.</th>
+        <th>Acq. / In-Service</th>
+        <th>Method</th>
+        <th nzAlign="right">Rate %</th>
+        <th nzAlign="right">Cost Start</th>
+        <th nzAlign="right">Additions</th>
+        <th nzAlign="right">Improv.</th>
+        <th nzAlign="right">Disposals</th>
+        <th nzAlign="right">Cost End</th>
+        <th nzAlign="right">Accum. Start</th>
+        <th nzAlign="right">Year Depr.</th>
+        <th nzAlign="right">Accum. End</th>
+        <th nzAlign="right">Adjustments</th>
+        <th nzAlign="right">NBV End</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (r of rows(); track r.asset_id) {
+        <tr>
+          <td><strong>{{ r.asset_number }}</strong></td>
+          <td>{{ r.name }}</td>
+          <td>{{ r.category_code }}</td>
+          <td><nz-tag>{{ r.fiscal_jurisdiction || jurisdiction() }}</nz-tag></td>
+          <td>{{ r.acquisition_date || '—' }} / {{ r.in_service_date || '—' }}</td>
+          <td>{{ r.depreciation_method }}</td>
+          <td nzAlign="right">{{ r.rate_percent }}%</td>
+          <td nzAlign="right">{{ r.cost_start | money: currency() }}</td>
+          <td nzAlign="right">{{ r.additions | money: currency() }}</td>
+          <td nzAlign="right">{{ r.improvements_year || '0.00' | money: currency() }}</td>
+          <td nzAlign="right">{{ r.disposals_cost | money: currency() }}</td>
+          <td nzAlign="right"><strong>{{ r.cost_end | money: currency() }}</strong></td>
+          <td nzAlign="right">{{ r.accumulated_start | money: currency() }}</td>
+          <td nzAlign="right">{{ r.depreciation_year | money: currency() }}</td>
+          <td nzAlign="right">{{ r.accumulated_end | money: currency() }}</td>
+          <td nzAlign="right">{{ r.value_adjustments | money: currency() }}</td>
+          <td nzAlign="right"><strong>{{ r.net_book_value_end | money: currency() }}</strong></td>
+        </tr>
+      }
+    </tbody>
+  </nz-table>
+</nz-card>
+
+@if (categorySubtotals().length > 0) {
+  <nz-card nzTitle="Category Subtotals">
+    <nz-table [nzData]="categorySubtotals()" [nzFrontPagination]="false" nzSize="small">
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th nzAlign="right">Assets</th>
+          <th nzAlign="right">Cost End</th>
+          <th nzAlign="right">Improvements</th>
+          <th nzAlign="right">Year Depr.</th>
+          <th nzAlign="right">Accum. End</th>
+          <th nzAlign="right">NBV End</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (sub of categorySubtotals(); track sub.category_code) {
+          <tr>
+            <td><strong>{{ sub.category_code }}</strong></td>
+            <td nzAlign="right">{{ sub.assets_count }}</td>
+            <td nzAlign="right">{{ sub.cost_end | money: currency() }}</td>
+            <td nzAlign="right">{{ sub.improvements_year | money: currency() }}</td>
+            <td nzAlign="right">{{ sub.depreciation_year | money: currency() }}</td>
+            <td nzAlign="right">{{ sub.accumulated_end | money: currency() }}</td>
+            <td nzAlign="right"><strong>{{ sub.net_book_value_end | money: currency() }}</strong></td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+}

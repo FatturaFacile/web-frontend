@@ -1,0 +1,116 @@
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import {
+  getXsrfCookie,
+  getSanctumBaseUrl,
+  getCsrfCookieUrl,
+  isBackendApiRequest,
+  isInsecureBackendRequest,
+} from '@core/auth/csrf.utils';
+import { environment } from '@env';
+import { TEST_API_ORIGIN, TEST_API_BASE_URL } from '../../../testing/api';
+
+describe('CSRF and Sanctum Utilities', () => {
+  const originalCookie = document.cookie;
+  const originalApiBaseUrl = environment.apiBaseUrl;
+
+  beforeEach(() => {
+    document.cookie = 'XSRF-TOKEN=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    document.cookie = 'other_cookie=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    document.cookie = 'session_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    document.cookie = 'theme=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+  });
+
+  afterEach(() => {
+    document.cookie = originalCookie;
+    environment.apiBaseUrl = originalApiBaseUrl;
+  });
+
+  describe('getXsrfCookie', () => {
+    it('should return null when cookie is not present', () => {
+      document.cookie = 'other_cookie=xyz; path=/';
+      expect(getXsrfCookie('XSRF-TOKEN')).toBeNull();
+    });
+
+    it('should read and URL-decode XSRF-TOKEN cookie', () => {
+      document.cookie = 'XSRF-TOKEN=test%3Dtoken%2B123; path=/';
+      expect(getXsrfCookie('XSRF-TOKEN')).toBe('test=token+123');
+    });
+
+    it('should extract correct cookie among multiple cookies', () => {
+      document.cookie = 'session_id=abc; path=/';
+      document.cookie = 'XSRF-TOKEN=csrf_secret_999; path=/';
+      document.cookie = 'theme=dark; path=/';
+      expect(getXsrfCookie('XSRF-TOKEN')).toBe('csrf_secret_999');
+    });
+  });
+
+  describe('getSanctumBaseUrl', () => {
+    it('should extract the origin from an absolute apiBaseUrl', () => {
+      environment.apiBaseUrl = TEST_API_BASE_URL;
+      expect(getSanctumBaseUrl()).toBe(`${TEST_API_ORIGIN}`);
+    });
+
+    it('should return empty string for relative apiBaseUrl', () => {
+      environment.apiBaseUrl = '/api';
+      expect(getSanctumBaseUrl()).toBe('');
+    });
+  });
+
+  describe('getCsrfCookieUrl', () => {
+    it('should return full URL to /sanctum/csrf-cookie for absolute base URL', () => {
+      environment.apiBaseUrl = TEST_API_BASE_URL;
+      expect(getCsrfCookieUrl()).toBe(`${TEST_API_ORIGIN}/sanctum/csrf-cookie`);
+    });
+
+    it('should return relative /sanctum/csrf-cookie for relative base URL', () => {
+      environment.apiBaseUrl = '/api';
+      expect(getCsrfCookieUrl()).toBe('/sanctum/csrf-cookie');
+    });
+  });
+
+  describe('isBackendApiRequest', () => {
+    it('should return false for frontend assets', () => {
+      expect(isBackendApiRequest('/assets/i18n/it.json')).toBe(false);
+      expect(isBackendApiRequest('/assets/i18n/it.json')).toBe(false);
+    });
+
+    it('should return true for relative API routes', () => {
+      expect(isBackendApiRequest('/api/crm/clients')).toBe(true);
+      expect(isBackendApiRequest('/sanctum/csrf-cookie')).toBe(true);
+    });
+
+    it('should return true for configured apiBaseUrl routes', () => {
+      environment.apiBaseUrl = TEST_API_BASE_URL;
+      expect(isBackendApiRequest(`${TEST_API_ORIGIN}/api/v1/auth/login`)).toBe(true);
+      expect(isBackendApiRequest(`${TEST_API_ORIGIN}/sanctum/csrf-cookie`)).toBe(true);
+    });
+
+    it('should return false for third-party external URLs', () => {
+      expect(isBackendApiRequest('https://images.unsplash.com/photo-123')).toBe(false);
+    });
+  });
+
+  describe('isInsecureBackendRequest', () => {
+    it('accepts https URLs and relative URLs of an https page', () => {
+      expect(
+        isInsecureBackendRequest('https://api.example.com/api/v1/x', 'http:', 'example.com'),
+      ).toBe(false);
+      expect(isInsecureBackendRequest('/api/v1/x', 'https:', 'erp.example.com')).toBe(false);
+    });
+
+    it('refuses plain http outside loopback, for absolute and relative URLs', () => {
+      expect(
+        isInsecureBackendRequest('http://api.example.com/api/v1/x', 'https:', 'erp.example.com'),
+      ).toBe(true);
+      expect(isInsecureBackendRequest('/api/v1/x', 'http:', 'erp.example.com')).toBe(true);
+    });
+
+    it('lets loopback hosts use http for local development', () => {
+      expect(
+        isInsecureBackendRequest('https://localhost:8080/api/v1/x', 'http:', 'localhost'),
+      ).toBe(false);
+      expect(isInsecureBackendRequest('/api/v1/x', 'http:', '127.0.0.1')).toBe(false);
+      expect(isInsecureBackendRequest('/api/v1/x', 'http:', 'app.localhost')).toBe(false);
+    });
+  });
+});

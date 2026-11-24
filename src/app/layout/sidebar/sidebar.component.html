@@ -1,0 +1,125 @@
+<div class="sidebar-brand" [class.collapsed]="appStore.isCollapsed()">
+  <img
+    src="/images/fattura_facile_favicon_trasparente.svg"
+    alt="Fattura Facile Logo"
+    class="brand-logo"
+  />
+  @if (!appStore.isCollapsed()) {
+    <span class="brand-text">Fattura <span>Facile</span></span>
+  }
+</div>
+
+@if (!appStore.isCollapsed()) {
+  <div class="sidebar-search">
+    <nz-input-wrapper>
+      <nz-icon nzInputPrefix nzType="search" />
+      <input
+        type="text"
+        nz-input
+        autocomplete="off"
+        [value]="searchTerm()"
+        (input)="onSearch($event)"
+        (keydown.escape)="clearSearch()"
+        [placeholder]="'NAV.SEARCH_PLACEHOLDER' | translate"
+        [attr.aria-label]="'NAV.SEARCH_PLACEHOLDER' | translate"
+      />
+      @if (isSearching()) {
+        <button
+          nzInputSuffix
+          type="button"
+          class="sidebar-search-clear"
+          [attr.aria-label]="'NAV.SEARCH_CLEAR' | translate"
+          (click)="clearSearch()"
+        >
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      }
+    </nz-input-wrapper>
+  </div>
+}
+
+<ul
+  nz-menu
+  nzTheme="dark"
+  nzMode="inline"
+  [nzInlineCollapsed]="appStore.isCollapsed()"
+  class="sidebar-menu"
+  [class.sidebar-collapsed]="appStore.isCollapsed()"
+>
+  @for (section of filteredSections(); track $index) {
+    @if (section.key) {
+      @if (appStore.isCollapsed()) {
+        <li class="menu-section-divider" role="separator"></li>
+      } @else {
+        <li class="menu-section-title">{{ section.key | translate }}</li>
+      }
+    }
+    @for (item of section.items; track item.key) {
+      @if (!item.children) {
+        <li
+          nz-menu-item
+          nzMatchRouter
+          [nzDisabled]="!isEnabled(item.route)"
+          [title]="isEnabled(item.route) ? (item.key | translate) : ((item.key | translate) + ' - ' + ('NAV.NOT_TESTED_YET' | translate))"
+          nz-tooltip
+          [nzTooltipTitle]="appStore.isCollapsed() ? (item.key | translate) : null"
+          [nzTooltipPlacement]="'right'"
+        >
+          <a
+            [routerLink]="isEnabled(item.route) ? item.route : null"
+            class="menu-item-link"
+            [attr.aria-disabled]="isEnabled(item.route) ? null : 'true'"
+          >
+            <i [class]="item.icon + ' sidebar-icon'"></i>
+            <span class="menu-title-text">{{ item.key | translate }}</span>
+          </a>
+        </li>
+      } @else {
+        <li
+          nz-submenu
+          [nzTitle]="submenuTitle"
+          [nzDisabled]="!isGroupEnabled(item)"
+          [nzOpen]="isSearching() || (!appStore.isCollapsed() && openGroup() === item.key)"
+          (nzOpenChange)="onGroupOpenChange(item.key, $event)"
+          [title]="isGroupEnabled(item) ? (item.key | translate) : ((item.key | translate) + ' - ' + ('NAV.NOT_TESTED_YET' | translate))"
+          nz-tooltip
+          [nzTooltipTitle]="appStore.isCollapsed() ? (item.key | translate) : null"
+          [nzTooltipPlacement]="'right'"
+        >
+          <ng-template #submenuTitle>
+            <div class="submenu-title-wrapper" [title]="item.key | translate" [attr.data-group-key]="item.key">
+              <i [class]="item.icon + ' sidebar-icon'"></i>
+              <span class="menu-title-text">{{ item.key | translate }}</span>
+            </div>
+          </ng-template>
+          <ul>
+            @for (sub of item.children; track sub.route) {
+              <li
+                nz-menu-item
+                nzMatchRouter
+                [nzDisabled]="!isEnabled(sub.route)"
+                [title]="isEnabled(sub.route) ? (sub.key | translate) : ((sub.key | translate) + ' - ' + ('NAV.NOT_TESTED_YET' | translate))"
+                nz-tooltip
+                [nzTooltipTitle]="appStore.isCollapsed() ? (sub.key | translate) : null"
+                [nzTooltipPlacement]="'right'"
+              >
+                <a
+                  [routerLink]="isEnabled(sub.route) ? sub.route : null"
+                  class="menu-item-link"
+                  [attr.aria-disabled]="isEnabled(sub.route) ? null : 'true'"
+                >
+                  <i [class]="sub.icon + ' sidebar-icon'"></i>
+                  <span class="menu-title-text">{{ sub.key | translate }}</span>
+                </a>
+              </li>
+            }
+          </ul>
+        </li>
+      }
+    }
+  } @empty {
+    @if (isSearching()) {
+      <li class="menu-search-empty" role="status">{{ 'NAV.SEARCH_EMPTY' | translate }}</li>
+    }
+  }
+</ul>

@@ -1,0 +1,294 @@
+<main class="login-wrapper">
+  <div class="login-box">
+    <div class="theme-toolbar"><app-theme-selector /></div>
+
+    <header class="login-header text-center">
+      <h1>Fattura <span class="facile-color">Facile</span></h1>
+      <p class="subtitle">{{ "AUTH.SUBTITLE" | translate }}</p>
+    </header>
+
+    <nz-card [nzBordered]="false" class="login-card">
+      @if (errorMessage(); as message) {
+        <nz-alert class="login-alert" nzType="error" nzShowIcon [nzMessage]="message" />
+      }
+      @if (needsVerification()) {
+        <app-resend-verification [email]="loginForm.controls.email.value" />
+      }
+
+      <!-- STANDARD LOGIN FORM -->
+      @if (!isChallengeStep()) {
+        <form nz-form nzLayout="vertical" [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+          <nz-form-item>
+            <nz-form-label nzRequired nzFor="email">{{ "AUTH.EMAIL" | translate }}</nz-form-label>
+            <nz-form-control
+              nzHasFeedback
+              [nzValidateStatus]="loginForm.controls.email"
+              [nzErrorTip]="emailError"
+            >
+              <nz-input-wrapper>
+                <nz-icon nzInputPrefix nzType="mail" />
+                <input
+                  nz-input
+                  id="email"
+                  type="email"
+                  formControlName="email"
+                  autocomplete="username webauthn"
+                  nzSize="large"
+                  [placeholder]="'LOGIN.LBL_NAME_COMPANY_COM' | translate"
+                />
+              </nz-input-wrapper>
+            </nz-form-control>
+            <ng-template #emailError let-control>
+              @if (control.hasError("serverError")) {
+                {{ control.getError("serverError") }}
+              } @else if (control.hasError("email")) {
+                {{ "COMMON.VALIDATION.INVALID_EMAIL" | translate }}
+              } @else {
+                {{ "AUTH.EMAIL_ERROR" | translate }}
+              }
+            </ng-template>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label nzRequired nzFor="password">{{
+                "AUTH.PASSWORD" | translate
+              }}
+            </nz-form-label>
+            <nz-form-control
+              nzHasFeedback
+              [nzValidateStatus]="loginForm.controls.password"
+              [nzErrorTip]="passwordError"
+            >
+              <nz-input-wrapper>
+                <nz-icon nzInputPrefix nzType="lock" />
+                <input
+                  nz-input
+                  id="password"
+                  formControlName="password"
+                  autocomplete="current-password"
+                  nzSize="large"
+                  [type]="passwordVisible() ? 'text' : 'password'"
+                />
+                <button
+                  nzInputSuffix
+                  type="button"
+                  class="toggle"
+                  [attr.aria-label]="
+                    (passwordVisible() ? 'AUTH.HIDE_PASSWORD' : 'AUTH.SHOW_PASSWORD') | translate
+                  "
+                  [attr.aria-pressed]="passwordVisible()"
+                  (click)="passwordVisible.set(!passwordVisible())"
+                >
+                  <nz-icon [nzType]="passwordVisible() ? 'eye-invisible' : 'eye'" />
+                </button>
+              </nz-input-wrapper>
+            </nz-form-control>
+            <ng-template #passwordError let-control>
+              @if (control.hasError("serverError")) {
+                {{ control.getError("serverError") }}
+              } @else if (control.hasError("minlength")) {
+                {{ "AUTH.PASSWORD_MIN" | translate }}
+              } @else {
+                {{ "AUTH.PASSWORD_ERROR" | translate }}
+              }
+            </ng-template>
+          </nz-form-item>
+
+          <div class="options">
+            <!-- nz-checkbox renders its own input inside the label -->
+            <label for="login-remember" nzId="login-remember" nz-checkbox id="remember" formControlName="remember">{{ "AUTH.REMEMBER" | translate }}</label>
+            <a routerLink="/forgot-password">{{ "AUTH.FORGOT" | translate }}</a>
+          </div>
+
+          <button
+            nz-button
+            nzType="primary"
+            nzSize="large"
+            nzBlock
+            type="submit"
+            [nzLoading]="isSubmitting()"
+            [disabled]="loginForm.invalid"
+          >
+            {{ "AUTH.SUBMIT_BTN" | translate }}
+          </button>
+        </form>
+
+        <div class="sso-section">
+          <button
+            nz-button
+            nzBlock
+            nzSize="large"
+            type="button"
+            [nzLoading]="isSsoStarting()"
+            (click)="onSsoSubmit()"
+          >
+            <nz-icon nzType="safety-certificate" />
+            {{ "AUTH.SSO_BUTTON" | translate }}
+          </button>
+          @if (passkeySupported()) {
+            <button
+              nz-button
+              nzBlock
+              nzSize="large"
+              type="button"
+              data-testid="passkey-signin"
+              [nzLoading]="isPasskeyStarting()"
+              (click)="onPasskeySignIn()"
+            >
+              <nz-icon nzType="key" />
+              {{ "IAM.PASSKEY_SIGNIN" | translate }}
+            </button>
+          }
+        </div>
+
+        <p class="register-link">
+          {{ "AUTH.NO_ACCOUNT" | translate }}
+          <a routerLink="/register">{{ "AUTH.REGISTER_LINK" | translate }}</a>
+        </p>
+
+        <!-- SELETTORE A 4 BANDIERE -->
+        <div class="language-flags" role="group" [attr.aria-label]="'auth.languageSelector' | translate">
+          <button
+            type="button"
+            class="flag-btn"
+            [class.active]="currentLang() === 'it'"
+            (click)="setLanguage('it')"
+            [attr.title]="'AUTH.LANGUAGE_NAME_IT' | translate"
+            [attr.aria-label]="'AUTH.LANGUAGE_NAME_IT' | translate"
+          >
+            <span class="fi fi-it">🇮🇹</span>
+          </button>
+          <button
+            type="button"
+            class="flag-btn"
+            [class.active]="currentLang() === 'en'"
+            (click)="setLanguage('en')"
+            [attr.title]="'AUTH.LANGUAGE_NAME_EN' | translate"
+            [attr.aria-label]="'AUTH.LANGUAGE_NAME_EN' | translate"
+          >
+            <span class="fi fi-gb">🇬🇧</span>
+          </button>
+          <button
+            type="button"
+            class="flag-btn"
+            [class.active]="currentLang() === 'de'"
+            (click)="setLanguage('de')"
+            [attr.title]="'AUTH.LANGUAGE_NAME_DE' | translate"
+            [attr.aria-label]="'AUTH.LANGUAGE_NAME_DE' | translate"
+          >
+            <span class="fi fi-de">🇩🇪</span>
+          </button>
+          <button
+            type="button"
+            class="flag-btn"
+            [class.active]="currentLang() === 'fr'"
+            (click)="setLanguage('fr')"
+            [attr.title]="'AUTH.LANGUAGE_NAME_FR' | translate"
+            [attr.aria-label]="'AUTH.LANGUAGE_NAME_FR' | translate"
+          >
+            <span class="fi fi-fr">🇫🇷</span>
+          </button>
+        </div>
+        <!-- SUPPORTO -->
+        <p class="auth-footer-info">
+          <a href="mailto:support@fatturafacile.eu">support&#64;fatturafacile.eu</a>
+        </p>
+      }
+
+      <!-- TWO FACTOR CHALLENGE FORM -->
+      @if (isChallengeStep()) {
+        <div class="challenge-section">
+          <div class="challenge-header">
+            <nz-icon nzType="safety-certificate" class="challenge-icon" />
+            <h2>{{ 'TWO_FACTOR.CHALLENGE_TITLE' | translate }}</h2>
+            <p class="challenge-subtitle">{{ 'TWO_FACTOR.CHALLENGE_SUBTITLE' | translate }}</p>
+          </div>
+
+          <form nz-form nzLayout="vertical" [formGroup]="challengeForm" (ngSubmit)="onChallengeSubmit()">
+            @if (!useRecoveryCode()) {
+              <nz-form-item>
+                <nz-form-label nzRequired nzFor="challenge-code">{{ 'TWO_FACTOR.APP_CODE' | translate }}</nz-form-label>
+                <nz-form-control [nzErrorTip]="'TWO_FACTOR.CODE_REQUIRED' | translate">
+                  <nz-input-wrapper>
+                    <nz-icon nzInputPrefix nzType="mobile" />
+                    <input
+                      nz-input
+                      id="challenge-code"
+                      type="text"
+                      inputmode="numeric"
+                      formControlName="code"
+                      placeholder="123456"
+                      maxlength="16"
+                      nzSize="large"
+                      autocomplete="one-time-code"
+                    />
+                  </nz-input-wrapper>
+                </nz-form-control>
+              </nz-form-item>
+            } @else {
+              <nz-form-item>
+                <nz-form-label nzRequired nzFor="challenge-recovery-code">{{ 'TWO_FACTOR.RECOVERY_CODE' | translate }}
+                </nz-form-label>
+                <nz-form-control [nzErrorTip]="'TWO_FACTOR.RECOVERY_CODE_REQUIRED' | translate">
+                  <nz-input-wrapper>
+                    <nz-icon nzInputPrefix nzType="key" />
+                    <input
+                      nz-input
+                      id="challenge-recovery-code"
+                      type="text"
+                      formControlName="recoveryCode"
+                      autocomplete="off"
+                      [placeholder]="'TWO_FACTOR.RECOVERY_CODE' | translate"
+                      maxlength="32"
+                      nzSize="large"
+                    />
+                  </nz-input-wrapper>
+                </nz-form-control>
+              </nz-form-item>
+            }
+
+            <div class="challenge-toggle-row">
+              <button
+                nz-button
+                nzType="link"
+                type="button"
+                (click)="useRecoveryCode.set(!useRecoveryCode())"
+              >
+                {{ (useRecoveryCode() ? 'TWO_FACTOR.USE_APP_CODE' : 'TWO_FACTOR.USE_RECOVERY_CODE') | translate }}
+              </button>
+            </div>
+
+            <button
+              nz-button
+              nzType="primary"
+              nzSize="large"
+              nzBlock
+              type="submit"
+              [nzLoading]="isSubmitting()"
+              [disabled]="!canSubmitChallenge()"
+            >
+              {{ 'TWO_FACTOR.CHALLENGE_Submit' | translate }}
+            </button>
+
+            <button
+              nz-button
+              nzType="default"
+              nzBlock
+              type="button"
+              class="cancel-challenge-btn"
+              (click)="cancelChallenge()"
+            >
+              {{ 'AUTH.BACK_TO_LOGIN' | translate }}
+            </button>
+          </form>
+        </div>
+      }
+    </nz-card>
+    <app-auth-footer />
+  </div>
+
+  <app-two-factor-setup-modal
+    [(isVisible)]="showTwoFactorSetup"
+    (completed)="onTwoFactorSetupCompleted()"
+  />
+</main>

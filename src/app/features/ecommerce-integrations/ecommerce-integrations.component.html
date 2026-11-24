@@ -1,0 +1,544 @@
+<div class="ecommerce-container">
+  <app-page-header
+    [title]="'ECOMMERCE_INTEGRATIONS.PAGE_TITLE' | translate"
+    [subtitle]="'ECOMMERCE_INTEGRATIONS.PAGE_SUBTITLE' | translate"
+  >
+    <div class="header-actions">
+      <button nz-button nzType="primary" appIconAction="create" (click)="openCreateChannelModal()"></button>
+      <button nz-button appIconAction="create" (click)="openCreateApiKeyModal()"></button>
+      <button nz-button appIconAction="create" (click)="openCreatePaymentLinkModal()"></button>
+    </div>
+  </app-page-header>
+
+  <nz-card class="main-card">
+    <nz-tabs [(nzSelectedIndex)]="selectedTabIndex">
+      <!-- TAB 1: Channels & Marketplaces -->
+      <nz-tab [nzTitle]="'ECOMMERCE_INTEGRATIONS.TAB_CHANNELS' | translate">
+        <app-base-table [grid]="channelGrid" [columns]="channelColumns()" [bordered]="true" [actionsTemplate]="channelActionsTpl" />
+
+        <ng-template #channelNameTpl let-ch>
+          <strong>{{ ch.name }}</strong>
+          @if (ch.api_url) {
+            <div class="store-url">{{ ch.api_url }}</div>
+          }
+        </ng-template>
+        <ng-template #channelDriverTpl let-ch>
+          <nz-tag [nzColor]="getDriverBadgeColor(ch.driver)">
+            {{ ch.driver | uppercase }}
+          </nz-tag>
+        </ng-template>
+        <ng-template #channelStatusTpl let-ch>
+          <nz-tag [nzColor]="ch.is_active ? 'success' : 'default'">
+            {{ (ch.is_active ? 'ECOMMERCE_INTEGRATIONS.ACTIVE' : 'ECOMMERCE_INTEGRATIONS.INACTIVE') | translate }}
+          </nz-tag>
+        </ng-template>
+        <ng-template #channelSyncTpl let-ch>
+          @if (ch.last_sync_at) {
+            <span>{{ ch.last_sync_at | date: 'dd/MM/yyyy HH:mm' }}</span>
+            @if (ch.last_sync_status) {
+              <nz-tag [nzColor]="ch.last_sync_status === 'success' ? 'success' : 'error'">
+                {{ ch.last_sync_status }}
+              </nz-tag>
+            }
+          } @else {
+            <span class="text-muted">{{ 'ECOMMERCE_INTEGRATIONS.NEVER_SYNCED' | translate }}</span>
+          }
+        </ng-template>
+        <ng-template #channelActionsTpl let-ch>
+          <div class="action-buttons">
+            <button nz-button nzType="link" nzSize="small" (click)="openChannelDetails(ch)">
+              <span nz-icon nzType="eye"></span>
+              {{ 'ECOMMERCE_INTEGRATIONS.DETAILS' | translate }}
+            </button>
+            <button nz-button nzType="link" nzSize="small" (click)="testConnection(ch)">
+              <span nz-icon nzType="sync"></span>
+              {{ 'ECOMMERCE_INTEGRATIONS.TEST_CONNECTION' | translate }}
+            </button>
+            <button nz-button nzType="link" nzSize="small" (click)="openSyncModal(ch)">
+              <span nz-icon nzType="cloud-download"></span>
+              {{ 'ECOMMERCE_INTEGRATIONS.SYNC_NOW' | translate }}
+            </button>
+            <button nz-button nzType="link" nzSize="small" appIconAction="edit" (click)="openEditChannelModal(ch)"></button>
+            <button nz-button nzType="link" nzDanger nzSize="small" (click)="deleteChannel(ch)" appIconAction="delete"></button>
+          </div>
+        </ng-template>
+      </nz-tab>
+
+      <!-- TAB 2: Sync Status & Webhooks -->
+      <nz-tab [nzTitle]="'ECOMMERCE_INTEGRATIONS.TAB_SYNC_WEBHOOKS' | translate">
+        <nz-alert
+          nzType="info"
+          [nzMessage]="'ECOMMERCE_INTEGRATIONS.WEBHOOKS_INFO_TITLE' | translate"
+          [nzDescription]="'ECOMMERCE_INTEGRATIONS.WEBHOOKS_INFO_DESC' | translate"
+          nzShowIcon
+          class="webhook-alert"
+        ></nz-alert>
+
+        <div class="webhooks-list">
+          <h3>{{ 'ECOMMERCE_INTEGRATIONS.INCOMING_WEBHOOKS' | translate }}</h3>
+          @for (ch of channels(); track ch.id) {
+            <nz-card class="webhook-card" [nzTitle]="ch.name">
+              <div class="webhook-row">
+                <span class="label"><strong>{{ 'ECOMMERCE_INTEGRATIONS.LBL_URL_ENDPOINT' | translate }}</strong></span>
+                <code>{{ apiBaseUrl }}/webhooks/ecommerce/{{ ch.uuid || ch.id }}</code>
+                <button
+                  nz-button
+                  nzSize="small"
+                  (click)="copyToClipboard(apiBaseUrl + '/webhooks/ecommerce/' + (ch.uuid || ch.id))"
+                >
+                  <span nz-icon nzType="copy"></span>
+                  {{ 'ECOMMERCE_INTEGRATIONS.COPY' | translate }}
+                </button>
+              </div>
+              <div class="webhook-meta">
+                <p><strong>{{ 'ECOMMERCE_INTEGRATIONS.PLATFORM' | translate }}:</strong> {{ ch.driver }}</p>
+                <p>
+                  <strong>{{ 'ECOMMERCE_INTEGRATIONS.AUTO_SYNC_ORDERS' | translate }}:</strong>
+                  {{ (ch.sync_orders_enabled ? 'ECOMMERCE_INTEGRATIONS.ENABLED' : 'ECOMMERCE_INTEGRATIONS.DISABLED') | translate }}
+                </p>
+              </div>
+            </nz-card>
+          }
+        </div>
+      </nz-tab>
+
+      <!-- TAB 3: Developer API Keys -->
+      <nz-tab [nzTitle]="'ECOMMERCE_INTEGRATIONS.TAB_API_KEYS' | translate">
+        <div class="tab-toolbar">
+          <p class="description">{{ 'ECOMMERCE_INTEGRATIONS.API_KEYS_DESCRIPTION' | translate }}</p>
+          <button nz-button nzType="primary" appIconAction="create" (click)="openCreateApiKeyModal()"></button>
+        </div>
+
+        <app-base-table [grid]="apiKeyGrid" [columns]="apiKeyColumns()" [bordered]="true" [actionsTemplate]="keyActionsTpl" />
+
+        <ng-template #keyNameTpl let-k><strong>{{ k.name }}</strong></ng-template>
+        <ng-template #keyScopesTpl let-k>
+          @for (sc of k.scopes; track sc) {
+            <nz-tag nzColor="blue">{{ sc }}</nz-tag>
+          }
+        </ng-template>
+        <ng-template #keyExpiresTpl let-k>
+          {{ k.expires_at ? (k.expires_at | date: 'dd/MM/yyyy HH:mm') : ('ECOMMERCE_INTEGRATIONS.NEVER' | translate) }}
+        </ng-template>
+        <ng-template #keyLastUsedTpl let-k>
+          {{ k.last_used_at ? (k.last_used_at | date: 'dd/MM/yyyy HH:mm') : ('ECOMMERCE_INTEGRATIONS.NEVER' | translate) }}
+        </ng-template>
+        <ng-template #keyStatusTpl let-k>
+          <nz-tag [nzColor]="isApiKeyRevoked(k) ? 'error' : 'success'">
+            {{ (isApiKeyRevoked(k) ? 'ECOMMERCE_INTEGRATIONS.REVOKED' : 'ECOMMERCE_INTEGRATIONS.ACTIVE') | translate }}
+          </nz-tag>
+        </ng-template>
+        <ng-template #keyActionsTpl let-k>
+          <div class="action-buttons">
+            <button nz-button nzType="link" nzSize="small" [disabled]="isApiKeyRevoked(k)" (click)="rotateApiKey(k)">
+              <span nz-icon nzType="redo"></span>
+              {{ 'ECOMMERCE_INTEGRATIONS.ROTATE' | translate }}
+            </button>
+            <button nz-button nzType="link" nzDanger nzSize="small" [disabled]="isApiKeyRevoked(k)" (click)="revokeApiKey(k)">
+              <span nz-icon nzType="stop"></span>
+              {{ 'ECOMMERCE_INTEGRATIONS.REVOKE' | translate }}
+            </button>
+          </div>
+        </ng-template>
+      </nz-tab>
+
+      <!-- TAB 4: Payment Gateway & Hosted Links -->
+      <nz-tab [nzTitle]="'ECOMMERCE_INTEGRATIONS.TAB_PAYMENT_GATEWAY' | translate">
+        <div class="gateway-layout">
+          <!-- Gateway Settings -->
+          <nz-card class="gateway-card" [nzTitle]="'ECOMMERCE_INTEGRATIONS.GATEWAY_SETTINGS' | translate">
+            <form nz-form [formGroup]="gatewayForm" (ngSubmit)="submitPaymentGateway()" nzLayout="vertical">
+        <ng-template #fieldTip let-control>
+          @if (control.errors?.['serverError']) {
+            {{ control.errors['serverError'] }}
+          } @else if (control.hasError('required')) {
+            {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+          } @else if (control.hasError('pastDate')) {
+            {{ 'COMMON.VALIDATION.DATE_NOT_IN_PAST' | translate }}
+          } @else {
+            {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+          }
+        </ng-template>
+              <nz-form-item>
+                <nz-form-label nzRequired>{{ 'ECOMMERCE_INTEGRATIONS.PAYMENT_PROVIDER' | translate }}</nz-form-label>
+                <nz-form-control [nzErrorTip]="fieldTip">
+                  <nz-select formControlName="provider">
+                    <nz-option nzValue="stripe" nzLabel="Stripe Payments"></nz-option>
+                    <nz-option nzValue="local" [nzLabel]="'ECOMMERCE_INTEGRATIONS.LBL_LOCAL_OFFLINE_DRIVER' | translate"></nz-option>
+                  </nz-select>
+                </nz-form-control>
+              </nz-form-item>
+
+              <nz-form-item>
+                <nz-form-label>{{ 'ECOMMERCE_INTEGRATIONS.STRIPE_SECRET_KEY' | translate }}</nz-form-label>
+                <nz-form-control [nzErrorTip]="fieldTip">
+                  <input
+                    nz-input
+                    type="password"
+                    formControlName="secret_key"
+                    [placeholder]="'ECOMMERCE_INTEGRATIONS.LBL_SK_LIVE_SK_TEST' | translate"
+                  />
+                </nz-form-control>
+              </nz-form-item>
+
+              <nz-form-item>
+                <nz-form-label>{{ 'ECOMMERCE_INTEGRATIONS.WEBHOOK_SECRET' | translate }}</nz-form-label>
+                <nz-form-control [nzErrorTip]="fieldTip">
+                  <input
+                    nz-input
+                    type="password"
+                    formControlName="webhook_secret"
+                    [placeholder]="'ECOMMERCE_INTEGRATIONS.LBL_WHSEC' | translate"
+                  />
+                </nz-form-control>
+              </nz-form-item>
+
+              <nz-form-item>
+                <nz-form-label>{{ 'ECOMMERCE_INTEGRATIONS.PUBLISHABLE_KEY' | translate }}</nz-form-label>
+                <nz-form-control [nzErrorTip]="fieldTip">
+                  <input
+                    nz-input
+                    formControlName="publishable_key"
+                    [placeholder]="'ECOMMERCE_INTEGRATIONS.LBL_PK_LIVE_PK_TEST' | translate"
+                  />
+                </nz-form-control>
+              </nz-form-item>
+
+              <button nz-button nzType="primary" appIconAction="save" [nzLoading]="loading()" [disabled]="gatewayForm.invalid"></button>
+            </form>
+          </nz-card>
+
+          <!-- Hosted Payment Links -->
+          <nz-card class="gateway-card" [nzTitle]="'ECOMMERCE_INTEGRATIONS.HOSTED_PAYMENT_LINKS' | translate">
+            <div class="links-filter">
+              <input
+                nz-input
+                [(ngModel)]="filterInvoiceId"
+                (keyup.enter)="searchPaymentLinks()"
+                [placeholder]="'ECOMMERCE_INTEGRATIONS.FILTER_INVOICE_PLACEHOLDER' | translate"
+                class="filter-input"
+              />
+              <button nz-button (click)="searchPaymentLinks()">
+                <span nz-icon nzType="search"></span>
+              </button>
+              <button nz-button nzType="primary" appIconAction="create" (click)="openCreatePaymentLinkModal()"></button>
+            </div>
+
+            <app-base-table [grid]="paymentLinkGrid" [columns]="paymentLinkColumns()" [bordered]="true" size="small" [actionsTemplate]="linkActionsTpl" />
+
+            <ng-template #linkInvoiceTpl let-link><code>{{ link.invoice_id }}</code></ng-template>
+            <ng-template #linkAmountTpl let-link>
+              @if (link.amount) {
+                <span>{{ link.amount | money: (link.currency || 'EUR') }}</span>
+              } @else {
+                <span>-</span>
+              }
+            </ng-template>
+            <ng-template #linkStatusTpl let-link>
+              <nz-tag [nzColor]="getLinkStatusBadgeColor(link.status)">
+                {{ link.status | uppercase }}
+              </nz-tag>
+            </ng-template>
+            <ng-template #linkUrlTpl let-link>
+              <div class="link-url-box">
+                <button nz-button nzSize="small" nzType="link" (click)="copyToClipboard(link.url)">
+                  <span nz-icon nzType="copy"></span>
+                  {{ 'ECOMMERCE_INTEGRATIONS.COPY_LINK' | translate }}
+                </button>
+              </div>
+            </ng-template>
+            <ng-template #linkActionsTpl let-link>
+              <button nz-button nzSize="small" nzType="link" (click)="refreshPaymentLink(link)">
+                <span nz-icon nzType="reload"></span>
+                {{ 'ECOMMERCE_INTEGRATIONS.PAYMENT_LINK_REFRESH' | translate }}
+              </button>
+              @if (isPaymentLinkCancellable(link)) {
+                <button
+                  nz-button
+                  nzSize="small"
+                  nzType="link"
+                  nzDanger
+                  nz-popconfirm
+                  [nzPopconfirmTitle]="'ECOMMERCE_INTEGRATIONS.PAYMENT_LINK_CANCEL_CONFIRM' | translate"
+                  appIconAction="cancel"
+                  (nzOnConfirm)="cancelPaymentLink(link)"
+                ></button>
+              }
+            </ng-template>
+          </nz-card>
+        </div>
+      </nz-tab>
+    </nz-tabs>
+  </nz-card>
+
+  <!-- MODAL: Channel (Create / Edit) -->
+  <nz-modal appModalActions
+  okAction="save"
+    [nzVisible]="isChannelModalVisible()"
+    [nzTitle]="(isEditingChannel() ? 'ECOMMERCE_INTEGRATIONS.EDIT_CHANNEL_MODAL' : 'ECOMMERCE_INTEGRATIONS.CREATE_CHANNEL_MODAL') | translate"
+    (nzOnCancel)="closeChannelModal()"
+    [nzOkDisabled]="channelForm.invalid"
+    (nzOnOk)="submitChannel()"
+    [nzOkLoading]="loading()"
+  >
+    <ng-container *nzModalContent>
+      <form nz-form [formGroup]="channelForm" nzLayout="vertical">
+        <ng-template #fieldTip let-control>
+          @if (control.errors?.['serverError']) {
+            {{ control.errors['serverError'] }}
+          } @else if (control.hasError('required')) {
+            {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+          } @else if (control.hasError('pastDate')) {
+            {{ 'COMMON.VALIDATION.DATE_NOT_IN_PAST' | translate }}
+          } @else {
+            {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+          }
+        </ng-template>
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'ECOMMERCE_INTEGRATIONS.CHANNEL_NAME' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <input nz-input formControlName="name" [placeholder]="'ECOMMERCE_INTEGRATIONS.LBL_E_G_SHOPIFY_STORE_MAIN' | translate" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'ECOMMERCE_INTEGRATIONS.PLATFORM' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-select formControlName="driver">
+              <nz-option nzValue="shopify" nzLabel="Shopify"></nz-option>
+              <nz-option nzValue="woocommerce" [nzLabel]="'ECOMMERCE_INTEGRATIONS.LBL_WOOCOMMERCE' | translate"></nz-option>
+              <nz-option nzValue="prestashop" [nzLabel]="'ECOMMERCE_INTEGRATIONS.LBL_PRESTASHOP' | translate"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label [nzRequired]="isChannelFieldRequired('store_url')">{{ 'ECOMMERCE_INTEGRATIONS.STORE_URL' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <input nz-input formControlName="store_url" [placeholder]="'ECOMMERCE_INTEGRATIONS.LBL_HTTPS_STORE_EXAMPLE_COM' | translate" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label [nzRequired]="isChannelFieldRequired('api_key')">{{ 'ECOMMERCE_INTEGRATIONS.API_KEY' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <input nz-input formControlName="api_key" [placeholder]="'ECOMMERCE_INTEGRATIONS.LBL_API_KEY_CLIENT_ID' | translate" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label [nzRequired]="isChannelFieldRequired('api_secret')">{{ 'ECOMMERCE_INTEGRATIONS.API_SECRET' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <input nz-input type="password" formControlName="api_secret" [placeholder]="'ECOMMERCE_INTEGRATIONS.LBL_API_SECRET_ACCESS_TOKEN' | translate" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <div class="switches-group">
+          <nz-form-item>
+            <nz-form-label>{{ 'ECOMMERCE_INTEGRATIONS.AUTO_SYNC_ORDERS' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="fieldTip">
+              <nz-switch formControlName="auto_sync_orders"></nz-switch>
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label>{{ 'ECOMMERCE_INTEGRATIONS.STOCK_PUSH' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="fieldTip">
+              <nz-switch formControlName="stock_push_enabled"></nz-switch>
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label>{{ 'ECOMMERCE_INTEGRATIONS.IS_ACTIVE' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="fieldTip">
+              <nz-switch formControlName="is_active"></nz-switch>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </form>
+    </ng-container>
+  </nz-modal>
+
+  <!-- MODAL: Sync Channel -->
+  <nz-modal appModalActions
+    [nzVisible]="isSyncModalVisible()"
+    [nzTitle]="'ECOMMERCE_INTEGRATIONS.SYNC_MODAL_TITLE' | translate"
+    (nzOnCancel)="closeSyncModal()"
+    (nzOnOk)="submitSync()"
+    [nzOkLoading]="loading()"
+  >
+    <ng-container *nzModalContent>
+      <form nz-form [formGroup]="syncForm" nzLayout="vertical">
+        <p>{{ 'ECOMMERCE_INTEGRATIONS.SYNC_MODAL_DESC' | translate }}</p>
+        <nz-form-item>
+          <nz-form-label>{{ 'ECOMMERCE_INTEGRATIONS.SYNC_PRODUCTS' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-switch formControlName="sync_products"></nz-switch>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label>{{ 'ECOMMERCE_INTEGRATIONS.SYNC_ORDERS' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-switch formControlName="sync_orders"></nz-switch>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label>{{ 'ECOMMERCE_INTEGRATIONS.SYNC_STOCK' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-switch formControlName="sync_stock"></nz-switch>
+          </nz-form-control>
+        </nz-form-item>
+      </form>
+    </ng-container>
+  </nz-modal>
+
+  <!-- MODAL: Create API Key -->
+  <nz-modal appModalActions
+  okAction="create"
+    [nzVisible]="isApiKeyModalVisible()"
+    [nzTitle]="'ECOMMERCE_INTEGRATIONS.CREATE_API_KEY' | translate"
+    (nzOnCancel)="closeApiKeyModal()"
+    [nzOkDisabled]="apiKeyForm.invalid"
+    (nzOnOk)="submitApiKey()"
+    [nzOkLoading]="loading()"
+  >
+    <ng-container *nzModalContent>
+      <form nz-form [formGroup]="apiKeyForm" nzLayout="vertical">
+        <ng-template #fieldTip let-control>
+          @if (control.errors?.['serverError']) {
+            {{ control.errors['serverError'] }}
+          } @else if (control.hasError('required')) {
+            {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+          } @else if (control.hasError('pastDate')) {
+            {{ 'COMMON.VALIDATION.DATE_NOT_IN_PAST' | translate }}
+          } @else {
+            {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+          }
+        </ng-template>
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'ECOMMERCE_INTEGRATIONS.KEY_NAME' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <input nz-input formControlName="name" [placeholder]="'ECOMMERCE_INTEGRATIONS.LBL_E_G_BI_ANALYTICS_SYNC' | translate" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'ECOMMERCE_INTEGRATIONS.SCOPES' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <div class="scope-switch-row">
+              <nz-switch formControlName="scope_reporting"></nz-switch>
+              <span class="switch-label">reporting.read ({{ 'ECOMMERCE_INTEGRATIONS.SCOPE_REPORTING_DESC' | translate }})</span>
+            </div>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'ECOMMERCE_INTEGRATIONS.EXPIRES_AT' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <input nz-input type="date" formControlName="expires_at" />
+          </nz-form-control>
+        </nz-form-item>
+      </form>
+    </ng-container>
+  </nz-modal>
+
+  <!-- MODAL: Token Reveal -->
+  <nz-modal appModalActions
+    [nzVisible]="isTokenRevealModalVisible()"
+    [nzTitle]="'ECOMMERCE_INTEGRATIONS.TOKEN_REVEAL_TITLE' | translate"
+    (nzOnCancel)="closeTokenRevealModal()"
+    [nzFooter]="null"
+  >
+    <ng-container *nzModalContent>
+      <nz-alert
+        nzType="warning"
+        [nzMessage]="'ECOMMERCE_INTEGRATIONS.TOKEN_ONCE_WARNING' | translate"
+        nzShowIcon
+      ></nz-alert>
+      <div class="token-box">
+        <code>{{ newlyGeneratedToken() }}</code>
+        <button
+          nz-button
+          nzType="primary"
+          (click)="copyToClipboard(newlyGeneratedToken() || '')"
+        >
+          <span nz-icon nzType="copy"></span>
+          {{ 'ECOMMERCE_INTEGRATIONS.COPY_TOKEN' | translate }}
+        </button>
+      </div>
+    </ng-container>
+  </nz-modal>
+
+  <!-- MODAL: Create Payment Link -->
+  <nz-modal appModalActions
+  okAction="create"
+    [nzVisible]="isPaymentLinkModalVisible()"
+    [nzTitle]="'ECOMMERCE_INTEGRATIONS.CREATE_PAYMENT_LINK_MODAL' | translate"
+    (nzOnCancel)="closePaymentLinkModal()"
+    [nzOkDisabled]="paymentLinkForm.invalid"
+    (nzOnOk)="submitCreatePaymentLink()"
+    [nzOkLoading]="loading()"
+  >
+    <ng-container *nzModalContent>
+      <form nz-form [formGroup]="paymentLinkForm" nzLayout="vertical">
+        <ng-template #fieldTip let-control>
+          @if (control.errors?.['serverError']) {
+            {{ control.errors['serverError'] }}
+          } @else if (control.hasError('required')) {
+            {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+          } @else if (control.hasError('pastDate')) {
+            {{ 'COMMON.VALIDATION.DATE_NOT_IN_PAST' | translate }}
+          } @else {
+            {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+          }
+        </ng-template>
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'ECOMMERCE_INTEGRATIONS.INVOICE_ID' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <input
+              nz-input
+              formControlName="invoice_id"
+              [placeholder]="'ECOMMERCE_INTEGRATIONS.LBL_UUID_E_G_11111111_2222_3333' | translate"
+            />
+          </nz-form-control>
+        </nz-form-item>
+      </form>
+    </ng-container>
+  </nz-modal>
+
+  <!-- DRAWER: Channel Details -->
+  <nz-modal appModalActions
+  [nzVisible]="isChannelDrawerVisible()"
+  [nzWidth]="800"
+  [nzFooter]="null"
+    [nzTitle]="'ECOMMERCE_INTEGRATIONS.CHANNEL_DETAILS' | translate"
+    (nzOnCancel)="closeChannelDrawer()"
+  >
+    <ng-container *nzModalContent>
+      @if (selectedChannel(); as ch) {
+        <nz-descriptions [nzColumn]="1" nzBordered nzSize="small">
+          <nz-descriptions-item [nzTitle]="'ECOMMERCE_INTEGRATIONS.CHANNEL_NAME' | translate">
+            <strong>{{ ch.name }}</strong>
+          </nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'ECOMMERCE_INTEGRATIONS.PLATFORM' | translate">
+            <nz-tag [nzColor]="getDriverBadgeColor(ch.driver)">{{ ch.driver | uppercase }}</nz-tag>
+          </nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'ECOMMERCE_INTEGRATIONS.STATUS' | translate">
+            <nz-tag [nzColor]="ch.is_active ? 'success' : 'default'">
+              {{ (ch.is_active ? 'ECOMMERCE_INTEGRATIONS.ACTIVE' : 'ECOMMERCE_INTEGRATIONS.INACTIVE') | translate }}
+            </nz-tag>
+          </nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'ECOMMERCE_INTEGRATIONS.STORE_URL' | translate">
+            {{ ch.api_url || '-' }}
+          </nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'ECOMMERCE_INTEGRATIONS.WEBHOOK_UUID' | translate">
+            <code>{{ ch.uuid || ch.id }}</code>
+          </nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'ECOMMERCE_INTEGRATIONS.LAST_SYNC' | translate">
+            {{ ch.last_sync_at ? (ch.last_sync_at | date: 'dd/MM/yyyy HH:mm') : ('ECOMMERCE_INTEGRATIONS.NEVER' | translate) }}
+          </nz-descriptions-item>
+        </nz-descriptions>
+      }
+    </ng-container>
+  </nz-modal>
+</div>

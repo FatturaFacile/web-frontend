@@ -1,0 +1,178 @@
+<app-page-header
+  [title]="'FIELD_SERVICE.TITLE' | translate"
+  [subtitle]="'FIELD_SERVICE.SUBTITLE' | translate"
+/>
+
+<nz-card [nzTitle]="'FIELD_SERVICE.CARD_TITLE' | translate" [nzExtra]="extraTemplate">
+  <nz-radio-group
+    class="view-switch"
+    nzButtonStyle="solid"
+    [ngModel]="view()"
+    (ngModelChange)="view.set($event)"
+    [attr.aria-label]="'HELPDESK_SLA.VIEW' | translate"
+  >
+    <label for="field-service-all" appRadioControl nz-radio-button nzValue="all">{{ 'HELPDESK_SLA.VIEW_ALL' | translate }}</label>
+    <label for="field-service-at-risk" appRadioControl nz-radio-button nzValue="at_risk" data-testid="view-at-risk">{{ 'HELPDESK_SLA.VIEW_AT_RISK' | translate }}</label>
+  </nz-radio-group>
+
+  @if (view() === 'at_risk') {
+    <app-sla-dashboard (openTicket)="openDetail($event)" />
+  } @else {
+  <!-- Filter bar -->
+  <div class="filters">
+    <div class="filter-search">
+      <nz-input-wrapper>
+        <nz-icon nzInputPrefix nzType="search" />
+        <input
+          type="text"
+          nz-input
+          [placeholder]="'FIELD_SERVICE.LBL_CERCA_PER_TITOLO_NUMERO_O_CLIENTE' | translate"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
+          (keyup.enter)="onSearch()"
+        />
+      </nz-input-wrapper>
+    </div>
+
+    <div class="filter-status">
+      <nz-select
+        [ngModel]="filterStatus()"
+        (ngModelChange)="filterStatus.set($event); onSearch()"
+       class="w-full"
+        [nzPlaceHolder]="'common.statusAll' | translate"
+      >
+        <nz-option nzValue="" [nzLabel]="'FIELD_SERVICE.LBL_TUTTI_GLI_STATI' | translate"></nz-option>
+        <nz-option nzValue="new" [nzLabel]="'FIELD_SERVICE.LBL_NUOVO_NEW' | translate"></nz-option>
+        <nz-option nzValue="open" [nzLabel]="'FIELD_SERVICE.LBL_APERTO_OPEN' | translate"></nz-option>
+        <nz-option nzValue="pending_customer" [nzLabel]="'FIELD_SERVICE.LBL_IN_ATTESA_CLIENTE' | translate"></nz-option>
+        <nz-option nzValue="on_hold" [nzLabel]="'FIELD_SERVICE.LBL_IN_SOSPESO_ON_HOLD' | translate"></nz-option>
+        <nz-option nzValue="resolved" [nzLabel]="'FIELD_SERVICE.LBL_RISOLTO_RESOLVED' | translate"></nz-option>
+        <nz-option nzValue="closed" [nzLabel]="'FIELD_SERVICE.LBL_CHIUSO_CLOSED' | translate"></nz-option>
+      </nz-select>
+    </div>
+
+    <div class="filter-priority">
+      <nz-select
+        [ngModel]="filterPriority()"
+        (ngModelChange)="filterPriority.set($event); onSearch()"
+       class="w-full"
+        [nzPlaceHolder]="'common.priorityAll' | translate"
+      >
+        <nz-option nzValue="" [nzLabel]="'FIELD_SERVICE.LBL_TUTTE_LE_PRIORITA' | translate"></nz-option>
+        <nz-option nzValue="low" [nzLabel]="'FIELD_SERVICE.LBL_BASSA' | translate"></nz-option>
+        <nz-option nzValue="medium" [nzLabel]="'FIELD_SERVICE.LBL_MEDIA' | translate"></nz-option>
+        <nz-option nzValue="high" [nzLabel]="'FIELD_SERVICE.LBL_ALTA' | translate"></nz-option>
+        <nz-option nzValue="critical" [nzLabel]="'FIELD_SERVICE.LBL_CRITICA' | translate"></nz-option>
+      </nz-select>
+    </div>
+
+    <div class="filter-sla">
+      <nz-select
+        [ngModel]="filterSlaState()"
+        (ngModelChange)="filterSlaState.set($event); onSearch()"
+       class="w-full"
+        [nzPlaceHolder]="'common.slaAll' | translate"
+      >
+        <nz-option nzValue="" [nzLabel]="'FIELD_SERVICE.LBL_TUTTI_GLI_SLA' | translate"></nz-option>
+        <nz-option nzValue="ok" [nzLabel]="'FIELD_SERVICE.LBL_OK_NEI_TEMPI' | translate"></nz-option>
+        <nz-option nzValue="warning" [nzLabel]="'FIELD_SERVICE.LBL_IN_SCADENZA' | translate"></nz-option>
+        <nz-option nzValue="breached" [nzLabel]="'FIELD_SERVICE.LBL_VIOLATO' | translate"></nz-option>
+        <nz-option nzValue="paused" [nzLabel]="'FIELD_SERVICE.LBL_IN_PAUSA' | translate"></nz-option>
+      </nz-select>
+    </div>
+
+    <div class="filter-team">
+      <input
+        type="text"
+        nz-input
+        [placeholder]="'HELPDESK_SLA.FILTER_QUEUE' | translate"
+        [attr.aria-label]="'HELPDESK_SLA.FILTER_QUEUE' | translate"
+        [ngModel]="filterTeam()"
+        (ngModelChange)="filterTeam.set($event)"
+        (keyup.enter)="onSearch()"
+      />
+    </div>
+
+    <button nz-button (click)="resetFilters()" [title]="'FIELD_SERVICE.LBL_REIMPOSTA_FILTRI' | translate">
+      <i nz-icon nzType="clear"></i> {{ 'FIELD_SERVICE.LBL_RESET' | translate }}
+    </button>
+  </div>
+
+  <!-- Table -->
+  <app-base-table
+    [grid]="grid"
+    [columns]="columns()"
+    [selectable]="true"
+    [selectedItems]="selectedTickets()"
+    [pageSizeOptions]="[10, 20, 50]"
+    [actionsTemplate]="actionsTpl"
+    (selectionChange)="selectedTickets.set($event)"
+  />
+  }
+
+  <ng-template #ticketTpl let-tk>
+    <strong>{{ tk.ticket_number ? '#' + tk.ticket_number : tk.id.substring(0, 8) }}</strong>
+  </ng-template>
+  <ng-template #subjectTpl let-tk>
+    <div class="ticket-title">{{ tk.title || tk.subject }}</div>
+    @if (tk.contact_email) {
+      <div class="ticket-sub">{{ tk.contact_email }}</div>
+    }
+  </ng-template>
+  <ng-template #priorityTpl let-tk>
+    <nz-tag [nzColor]="getPriorityColor(tk.priority)">{{ tk.priority }}</nz-tag>
+  </ng-template>
+  <ng-template #statusTpl let-tk>
+    <nz-tag [nzColor]="getStatusColor(tk.status)">{{ tk.status }}</nz-tag>
+  </ng-template>
+  <ng-template #slaTpl let-tk>
+    <nz-tag [nzColor]="getSlaColor(tk.sla_state)">{{ tk.sla_state }}</nz-tag>
+    @if (tk.resolution_due_at && tk.status !== 'resolved' && tk.status !== 'closed') {
+      <div class="ticket-sub">
+        <app-sla-countdown [dueAt]="tk.resolution_due_at" [paused]="tk.sla_state === 'paused'" />
+      </div>
+    }
+  </ng-template>
+  <ng-template #createdTpl let-tk>{{ tk.created_at | date:'dd/MM/yyyy HH:mm' }}</ng-template>
+  <ng-template #actionsTpl let-tk>
+    <button
+      nz-button
+      nzType="link"
+      nzSize="small"
+      (click)="openDetail(tk.id)"
+      [title]="'FIELD_SERVICE.LBL_VISUALIZZA_E_MODIFICA' | translate"
+    >
+      <i nz-icon nzType="eye"></i> {{ 'FIELD_SERVICE.LBL_DETTAGLI' | translate }}
+    </button>
+  </ng-template>
+</nz-card>
+
+<ng-template #extraTemplate>
+  <nz-space>
+    <button *nzSpaceItem nz-button [disabled]="selectedTickets().length === 0" (click)="bulkOpen.set(true)">
+      {{ 'TICKET_BULK.OPEN' | translate: { count: selectedTickets().length } }}
+    </button>
+    <button *nzSpaceItem nz-button (click)="grid.reload()" [nzLoading]="grid.loading()">
+      <i nz-icon nzType="reload"></i> {{ 'FIELD_SERVICE.LBL_AGGIORNA' | translate }}
+    </button>
+    <button *nzSpaceItem nz-button nzType="primary" appIconAction="create" (click)="openCreate()"></button>
+  </nz-space>
+</ng-template>
+
+<!-- Drawers -->
+<app-ticket-create-drawer
+  [(open)]="createDrawerOpen"
+  (saved)="grid.reload()"
+/>
+
+<app-ticket-detail-drawer
+  [ticketId]="selectedTicketId()"
+  [(open)]="detailDrawerOpen"
+  (updated)="grid.reload()"
+/>
+
+<app-ticket-bulk-modal
+  [(open)]="bulkOpen"
+  [ticketIds]="selectedIdList()"
+  (done)="onBulkDone()"
+/>

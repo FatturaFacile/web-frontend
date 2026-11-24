@@ -1,0 +1,39 @@
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.warehouse {
+  margin-bottom: 16px;
+}
+
+.declare {
+  margin-left: 12px;
+}
+
+.line {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.product {
+  flex: 1;
+}
+
+.filters {
+  margin-bottom: 16px;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter {
+  min-width: 240px;
+}

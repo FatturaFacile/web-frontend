@@ -1,0 +1,61 @@
+import { HttpClient } from '@angular/common/http';
+import { inject, Service } from '@angular/core';
+import { environment } from '@env';
+import { Observable } from 'rxjs';
+import { toHttpParams } from '../http/laravel-http.utils';
+import { ApiResponse, PaginatedResponse, QueryFilterParams, RestoreBackupResult, SystemBackup } from '../models';
+
+export interface SystemBackupStatus {
+  state: 'ok' | 'stale' | 'failing' | 'never';
+  rpo_hours?: number;
+  age_hours?: number | null;
+  last_completed_at?: string | null;
+  last_failed_at?: string | null;
+}
+
+@Service()
+export class SystemApiService {
+  private readonly http = inject(HttpClient);
+  private readonly base = `${environment.apiBaseUrl}/system`;
+
+  getTenantBackups(params?: QueryFilterParams): Observable<PaginatedResponse<SystemBackup>> {
+    return this.http.get<PaginatedResponse<SystemBackup>>(`${this.base}/backups`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  createTenantBackup(): Observable<ApiResponse<SystemBackup>> {
+    return this.http.post<ApiResponse<SystemBackup>>(`${this.base}/backups`, {});
+  }
+
+  /** Backup health against the recovery-point objective. */
+  getBackupStatus(): Observable<ApiResponse<SystemBackupStatus>> {
+    return this.http.get<ApiResponse<SystemBackupStatus>>(`${this.base}/backups/status`);
+  }
+
+  getTenantBackupById(id: string): Observable<ApiResponse<SystemBackup>> {
+    return this.http.get<ApiResponse<SystemBackup>>(`${this.base}/backups/${id}`);
+  }
+
+  deleteTenantBackup(id: string): Observable<ApiResponse<unknown>> {
+    return this.http.delete<ApiResponse<unknown>>(`${this.base}/backups/${id}`);
+  }
+
+  downloadTenantBackup(id: string): Observable<Blob> {
+    return this.http.get(`${this.base}/backups/${id}/download`, {
+      responseType: 'blob',
+    });
+  }
+
+  restoreTenantBackup(id: string): Observable<ApiResponse<RestoreBackupResult>> {
+    return this.http.post<ApiResponse<RestoreBackupResult>>(`${this.base}/backups/${id}/restore`, {});
+  }
+
+  restoreTenantBackupUpload(formData: FormData): Observable<ApiResponse<RestoreBackupResult>> {
+    return this.http.post<ApiResponse<RestoreBackupResult>>(`${this.base}/backups/restore-upload`, formData);
+  }
+
+  bootstrapSupportUser(): Observable<ApiResponse<unknown>> {
+    return this.http.get<ApiResponse<unknown>>(`${this.base}/bootstrap-support`);
+  }
+}

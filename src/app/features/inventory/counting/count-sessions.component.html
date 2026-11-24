@@ -1,0 +1,288 @@
+<app-page-header [title]="'NAV.INVENTORY_COUNT_SESSIONS' | translate" />
+
+<nz-card class="iv-card" [nzTitle]="'INVENTORY_COUNT.SESSION.TITLE' | translate" [nzExtra]="newTpl">
+  <ng-template #newTpl>
+    <button nz-button nzType="primary" (click)="openCreate()" data-testid="new-session-btn">
+      <nz-icon nzType="plus" /> {{ 'INVENTORY_COUNT.SESSION.NEW' | translate }}
+    </button>
+  </ng-template>
+
+  <div class="iv-toolbar" role="search">
+    <nz-select
+      class="iv-filter"
+      nzAllowClear
+      [nzPlaceHolder]="'INVENTORY.FILTERS.WAREHOUSE' | translate"
+      [attr.aria-label]="'INVENTORY.FILTERS.WAREHOUSE' | translate"
+      [ngModel]="facade.filterParams().warehouse_id ?? null"
+      (ngModelChange)="setWarehouse($event)"
+    >
+      @for (w of warehouses(); track w.id) {
+        <nz-option [nzValue]="w.id" [nzLabel]="w.name" />
+      }
+    </nz-select>
+    <nz-select
+      class="iv-filter"
+      nzAllowClear
+      [nzPlaceHolder]="'COMMON.STATUS' | translate"
+      [attr.aria-label]="'COMMON.STATUS' | translate"
+      [ngModel]="facade.filterParams().status ?? null"
+      (ngModelChange)="setStatus($event)"
+    >
+      @for (s of statuses; track s) {
+        <nz-option [nzValue]="s" [nzLabel]="statusLabels[s].key | translate" />
+      }
+    </nz-select>
+  </div>
+
+  <nz-table
+    #sessionsTable
+    [nzData]="facade.items()"
+    [nzFrontPagination]="false"
+    [nzShowPagination]="facade.totalCount() > facade.items().length"
+    [nzLoading]="facade.loading()"
+    [nzTotal]="facade.totalCount()"
+    [nzPageIndex]="facade.pageIndex()"
+    [nzPageSize]="facade.pageSize()"
+    (nzQueryParams)="facade.onQueryParamsChange($event)"
+    nzSize="middle"
+  >
+    <thead>
+      <tr>
+        <th scope="col">{{ 'INVENTORY_COUNT.COL.NUMBER' | translate }}</th>
+        <th scope="col">{{ 'INVENTORY.FILTERS.WAREHOUSE' | translate }}</th>
+        <th scope="col">{{ 'INVENTORY_COUNT.COL.TYPE' | translate }}</th>
+        <th scope="col">{{ 'INVENTORY_COUNT.SESSION.SCHEDULED_DATE' | translate }}</th>
+        <th scope="col">{{ 'COMMON.STATUS' | translate }}</th>
+        <th scope="col">{{ 'INVENTORY_COUNT.SESSION.PROGRESS' | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (s of sessionsTable.data; track s.id) {
+        <tr>
+          <td>
+            <a (click)="openDetail(s)" (keydown.enter)="openDetail(s)" tabindex="0" role="button" data-testid="session-link">{{
+              s.session_number
+            }}</a>
+          </td>
+          <td>{{ warehouseName(s.warehouse_id) }}</td>
+          <td>{{ typeLabels[s.count_type] | translate }}</td>
+          <td>{{ s.scheduled_date | date: 'mediumDate' }}</td>
+          <td>
+            <nz-tag [nzColor]="statusLabels[s.status].color">{{ statusLabels[s.status].key | translate }}</nz-tag>
+            @if (s.is_blind) {
+              <nz-tag>{{ 'INVENTORY_COUNT.SESSION.BLIND' | translate }}</nz-tag>
+            }
+            @if (s.frozen_at) {
+              <nz-tag nzColor="cyan">{{ 'INVENTORY_COUNT.SESSION.FROZEN' | translate }}</nz-tag>
+            }
+          </td>
+          <td>
+            @if (listProgress(s); as pct) {
+              <nz-progress [nzPercent]="pct" nzSize="small" />
+            } @else {
+              -
+            }
+          </td>
+        </tr>
+      } @empty {
+        @if (facade.loaded() && !facade.loading()) {
+          <tr>
+            <td colspan="6" class="iv-muted">{{ 'INVENTORY_COUNT.SESSION.EMPTY' | translate }}</td>
+          </tr>
+        }
+      }
+    </tbody>
+  </nz-table>
+</nz-card>
+
+<!-- Session detail -->
+<nz-drawer
+  [nzVisible]="drawerOpen()"
+  nzPlacement="right"
+  [nzWidth]="520"
+  [nzTitle]="selected()?.session_number ?? ('INVENTORY_COUNT.SESSION.DETAIL' | translate)"
+  (nzOnClose)="closeDrawer()"
+>
+  <ng-container *nzDrawerContent>
+    @if (selected(); as s) {
+      <nz-descriptions nzBordered nzSize="small" [nzColumn]="1">
+        <nz-descriptions-item [nzTitle]="'COMMON.STATUS' | translate">
+          <nz-tag [nzColor]="statusLabels[s.status].color" data-testid="detail-status">{{ statusLabels[s.status].key | translate }}</nz-tag>
+          @if (s.is_blind) {
+            <nz-tag>{{ 'INVENTORY_COUNT.SESSION.BLIND' | translate }}</nz-tag>
+          }
+          @if (s.frozen_at) {
+            <nz-tag nzColor="cyan" data-testid="detail-frozen">{{ 'INVENTORY_COUNT.SESSION.FROZEN' | translate }}</nz-tag>
+          }
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'INVENTORY.FILTERS.WAREHOUSE' | translate">{{ warehouseName(s.warehouse_id) }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'INVENTORY_COUNT.COL.TYPE' | translate">{{ typeLabels[s.count_type] | translate }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'INVENTORY_COUNT.SESSION.SCHEDULED_DATE' | translate">{{
+          s.scheduled_date | date: 'mediumDate'
+        }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'INVENTORY_COUNT.SESSION.ASSIGNED_TO' | translate">{{ s.assigned_to || '-' }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'INVENTORY_COUNT.SESSION.PROGRESS' | translate">
+          <nz-progress [nzPercent]="progressPercent()" data-testid="detail-progress" />
+          {{ countedLines() }} / {{ totalLines() }}
+        </nz-descriptions-item>
+      </nz-descriptions>
+
+      @if (errors().length) {
+        <nz-alert class="iv-alert iv-section-title" nzType="error" nzShowIcon [nzMessage]="errors()[0]" data-testid="detail-errors" />
+      }
+
+      @if (canAct()) {
+        <h3 class="iv-section-title">{{ 'INVENTORY_COUNT.SESSION.ASSIGN' | translate }}</h3>
+        <div class="iv-toolbar">
+          <input
+            nz-input
+            [ngModel]="assignedTo()"
+            (ngModelChange)="assignedTo.set($event)"
+            [attr.aria-label]="'INVENTORY_COUNT.SESSION.ASSIGNED_TO' | translate"
+            data-testid="assign-input"
+          />
+          <button nz-button [disabled]="busy()" (click)="assign()" data-testid="assign-btn">
+            {{ 'INVENTORY_COUNT.SESSION.ASSIGN' | translate }}
+          </button>
+        </div>
+
+        <div class="iv-actions">
+          @if (s.frozen_at) {
+            <button nz-button [disabled]="busy()" (click)="openUnfreeze()" data-testid="unfreeze-btn">
+              <nz-icon nzType="unlock" /> {{ 'INVENTORY_COUNT.SESSION.UNFREEZE' | translate }}
+            </button>
+          } @else {
+            <button nz-button [disabled]="busy()" (click)="freeze()" data-testid="freeze-btn">
+              <nz-icon nzType="lock" /> {{ 'INVENTORY_COUNT.SESSION.FREEZE' | translate }}
+            </button>
+          }
+          <button
+            nz-button
+            nzType="primary"
+            nz-popconfirm
+            [nzPopconfirmTitle]="'INVENTORY_COUNT.SESSION.SUBMIT' | translate"
+            [nzOkText]="'COMMON.CONFIRM' | translate"
+            [nzCancelText]="'COMMON.CANCEL' | translate"
+            (nzOnConfirm)="submitDifferences()"
+            [disabled]="busy()"
+            data-testid="submit-btn"
+          >
+            <nz-icon nzType="check" /> {{ 'INVENTORY_COUNT.SESSION.SUBMIT' | translate }}
+          </button>
+          <button
+            nz-button
+            nzDanger
+            nz-popconfirm
+            [nzPopconfirmTitle]="'INVENTORY_COUNT.SESSION.CANCEL' | translate"
+            [nzOkText]="'COMMON.CONFIRM' | translate"
+            [nzCancelText]="'COMMON.CANCEL' | translate"
+            (nzOnConfirm)="cancel()"
+            [disabled]="busy()"
+            data-testid="cancel-btn"
+          >
+            {{ 'INVENTORY_COUNT.SESSION.CANCEL' | translate }}
+          </button>
+        </div>
+      }
+
+      @if (canOpenWorkbench()) {
+        <div class="iv-toolbar iv-section-title">
+          <a nz-button [routerLink]="['/inventory/counts', s.id, 'reconcile']" data-testid="workbench-link">
+            {{ 'INVENTORY_COUNT.RECON.TITLE' | translate }}
+          </a>
+        </div>
+      }
+    }
+  </ng-container>
+</nz-drawer>
+
+<!-- Unfreeze needs a mandatory reason -->
+<nz-modal
+  [nzVisible]="unfreezeOpen()"
+  [nzTitle]="'INVENTORY_COUNT.SESSION.UNFREEZE' | translate"
+  [nzOkText]="'COMMON.CONFIRM' | translate"
+  [nzCancelText]="'COMMON.CANCEL' | translate"
+  [nzOkDisabled]="!unfreezeReason().trim()"
+  [nzOkLoading]="busy()"
+  (nzOnCancel)="closeUnfreeze()"
+  (nzOnOk)="unfreeze()"
+>
+  <ng-container *nzModalContent>
+    <label for="unfreeze-reason">{{ 'INVENTORY_COUNT.SESSION.UNFREEZE_REASON' | translate }}</label>
+    <textarea
+      nz-input
+      id="unfreeze-reason"
+      rows="3"
+      [ngModel]="unfreezeReason()"
+      (ngModelChange)="unfreezeReason.set($event)"
+      data-testid="unfreeze-reason"
+    ></textarea>
+  </ng-container>
+</nz-modal>
+
+<!-- New session -->
+<nz-modal
+  [nzVisible]="createOpen()"
+  [nzTitle]="'INVENTORY_COUNT.SESSION.NEW' | translate"
+  [nzOkText]="'COMMON.SAVE' | translate"
+  [nzCancelText]="'COMMON.CANCEL' | translate"
+  [nzOkLoading]="busy()"
+  (nzOnCancel)="closeCreate()"
+  (nzOnOk)="create()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form nzLayout="vertical" [formGroup]="createForm" (ngSubmit)="create()" data-testid="create-form">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="cs-wh">{{ 'INVENTORY.FILTERS.WAREHOUSE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.REQUIRED' | translate">
+          <nz-select id="cs-wh" formControlName="warehouse_id">
+            @for (w of warehouses(); track w.id) {
+              <nz-option [nzValue]="w.id" [nzLabel]="w.name" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="cs-type">{{ 'INVENTORY_COUNT.COL.TYPE' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select id="cs-type" formControlName="count_type">
+            @for (t of types; track t) {
+              <nz-option [nzValue]="t" [nzLabel]="typeLabels[t] | translate" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="cs-date">{{ 'INVENTORY_COUNT.SESSION.SCHEDULED_DATE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.REQUIRED' | translate">
+          <nz-date-picker id="cs-date" formControlName="scheduled_date" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="cs-zone">{{ 'INVENTORY_COUNT.SESSION.ZONE' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input id="cs-zone" formControlName="warehouse_zone_id" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="cs-bins">{{ 'INVENTORY_COUNT.SESSION.BIN_IDS' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select id="cs-bins" formControlName="bin_ids" nzMode="tags" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="cs-assignee">{{ 'INVENTORY_COUNT.SESSION.ASSIGNED_TO' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input id="cs-assignee" formControlName="assigned_to" />
+        </nz-form-control>
+      </nz-form-item>
+      <div class="iv-toolbar">
+        <label for="count-sessions-ctl-1" nzId="count-sessions-ctl-1" nz-checkbox formControlName="freezes_stock">{{ 'INVENTORY_COUNT.PLAN.FREEZES_STOCK' | translate }}</label>
+        <label for="count-sessions-ctl-2" nzId="count-sessions-ctl-2" nz-checkbox formControlName="is_blind">{{ 'INVENTORY_COUNT.SESSION.BLIND' | translate }}</label>
+      </div>
+    </form>
+    @if (errors().length) {
+      <nz-alert nzType="error" nzShowIcon [nzMessage]="errors()[0]" data-testid="create-errors" />
+    }
+  </ng-container>
+</nz-modal>

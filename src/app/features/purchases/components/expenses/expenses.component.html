@@ -1,0 +1,112 @@
+<app-page-header
+  [title]="'expenses.title' | translate"
+  [subtitle]="'expenses.subtitle' | translate"
+/>
+
+<div nz-row [nzGutter]="16" class="stats-row">
+  <div nz-col [nzSpan]="8">
+    <nz-card>
+      <nz-statistic [nzValue]="totalAmount()" [nzPrefix]="'€'" [nzTitle]="'expenses.stats.total' | translate" />
+    </nz-card>
+  </div>
+  <div nz-col [nzSpan]="8">
+    <nz-card>
+      <nz-statistic [nzValue]="pendingCount()" [nzTitle]="'expenses.stats.pending' | translate" />
+    </nz-card>
+  </div>
+  <div nz-col [nzSpan]="8">
+    <nz-card>
+      <nz-statistic [nzValue]="grid.totalCount()" [nzTitle]="'expenses.stats.count' | translate" />
+    </nz-card>
+  </div>
+</div>
+
+<nz-card>
+  <div class="toolbar">
+    <input
+      class="search"
+      nz-input
+      type="search"
+      [placeholder]="'expenses.searchPlaceholder' | translate"
+      [ngModel]="grid.filterParams().search ?? ''"
+      (ngModelChange)="onSearchChange($event)"
+    />
+
+    <nz-select
+      class="filter"
+      nzAllowClear
+      [nzPlaceHolder]="'expenses.filterStatus' | translate"
+      [ngModel]="grid.filterParams().status ?? null"
+      (ngModelChange)="onStatusFilterChange($event)"
+    >
+      @for (status of filterStatuses; track status) {
+        <nz-option [nzValue]="status" [nzLabel]="'expenses.statuses.' + status | translate" />
+      }
+    </nz-select>
+
+    <span class="spacer"></span>
+    <button nz-button type="button" (click)="exportCsv()" [nzLoading]="isExporting()">
+      <nz-icon nzType="download" /> {{ 'expenses.actions.exportCsv' | translate }}
+    </button>
+    <button nz-button nzType="primary" type="button" appIconAction="create" (click)="create()"></button>
+  </div>
+
+  <app-base-table [grid]="grid" [columns]="columns()" [actionsTemplate]="actionsTpl" />
+
+  <!-- Cell Templates -->
+  <ng-template #dateTpl let-val="value">
+    {{ val | date: "dd.MM.yyyy" }}
+  </ng-template>
+
+  <ng-template #amountTpl let-exp let-val="value">
+    <strong>{{ val | currency: exp.currency : "symbol" : "1.2-2" }}</strong>
+  </ng-template>
+
+  <ng-template #statusTpl let-exp>
+    <nz-tag [nzColor]="statusColor(exp.status)">
+      {{ 'expenses.statuses.' + exp.status | translate }}
+    </nz-tag>
+  </ng-template>
+
+  <ng-template #categoryTpl let-exp>
+    <span>{{ exp.category?.name || "-" }}</span>
+  </ng-template>
+
+  <ng-template #merchantTpl let-exp>
+    <span>{{ exp.merchant_name || "-" }}</span>
+  </ng-template>
+
+  <!-- Row Actions Template -->
+  <ng-template #actionsTpl let-exp>
+    <div class="actions-group">
+      <button
+        nz-button
+        nzType="text"
+        nzSize="small"
+        type="button"
+        appIconAction="edit"
+        (click)="edit(exp)"
+      ></button>
+      <button
+        nz-button
+        nzType="text"
+        nzDanger
+        nzSize="small"
+        type="button"
+        nz-popconfirm
+        [nzPopconfirmTitle]="'expenses.confirmDelete' | translate"
+        [nzOkText]="'common.actions.delete' | translate"
+        [nzCancelText]="'common.actions.cancel' | translate"
+        appIconAction="delete"
+        (nzOnConfirm)="delete(exp)"
+      ></button>
+    </div>
+  </ng-template>
+</nz-card>
+
+<app-expense-form-drawer
+  [expense]="selectedExpense()"
+  [open]="drawerOpen()"
+  (openChange)="drawerOpen.set($event)"
+  (saved)="loadData()"
+/>

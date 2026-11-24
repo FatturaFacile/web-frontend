@@ -1,0 +1,91 @@
+.toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px;
+  margin: 16px 0;
+}
+
+.main-card {
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.muted {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.num {
+  text-align: right;
+}
+
+.form-row {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 16px;
+}
+
+.row-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.selected-row {
+  background: var(--ff-color-hover);
+}
+
+tr {
+  cursor: default;
+}
+
+.spc-chart {
+  width: 100%;
+  max-width: 720px;
+  height: auto;
+
+  .limit {
+    stroke: var(--ff-color-danger);
+    stroke-dasharray: 6 4;
+  }
+
+  .center {
+    stroke: var(--ff-color-success);
+  }
+
+  .series {
+    fill: none;
+    stroke: var(--ff-color-primary);
+    stroke-width: 1.5;
+  }
+
+  circle {
+    fill: var(--ff-color-primary);
+
+    &.violation {
+      fill: var(--ff-color-danger);
+    }
+  }
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.kpi-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+}

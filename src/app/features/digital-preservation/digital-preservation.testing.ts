@@ -1,0 +1,26 @@
+import { PreservationBatch } from './digital-preservation.models';
+
+export const batchFixture = (over: Partial<PreservationBatch> = {}): PreservationBatch => ({
+  id: 'b-1',
+  batch_number: 'PDV-2026-000001',
+  jurisdiction: 'IT',
+  status: 'draft',
+  document_category: 'active_invoices',
+  period_from: '2026-11-01',
+  period_to: '2026-11-30',
+  item_count: 3,
+  total_size_bytes: 1024,
+  pdv_sha256: null,
+  pda_sha256: null,
+  merkle_root_sha256: null,
+  previous_batch_sha256: null,
+  rfc3161_gen_time: null,
+  external_conservator_id: null,
+  retention_until: null,
+  sealed_at: null,
+  dispatched_at: null,
+  created_at: '2026-11-19T10:00:00Z',
+  has_timestamp: false,
+  has_rdv: false,
+  ...over,
+});

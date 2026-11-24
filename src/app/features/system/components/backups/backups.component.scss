@@ -1,0 +1,27 @@
+:host {
+  display: block;
+}
+
+.toolbar {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: var(--space-4);
+}
+
+.toolbar-title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.actions-group {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-1);
+}

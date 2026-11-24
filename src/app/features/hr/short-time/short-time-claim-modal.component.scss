@@ -1,0 +1,20 @@
+// Styles of ShortTimeClaimModalComponent
+
+.claim-employee {
+  width: 220px;
+  max-width: 100%;
+}
+
+.claim-hours {
+  width: 110px;
+}
+
+.claim-required {
+  margin-inline-start: 2px;
+  color: var(--ff-color-danger);
+}
+
+.claim-error {
+  color: var(--ff-color-danger);
+  font-size: 12px;
+}

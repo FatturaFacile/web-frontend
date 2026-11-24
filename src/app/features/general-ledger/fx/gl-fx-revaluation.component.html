@@ -1,0 +1,25 @@
+<app-gl-error-alert [error]="error()" />
+
+<nz-card>
+  <p class="text-secondary">{{ 'GL.FX_HINT' | translate }}</p>
+  <div class="toolbar">
+    <label for="gl-fx-date">{{ 'GL.FX_DATE' | translate }}</label>
+    <input class="date-input" id="gl-fx-date" nz-input type="date" [(ngModel)]="revaluationDate" (ngModelChange)="load()" />
+    <label for="gl-fx-currency">{{ 'GL.FX_CURRENCY' | translate }}</label>
+    <input class="currency-input" id="gl-fx-currency" nz-input maxlength="3" placeholder="USD" [(ngModel)]="currency" />
+    @if (canWrite) {
+      <button nz-button nzType="primary" type="button" [nzLoading]="running()" [disabled]="!revaluationDate" (click)="run()">
+        {{ 'GL.FX_RUN' | translate }}
+      </button>
+    }
+  </div>
+
+  <app-base-table [grid]="grid" [columns]="columns()" [scroll]="{ x: '1100px' }" [exportFileName]="'gl-fx-revaluations'" />
+
+  <ng-template #sideTpl let-item><nz-tag>{{ 'GL.FX_SIDE_' + item.side.toUpperCase() | translate }}</nz-tag></ng-template>
+  <ng-template #accountTpl let-item>{{ lookups.accountLabel(item.account_id) }}</ng-template>
+  <ng-template #openAmountTpl let-item>{{ item.open_amount | money: item.currency }}</ng-template>
+  <ng-template #bookValueTpl let-item>{{ item.book_value | money: accountingCurrency() }}</ng-template>
+  <ng-template #revaluedTpl let-item>{{ item.revalued_value | money: accountingCurrency() }}</ng-template>
+  <ng-template #differenceTpl let-item>{{ item.difference | money: accountingCurrency() }}</ng-template>
+</nz-card>

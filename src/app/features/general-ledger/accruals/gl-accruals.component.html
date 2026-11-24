@@ -1,0 +1,427 @@
+<div class="accruals-workbench">
+  <app-gl-error-alert [error]="store.error()" />
+
+  <nz-row [nzGutter]="[12, 12]" class="kpi-row">
+    <nz-col [nzXs]="24" [nzSm]="12" [nzMd]="8" [nzLg]="4">
+      <nz-card nzSize="small">
+        <nz-statistic
+          [nzTitle]="'GL.ACCRUAL_KPI_PREPAID_EXPENSE' | translate"
+          [nzValue]="store.kpis().prepaid_expense_total | money: displayCurrency()"
+        />
+      </nz-card>
+    </nz-col>
+    <nz-col [nzXs]="24" [nzSm]="12" [nzMd]="8" [nzLg]="4">
+      <nz-card nzSize="small">
+        <nz-statistic
+          [nzTitle]="'GL.ACCRUAL_KPI_DEFERRED_REVENUE' | translate"
+          [nzValue]="store.kpis().deferred_revenue_total | money: displayCurrency()"
+        />
+      </nz-card>
+    </nz-col>
+    <nz-col [nzXs]="24" [nzSm]="12" [nzMd]="8" [nzLg]="4">
+      <nz-card nzSize="small">
+        <nz-statistic
+          [nzTitle]="'GL.ACCRUAL_KPI_ACCRUED_REVENUE' | translate"
+          [nzValue]="store.kpis().accrued_revenue_total | money: displayCurrency()"
+        />
+      </nz-card>
+    </nz-col>
+    <nz-col [nzXs]="24" [nzSm]="12" [nzMd]="8" [nzLg]="4">
+      <nz-card nzSize="small">
+        <nz-statistic
+          [nzTitle]="'GL.ACCRUAL_KPI_ACCRUED_EXPENSE' | translate"
+          [nzValue]="store.kpis().accrued_expense_total | money: displayCurrency()"
+        />
+      </nz-card>
+    </nz-col>
+    <nz-col [nzXs]="24" [nzSm]="12" [nzMd]="8" [nzLg]="4">
+      <nz-card nzSize="small">
+        <nz-statistic
+          [nzTitle]="'GL.ACCRUAL_KPI_PENDING_CLOSING' | translate"
+          [nzValue]="store.kpis().pending_closing_count"
+        />
+      </nz-card>
+    </nz-col>
+    <nz-col [nzXs]="24" [nzSm]="12" [nzMd]="8" [nzLg]="4">
+      <nz-card nzSize="small">
+        <nz-statistic
+          [nzTitle]="'GL.ACCRUAL_KPI_REVERSALS' | translate"
+          [nzValue]="store.kpis().reversal_posted_count + ' / ' + store.kpis().pending_reversal_count"
+        />
+      </nz-card>
+    </nz-col>
+  </nz-row>
+
+  <nz-card [nzTitle]="'GL.ACCRUALS_TITLE' | translate">
+    <p class="workbench-subtitle">{{ 'GL.ACCRUALS_SUBTITLE' | translate }}</p>
+    <div class="toolbar">
+      <nz-select
+        id="gl-accrual-fy"
+        class="select-sm"
+        [ngModel]="store.fiscalYearId()"
+        (ngModelChange)="onFiscalYearChange($event)"
+        [nzPlaceHolder]="'GL.ACCRUALS_FISCAL_YEAR' | translate"
+      >
+        @for (fy of store.fiscalYears(); track fy.id) {
+          <nz-option [nzValue]="fy.id" [nzLabel]="fy.year_code + ' (' + fy.start_date + ' - ' + fy.end_date + ')'" />
+        }
+      </nz-select>
+
+      <nz-select
+        id="gl-accrual-type"
+        class="select-md"
+        nzAllowClear
+        [ngModel]="store.accrualType()"
+        (ngModelChange)="setType($event)"
+        [nzPlaceHolder]="'GL.ALL_TYPES' | translate"
+      >
+        @for (type of types; track type) {
+          <nz-option [nzValue]="type" [nzLabel]="'GL.ACCRUAL_' + type.toUpperCase() | translate" />
+        }
+      </nz-select>
+
+      <nz-select
+        id="gl-accrual-status"
+        class="select-md"
+        nzAllowClear
+        [ngModel]="store.status()"
+        (ngModelChange)="setStatus($event)"
+        [nzPlaceHolder]="'GL.ACCRUALS_ALL_STATUSES' | translate"
+      >
+        @for (st of statuses; track st) {
+          <nz-option [nzValue]="st" [nzLabel]="'GL.ACCRUAL_STATUS_' + st.toUpperCase() | translate" />
+        }
+      </nz-select>
+
+      <nz-select
+        id="gl-accrual-source"
+        class="select-sm"
+        nzAllowClear
+        [ngModel]="store.sourceType()"
+        (ngModelChange)="setSourceType($event)"
+        [nzPlaceHolder]="'GL.ACCRUALS_ALL_SOURCES' | translate"
+      >
+        @for (src of sourceTypes; track src) {
+          <nz-option [nzValue]="src" [nzLabel]="'GL.ACCRUAL_SRC_' + src.toUpperCase() | translate" />
+        }
+      </nz-select>
+
+      <nz-select
+        id="gl-accrual-account"
+        class="select-md"
+        nzAllowClear
+        nzShowSearch
+        [ngModel]="store.accountId()"
+        (ngModelChange)="setAccountId($event)"
+        [nzPlaceHolder]="'GL.ACCRUALS_FILTER_ACCOUNT' | translate"
+      >
+        @for (account of lookups.accounts(); track account.id) {
+          <nz-option [nzValue]="account.id" [nzLabel]="(account.account_code ?? '') + ' ' + account.name" />
+        }
+      </nz-select>
+
+      <input
+        id="gl-accrual-from"
+        nz-input
+        type="date"
+        class="date-filter"
+        [attr.aria-label]="'GL.COVERAGE_START' | translate"
+        [ngModel]="store.competenceFrom() ?? ''"
+        (ngModelChange)="setCompetenceFrom($event)"
+      />
+      <input
+        id="gl-accrual-to"
+        nz-input
+        type="date"
+        class="date-filter"
+        [attr.aria-label]="'GL.COVERAGE_END' | translate"
+        [ngModel]="store.competenceTo() ?? ''"
+        (ngModelChange)="setCompetenceTo($event)"
+      />
+
+      <input
+        id="gl-accrual-search"
+        nz-input
+        class="search-input"
+        [placeholder]="'GL.ACCRUALS_SEARCH_PLACEHOLDER' | translate"
+        [ngModel]="store.search()"
+        (ngModelChange)="setSearch($event)"
+      />
+    </div>
+
+    <div class="action-bar">
+      @if (canWrite) {
+        <label for="gl-accruals-field" nzId="gl-accruals-field" nz-checkbox [ngModel]="autoGenerateReversals()" (ngModelChange)="autoGenerateReversals.set($event)">
+          {{ 'GL.ACCRUALS_ALSO_REVERSAL' | translate }}
+        </label>
+
+        <button
+          nz-button
+          nzType="primary"
+          type="button"
+          data-testid="generate-closing-entries"
+          [nzLoading]="store.closingBusy()"
+          [disabled]="store.pendingItems().length === 0"
+          nz-popconfirm
+          [nzPopconfirmTitle]="'GL.ACCRUALS_GENERATE_CLOSING_HINT' | translate"
+          (nzOnConfirm)="runClosingEntries()"
+        >
+          <nz-icon nzType="check-circle" /> {{ 'GL.ACCRUALS_GENERATE_CLOSING' | translate }}
+        </button>
+
+        <button
+          nz-button
+          nzType="default"
+          type="button"
+          data-testid="generate-reversals"
+          [nzLoading]="store.reversalBusy()"
+          [disabled]="store.reversibleItems().length === 0"
+          (click)="runReversals()"
+        >
+          <nz-icon nzType="rollback" /> {{ 'GL.ACCRUALS_GENERATE_REVERSALS' | translate }}
+        </button>
+      }
+
+      <button
+        nz-button
+        nzType="default"
+        type="button"
+        data-testid="export-reconciliation"
+        [nzLoading]="store.exporting()"
+        (click)="exportReconciliation()"
+      >
+        <nz-icon nzType="download" /> {{ 'GL.ACCRUALS_EXPORT_RECONCILIATION' | translate }}
+      </button>
+
+      <button
+        nz-button
+        nzType="default"
+        type="button"
+        data-testid="export-reconciliation-xlsx"
+        [nzLoading]="store.exporting()"
+        (click)="exportReconciliation('xlsx')"
+      >
+        <nz-icon nzType="file-excel" /> {{ 'GL.ACCRUALS_EXPORT_RECONCILIATION_XLSX' | translate }}
+      </button>
+
+      <span class="spacer"></span>
+
+      @if (canWrite) {
+        <button nz-button nzType="dashed" type="button" (click)="openCreate()" appIconAction="create"></button>
+      }
+    </div>
+
+    <nz-table
+      #scheduleTable
+      [nzData]="store.items()"
+      [nzLoading]="store.loading()"
+      nzSize="small"
+      [nzScroll]="{ x: '1280px' }"
+    >
+      <thead>
+        <tr>
+          <th
+            scope="col"
+            [nzChecked]="allPendingChecked()"
+            (nzCheckedChange)="store.toggleSelectAllPending($event)"
+          ></th>
+          <th scope="col">{{ 'GL.ACCRUAL_TYPE' | translate }}</th>
+          <th scope="col">{{ 'GL.ACCRUALS_COL_SOURCE' | translate }}</th>
+          <th scope="col">{{ 'GL.COL_DESCRIPTION' | translate }}</th>
+          <th scope="col">{{ 'GL.ACCRUALS_COL_ACCOUNTS' | translate }}</th>
+          <th scope="col">{{ 'GL.COVERAGE' | translate }}</th>
+          <th scope="col" class="num">{{ 'GL.ACCRUAL_DAYS' | translate }}</th>
+          <th scope="col" class="num">{{ 'GL.ACCRUAL_TOTAL' | translate }}</th>
+          <th scope="col" class="num">{{ 'GL.ACCRUALS_COL_RECOGNIZED' | translate }}</th>
+          <th scope="col" class="num">{{ 'GL.ACCRUALS_COL_TRANSITORY' | translate }}</th>
+          <th scope="col">{{ 'GL.ACCRUALS_FILTER_STATUS' | translate }}</th>
+          <th scope="col">{{ 'GL.ACCRUALS_COL_CLOSING_ENTRY' | translate }}</th>
+          <th scope="col">{{ 'GL.ACCRUALS_COL_REVERSAL_ENTRY' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of scheduleTable.data; track item.item_key) {
+          <tr>
+            <td
+              [nzChecked]="isItemChecked(item)"
+              [nzDisabled]="item.status === 'reversal_posted'"
+              (nzCheckedChange)="store.toggleSelection(item.item_key, $event)"
+            ></td>
+            <td>
+              <nz-tag [nzColor]="typeTagColor(item.accrual_type)">
+                {{ 'GL.ACCRUAL_' + item.accrual_type.toUpperCase() | translate }}
+              </nz-tag>
+            </td>
+            <td>
+              <div class="cell-stack">
+                <span>{{ 'GL.ACCRUAL_SRC_' + item.source_type.toUpperCase() | translate }}</span>
+                @if (item.source_document_number) {
+                  <small class="muted">{{ item.source_document_number }}</small>
+                }
+              </div>
+            </td>
+            <td>{{ item.description }}</td>
+            <td>
+              <div class="cell-stack">
+                <span>{{ (item.income_statement_account_code ?? '') + ' ' + (item.income_statement_account_name ?? '—') }}</span>
+                <small class="muted">⇄ {{ (item.balance_sheet_account_code ?? '') + ' ' + (item.balance_sheet_account_name ?? '—') }}</small>
+              </div>
+            </td>
+            <td>{{ item.competence_start_date }} → {{ item.competence_end_date }}</td>
+            <td class="num">{{ item.transitory_days }} / {{ item.total_days }}</td>
+            <td class="num">{{ item.total_amount | money: item.currency }}</td>
+            <td class="num">{{ item.recognized_amount | money: item.currency }}</td>
+            <td class="num"><strong>{{ item.transitory_amount | money: item.currency }}</strong></td>
+            <td>
+              <nz-tag [nzColor]="statusTagColor(item.status)">
+                {{ 'GL.ACCRUAL_STATUS_' + item.status.toUpperCase() | translate }}
+              </nz-tag>
+            </td>
+            <td>
+              @if (item.closing_journal_entry_id) {
+                <button
+                  nz-button
+                  nzType="link"
+                  nzSize="small"
+                  type="button"
+                  (click)="inspectJournal(item.closing_journal_entry_id)"
+                >
+                  {{ item.closing_journal_entry_number ?? item.closing_journal_posting_date }}
+                </button>
+              } @else {
+                <span class="muted">—</span>
+              }
+            </td>
+            <td>
+              @if (item.reversal_journal_entry_id) {
+                <button
+                  nz-button
+                  nzType="link"
+                  nzSize="small"
+                  type="button"
+                  (click)="inspectJournal(item.reversal_journal_entry_id)"
+                >
+                  {{ item.reversal_journal_entry_number ?? item.reversal_journal_posting_date }}
+                </button>
+              } @else {
+                <small class="muted">{{ item.reversal_date }}</small>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<app-gl-journal-inspector-drawer
+  [entry]="inspectedEntry()"
+  [canWrite]="canWrite"
+  (closed)="inspectedEntry.set(null)"
+  (storno)="reverseInspected($event)"
+/>
+
+<nz-modal appModalActions
+  [nzVisible]="modalOpen()"
+  [nzTitle]="'GL.ACCRUAL_NEW' | translate"
+  nzWidth="720px"
+  [nzOkLoading]="saving()"
+  (nzOnOk)="save()"
+  (nzOnCancel)="modalOpen.set(false)"
+  okAction="save"
+>
+  <ng-container *nzModalContent>
+    <app-gl-error-alert [error]="error()" />
+    @for (message of formErrors(); track message) {
+      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" />
+    }
+    <form nz-form nzLayout="vertical" [formGroup]="form">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="ac-type">{{ 'GL.ACCRUAL_TYPE' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select id="ac-type" formControlName="accrual_type">
+            @for (type of types; track type) {
+              <nz-option [nzValue]="type" [nzLabel]="'GL.ACCRUAL_' + type.toUpperCase() | translate" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="ac-description">{{ 'GL.COL_DESCRIPTION' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="form.controls.description.errors?.['serverError'] ?? ('GL.REQUIRED' | translate)">
+          <input id="ac-description" nz-input formControlName="description" maxlength="255" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="ac-total">{{ 'GL.ACCRUAL_TOTAL' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="form.controls.total_amount.errors?.['serverError'] ?? ('GL.REQUIRED' | translate)">
+          <nz-input-number class="w-full" id="ac-total" formControlName="total_amount" [nzMin]="0.01" [nzPrecision]="2" />
+        </nz-form-control>
+      </nz-form-item>
+      <div class="form-row">
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="ac-start">{{ 'GL.COVERAGE_START' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input id="ac-start" nz-input type="date" formControlName="coverage_start" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="ac-end">{{ 'GL.COVERAGE_END' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="form.controls.coverage_end.hasError('endsBeforeStart') ? ('COMMON.VALIDATION.END_AFTER_START' | translate) : ('GL.REQUIRED' | translate)">
+            <input id="ac-end" nz-input type="date" formControlName="coverage_end" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="ac-cutoff">{{ 'GL.CUTOFF_DATE' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input id="ac-cutoff" nz-input type="date" formControlName="cutoff_date" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      @if (manualPreview(); as preview) {
+        <nz-alert
+          nzType="info"
+          nzShowIcon
+          [nzMessage]="'GL.ACCRUALS_PREVIEW_TITLE' | translate"
+          [nzDescription]="
+            ('GL.COMPETENCE_PREVIEW_DAYS' | translate) + ': ' + preview.transitoryDays + ' / ' + preview.totalDays +
+            ' · ' + ('GL.ACCRUALS_COL_RECOGNIZED' | translate) + ': ' + (preview.recognizedAmount | money: displayCurrency()) +
+            ' · ' + ('GL.ACCRUALS_COL_TRANSITORY' | translate) + ': ' + (preview.transitoryAmount | money: displayCurrency())
+          "
+        />
+      }
+
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="ac-is">{{ 'GL.INCOME_STATEMENT_ACCOUNT' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select id="ac-is" formControlName="income_statement_account_id" nzShowSearch>
+            @for (account of lookups.accounts(); track account.id) {
+              <nz-option [nzValue]="account.id" [nzLabel]="account.account_code + ' ' + account.name" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="ac-bs">{{ 'GL.BALANCE_SHEET_ACCOUNT' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select id="ac-bs" formControlName="balance_sheet_account_id" nzShowSearch>
+            @for (account of lookups.accounts(); track account.id) {
+              <nz-option [nzValue]="account.id" [nzLabel]="account.account_code + ' ' + account.name" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="ac-cc">{{ 'GL.COST_CENTER' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select id="ac-cc" formControlName="cost_center_id" nzAllowClear>
+            @for (center of lookups.costCenters(); track center.id) {
+              <nz-option [nzValue]="center.id" [nzLabel]="center.code + ' ' + center.name" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>

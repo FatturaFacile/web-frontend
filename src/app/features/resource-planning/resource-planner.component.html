@@ -1,0 +1,425 @@
+<app-page-header
+  [title]="'resourcePlanning.title' | translate"
+  [subtitle]="'resourcePlanning.subtitle' | translate"
+>
+  <button nz-button nzType="primary" (click)="candidatesOpen.set(true)">
+    <i class="fa-solid fa-user-plus" aria-hidden="true"></i>
+    {{ 'resourcePlanning.candidates.open' | translate }}
+  </button>
+</app-page-header>
+
+<div class="toolbar">
+  <nz-radio-group
+    [ngModel]="store.granularity()"
+    (ngModelChange)="setGranularity($event)"
+    nzButtonStyle="solid"
+    [attr.aria-label]="'resourcePlanning.granularity.label' | translate"
+  >
+    @for (granularity of granularities; track granularity) {
+      <label [attr.for]="'resource-planner-field-' + $index" appRadioControl nz-radio-button [nzValue]="granularity">{{
+        'resourcePlanning.granularity.' + granularity | translate
+      }}</label>
+    }
+  </nz-radio-group>
+
+  <nz-select
+    class="department"
+    nzAllowClear
+    [attr.aria-label]="'resourcePlanning.department' | translate"
+    [nzPlaceHolder]="'resourcePlanning.allDepartments' | translate"
+    [ngModel]="store.departmentId()"
+    (ngModelChange)="store.setDepartment($event ?? null)"
+  >
+    @for (department of store.departments(); track department.id) {
+      <nz-option [nzValue]="department.id" [nzLabel]="department.name"></nz-option>
+    }
+  </nz-select>
+
+  <nz-badge
+    class="overload-badge"
+    [nzCount]="store.overloadedEmployeeCount()"
+    [nzOffset]="[8, -2]"
+    nzColor="red"
+  >
+    <span>{{ 'resourcePlanning.overload.badge' | translate }}</span>
+  </nz-badge>
+
+  <div class="period-nav">
+    <button
+      nz-button
+      nzShape="circle"
+      (click)="store.navigate(-1)"
+      [attr.aria-label]="'resourcePlanning.previous' | translate"
+    >
+      <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+    </button>
+    <strong class="period-range">{{ rangeLabel() }}</strong>
+    <button
+      nz-button
+      nzShape="circle"
+      (click)="store.navigate(1)"
+      [attr.aria-label]="'resourcePlanning.next' | translate"
+    >
+      <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+    </button>
+  </div>
+</div>
+
+<ul class="legend" [attr.aria-label]="'resourcePlanning.legend' | translate">
+  @for (band of bands; track band) {
+    <li>
+      <span class="swatch band-{{ band }}" aria-hidden="true"></span>
+      {{ 'resourcePlanning.band.' + band | translate }}
+    </li>
+  }
+  <li>
+    <span class="swatch bar-hard" aria-hidden="true"></span>
+    {{ 'resourcePlanning.bookingType.HardCommitted' | translate }}
+  </li>
+  <li>
+    <span class="swatch bar-soft" aria-hidden="true"></span>
+    {{ 'resourcePlanning.bookingType.SoftTentative' | translate }}
+  </li>
+</ul>
+<p class="hint">{{ 'resourcePlanning.dragHint' | translate }}</p>
+
+@if (store.error(); as error) {
+  <nz-alert class="feedback" nzType="error" nzShowIcon [nzMessage]="error | translate"></nz-alert>
+}
+
+@if (store.overloaded().length > 0) {
+  <nz-alert
+    class="feedback overload-alert"
+    nzType="error"
+    nzShowIcon
+    [nzMessage]="
+      'resourcePlanning.overload.title' | translate: { count: store.overloadedEmployeeCount() }
+    "
+    [nzDescription]="overloadList"
+  ></nz-alert>
+  <ng-template #overloadList>
+    <ul class="plain">
+      @for (entry of store.overloaded(); track entry.row.employee_id) {
+        <li>
+          <strong>{{ entry.row.employee_name }}</strong>
+          {{
+            'resourcePlanning.overload.detail'
+              | translate: { peak: percent(entry.peak), periods: entry.periods.length }
+          }}
+        </li>
+      }
+    </ul>
+  </ng-template>
+}
+
+@if (store.lastIssues().length > 0) {
+  <nz-alert
+    class="feedback"
+    nzType="error"
+    nzShowIcon
+    nzCloseable
+    (nzOnClose)="store.clearFeedback()"
+    [nzMessage]="'resourcePlanning.refused' | translate"
+    [nzDescription]="issueList"
+  ></nz-alert>
+  <ng-template #issueList>
+    <ul class="plain">
+      @for (issue of store.lastIssues(); track $index) {
+        <li>
+          <code>{{ issue.code }}</code> {{ describeError(issue) }}
+        </li>
+      }
+    </ul>
+  </ng-template>
+}
+
+@if (store.lastResult(); as result) {
+  @if (result.overload.is_overloaded || result.warnings.length > 0) {
+    <nz-alert
+      class="feedback"
+      nzType="warning"
+      nzShowIcon
+      nzCloseable
+      (nzOnClose)="store.clearFeedback()"
+      [nzMessage]="
+        (result.overload.is_overloaded
+          ? 'resourcePlanning.result.overload'
+          : 'resourcePlanning.result.warnings'
+        ) | translate: { peak: percent(result.overload.peak_load_percent) }
+      "
+      [nzDescription]="resultDetail"
+    ></nz-alert>
+    <ng-template #resultDetail>
+      <ul class="plain">
+        @for (week of result.overload.weeks; track week.week_start) {
+          <li>
+            {{
+              'resourcePlanning.result.week'
+                | translate: { week: week.week_start, load: percent(week.load_percent) }
+            }}
+          </li>
+        }
+        @for (warning of result.warnings; track $index) {
+          <li>{{ describeWarning(warning) }}</li>
+        }
+      </ul>
+    </ng-template>
+  }
+}
+
+<nz-spin [nzSpinning]="store.loading() || store.saving()">
+  @if (!store.isEmpty()) {
+    <div class="table-wrap">
+      <table class="heatmap">
+        <thead>
+          <tr>
+            <th class="row-head" scope="col">{{ 'resourcePlanning.resource' | translate }}</th>
+            @for (period of store.periods(); track period) {
+              <th class="period-head" scope="col">{{ periodLabel(period) }}</th>
+            }
+          </tr>
+        </thead>
+        @for (row of store.rows(); track row.employee_id) {
+          <tbody class="resource" [class.overloaded]="rowOverloaded(row)">
+            <tr class="heat-row">
+              <th class="row-head" scope="row" rowspan="2">
+                <div class="row-title">{{ row.employee_name }}</div>
+                @if (row.department_name) {
+                  <div class="row-sub">{{ row.department_name }}</div>
+                }
+                <div class="row-sub">
+                  {{
+                    'resourcePlanning.weeklyHours'
+                      | translate: { hours: row.weekly_contract_hours }
+                  }}
+                </div>
+                @if (rowOverloaded(row)) {
+                  <nz-tag nzColor="red">
+                    <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                    {{ 'resourcePlanning.band.red' | translate }}
+                  </nz-tag>
+                }
+              </th>
+              @for (cell of row.cells; track cell.period_start) {
+                <td
+                  class="cell band-{{ band(cell) }}"
+                  tabindex="0"
+                  nz-tooltip
+                  [nzTooltipTitle]="cellTip"
+                  [nzTooltipTitleContext]="{ $implicit: cell }"
+                  [attr.aria-label]="
+                    row.employee_name +
+                    ', ' +
+                    periodLabel(cell.period_start) +
+                    ': ' +
+                    percent(cell.load_percent) +
+                    ' (' +
+                    ('resourcePlanning.band.' + band(cell) | translate) +
+                    ')'
+                  "
+                  (dragover)="allowDrop($event)"
+                  (drop)="onCellDrop($event, row.employee_id, cell.period_start)"
+                >
+                  @if (band(cell) === 'none') {
+                    <span aria-hidden="true">–</span>
+                  } @else {
+                    @if (band(cell) === 'red') {
+                      <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                    }
+                    <span class="cell-load">{{ percent(cell.load_percent) }}</span>
+                    <span class="cell-meter" aria-hidden="true"
+                      ><span class="cell-fill" [style.width.%]="loadBar(cell)"></span
+                    ></span>
+                  }
+                </td>
+              }
+            </tr>
+            <tr class="bars-row">
+              <td
+                class="lane-cell"
+                [attr.colspan]="store.periods().length"
+                (dragover)="allowDrop($event)"
+                (drop)="onLaneDrop($event, row.employee_id)"
+              >
+                <div
+                  class="lane"
+                  [style.grid-template-columns]="'repeat(' + store.periods().length + ', 1fr)'"
+                  [style.grid-template-rows]="'repeat(' + tracksOf(row) + ', 26px)'"
+                >
+                  @for (bar of barsOf(row); track bar.allocation.id) {
+                    <div
+                      class="bar"
+                      [class.bar-hard]="bar.allocation.booking_type === 'HardCommitted'"
+                      [class.bar-soft]="bar.allocation.booking_type === 'SoftTentative'"
+                      [class.bar-overloaded]="bar.allocation.is_overloaded"
+                      [class.bar-rejected]="store.rejectedAllocationId() === bar.allocation.id"
+                      [style.grid-column]="bar.column + ' / span ' + bar.span"
+                      [style.grid-row]="bar.track + 1"
+                      draggable="true"
+                      nz-tooltip
+                      [nzTooltipTitle]="barTitle(bar.allocation)"
+                      (dragstart)="startDrag($event, bar.allocation, 'move')"
+                      (dragend)="endDrag()"
+                    >
+                      @if (!bar.clippedStart) {
+                        <span
+                          class="handle handle-start"
+                          draggable="true"
+                          aria-hidden="true"
+                          (dragstart)="startDrag($event, bar.allocation, 'resize-start')"
+                          (dragend)="endDrag()"
+                        ></span>
+                      }
+                      <span class="bar-label">
+                        @if (bar.allocation.is_overloaded) {
+                          <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                        }
+                        {{ barLabel(bar.allocation) }}
+                        <small>{{ hours(bar.allocation.allocated_hours_per_day) }}/d</small>
+                      </span>
+                      <button
+                        nz-button
+                        nzType="text"
+                        nzSize="small"
+                        class="bar-menu"
+                        nz-dropdown
+                        nzTrigger="click"
+                        [nzDropdownMenu]="barMenu"
+                        [attr.aria-label]="'resourcePlanning.bar.menu' | translate"
+                      >
+                        <i class="fa-solid fa-ellipsis-vertical" aria-hidden="true"></i>
+                      </button>
+                      <nz-dropdown-menu #barMenu="nzDropdownMenu">
+                        <ul nz-menu>
+                          <li
+                            nz-menu-item
+                            tabindex="0"
+                            (click)="step(bar.allocation, -1)"
+                            (keydown.enter)="step(bar.allocation, -1)"
+                          >
+                            {{ 'resourcePlanning.action.moveEarlier' | translate }}
+                          </li>
+                          <li
+                            nz-menu-item
+                            tabindex="0"
+                            (click)="step(bar.allocation, 1)"
+                            (keydown.enter)="step(bar.allocation, 1)"
+                          >
+                            {{ 'resourcePlanning.action.moveLater' | translate }}
+                          </li>
+                          <li nz-submenu [nzTitle]="'resourcePlanning.action.reassign' | translate">
+                            <ul>
+                              @for (option of employeeOptions(); track option.id) {
+                                <li
+                                  nz-menu-item
+                                  tabindex="0"
+                                  [nzDisabled]="option.id === bar.allocation.employee_id"
+                                  (click)="reassign(bar.allocation, option.id)"
+                                  (keydown.enter)="reassign(bar.allocation, option.id)"
+                                >
+                                  {{ option.name }}
+                                </li>
+                              }
+                            </ul>
+                          </li>
+                          <li
+                            nz-menu-item
+                            tabindex="0"
+                            (click)="openDialog('edit', bar.allocation)"
+                            (keydown.enter)="openDialog('edit', bar.allocation)"
+                          >
+                            {{ 'resourcePlanning.action.edit' | translate }}
+                          </li>
+                          <li
+                            nz-menu-item
+                            tabindex="0"
+                            (click)="openDialog('split', bar.allocation)"
+                            (keydown.enter)="openDialog('split', bar.allocation)"
+                          >
+                            {{ 'resourcePlanning.action.split' | translate }}
+                          </li>
+                          @if (bar.allocation.booking_type === 'SoftTentative') {
+                            <li
+                              nz-menu-item
+                              tabindex="0"
+                              (click)="convert(bar.allocation)"
+                              (keydown.enter)="convert(bar.allocation)"
+                            >
+                              {{ 'resourcePlanning.action.convertToHard' | translate }}
+                            </li>
+                          }
+                          <li
+                            nz-menu-item
+                            nzDanger
+                            tabindex="0"
+                            nz-popconfirm
+                            [nzPopconfirmTitle]="'resourcePlanning.action.deleteConfirm' | translate"
+                            (nzOnConfirm)="remove(bar.allocation)"
+                          >
+                            {{ 'resourcePlanning.action.delete' | translate }}
+                          </li>
+                        </ul>
+                      </nz-dropdown-menu>
+                      @if (!bar.clippedEnd) {
+                        <span
+                          class="handle handle-end"
+                          draggable="true"
+                          aria-hidden="true"
+                          (dragstart)="startDrag($event, bar.allocation, 'resize-end')"
+                          (dragend)="endDrag()"
+                        ></span>
+                      }
+                    </div>
+                  }
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        }
+      </table>
+    </div>
+  } @else if (!store.loading()) {
+    <nz-empty [nzNotFoundContent]="'resourcePlanning.empty' | translate"></nz-empty>
+  }
+</nz-spin>
+
+<ng-template #cellTip let-cell>
+  <dl class="tip">
+    <div>
+      <dt>{{ 'resourcePlanning.tooltip.load' | translate }}</dt>
+      <dd>{{ percent(cell.load_percent) }}</dd>
+    </div>
+    <div>
+      <dt>{{ 'resourcePlanning.tooltip.net' | translate }}</dt>
+      <dd>{{ hours(cell.net_available_hours) }}</dd>
+    </div>
+    <div>
+      <dt>{{ 'resourcePlanning.tooltip.leave' | translate }}</dt>
+      <dd>{{ hours(cell.leave_and_holiday_hours) }}</dd>
+    </div>
+    <div>
+      <dt>{{ 'resourcePlanning.tooltip.hard' | translate }}</dt>
+      <dd>{{ hours(cell.hard_booked_hours) }}</dd>
+    </div>
+    <div>
+      <dt>{{ 'resourcePlanning.tooltip.soft' | translate }}</dt>
+      <dd>{{ hours(cell.soft_booked_hours) }}</dd>
+    </div>
+    <div>
+      <dt>{{ 'resourcePlanning.tooltip.billable' | translate }}</dt>
+      <dd>{{ hours(cell.billable_booked_hours) }}</dd>
+    </div>
+    <div>
+      <dt>{{ 'resourcePlanning.tooltip.internal' | translate }}</dt>
+      <dd>{{ hours(cell.internal_booked_hours) }}</dd>
+    </div>
+  </dl>
+</ng-template>
+
+<app-allocation-dialog
+  [request]="dialog()"
+  [employees]="employeeOptions()"
+  (submitted)="submitDialog($event)"
+  (closed)="dialog.set(null)"
+></app-allocation-dialog>
+<app-candidate-drawer [(open)]="candidatesOpen"></app-candidate-drawer>

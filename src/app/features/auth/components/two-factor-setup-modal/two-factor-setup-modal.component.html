@@ -1,0 +1,160 @@
+<nz-modal appModalActions
+  [nzVisible]="isVisible()"
+  (nzVisibleChange)="isVisible.set($event)"
+  [nzTitle]="'TWO_FACTOR.SETUP_TITLE' | translate"
+  [nzFooter]="null"
+  [nzClosable]="currentStep() !== 1"
+  [nzMaskClosable]="false"
+  (nzOnCancel)="handleCancel()"
+  nzWidth="600px"
+>
+  <ng-container *nzModalContent>
+    <nz-steps [nzCurrent]="currentStep()" nzSize="small" class="steps-nav">
+      <nz-step [nzTitle]="'TWO_FACTOR.STEP_VERIFY' | translate" [nzDescription]="'TWO_FACTOR.STEP_VERIFY_DESC' | translate"></nz-step>
+      <nz-step [nzTitle]="'TWO_FACTOR.STEP_SCAN' | translate" [nzDescription]="'TWO_FACTOR.STEP_SCAN_DESC' | translate"></nz-step>
+      <nz-step [nzTitle]="'TWO_FACTOR.STEP_BACKUP' | translate" [nzDescription]="'TWO_FACTOR.STEP_BACKUP_DESC' | translate"></nz-step>
+    </nz-steps>
+
+    @if (errorMessage()) {
+      <nz-alert
+        nzType="error"
+        [nzMessage]="errorMessage()"
+        nzShowIcon
+        class="step-alert"
+      ></nz-alert>
+    }
+
+    <!-- Step 0: Confirm password -->
+    @if (currentStep() === 0) {
+      <div class="step-content">
+        <p class="step-desc">{{ 'TWO_FACTOR.PASSWORD_INTRO' | translate }}</p>
+
+        <form [formGroup]="passwordForm" (ngSubmit)="onStartEnable()" nz-form nzLayout="vertical">
+          <nz-form-item>
+            <nz-form-label nzRequired nzFor="setup-password">{{ 'TWO_FACTOR.CURRENT_PASSWORD' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="'TWO_FACTOR.CURRENT_PASSWORD_REQUIRED' | translate">
+              <nz-input-wrapper>
+                <nz-icon nzInputPrefix nzType="lock" />
+                <input
+                  nz-input
+                  id="setup-password"
+                  type="password"
+                  formControlName="currentPassword"
+                  autocomplete="current-password"
+                />
+              </nz-input-wrapper>
+            </nz-form-control>
+          </nz-form-item>
+
+          <div class="modal-actions">
+            <button nz-button type="button" (click)="handleCancel()" appIconAction="cancel"></button>
+            <button
+              nz-button
+              nzType="primary"
+              type="submit"
+              [nzLoading]="isLoading()"
+              [disabled]="passwordForm.invalid"
+            >
+              {{ 'TWO_FACTOR.CONTINUE' | translate }}
+            </button>
+          </div>
+        </form>
+      </div>
+    }
+
+    <!-- Step 1: Scan QR Code and confirm code -->
+    @if (currentStep() === 1) {
+      <div class="step-content">
+        <p class="step-desc">{{ 'TWO_FACTOR.SCAN_INTRO' | translate }}</p>
+
+        <div class="qrcode-wrapper">
+          @if (otpauthUri()) {
+            <!-- A QR code must stay black on white to be scannable, whatever the theme -->
+            <!-- QR code: black on white in both themes so authenticator apps can scan it -->
+            <nz-qrcode [nzValue]="otpauthUri()" [nzSize]="180" nzColor="#000000" nzBgColor="#ffffff"></nz-qrcode>
+          }
+          @if (secretKey()) {
+            <div class="manual-key">
+              <span class="key-label">{{ 'TWO_FACTOR.MANUAL_KEY' | translate }}</span>
+              <code class="key-code">{{ secretKey() }}</code>
+            </div>
+          }
+        </div>
+
+        <form [formGroup]="confirmForm" (ngSubmit)="onConfirmCode()" nz-form nzLayout="vertical">
+          <nz-form-item>
+            <nz-form-label nzRequired nzFor="setup-code">{{ 'TWO_FACTOR.CODE_LABEL' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="'TWO_FACTOR.CODE_REQUIRED' | translate">
+              <nz-input-wrapper>
+                <nz-icon nzInputPrefix nzType="safety" />
+                <input
+                  nz-input
+                  id="setup-code"
+                  type="text"
+                  inputmode="numeric"
+                  formControlName="code"
+                  [placeholder]="'TWO_FACTOR.CODE_PLACEHOLDER' | translate"
+                  maxlength="16"
+                  autocomplete="one-time-code"
+                />
+              </nz-input-wrapper>
+            </nz-form-control>
+          </nz-form-item>
+
+          <div class="modal-actions">
+            <button nz-button type="button" (click)="handleCancel()" appIconAction="cancel"></button>
+            <button
+              nz-button
+              nzType="primary"
+              type="submit"
+              [nzLoading]="isLoading()"
+              [disabled]="confirmForm.invalid"
+            >
+              {{ 'TWO_FACTOR.VERIFY_AND_ENABLE' | translate }}
+            </button>
+          </div>
+        </form>
+      </div>
+    }
+
+    <!-- Step 2: Recovery codes (shown ONCE) -->
+    @if (currentStep() === 2) {
+      <div class="step-content">
+        <nz-alert
+          nzType="warning"
+          [nzMessage]="'TWO_FACTOR.SAVE_CODES_TITLE' | translate"
+          [nzDescription]="'TWO_FACTOR.SAVE_CODES_BODY' | translate"
+          nzShowIcon
+          class="step-alert"
+        ></nz-alert>
+
+        <div class="recovery-codes-box">
+          <div class="codes-grid">
+            @for (code of recoveryCodes(); track $index) {
+              <div class="recovery-code-item">{{ code }}</div>
+            }
+          </div>
+          <button
+            nz-button
+            nzType="default"
+            nzBlock
+            (click)="copyRecoveryCodes()"
+            class="copy-btn"
+          >
+            <i nz-icon nzType="copy"></i> {{ 'TWO_FACTOR.COPY_CODES' | translate }}
+          </button>
+        </div>
+
+        <div class="modal-actions">
+          <button
+            nz-button
+            nzType="primary"
+            type="button"
+            (click)="onFinish()"
+            appIconAction="confirm"
+          ></button>
+        </div>
+      </div>
+    }
+  </ng-container>
+</nz-modal>

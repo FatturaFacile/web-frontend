@@ -1,0 +1,230 @@
+<header class="app-header">
+  <div class="header-left">
+    <button
+      type="button"
+      class="sidebar-toggle"
+      (click)="appStore.toggleSidebar()"
+      [title]="
+        appStore.isCollapsed()
+          ? ('HEADER.TOGGLE_SIDEBAR_EXPAND' | translate)
+          : ('HEADER.TOGGLE_SIDEBAR_COLLAPSE' | translate)
+      "
+      [attr.aria-label]="
+        appStore.isCollapsed()
+          ? ('HEADER.TOGGLE_SIDEBAR_EXPAND' | translate)
+          : ('HEADER.TOGGLE_SIDEBAR_COLLAPSE' | translate)
+      "
+    >
+      <i [class]="appStore.isCollapsed() ? 'fa-solid fa-bars-staggered' : 'fa-solid fa-bars'"></i>
+    </button>
+
+    <!-- Multi-tenant selector -->
+    <div class="tenant-selector">
+      <nz-select
+        [ngModel]="authStore.activeTenantId()"
+        (ngModelChange)="onTenantChange($event)"
+        nzSize="small"
+        class="tenant-select"
+        [attr.aria-label]="'AUTH.TENANT_PRESET' | translate"
+      >
+        @for (tenant of authStore.tenants(); track tenant.id) {
+          <nz-option
+            [nzValue]="tenant.id"
+            [nzLabel]="tenant.name + ' (' + tenant.jurisdiction + ')'"
+          />
+        }
+      </nz-select>
+    </div>
+  </div>
+
+  <div class="header-right">
+    <button
+      type="button"
+      class="sidebar-toggle global-search-trigger"
+      (click)="globalSearch.open()"
+      [title]="'COLLAB.SEARCH_OPEN' | translate"
+      [attr.aria-label]="'COLLAB.SEARCH_OPEN' | translate"
+    >
+      <i class="fa-solid fa-magnifying-glass"></i>
+    </button>
+
+    <button
+      type="button"
+      class="sidebar-toggle"
+      (click)="academy.openHelp()"
+      [title]="'ACADEMY.HELP_TRIGGER' | translate"
+      [attr.aria-label]="'ACADEMY.HELP_TRIGGER' | translate"
+      data-testid="academy-help-trigger"
+    >
+      <i class="fa-solid fa-circle-question" aria-hidden="true"></i>
+    </button>
+
+    <button
+      type="button"
+      class="sidebar-toggle copilot-trigger"
+      (click)="copilot.toggle()"
+      [title]="'COPILOT.OPEN' | translate"
+      [attr.aria-label]="'COPILOT.OPEN' | translate"
+      data-testid="copilot-trigger"
+    >
+      <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
+    </button>
+
+    <!-- Jurisdiction Switcher -->
+    <!--    <div class="jurisdiction-toggle">-->
+    <!--      <button-->
+    <!--        type="button"-->
+    <!--        class="jurisdiction-pill"-->
+    <!--        [class.active]="authStore.activeJurisdiction() === 'IT'"-->
+    <!--        (click)="authStore.setJurisdiction('IT')"-->
+    <!--        [title]="'HEADER.JURISDICTION_IT' | translate"-->
+    <!--        [attr.aria-label]="'HEADER.JURISDICTION_IT' | translate"-->
+    <!--      >-->
+    <!--        🇮🇹 IT-->
+    <!--      </button>-->
+    <!--      <button-->
+    <!--        type="button"-->
+    <!--        class="jurisdiction-pill"-->
+    <!--        [class.active]="authStore.activeJurisdiction() === 'CH'"-->
+    <!--        (click)="authStore.setJurisdiction('CH')"-->
+    <!--        [title]="'HEADER.JURISDICTION_CH' | translate"-->
+    <!--        [attr.aria-label]="'HEADER.JURISDICTION_CH' | translate"-->
+    <!--      >-->
+    <!--        🇨🇭 CH-->
+    <!--      </button>-->
+    <!--    </div>-->
+
+    <!--    &lt;!&ndash; Currency Selector &ndash;&gt;-->
+    <!--    <nz-select-->
+    <!--      [ngModel]="authStore.activeCurrency()"-->
+    <!--      (ngModelChange)="authStore.setCurrency($event)"-->
+    <!--      nzSize="small"-->
+    <!--      class="currency-select"-->
+    <!--      [attr.aria-label]="'SWISS_QR.CURRENCY_LBL' | translate"-->
+    <!--    >-->
+    <!--      <nz-option nzValue="EUR" nzLabel="€ EUR" />-->
+    <!--      <nz-option nzValue="CHF" nzLabel="CHF" />-->
+    <!--    </nz-select>-->
+
+    <!--    &lt;!&ndash; Locale Switcher (en default, it, de, fr) &ndash;&gt;-->
+    <!--    <nz-select-->
+    <!--      [ngModel]="authStore.activeLocale()"-->
+    <!--      (ngModelChange)="onLocaleChange($event)"-->
+    <!--      nzSize="small"-->
+    <!--      class="locale-select"-->
+    <!--      aria-label="Language selector"-->
+    <!--    >-->
+    <!--      <nz-option nzValue="en" nzLabel="🇬🇧 EN" />-->
+    <!--      <nz-option nzValue="it" nzLabel="🇮🇹 IT" />-->
+    <!--      <nz-option nzValue="de" nzLabel="🇩🇪 DE" />-->
+    <!--      <nz-option nzValue="fr" nzLabel="🇫🇷 FR" />-->
+    <!--    </nz-select>-->
+
+    <!-- Alerts -->
+    <a
+      routerLink="/alerts"
+      routerLinkActive="active"
+      ariaCurrentWhenActive="page"
+      class="action-btn"
+      [title]="'NAV.ALERTS' | translate"
+      [attr.aria-label]="'NAV.ALERTS' | translate"
+    >
+      <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+    </a>
+
+    <!-- In-app notification centre -->
+    <app-notification-bell />
+
+    <!-- Theme and density quick switcher -->
+    <app-appearance-switcher />
+    <app-display-preferences />
+
+    <!-- Dark/Light theme toggle -->
+    <button
+      type="button"
+      class="action-btn theme-toggle"
+      (click)="authStore.toggleTheme()"
+      [title]="
+        authStore.isDarkMode()
+          ? ('HEADER.THEME_LIGHT' | translate)
+          : ('HEADER.THEME_DARK' | translate)
+      "
+      [attr.aria-label]="
+        authStore.isDarkMode()
+          ? ('HEADER.THEME_LIGHT' | translate)
+          : ('HEADER.THEME_DARK' | translate)
+      "
+    >
+      @if (authStore.isDarkMode()) {
+        <i class="fa-solid fa-sun" aria-hidden="true"></i>
+      } @else {
+        <i class="fa-solid fa-moon" aria-hidden="true"></i>
+      }
+    </button>
+
+    <!-- User profile dropdown -->
+    <div class="user-profile">
+      <a nz-dropdown [nzDropdownMenu]="userMenu" nzPlacement="bottomRight" class="profile-link">
+        <nz-avatar
+          nzSize="small"
+          [nzSrc]="authStore.user()?.avatar ?? ''"
+          nzIcon="user"
+          class="avatar"
+        />
+        <span class="user-name">{{ authStore.user()?.name }}</span>
+        <i class="fa-solid fa-chevron-down dropdown-arrow"></i>
+      </a>
+      <nz-dropdown-menu #userMenu="nzDropdownMenu">
+        <ul nz-menu class="user-menu-dropdown">
+          <li nz-menu-item disabled>
+            <div class="user-info-panel">
+              <strong>{{ authStore.user()?.name }}</strong>
+              <span class="user-role">{{ authStore.activeRole() }}</span>
+              <span class="tenant-active">{{ authStore.activeTenant().name }}</span>
+            </div>
+          </li>
+          <li nz-menu-divider></li>
+          <li nz-menu-item tabindex="0" (click)="router.navigate(['/settings/profile'])"
+              (keydown.enter)="router.navigate(['/settings/profile'])">
+            <i class="fa-solid fa-user fa-icon-spaced"></i>
+            {{ "HEADER.PROFILE" | translate }}
+          </li>
+          <li nz-menu-item tabindex="0" (click)="router.navigate(['/settings/security'])"
+              (keydown.enter)="router.navigate(['/settings/security'])">
+            <i class="fa-solid fa-shield-halved fa-icon-spaced"></i>
+            {{ "HEADER.SECURITY" | translate }}
+          </li>
+          @if (permissions.canWrite('system')) {
+            <li nz-menu-item tabindex="0" (click)="router.navigate(['/settings/security/two-factor'])"
+                (keydown.enter)="router.navigate(['/settings/security/two-factor'])">
+              <i class="fa-solid fa-key fa-icon-spaced"></i>
+              {{ "HEADER.TWO_FACTOR_POLICY" | translate }}
+            </li>
+          }
+          <li nz-menu-item tabindex="0" (click)="router.navigate(['/settings/tenant'])"
+              (keydown.enter)="router.navigate(['/settings/tenant'])">
+            <i class="fa-solid fa-sliders fa-icon-spaced"></i>
+            {{ "HEADER.PREFERENCES" | translate }}
+          </li>
+          <li nz-menu-item tabindex="0" (click)="router.navigate(['/settings/notifications'])"
+              (keydown.enter)="router.navigate(['/settings/notifications'])">
+            <i class="fa-solid fa-bell fa-icon-spaced"></i>
+            {{ "PLATFORM.NOTIFICATION_PREFERENCES" | translate }}
+          </li>
+          @if (permissions.canRead('platform')) {
+            <li nz-menu-item tabindex="0" (click)="router.navigate(['/settings/recycle-bin'])"
+                (keydown.enter)="router.navigate(['/settings/recycle-bin'])">
+              <i class="fa-solid fa-trash-can-arrow-up fa-icon-spaced"></i>
+              {{ "PLATFORM.RECYCLE_BIN" | translate }}
+            </li>
+          }
+          <li nz-menu-divider></li>
+          <li nz-menu-item tabindex="0" (click)="logout()" (keydown.enter)="logout()" class="logout-item">
+            <i class="fa-solid fa-right-from-bracket fa-icon-spaced"></i>
+            {{ "HEADER.LOGOUT" | translate }}
+          </li>
+        </ul>
+      </nz-dropdown-menu>
+    </div>
+  </div>
+</header>

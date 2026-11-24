@@ -1,0 +1,96 @@
+# See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
+
+# Compiled output
+/dist
+/tmp
+/out-tsc
+/bazel-out
+
+# Node & Package Managers
+/node_modules
+package-lock.json
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Agent Sandboxing & Ephemeral Scratch
+/.sandbox/scratch/
+/.sandbox/output/
+/.sandbox/cache/
+
+# IDEs and editors
+.idea/
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/mcp.json
+.history/*
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# Miscellaneous
+/.angular/cache
+.sass-cache/
+/connect.lock
+/coverage
+/libpeerconnection.log
+testem.log
+/typings
+__screenshots__/
+/certs/*
+!/certs/README.md
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Local environment overrides (see .env.example)
+.env
+
+.claude-build/
+.claude/settings.local.json
+.claude/*.local.md
+
+# Compiled by the IDE SCSS file watcher next to every .scss: never committed
+src/**/*.css
+src/**/*.css.map
+
+# AI tools: local state and scratch files
+.claude/worktrees/
+.sandbox/
+*.tmp
+.tmp-*
+ed[0-9]*.php
+ed[0-9]*.cjs
+_r.php
+plm[0-9]*.json
+
+# Agent skills installed by `npx skills` (copies/symlinks per tool): regenerated, never committed
+/skills/
+/skills-lock.json
+/.agents/
+/.continue/skills/
+/.junie/skills/
+/.claude/skills/
+/.antigravity/skills/
+/.cursor/skills/
+/.gemini/skills/
+/.agy/skills/
+
+# Storybook
+/storybook-static

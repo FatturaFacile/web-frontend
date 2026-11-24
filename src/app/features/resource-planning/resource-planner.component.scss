@@ -1,0 +1,263 @@
+:host {
+  display: block;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.department {
+  min-width: 220px;
+}
+
+.period-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.period-range {
+  min-width: 190px;
+  text-align: center;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 0 0 4px;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+}
+
+.swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-right: 4px;
+  border-radius: 3px;
+  vertical-align: text-bottom;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.hint {
+  color: var(--ant-text-color-secondary, #595959);
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+
+.feedback {
+  margin-bottom: 12px;
+}
+
+.plain {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.heatmap {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+
+  th,
+  td {
+    border-bottom: 1px solid var(--ant-border-color-split, #f0f0f0);
+  }
+}
+
+.row-head {
+  width: 200px;
+  padding: 8px 12px;
+  text-align: left;
+  vertical-align: top;
+  background: var(--ant-component-background, #fff);
+}
+
+.row-title {
+  font-weight: 600;
+}
+
+.row-sub {
+  font-size: 12px;
+  color: var(--ant-text-color-secondary, #595959);
+}
+
+.period-head {
+  padding: 6px 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.resource.overloaded .row-head {
+  box-shadow: inset 3px 0 0 var(--ant-error-color, #cf1322);
+}
+
+.cell {
+  height: 44px;
+  padding: 4px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  border-right: 1px solid var(--ant-component-background, #fff);
+}
+
+.cell:focus-visible {
+  outline: 2px solid var(--ant-primary-color, #1677ff);
+  outline-offset: -2px;
+}
+
+.cell-load {
+  display: block;
+}
+
+.cell-meter {
+  display: block;
+  height: 3px;
+  margin-top: 2px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+}
+
+.cell-fill {
+  display: block;
+  height: 100%;
+  background: currentColor;
+  border-radius: 2px;
+}
+
+// Bands: green below 80 %, yellow from 80 to 100 %, red above 100 % (overload). The text colour keeps AA contrast.
+.band-none {
+  background: #f5f5f5;
+  color: #595959;
+}
+
+.band-green {
+  background: #d9f7be;
+  color: #135200;
+}
+
+.band-yellow {
+  background: #fff1b8;
+  color: #614700;
+}
+
+.band-red {
+  background: #ffccc7;
+  color: #820014;
+}
+
+.lane-cell {
+  padding: 2px 0 6px;
+}
+
+.lane {
+  display: grid;
+  gap: 2px 0;
+  min-height: 26px;
+}
+
+.bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 2px;
+  padding: 0 14px;
+  min-width: 0;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: grab;
+  overflow: hidden;
+  border: 1px solid #1d39c4;
+}
+
+.bar-hard {
+  background: #2f54eb;
+  color: #fff;
+}
+
+.bar-soft {
+  background: repeating-linear-gradient(
+    45deg,
+    #adc6ff,
+    #adc6ff 6px,
+    #d6e4ff 6px,
+    #d6e4ff 12px
+  );
+  color: #10239e;
+  border-style: dashed;
+}
+
+.bar-overloaded {
+  border-color: #cf1322;
+  box-shadow: 0 0 0 1px #cf1322;
+}
+
+.bar-rejected {
+  outline: 2px solid #cf1322;
+}
+
+.bar-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bar-menu {
+  color: inherit;
+  padding: 0 4px;
+}
+
+.handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  cursor: ew-resize;
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.handle-start {
+  left: 0;
+}
+
+.handle-end {
+  right: 0;
+}
+
+.tip {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 2px 16px;
+  margin: 0;
+
+  div {
+    display: contents;
+  }
+
+  dt,
+  dd {
+    margin: 0;
+  }
+
+  dd {
+    text-align: right;
+    font-weight: 600;
+  }
+}

@@ -1,0 +1,499 @@
+<app-page-header [title]="'NAV.INVENTORY_ABC' | translate" />
+
+@if (errorKey(); as errKey) {
+  <nz-alert class="iv-alert" nzType="error" nzShowIcon [nzMessage]="errKey | translate" />
+}
+
+<!-- ABC analysis -->
+<nz-card class="iv-card" [nzTitle]="'INVENTORY_COUNT.ABC.TITLE' | translate">
+  <form nz-form nzLayout="vertical" [formGroup]="runForm" (ngSubmit)="runAbc()" data-testid="abc-run-form">
+    <div class="iv-form-grid">
+      <nz-form-item>
+        <nz-form-label nzFor="abc-period">{{ 'INVENTORY_COUNT.ABC.PERIOD_DAYS' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.REQUIRED' | translate">
+          <nz-input-number id="abc-period" formControlName="period_days" [nzMin]="1" [nzMax]="3650" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="abc-a">{{ 'INVENTORY_COUNT.ABC.A_SHARE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.INVALID_VALUE' | translate">
+          <nz-input-number id="abc-a" formControlName="a_share" [nzMin]="1" [nzMax]="100" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="abc-b">{{ 'INVENTORY_COUNT.ABC.B_SHARE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.INVALID_VALUE' | translate">
+          <nz-input-number id="abc-b" formControlName="b_share" [nzMin]="1" [nzMax]="100" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="abc-wh">{{ 'INVENTORY.FILTERS.WAREHOUSE' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select id="abc-wh" formControlName="warehouse_id" nzAllowClear>
+            @for (w of warehouses(); track w.id) {
+              <nz-option [nzValue]="w.id" [nzLabel]="w.name" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+    <div class="iv-toolbar">
+      <label for="abc-planner-ctl-1" nzId="abc-planner-ctl-1" nz-checkbox formControlName="apply" data-testid="abc-apply">{{ 'INVENTORY_COUNT.ABC.APPLY' | translate }}</label>
+      <button nz-button nzType="primary" type="submit" [nzLoading]="running()" data-testid="abc-run-btn">
+        <nz-icon nzType="play-circle" /> {{ 'INVENTORY_COUNT.ABC.RUN' | translate }}
+      </button>
+    </div>
+  </form>
+
+  @if (formErrors().length) {
+    <nz-alert class="iv-alert" nzType="error" nzShowIcon [nzMessage]="errTpl" data-testid="form-errors" />
+    <ng-template #errTpl>
+      <ul class="iv-error-list">
+        @for (e of formErrors(); track $index) {
+          <li>{{ e }}</li>
+        }
+      </ul>
+    </ng-template>
+  }
+
+  @if (currentRun(); as run) {
+    <h3 class="iv-section-title">
+      {{ 'INVENTORY_COUNT.ABC.TITLE' | translate }}: {{ run.period_start | date: 'mediumDate' }} - {{ run.period_end | date: 'mediumDate' }}
+      @if (run.applied) {
+        <nz-tag nzColor="success">{{ 'INVENTORY_COUNT.ABC.APPLIED' | translate }}</nz-tag>
+      }
+    </h3>
+    <div class="iv-stats">
+      <span>{{ 'INVENTORY_COUNT.ABC.TOTAL_CONSUMPTION' | translate }}: {{ run.total_consumption_value | number: '1.2-2' }}</span>
+      <span>
+        <nz-tag [nzColor]="classColors['A']">A</nz-tag>{{ run.class_a_count }}
+        <nz-tag [nzColor]="classColors['B']">B</nz-tag>{{ run.class_b_count }}
+        <nz-tag [nzColor]="classColors['C']">C</nz-tag>{{ run.class_c_count }}
+      </span>
+    </div>
+    <nz-table #itemsTable [nzData]="run.items ?? []" nzSize="small" [nzPageSize]="20" data-testid="abc-items">
+      <thead>
+        <tr>
+          <th scope="col" class="iv-num">{{ 'INVENTORY_COUNT.COL.RANK' | translate }}</th>
+          <th scope="col">{{ 'INVENTORY_COUNT.COL.SKU' | translate }}</th>
+          <th scope="col">{{ 'INVENTORY_COUNT.COL.ITEM' | translate }}</th>
+          <th scope="col">{{ 'INVENTORY_COUNT.ABC.CLASS' | translate }}</th>
+          <th scope="col" class="iv-num">{{ 'INVENTORY_COUNT.ABC.CONSUMPTION_VALUE' | translate }}</th>
+          <th scope="col" class="iv-num">{{ 'INVENTORY_COUNT.ABC.CUMULATIVE_SHARE' | translate }}</th>
+          <th scope="col">{{ 'INVENTORY_COUNT.ABC.PREVIOUS_CLASS' | translate }}</th>
+          <th scope="col">{{ 'COMMON.ACTIONS' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (it of itemsTable.data; track it.stock_item_id) {
+          <tr>
+            <td class="iv-num">{{ it.rank }}</td>
+            <td>{{ it.sku }}</td>
+            <td>{{ it.name }}</td>
+            <td>
+              <nz-tag [nzColor]="classColors[it.abc_class]" data-testid="abc-class">{{ it.abc_class }}</nz-tag>
+              @if (it.is_manual_override) {
+                <nz-tag>{{ 'INVENTORY_COUNT.ABC.MANUAL' | translate }}</nz-tag>
+              }
+              @if (it.is_new_item) {
+                <nz-tag nzColor="blue">{{ 'INVENTORY_COUNT.ABC.NEW_ITEM' | translate }}</nz-tag>
+              }
+            </td>
+            <td class="iv-num">{{ it.consumption_value | number: '1.2-2' }}</td>
+            <td class="iv-num">{{ it.cumulative_share | number: '1.2-2' }}</td>
+            <td>{{ it.previous_class ?? '-' }}</td>
+            <td>
+              <button nz-button nzSize="small" (click)="openOverride(it)" data-testid="override-btn">
+                {{ 'INVENTORY_COUNT.ABC.OVERRIDE' | translate }}
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  }
+</nz-card>
+
+<!-- Run history and override audit -->
+<nz-card class="iv-card" [nzTitle]="'INVENTORY_COUNT.ABC.HISTORY' | translate">
+  <nz-table #runsTable [nzData]="runs()" nzSize="small" [nzPageSize]="10" data-testid="abc-runs">
+    <thead>
+      <tr>
+        <th scope="col">{{ 'COMMON.DATE' | translate }}</th>
+        <th scope="col">{{ 'INVENTORY.FILTERS.WAREHOUSE' | translate }}</th>
+        <th scope="col" class="iv-num">{{ 'INVENTORY_COUNT.COL.ITEMS' | translate }}</th>
+        <th scope="col" class="iv-num">A / B / C</th>
+        <th scope="col" class="iv-num">{{ 'INVENTORY_COUNT.ABC.TOTAL_CONSUMPTION' | translate }}</th>
+        <th scope="col">{{ 'COMMON.STATUS' | translate }}</th>
+        <th scope="col"></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (r of runsTable.data; track r.id) {
+        <tr>
+          <td>{{ r.period_end | date: 'mediumDate' }}</td>
+          <td>{{ r.warehouse_id ? warehouseName(r.warehouse_id) : ('COMMON.ALL' | translate) }}</td>
+          <td class="iv-num">{{ r.item_count }}</td>
+          <td class="iv-num">{{ r.class_a_count }} / {{ r.class_b_count }} / {{ r.class_c_count }}</td>
+          <td class="iv-num">{{ r.total_consumption_value | number: '1.2-2' }}</td>
+          <td>
+            @if (r.applied) {
+              <nz-tag nzColor="success">{{ 'INVENTORY_COUNT.ABC.APPLIED' | translate }}</nz-tag>
+            }
+          </td>
+          <td>
+            <button nz-button nzSize="small" nzType="link" (click)="openRun(r)">{{ 'COMMON.DETAILS' | translate }}</button>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="7" class="iv-muted">{{ 'INVENTORY_COUNT.ABC.EMPTY' | translate }}</td>
+        </tr>
+      }
+    </tbody>
+  </nz-table>
+
+  <div class="iv-toolbar">
+    <h3 class="iv-section-title">{{ 'INVENTORY_COUNT.ABC.OVERRIDES' | translate }}</h3>
+    <button nz-button (click)="openOverride()" data-testid="new-override-btn">
+      <nz-icon nzType="plus" /> {{ 'INVENTORY_COUNT.ABC.OVERRIDE' | translate }}
+    </button>
+  </div>
+  <nz-table #ovTable [nzData]="overrides()" nzSize="small" [nzPageSize]="10" data-testid="abc-overrides">
+    <thead>
+      <tr>
+        <th scope="col">{{ 'COMMON.DATE' | translate }}</th>
+        <th scope="col">{{ 'INVENTORY_COUNT.COL.SKU' | translate }}</th>
+        <th scope="col">{{ 'INVENTORY_COUNT.ABC.CLASS' | translate }}</th>
+        <th scope="col">{{ 'INVENTORY_COUNT.ABC.OVERRIDE_REASON' | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (o of ovTable.data; track o.id) {
+        <tr>
+          <td>{{ o.created_at | date: 'medium' }}</td>
+          <td>{{ o.sku || o.stock_item_id }}</td>
+          <td>{{ o.abc_class ?? ('INVENTORY_COUNT.ABC.CLASS_AUTO' | translate) }}</td>
+          <td>{{ o.reason }}</td>
+        </tr>
+      }
+    </tbody>
+  </nz-table>
+</nz-card>
+
+<!-- Counting policy -->
+<nz-card class="iv-card" [nzTitle]="'INVENTORY_COUNT.POLICY.TITLE' | translate">
+  <form nz-form nzLayout="vertical" [formGroup]="policyForm" (ngSubmit)="savePolicy()" data-testid="policy-form">
+    <div class="iv-form-grid">
+      <nz-form-item>
+        <nz-form-label>{{ 'INVENTORY_COUNT.ABC.A_SHARE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.INVALID_VALUE' | translate">
+          <nz-input-number formControlName="abc_a_share" [nzMin]="1" [nzMax]="100" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>{{ 'INVENTORY_COUNT.ABC.B_SHARE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.INVALID_VALUE' | translate">
+          <nz-input-number formControlName="abc_b_share" [nzMin]="1" [nzMax]="100" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>{{ 'INVENTORY_COUNT.ABC.PERIOD_DAYS' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.INVALID_VALUE' | translate">
+          <nz-input-number formControlName="abc_period_days" [nzMin]="1" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>{{ 'INVENTORY_COUNT.POLICY.INTERVAL_A' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.INVALID_VALUE' | translate">
+          <nz-input-number formControlName="interval_days_a" [nzMin]="1" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>{{ 'INVENTORY_COUNT.POLICY.INTERVAL_B' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.INVALID_VALUE' | translate">
+          <nz-input-number formControlName="interval_days_b" [nzMin]="1" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>{{ 'INVENTORY_COUNT.POLICY.INTERVAL_C' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.INVALID_VALUE' | translate">
+          <nz-input-number formControlName="interval_days_c" [nzMin]="1" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>{{ 'INVENTORY_COUNT.POLICY.NEW_ITEM_CLASS' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select formControlName="new_item_class">
+            @for (c of classes; track c) {
+              <nz-option [nzValue]="c" [nzLabel]="c" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>{{ 'INVENTORY_COUNT.POLICY.RECOUNT_PERCENT' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-input-number formControlName="recount_threshold_percent" [nzMin]="0" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>{{ 'INVENTORY_COUNT.POLICY.RECOUNT_VALUE' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-input-number formControlName="recount_threshold_value" [nzMin]="0" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>{{ 'INVENTORY_COUNT.POLICY.MAX_RECOUNT_ROUNDS' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.INVALID_VALUE' | translate">
+          <nz-input-number formControlName="max_recount_rounds" [nzMin]="0" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>{{ 'INVENTORY_COUNT.POLICY.APPROVAL_MODE' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select formControlName="approval_mode" data-testid="approval-mode">
+            @for (m of approvalModes; track m) {
+              <nz-option
+                [nzValue]="m"
+                [nzLabel]="(m === 'workflow' ? 'INVENTORY_COUNT.POLICY.MODE_WORKFLOW' : 'INVENTORY_COUNT.POLICY.MODE_MULTI_LEVEL') | translate"
+              />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>{{ 'INVENTORY_COUNT.POLICY.LEVEL1_PERCENT' | translate }}</nz-form-label>
+        <nz-form-control><nz-input-number formControlName="level1_threshold_percent" [nzMin]="0" /></nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>{{ 'INVENTORY_COUNT.POLICY.LEVEL1_VALUE' | translate }}</nz-form-label>
+        <nz-form-control><nz-input-number formControlName="level1_threshold_value" [nzMin]="0" /></nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>{{ 'INVENTORY_COUNT.POLICY.LEVEL2_PERCENT' | translate }}</nz-form-label>
+        <nz-form-control><nz-input-number formControlName="level2_threshold_percent" [nzMin]="0" /></nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>{{ 'INVENTORY_COUNT.POLICY.LEVEL2_VALUE' | translate }}</nz-form-label>
+        <nz-form-control><nz-input-number formControlName="level2_threshold_value" [nzMin]="0" /></nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="pol-inv">{{ 'INVENTORY_COUNT.POLICY.INVENTORY_ACCOUNT' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.INVALID_VALUE' | translate">
+          <input nz-input id="pol-inv" formControlName="inventory_account_code" maxlength="20" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="pol-gain">{{ 'INVENTORY_COUNT.POLICY.GAIN_ACCOUNT' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.INVALID_VALUE' | translate">
+          <input nz-input id="pol-gain" formControlName="gain_account_code" maxlength="20" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="pol-loss">{{ 'INVENTORY_COUNT.POLICY.LOSS_ACCOUNT' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.INVALID_VALUE' | translate">
+          <input nz-input id="pol-loss" formControlName="loss_account_code" maxlength="20" />
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+    <div class="iv-toolbar">
+      <label for="abc-planner-ctl-2" nzId="abc-planner-ctl-2" nz-checkbox formControlName="blind_by_default">{{ 'INVENTORY_COUNT.POLICY.BLIND_BY_DEFAULT' | translate }}</label>
+      <label for="abc-planner-ctl-3" nzId="abc-planner-ctl-3" nz-checkbox formControlName="reveal_first_count_on_recount">{{ 'INVENTORY_COUNT.POLICY.REVEAL_FIRST' | translate }}</label>
+      <label for="abc-planner-ctl-4" nzId="abc-planner-ctl-4" nz-checkbox formControlName="auto_approve_within_tolerance">{{ 'INVENTORY_COUNT.POLICY.AUTO_APPROVE' | translate }}</label>
+      <label for="abc-planner-ctl-5" nzId="abc-planner-ctl-5" nz-checkbox formControlName="enforce_segregation_of_duties">{{ 'INVENTORY_COUNT.POLICY.SEGREGATION' | translate }}</label>
+    </div>
+    <button nz-button nzType="primary" type="submit" [nzLoading]="policySaving()" data-testid="policy-save">
+      {{ 'COMMON.SAVE' | translate }}
+    </button>
+  </form>
+</nz-card>
+
+<!-- Cycle count plans -->
+<nz-card class="iv-card" [nzTitle]="'INVENTORY_COUNT.PLAN.TITLE' | translate">
+  <div class="iv-toolbar" role="search">
+    <nz-select
+      class="iv-filter"
+      nzAllowClear
+      [nzPlaceHolder]="'INVENTORY.FILTERS.WAREHOUSE' | translate"
+      [attr.aria-label]="'INVENTORY.FILTERS.WAREHOUSE' | translate"
+      [ngModel]="planWarehouse()"
+      (ngModelChange)="setPlanWarehouse($event)"
+      data-testid="plan-warehouse"
+    >
+      @for (w of warehouses(); track w.id) {
+        <nz-option [nzValue]="w.id" [nzLabel]="w.name" />
+      }
+    </nz-select>
+    <button nz-button (click)="openPlanModal()" data-testid="new-plan-btn">
+      <nz-icon nzType="plus" /> {{ 'INVENTORY_COUNT.PLAN.NEW' | translate }}
+    </button>
+    <button nz-button [disabled]="!planWarehouse() || planBusy()" (click)="generatePlans()" data-testid="generate-plans-btn">
+      {{ 'INVENTORY_COUNT.PLAN.GENERATE' | translate }}
+    </button>
+    <button nz-button [disabled]="planBusy()" (click)="runDue()" data-testid="run-due-btn">
+      {{ 'INVENTORY_COUNT.PLAN.RUN_DUE' | translate }}
+    </button>
+  </div>
+
+  <nz-table #plansTable [nzData]="plans()" nzSize="middle" [nzPageSize]="20" data-testid="plans-table">
+    <thead>
+      <tr>
+        <th scope="col">{{ 'COMMON.NAME' | translate }}</th>
+        <th scope="col">{{ 'INVENTORY.FILTERS.WAREHOUSE' | translate }}</th>
+        <th scope="col">{{ 'INVENTORY_COUNT.ABC.CLASS' | translate }}</th>
+        <th scope="col">{{ 'INVENTORY_COUNT.PLAN.CADENCE' | translate }}</th>
+        <th scope="col" class="iv-num">{{ 'INVENTORY_COUNT.PLAN.INTERVAL_DAYS' | translate }}</th>
+        <th scope="col">{{ 'INVENTORY_COUNT.PLAN.NEXT_RUN' | translate }}</th>
+        <th scope="col">{{ 'INVENTORY_COUNT.PLAN.FREEZES_STOCK' | translate }}</th>
+        <th scope="col">{{ 'COMMON.ACTIVE' | translate }}</th>
+        <th scope="col">{{ 'COMMON.ACTIONS' | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (p of plansTable.data; track p.id) {
+        <tr>
+          <td>{{ p.name }}</td>
+          <td>{{ warehouseName(p.warehouse_id) }}</td>
+          <td>
+            @if (p.abc_class) {
+              <nz-tag [nzColor]="classColors[p.abc_class]">{{ p.abc_class }}</nz-tag>
+            } @else {
+              {{ 'COMMON.ALL' | translate }}
+            }
+          </td>
+          <td>{{ cadenceLabels[p.cadence] | translate }}</td>
+          <td class="iv-num">{{ p.interval_days }}</td>
+          <td>{{ p.next_run_on | date: 'mediumDate' }}</td>
+          <td>{{ (p.freezes_stock ? 'COMMON.YES' : 'COMMON.NO') | translate }}</td>
+          <td>{{ (p.is_active ? 'COMMON.YES' : 'COMMON.NO') | translate }}</td>
+          <td>
+            <div class="iv-actions">
+              <button nz-button nzSize="small" nzType="primary" [disabled]="planBusy()" (click)="runPlan(p)" data-testid="run-plan-btn">
+                {{ 'INVENTORY_COUNT.PLAN.RUN' | translate }}
+              </button>
+              <button nz-button nzSize="small" (click)="openPlanModal(p)">{{ 'COMMON.EDIT' | translate }}</button>
+              <button
+                nz-button
+                nzSize="small"
+                nzDanger
+                nz-popconfirm
+                [nzPopconfirmTitle]="'COMMON.CONFIRM_DELETE' | translate"
+                [nzCancelText]="'COMMON.CANCEL' | translate"
+                (nzOnConfirm)="deletePlan(p)"
+              >
+                {{ 'COMMON.DELETE' | translate }}
+              </button>
+            </div>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="9" class="iv-muted">{{ 'INVENTORY_COUNT.PLAN.EMPTY' | translate }}</td>
+        </tr>
+      }
+    </tbody>
+  </nz-table>
+</nz-card>
+
+<!-- Manual class override -->
+<nz-modal
+  [nzVisible]="overrideOpen()"
+  [nzTitle]="'INVENTORY_COUNT.ABC.OVERRIDE' | translate"
+  [nzOkText]="'COMMON.SAVE' | translate"
+  [nzCancelText]="'COMMON.CANCEL' | translate"
+  [nzOkLoading]="overrideSaving()"
+  (nzOnCancel)="closeOverride()"
+  (nzOnOk)="saveOverride()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form nzLayout="vertical" [formGroup]="overrideForm" (ngSubmit)="saveOverride()">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="ov-item">{{ 'INVENTORY_COUNT.COL.ITEM' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.REQUIRED' | translate">
+          <nz-select id="ov-item" formControlName="stock_item_id" nzShowSearch nzServerSearch (nzOnSearch)="searchItems($event)">
+            @for (i of items(); track i.id) {
+              <nz-option [nzValue]="i.id" [nzLabel]="i.sku + ' ' + (i.name ?? '')" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="ov-class">{{ 'INVENTORY_COUNT.ABC.CLASS' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select id="ov-class" formControlName="abc_class">
+            @for (c of classes; track c) {
+              <nz-option [nzValue]="c" [nzLabel]="c" />
+            }
+            <nz-option nzValue="none" [nzLabel]="'INVENTORY_COUNT.ABC.OVERRIDE_CLEAR' | translate" />
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="ov-reason">{{ 'INVENTORY_COUNT.ABC.OVERRIDE_REASON' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.REQUIRED' | translate">
+          <textarea nz-input id="ov-reason" rows="3" formControlName="reason"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+    @if (formErrors().length) {
+      <nz-alert nzType="error" nzShowIcon [nzMessage]="formErrors()[0]" data-testid="modal-errors" />
+    }
+  </ng-container>
+</nz-modal>
+
+<!-- Plan create / edit -->
+<nz-modal
+  [nzVisible]="planModalOpen()"
+  [nzTitle]="'INVENTORY_COUNT.PLAN.TITLE' | translate"
+  [nzOkText]="'COMMON.SAVE' | translate"
+  [nzCancelText]="'COMMON.CANCEL' | translate"
+  [nzOkLoading]="planBusy()"
+  (nzOnCancel)="closePlanModal()"
+  (nzOnOk)="savePlan()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form nzLayout="vertical" [formGroup]="planForm" (ngSubmit)="savePlan()">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="pl-name">{{ 'COMMON.NAME' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.REQUIRED' | translate">
+          <input nz-input id="pl-name" formControlName="name" maxlength="120" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="pl-wh">{{ 'INVENTORY.FILTERS.WAREHOUSE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.REQUIRED' | translate">
+          <nz-select id="pl-wh" formControlName="warehouse_id">
+            @for (w of warehouses(); track w.id) {
+              <nz-option [nzValue]="w.id" [nzLabel]="w.name" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="pl-class">{{ 'INVENTORY_COUNT.ABC.CLASS' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select id="pl-class" formControlName="abc_class">
+            <nz-option nzValue="none" [nzLabel]="'COMMON.ALL' | translate" />
+            @for (c of classes; track c) {
+              <nz-option [nzValue]="c" [nzLabel]="c" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="pl-interval">{{ 'INVENTORY_COUNT.PLAN.INTERVAL_DAYS' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.INVALID_VALUE' | translate">
+          <nz-input-number id="pl-interval" formControlName="interval_days" [nzMin]="1" />
+        </nz-form-control>
+      </nz-form-item>
+      <label for="abc-planner-ctl-6" nzId="abc-planner-ctl-6" nz-checkbox formControlName="freezes_stock">{{ 'INVENTORY_COUNT.PLAN.FREEZES_STOCK' | translate }}</label>
+      @if (editingPlan()) {
+        <label for="abc-planner-ctl-7" nzId="abc-planner-ctl-7" nz-checkbox formControlName="is_active">{{ 'COMMON.ACTIVE' | translate }}</label>
+      }
+    </form>
+    @if (formErrors().length) {
+      <nz-alert nzType="error" nzShowIcon [nzMessage]="formErrors()[0]" data-testid="modal-errors" />
+    }
+  </ng-container>
+</nz-modal>

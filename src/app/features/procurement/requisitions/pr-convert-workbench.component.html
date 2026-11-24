@@ -1,0 +1,284 @@
+<div class="pr-convert-page">
+  <div class="workbench-top-nav">
+    <a nz-button routerLink="/procurement/requisitions">
+      <span nz-icon nzType="arrow-left" aria-hidden="true"></span>
+      {{ 'PR.BACK_TO_LIST' | translate }}
+    </a>
+  </div>
+
+  <app-page-header
+    [title]="'PR.CONVERT.TITLE' | translate"
+    [subtitle]="'PR.CONVERT.SUBTITLE' | translate"
+  />
+
+  @if (error()) {
+    <nz-alert nzType="error" nzShowIcon [nzMessage]="error() ?? ''" />
+  }
+
+  <div class="workbench-filters">
+    <div class="filter-field filter-search">
+      <label class="sr-only" for="pr-convert-search">{{ 'PR.CONVERT.SEARCH_PLACEHOLDER' | translate }}</label>
+      <input
+        id="pr-convert-search"
+        nz-input
+        type="search"
+        [ngModel]="searchFilter()"
+        (ngModelChange)="searchFilter.set($event)"
+        [placeholder]="'PR.CONVERT.SEARCH_PLACEHOLDER' | translate"
+      />
+    </div>
+
+    <div class="filter-field">
+      <nz-select
+        nzAllowClear
+        nzShowSearch
+        [ngModel]="costCenterFilter()"
+        (ngModelChange)="costCenterFilter.set($event)"
+        [nzPlaceHolder]="'PR.FILTER_COST_CENTER' | translate"
+        [attr.aria-label]="'PR.FILTER_COST_CENTER' | translate"
+        class="filter-select"
+      >
+        @for (cc of store.costCenters(); track cc.id) {
+          <nz-option [nzValue]="cc.id" [nzLabel]="cc.label" />
+        }
+      </nz-select>
+    </div>
+
+    <div class="filter-field">
+      <nz-select
+        nzAllowClear
+        nzShowSearch
+        [ngModel]="projectFilter()"
+        (ngModelChange)="projectFilter.set($event)"
+        [nzPlaceHolder]="'PR.FILTER_PROJECT' | translate"
+        [attr.aria-label]="'PR.FILTER_PROJECT' | translate"
+        class="filter-select"
+      >
+        @for (proj of store.projects(); track proj.id) {
+          <nz-option [nzValue]="proj.id" [nzLabel]="proj.label" />
+        }
+      </nz-select>
+    </div>
+
+    <div class="filter-field filter-compact">
+      <nz-select
+        nzAllowClear
+        [ngModel]="urgencyFilter()"
+        (ngModelChange)="urgencyFilter.set($event)"
+        [nzPlaceHolder]="'PR.FILTER_URGENCY' | translate"
+        [attr.aria-label]="'PR.FILTER_URGENCY' | translate"
+        class="filter-select"
+      >
+        @for (opt of urgencies; track opt.value) {
+          <nz-option [nzValue]="opt.value" [nzLabel]="opt.labelKey | translate" />
+        }
+      </nz-select>
+    </div>
+
+    @if (requisitionIdFilter()) {
+      <button nz-button type="button" (click)="clearRequisitionFilter()">
+        {{ 'PR.CONVERT.SHOW_ALL_APPROVED' | translate }}
+      </button>
+    }
+
+    <button nz-button type="button" (click)="loadConvertibleLines()" [nzLoading]="loading()">
+      <span nz-icon nzType="reload" aria-hidden="true"></span>
+      {{ 'PR.REFRESH' | translate }}
+    </button>
+  </div>
+
+  <div class="workbench-layout">
+    <div class="workbench-table-col">
+      <nz-table
+        #convertTable
+        [nzData]="filteredLines()"
+        [nzLoading]="loading()"
+        [nzFrontPagination]="true"
+        [nzPageSize]="25"
+        [nzScroll]="{ x: '1160px' }"
+      >
+        <thead>
+          <tr>
+            <th scope="col" nzWidth="48px">
+              <label for="pr-convert-workbench-field-2" nzId="pr-convert-workbench-field-2"
+                nz-checkbox
+                [nzChecked]="allFilteredSelected()"
+                [nzIndeterminate]="someFilteredSelected()"
+                (nzCheckedChange)="toggleAllFiltered($event)"
+              >
+                <span class="sr-only">{{ 'PR.CONVERT.SELECT_ALL' | translate }}</span>
+              </label>
+            </th>
+            <th scope="col">{{ 'PR.COL_NUMBER' | translate }}</th>
+            <th scope="col">{{ 'PR.COL_COST_CENTER_PROJECT' | translate }}</th>
+            <th scope="col">{{ 'PR.COL_URGENCY' | translate }}</th>
+            <th scope="col">{{ 'PR.LINE.ITEM' | translate }}</th>
+            <th scope="col">{{ 'PR.LINE.QTY_REQUESTED' | translate }}</th>
+            <th scope="col">{{ 'PR.LINE.QTY_REMAINING' | translate }}</th>
+            <th scope="col">{{ 'PR.CONVERT.CONVERT_QTY' | translate }}</th>
+            <th scope="col">{{ 'PR.LINE.UNIT_PRICE' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of convertTable.data; track row.line_id) {
+            @let selected = isLineSelected(row.line_id);
+            @let valState = quantityValidationState(row);
+            <tr [class.row-selected]="selected">
+              <td>
+                <label [attr.for]="'pr-convert-workbench-field-' + $index" [nzId]="'pr-convert-workbench-field-' + $index"
+                  nz-checkbox
+                  [nzChecked]="selected"
+                  (nzCheckedChange)="toggleLineSelection(row, $event)"
+                  [attr.data-testid]="'convert-select-' + row.line_id"
+                >
+                  <span class="sr-only">{{ row.description }}</span>
+                </label>
+              </td>
+
+              <td>
+                <div class="pr-ref-cell">
+                  <a [routerLink]="['/procurement/requisitions', row.requisition_id]" class="mono-link">
+                    {{ row.requisition_number }}
+                  </a>
+                  <nz-tag [nzColor]="statusColor(row.requisition_status)">
+                    {{ statusLabel(row.requisition_status) | translate }}
+                  </nz-tag>
+                  <small>{{ row.requested_delivery_date | appDate: 'mediumDate' }}</small>
+                </div>
+              </td>
+
+              <td>
+                <div class="cc-cell">
+                  <span>{{ row.cost_center_name || '—' }}</span>
+                  @if (row.project_name) {
+                    <small>{{ row.project_name }}</small>
+                  }
+                </div>
+              </td>
+
+              <td>
+                <nz-tag [nzColor]="urgencyColor(row.urgency)">
+                  {{ urgencyLabel(row.urgency) | translate }}
+                </nz-tag>
+              </td>
+
+              <td>
+                <div class="item-cell">
+                  <strong>{{ row.description }}</strong>
+                  <div class="item-tags">
+                    @if (row.item_code) {
+                      <nz-tag>{{ row.item_code }}</nz-tag>
+                    }
+                    <span>{{ row.uom }}</span>
+                  </div>
+                </div>
+              </td>
+
+              <td class="num-cell">{{ row.quantity }}</td>
+              <td class="num-cell">
+                <strong>{{ row.remaining_quantity }}</strong>
+              </td>
+
+              <td class="split-qty-cell">
+                <nz-input-number
+                  [ngModel]="selectedQuantity(row)"
+                  (ngModelChange)="updateSplitQuantity(row, $event)"
+                  [nzDisabled]="!selected"
+                  [nzMin]="0.0001"
+                  [nzMax]="row.remaining_quantity"
+                  [nzStep]="1"
+                  [attr.aria-label]="'PR.CONVERT.CONVERT_QTY' | translate"
+                  [attr.data-testid]="'convert-qty-' + row.line_id"
+                />
+                @if (valState === 'exceeds_remaining') {
+                  <small class="qty-error" [attr.data-testid]="'convert-qty-error-' + row.line_id">
+                    {{ 'PR.CONVERT.ERR_EXCEEDS_REMAINING' | translate: { max: row.remaining_quantity } }}
+                  </small>
+                } @else if (valState === 'non_positive') {
+                  <small class="qty-error" [attr.data-testid]="'convert-qty-error-' + row.line_id">
+                    {{ 'PR.CONVERT.ERR_POSITIVE_QTY' | translate }}
+                  </small>
+                } @else if (isPartialSplit(row)) {
+                  <nz-tag nzColor="orange">{{ 'PR.CONVERT.PARTIAL_SPLIT_BADGE' | translate }}</nz-tag>
+                }
+              </td>
+
+              <td class="num-cell">{{ row.estimated_unit_price | money: row.currency }}</td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+
+      @if (!loading() && filteredLines().length === 0) {
+        <nz-empty [nzNotFoundContent]="'PR.CONVERT.EMPTY' | translate" />
+      }
+    </div>
+
+    <aside class="workbench-action-panel">
+      <nz-card [nzTitle]="'PR.CONVERT.ACTION_CARD_TITLE' | translate" class="action-card">
+        <div class="summary-stats">
+          <div class="stat-row">
+            <span>{{ 'PR.CONVERT.SELECTED_LINES' | translate }}</span>
+            <strong data-testid="convert-selected-count">{{ selectedCount() }}</strong>
+          </div>
+          <div class="stat-row">
+            <span>{{ 'PR.CONVERT.DISTINCT_PRS' | translate }}</span>
+            <strong>{{ distinctRequisitionCount() }}</strong>
+          </div>
+          <div class="stat-row stat-total">
+            <span>{{ 'PR.CONVERT.ESTIMATED_VALUE' | translate }}</span>
+            <strong>{{ estimatedSelectionTotal() | money: displayCurrency() }}</strong>
+          </div>
+        </div>
+
+        <div class="target-section">
+          <span class="section-label">{{ 'PR.CONVERT.TARGET_TYPE' | translate }}</span>
+          <nz-radio-group
+            [ngModel]="targetType()"
+            (ngModelChange)="targetType.set($event)"
+            class="target-radio-group"
+          >
+            <label for="pr-convert-workbench-rfq" appRadioControl nz-radio nzValue="rfq">{{ 'PR.CONVERT.TARGET_RFQ' | translate }}</label>
+            <label for="pr-convert-workbench-po" appRadioControl nz-radio nzValue="po">{{ 'PR.CONVERT.TARGET_PO' | translate }}</label>
+          </nz-radio-group>
+        </div>
+
+        @if (targetType() === 'po') {
+          <div class="supplier-section">
+            <span class="section-label">{{ 'PR.CONVERT.SUPPLIER_LABEL' | translate }} *</span>
+            <nz-select
+              nzShowSearch
+              [ngModel]="selectedSupplierId()"
+              (ngModelChange)="selectedSupplierId.set($event)"
+              [nzPlaceHolder]="'PR.CONVERT.SELECT_SUPPLIER' | translate"
+              [attr.aria-label]="'PR.CONVERT.SUPPLIER_LABEL' | translate"
+              data-testid="convert-supplier-select"
+              class="filter-select"
+            >
+              @for (sup of store.suppliers(); track sup.id) {
+                <nz-option [nzValue]="sup.id" [nzLabel]="sup.label" />
+              }
+            </nz-select>
+          </div>
+        }
+
+        <button
+          nz-button
+          nzType="primary"
+          type="button"
+          [disabled]="!canConvert()"
+          [nzLoading]="converting()"
+          (click)="convertSelected()"
+          data-testid="convert-submit-btn"
+          class="convert-submit-btn"
+        >
+          <span nz-icon nzType="swap" aria-hidden="true"></span>
+          {{
+            (targetType() === 'rfq' ? 'PR.CONVERT.BTN_CREATE_RFQ' : 'PR.CONVERT.BTN_CREATE_PO')
+              | translate
+          }}
+        </button>
+      </nz-card>
+    </aside>
+  </div>
+</div>

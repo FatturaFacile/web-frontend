@@ -1,0 +1,110 @@
+<nz-modal appModalActions
+  [nzVisible]="open()"
+  [nzTitle]="(expense() ? 'expenses.form.editTitle' : 'expenses.form.createTitle') | translate"
+  [nzWidth]="720"
+  [nzFooter]="null"
+  (nzOnCancel)="open.set(false)"
+>
+  <ng-container *nzModalContent>
+    <form nz-form nzLayout="vertical" [formGroup]="form" (ngSubmit)="submit()">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="category_id">{{ 'expenses.columns.category' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.REQUIRED' | translate">
+          <nz-select id="category_id" formControlName="category_id" nzShowSearch>
+            @for (category of categories(); track category.id) {
+              <nz-option [nzValue]="category.id" [nzLabel]="category.label" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="date">{{ 'expenses.form.date' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'validation.dateRequired' | translate">
+          <nz-date-picker class="w-full" id="date" formControlName="date" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="amount_gross">{{ 'expenses.form.amount' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'validation.amountRequired' | translate">
+          <nz-input-number
+            id="amount_gross"
+            formControlName="amount_gross"
+            [nzMin]="0.01"
+            [nzStep]="1"
+            class="w-full"
+          />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="currency">{{ 'expenses.form.currency' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select id="currency" formControlName="currency">
+            <nz-option nzValue="EUR" nzLabel="EUR (€)" />
+            <nz-option nzValue="CHF" nzLabel="CHF (Fr.)" />
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzFor="notes">{{ 'expenses.form.description' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.INVALID_VALUE' | translate">
+          <textarea
+            nz-input
+            id="notes"
+            formControlName="notes"
+            rows="3"
+            [placeholder]="'expenses.form.descriptionPlaceholder' | translate"
+          ></textarea>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzFor="merchant_name">{{ 'expenses.form.merchant' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.INVALID_VALUE' | translate">
+          <input
+            nz-input
+            id="merchant_name"
+            formControlName="merchant_name"
+            [placeholder]="'expenses.form.merchantPlaceholder' | translate"
+          />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzFor="status">{{ 'common.status.label' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select id="status" formControlName="status">
+            <nz-option nzValue="draft" [nzLabel]="'expenses.lblBozza' | translate" />
+            <nz-option nzValue="submitted" [nzLabel]="'expenses.lblInApprovazione' | translate" />
+            <nz-option nzValue="approved" [nzLabel]="'expenses.lblApprovata' | translate" />
+            <nz-option nzValue="rejected" [nzLabel]="'expenses.statuses.rejected' | translate" />
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      @if (expense()) {
+        <nz-form-item>
+          <nz-form-label>{{ 'expenses.form.attachments' | translate }}</nz-form-label>
+          <nz-form-control>
+            <ul class="attachment-list">
+              @for (attachment of attachments(); track attachment.id) {
+                <li>
+                  <button nz-button nzType="link" type="button" (click)="download(attachment)">{{ attachment.original_name }}</button>
+                </li>
+              }
+            </ul>
+            <input type="file" multiple accept=".jpg,.jpeg,.png,.webp,.heic,.pdf" [disabled]="isUploading()" (change)="upload($event)" [attr.aria-label]="'expenses.form.addAttachment' | translate" />
+          </nz-form-control>
+        </nz-form-item>
+      }
+
+      <div class="footer-actions">
+        <button nz-button type="button" appIconAction="cancel" (click)="open.set(false)"></button>
+        <button nz-button nzType="primary" type="submit" appIconAction="save" [nzLoading]="isSaving()" [disabled]="form.invalid"></button>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>

@@ -1,0 +1,399 @@
+<app-page-header
+  [title]="'SHIFT_PLANNING.TITLE' | translate"
+  [subtitle]="'SHIFT_PLANNING.SUBTITLE' | translate"
+>
+  <button nz-button (click)="openSwaps()">
+    <nz-badge [nzCount]="store.pendingSwaps().length" [nzOffset]="[10, -2]">
+      <span>{{ 'SHIFT_PLANNING.SWAP_INBOX' | translate }}</span>
+    </nz-badge>
+  </button>
+  <button nz-button (click)="generateOpen.set(true)">
+    {{ 'SHIFT_PLANNING.GENERATE' | translate }}
+  </button>
+  @if (store.period()?.status === 'draft') {
+    <button nz-button nzType="primary" [nzLoading]="store.saving()" (click)="publish()">
+      {{ 'SHIFT_PLANNING.PUBLISH' | translate }}
+    </button>
+  }
+  @if (store.period()?.status === 'published') {
+    <button
+      nz-button
+      nz-popconfirm
+      [nzPopconfirmTitle]="'SHIFT_PLANNING.LOCK_CONFIRM' | translate"
+      (nzOnConfirm)="lock()"
+    >
+      {{ 'SHIFT_PLANNING.LOCK' | translate }}
+    </button>
+  }
+</app-page-header>
+
+<div class="toolbar">
+  <nz-radio-group
+    [ngModel]="store.periodType()"
+    (ngModelChange)="setPeriodType($event)"
+    nzButtonStyle="solid"
+    [attr.aria-label]="'SHIFT_PLANNING.VIEW' | translate"
+  >
+    <label for="roster-matrix-weekly" appRadioControl nz-radio-button nzValue="weekly">{{ 'SHIFT_PLANNING.WEEKLY' | translate }}</label>
+    <label for="roster-matrix-monthly" appRadioControl nz-radio-button nzValue="monthly">{{ 'SHIFT_PLANNING.MONTHLY' | translate }}</label>
+  </nz-radio-group>
+
+  <nz-radio-group
+    [ngModel]="store.groupBy()"
+    (ngModelChange)="store.setGroupBy($event)"
+    [attr.aria-label]="'SHIFT_PLANNING.GROUP_BY' | translate"
+  >
+    <label for="roster-matrix-employee" appRadioControl nz-radio-button nzValue="employee">{{ 'SHIFT_PLANNING.BY_EMPLOYEE' | translate }}</label>
+    <label for="roster-matrix-role" appRadioControl nz-radio-button nzValue="role">{{ 'SHIFT_PLANNING.BY_ROLE' | translate }}</label>
+  </nz-radio-group>
+
+  <div class="period-nav">
+    <button
+      nz-button
+      nzShape="circle"
+      (click)="store.navigate(-1)"
+      [attr.aria-label]="'SHIFT_PLANNING.PREVIOUS' | translate"
+    >
+      <i class="fa-solid fa-chevron-left"></i>
+    </button>
+    <strong class="period-range">{{ rangeLabel() }}</strong>
+    <button
+      nz-button
+      nzShape="circle"
+      (click)="store.navigate(1)"
+      [attr.aria-label]="'SHIFT_PLANNING.NEXT' | translate"
+    >
+      <i class="fa-solid fa-chevron-right"></i>
+    </button>
+    @if (store.period(); as period) {
+      <nz-tag
+        [nzColor]="
+          period.status === 'draft' ? 'default' : period.status === 'published' ? 'green' : 'blue'
+        "
+        >{{ 'SHIFT_PLANNING.STATUS_' + period.status.toUpperCase() | translate }}</nz-tag
+      >
+      <nz-tag>{{ period.jurisdiction }}</nz-tag>
+    }
+  </div>
+</div>
+
+@if (store.error(); as error) {
+  <nz-alert class="feedback" nzType="error" nzShowIcon [nzMessage]="error | translate"></nz-alert>
+}
+
+@if (store.lastIssues().length > 0) {
+  <nz-alert
+    class="feedback"
+    nzType="error"
+    nzShowIcon
+    nzCloseable
+    (nzOnClose)="store.clearIssues()"
+    [nzMessage]="'SHIFT_PLANNING.CHANGE_REFUSED' | translate"
+    [nzDescription]="issuesList"
+  >
+  </nz-alert>
+  <ng-template #issuesList>
+    <ul class="issue-list">
+      @for (issue of store.lastIssues(); track $index) {
+        <li [class.blocking]="issue.severity === 'blocking_error'">
+          <code>{{ issue.rule_code }}</code> {{ describe(issue) }}
+        </li>
+      }
+    </ul>
+  </ng-template>
+}
+
+<nz-spin [nzSpinning]="store.loading() || store.saving()">
+  @if (store.matrix(); as matrix) {
+    <section class="summary" [attr.aria-label]="'SHIFT_PLANNING.SUMMARY' | translate">
+      <div class="stat">
+        <span class="stat-label">{{ 'SHIFT_PLANNING.LABOR_COST' | translate }}</span>
+        <strong class="stat-value">{{ store.laborCost().toFixed(2) }}</strong>
+      </div>
+      <div class="stat">
+        <span class="stat-label">{{ 'SHIFT_PLANNING.SCHEDULED_HOURS' | translate }}</span>
+        <strong class="stat-value">{{ hours(matrix.totals.scheduled_minutes) }}</strong>
+      </div>
+      <div class="stat" [class.stat-alert]="store.understaffedSlots() > 0">
+        <span class="stat-label">{{ 'SHIFT_PLANNING.OPEN_SHIFTS' | translate }}</span>
+        <strong class="stat-value">{{ matrix.totals.open_shifts }}</strong>
+      </div>
+      <div class="stat" [class.stat-alert]="matrix.totals.blocking_issues > 0">
+        <span class="stat-label">{{ 'SHIFT_PLANNING.ISSUES' | translate }}</span>
+        <strong class="stat-value"
+          >{{ matrix.totals.blocking_issues }} / {{ matrix.totals.warnings }}</strong
+        >
+      </div>
+    </section>
+
+    <div cdkDropListGroup class="board" [class.compact]="isCompact()">
+      @if (store.isEditable()) {
+        <section class="palette" [attr.aria-label]="'SHIFT_PLANNING.PALETTE' | translate">
+          <span class="palette-title">{{ 'SHIFT_PLANNING.PALETTE' | translate }}</span>
+          <div
+            class="palette-list"
+            cdkDropList
+            [id]="palette"
+            [cdkDropListData]="palette"
+            cdkDropListSortingDisabled
+            cdkDropListOrientation="mixed"
+          >
+            @for (template of store.activeTemplates(); track template.id) {
+              <div
+                class="shift-card palette-card"
+                cdkDrag
+                [cdkDragData]="template"
+                [style.border-left-color]="template.color_hex"
+              >
+                <strong>{{ template.code }}</strong>
+                <span>{{ template.start_time }}-{{ template.end_time }}</span>
+                <span class="muted">{{ templateName(template) }}</span>
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      <div class="table-wrap">
+        <table class="matrix">
+          <thead>
+            <tr>
+              <th class="row-head">
+                {{
+                  (matrix.group_by === 'employee'
+                    ? 'SHIFT_PLANNING.EMPLOYEE'
+                    : 'SHIFT_PLANNING.ROLE'
+                  ) | translate
+                }}
+              </th>
+              @for (day of matrix.days; track day) {
+                <th class="day-head">{{ dayLabel(day) }}</th>
+              }
+            </tr>
+            <tr class="coverage-row">
+              <th class="row-head">{{ 'SHIFT_PLANNING.COVERAGE' | translate }}</th>
+              @for (day of matrix.days; track day) {
+                <th>
+                  <span
+                    class="coverage coverage-{{ store.coverageByDay()[day]?.level ?? 'ok' }}"
+                    [attr.title]="
+                      'SHIFT_PLANNING.COVERAGE_' +
+                        (store.coverageByDay()[day]?.level ?? 'ok').toUpperCase() | translate
+                    "
+                  >
+                    @if ((store.coverageByDay()[day]?.open ?? 0) > 0) {
+                      {{
+                        'SHIFT_PLANNING.OPEN_COUNT'
+                          | translate: { count: store.coverageByDay()[day]?.open ?? 0 }
+                      }}
+                    } @else {
+                      <i class="fa-solid fa-check" aria-hidden="true"></i>
+                    }
+                  </span>
+                </th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of matrix.rows; track row.key) {
+              <tr>
+                <th class="row-head" scope="row">
+                  <div class="row-title">
+                    {{
+                      row.employee_name ??
+                        (row.role_or_skill_id
+                          ? row.role_or_skill_id.slice(0, 8)
+                          : ('SHIFT_PLANNING.NO_ROLE' | translate))
+                    }}
+                  </div>
+                  @if (matrix.group_by === 'employee') {
+                    <div class="row-hours">
+                      <span
+                        >{{ hours(row.scheduled_minutes) }} /
+                        {{ hours(row.contract_minutes) }}</span
+                      >
+                      <nz-progress
+                        [nzPercent]="utilisation(row)"
+                        nzSize="small"
+                        [nzShowInfo]="false"
+                        [nzStatus]="(row.utilisation_percent ?? 0) > 100 ? 'exception' : 'normal'"
+                      ></nz-progress>
+                    </div>
+                  }
+                </th>
+                @for (day of matrix.days; track day) {
+                  <td
+                    class="cell"
+                    cdkDropList
+                    [cdkDropListData]="dropCell(row, day)"
+                    [cdkDropListDisabled]="!store.isEditable()"
+                    (cdkDropListDropped)="drop($event)"
+                  >
+                    @for (shift of cellShifts(row, day); track shift.id) {
+                      <ng-container
+                        [ngTemplateOutlet]="card"
+                        [ngTemplateOutletContext]="{ $implicit: shift }"
+                      ></ng-container>
+                    }
+                  </td>
+                }
+              </tr>
+            }
+            <tr class="open-row">
+              <th class="row-head" scope="row">{{ 'SHIFT_PLANNING.OPEN_ROW' | translate }}</th>
+              @for (day of matrix.days; track day) {
+                <td
+                  class="cell"
+                  cdkDropList
+                  [cdkDropListData]="dropCell(null, day)"
+                  [cdkDropListDisabled]="!store.isEditable()"
+                  (cdkDropListDropped)="drop($event)"
+                >
+                  @for (shift of openShiftsOf(day); track shift.id) {
+                    <ng-container
+                      [ngTemplateOutlet]="card"
+                      [ngTemplateOutletContext]="{ $implicit: shift }"
+                    ></ng-container>
+                  }
+                </td>
+              }
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <th class="row-head">{{ 'SHIFT_PLANNING.DAY_COST' | translate }}</th>
+              @for (day of matrix.days; track day) {
+                <td class="cost-cell">{{ matrix.totals.labor_cost_by_day[day] ?? '0.00' }}</td>
+              }
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  } @else if (!store.loading()) {
+    <nz-empty [nzNotFoundContent]="'SHIFT_PLANNING.NO_PERIOD' | translate">
+      <button nz-button nzType="primary" (click)="generateOpen.set(true)">
+        {{ 'SHIFT_PLANNING.GENERATE' | translate }}
+      </button>
+    </nz-empty>
+  }
+</nz-spin>
+
+<ng-template #card let-shift>
+  <div
+    class="shift-card"
+    cdkDrag
+    [cdkDragData]="shift"
+    [cdkDragDisabled]="!store.isEditable()"
+    [class.is-open]="shift.is_open"
+    [class.has-blocking]="blocking(shift).length > 0 || store.rejectedAssignmentId() === shift.id"
+    [style.border-left-color]="shift.template?.color_hex"
+  >
+    <div class="card-line">
+      <strong>{{ shift.template?.code }}</strong>
+      @if (!isCompact()) {
+        <span class="card-time">{{ range(shift) }}</span>
+      }
+      @if (store.isEditable()) {
+        <button
+          nz-button
+          nzType="text"
+          nzSize="small"
+          nz-dropdown
+          [nzDropdownMenu]="moveMenu"
+          nzTrigger="click"
+          class="card-menu"
+          [attr.aria-label]="'SHIFT_PLANNING.MOVE_SHIFT' | translate"
+        >
+          <i class="fa-solid fa-ellipsis-vertical" aria-hidden="true"></i>
+        </button>
+        <nz-dropdown-menu #moveMenu="nzDropdownMenu">
+          <ul nz-menu>
+            @for (target of employeeRows(); track target.key) {
+              <li
+                nz-menu-item
+                tabindex="0"
+                (click)="assignTo(shift, target)"
+                (keydown.enter)="assignTo(shift, target)"
+              >
+                {{ target.employee_name }}
+              </li>
+            }
+            <li
+              nz-menu-item
+              tabindex="0"
+              (click)="assignTo(shift, null)"
+              (keydown.enter)="assignTo(shift, null)"
+            >
+              {{ 'SHIFT_PLANNING.OPEN_ROW' | translate }}
+            </li>
+          </ul>
+        </nz-dropdown-menu>
+      }
+    </div>
+    @if (shift.employee_name) {
+      <div class="card-name">{{ shift.employee_name }}</div>
+    }
+    <div class="card-badges">
+      @for (tag of tags(shift); track tag) {
+        <nz-tag class="tag-{{ tag }}">{{
+          'SHIFT_PLANNING.TAG_' + tag.toUpperCase() | translate
+        }}</nz-tag>
+      }
+      @if (blocking(shift).length > 0) {
+        <span
+          class="badge badge-error"
+          nz-tooltip
+          [nzTooltipTitle]="issueTip"
+          [nzTooltipTitleContext]="{ $implicit: shift.compliance_warnings }"
+          tabindex="0"
+          role="img"
+          [attr.aria-label]="
+            'SHIFT_PLANNING.BLOCKING_COUNT' | translate: { count: blocking(shift).length }
+          "
+        >
+          <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+          {{ blocking(shift).length }}
+        </span>
+      }
+      @if (warnings(shift).length > 0) {
+        <span
+          class="badge badge-warning"
+          nz-tooltip
+          [nzTooltipTitle]="issueTip"
+          [nzTooltipTitleContext]="{ $implicit: shift.compliance_warnings }"
+          tabindex="0"
+          role="img"
+          [attr.aria-label]="
+            'SHIFT_PLANNING.WARNING_COUNT' | translate: { count: warnings(shift).length }
+          "
+        >
+          <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+          {{ warnings(shift).length }}
+        </span>
+      }
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #issueTip let-issues>
+  <ul class="tip-list">
+    @for (issue of issues; track $index) {
+      <li>{{ describe(issue) }}</li>
+    }
+  </ul>
+</ng-template>
+
+<app-roster-generate-modal
+  [(open)]="generateOpen"
+  [templates]="store.activeTemplates()"
+  (generated)="generate($event)"
+  [saving]="store.saving()"
+></app-roster-generate-modal>
+<app-swap-approval-drawer
+  [(open)]="swapsOpen"
+  [swaps]="store.swaps()"
+  [employeeNames]="employeeNames()"
+  [saving]="store.saving()"
+  (decided)="decide($event)"
+></app-swap-approval-drawer>

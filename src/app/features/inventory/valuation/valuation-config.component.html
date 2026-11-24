@@ -1,0 +1,380 @@
+<app-page-header
+  [title]="'INVENTORY.VALUATION.TITLE' | translate"
+  [subtitle]="'INVENTORY.VALUATION.SUBTITLE' | translate"
+/>
+
+<nz-card class="iv-card" [nzTitle]="'INVENTORY.VALUATION.SUMMARY_TITLE' | translate" [nzExtra]="summaryExtra">
+  <ng-template #summaryExtra>
+    <button nz-button (click)="openSnapshotModal()">
+      <nz-icon nzType="database" /> {{ 'INVENTORY.VALUATION.CAPTURE_SNAPSHOT' | translate }}
+    </button>
+  </ng-template>
+  <div class="iv-toolbar">
+    <nz-select
+      class="iv-filter"
+      nzAllowClear
+      [nzPlaceHolder]="'INVENTORY.FILTERS.WAREHOUSE' | translate"
+      [attr.aria-label]="'INVENTORY.FILTERS.WAREHOUSE' | translate"
+      [ngModel]="summaryWarehouse()"
+      (ngModelChange)="summaryWarehouse.set($event); loadSummary()"
+    >
+      @for (w of warehouses(); track w.id) {
+        <nz-option [nzValue]="w.id" [nzLabel]="w.name" />
+      }
+    </nz-select>
+    <nz-select
+      class="iv-filter"
+      nzAllowClear
+      [nzPlaceHolder]="'INVENTORY.VALUATION.EFFECTIVE_METHOD' | translate"
+      [attr.aria-label]="'INVENTORY.VALUATION.EFFECTIVE_METHOD' | translate"
+      [ngModel]="summaryMethod()"
+      (ngModelChange)="summaryMethod.set($event); loadSummary()"
+    >
+      @for (m of methods; track m) {
+        <nz-option [nzValue]="m" [nzLabel]="methodLabels[m] | translate" />
+      }
+    </nz-select>
+  </div>
+  @if (summary(); as s) {
+    <div class="iv-stats">
+      <nz-statistic
+        [nzTitle]="'INVENTORY.VALUATION.TOTAL_VALUATION' | translate"
+        [nzValue]="(s.total_valuation | number: '1.2-2') ?? ''"
+      />
+      <nz-statistic [nzTitle]="'INVENTORY.VALUATION.ITEMS_COUNT' | translate" [nzValue]="s.items_count" />
+    </div>
+  } @else if (!summaryLoading()) {
+    <p class="iv-muted">{{ 'INVENTORY.VALUATION.SUMMARY_UNAVAILABLE' | translate }}</p>
+  }
+</nz-card>
+
+@if (lastRevaluation(); as rev) {
+  <nz-alert
+    class="iv-alert"
+    nzType="info"
+    nzShowIcon
+    nzCloseable
+    (nzOnClose)="lastRevaluation.set(null)"
+    [nzMessage]="'INVENTORY.VALUATION.REVALUATION_DONE' | translate"
+    [nzDescription]="revDesc"
+  />
+  <ng-template #revDesc>
+    {{ 'INVENTORY.REVALUATION.INVENTORY_DELTA' | translate }}: {{ rev.total_inventory_delta }} ·
+    {{ 'INVENTORY.REVALUATION.COGS_DELTA' | translate }}: {{ rev.total_cogs_delta }}
+    @if (rev.journal_entry_id) {
+      · {{ 'INVENTORY.REVALUATION.JOURNAL' | translate }}: <code>{{ rev.journal_entry_id }}</code>
+    }
+  </ng-template>
+}
+
+@if (loadErrorKey(); as errKey) {
+  <nz-alert class="iv-alert" nzType="error" nzShowIcon [nzMessage]="errKey | translate" [nzAction]="retryTpl" />
+  <ng-template #retryTpl>
+    <button nz-button nzSize="small" (click)="load()">{{ 'INVENTORY.ACTIONS.RETRY' | translate }}</button>
+  </ng-template>
+}
+
+<nz-card class="iv-card">
+  <nz-tabs>
+    <nz-tab [nzTitle]="'INVENTORY.VALUATION.TAB_ITEMS' | translate">
+      <div class="iv-toolbar">
+        <input
+          nz-input
+          type="search"
+          class="iv-filter"
+          [placeholder]="'COMMON.SEARCH' | translate"
+          [attr.aria-label]="'COMMON.SEARCH' | translate"
+          [value]="search()"
+          (input)="onSearch($event)"
+        />
+      </div>
+      <nz-table
+        #itemsTable
+        [nzData]="filteredRows()"
+        [nzLoading]="loading()"
+        [nzPageSize]="20"
+        nzSize="middle"
+      >
+        <thead>
+          <tr>
+            <th scope="col">{{ 'INVENTORY.COL_SKU' | translate }}</th>
+            <th scope="col">{{ 'INVENTORY.COL_DESC' | translate }}</th>
+            <th scope="col">{{ 'INVENTORY.VALUATION.CATEGORY_METHOD' | translate }}</th>
+            <th scope="col">{{ 'INVENTORY.VALUATION.ITEM_METHOD' | translate }}</th>
+            <th scope="col">{{ 'INVENTORY.VALUATION.EFFECTIVE_METHOD' | translate }}</th>
+            <th scope="col" nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of itemsTable.data; track row.item_id + ':' + revision()) {
+            <tr>
+              <td><strong>{{ row.sku }}</strong></td>
+              <td>{{ row.name || '-' }}</td>
+              <td>
+                @if (row.category_method) {
+                  {{ methodLabels[row.category_method] | translate }}
+                } @else {
+                  <span class="iv-muted">-</span>
+                }
+              </td>
+              <td>
+                <nz-select
+                  class="iv-inline-select"
+                  nzAllowClear
+                  [nzPlaceHolder]="'INVENTORY.VALUATION.INHERIT' | translate"
+                  [attr.aria-label]="('INVENTORY.VALUATION.ITEM_METHOD' | translate) + ' ' + row.sku"
+                  [nzDisabled]="inlineSavingId() === row.item_id"
+                  [ngModel]="row.item_method"
+                  (ngModelChange)="changeItemMethod(row, $event ?? null)"
+                >
+                  @for (m of methods; track m) {
+                    <nz-option [nzValue]="m" [nzLabel]="methodLabels[m] | translate" />
+                  }
+                </nz-select>
+              </td>
+              <td>
+                <nz-tag nzColor="processing">{{ methodLabels[row.effective_method] | translate }}</nz-tag>
+                <nz-tag [nzColor]="sourceLabels[row.source].color">{{ sourceLabels[row.source].key | translate }}</nz-tag>
+              </td>
+              <td nzAlign="right">
+                <button
+                  nz-button
+                  nzType="text"
+                  nzSize="small"
+                  [attr.aria-label]="('INVENTORY.VALUATION.EDIT_ITEM' | translate) + ' ' + row.sku"
+                  (click)="openItemModal(row)"
+                >
+                  <nz-icon nzType="edit" />
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <nz-tab [nzTitle]="'INVENTORY.VALUATION.TAB_CATEGORIES' | translate">
+      <nz-table #catTable [nzData]="categories()" [nzLoading]="loading()" nzSize="middle" [nzPageSize]="20">
+        <thead>
+          <tr>
+            <th scope="col">{{ 'INVENTORY.VALUATION.CATEGORY' | translate }}</th>
+            <th scope="col">{{ 'INVENTORY.VALUATION.CATEGORY_METHOD' | translate }}</th>
+            <th scope="col">{{ 'INVENTORY.VALUATION.ITEMS_COUNT' | translate }}</th>
+            <th scope="col" nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (cat of catTable.data; track cat.id) {
+            <tr>
+              <td>{{ cat.name || cat.id }}</td>
+              <td>
+                @if (cat.method) {
+                  {{ methodLabels[cat.method] | translate }}
+                } @else {
+                  <span class="iv-muted">-</span>
+                }
+              </td>
+              <td>{{ cat.items }}</td>
+              <td nzAlign="right">
+                <button
+                  nz-button
+                  nzType="text"
+                  nzSize="small"
+                  [attr.aria-label]="('INVENTORY.VALUATION.EDIT_CATEGORY' | translate) + ' ' + (cat.name || cat.id)"
+                  (click)="openCategoryModal(cat)"
+                >
+                  <nz-icon nzType="edit" />
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+  </nz-tabs>
+</nz-card>
+
+<!-- Item valuation modal -->
+<nz-modal
+  [nzVisible]="itemModalOpen()"
+  [nzTitle]="('INVENTORY.VALUATION.EDIT_ITEM' | translate) + ' ' + (editingItem()?.sku ?? '')"
+  [nzOkText]="'COMMON.SAVE' | translate"
+  [nzCancelText]="'COMMON.CANCEL' | translate"
+  [nzOkLoading]="savingItem()"
+  (nzOnCancel)="closeItemModal()"
+  (nzOnOk)="submitItem()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form nzLayout="vertical" [formGroup]="itemForm" (ngSubmit)="submitItem()">
+      <nz-form-item>
+        <nz-form-label nzFor="iv-item-method">{{ 'INVENTORY.VALUATION.ITEM_METHOD' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="serverError(itemForm, 'valuation_method') ?? ''">
+          <nz-select
+            nzId="iv-item-method"
+            nzAllowClear
+            formControlName="valuation_method"
+            [nzPlaceHolder]="'INVENTORY.VALUATION.INHERIT' | translate"
+          >
+            @for (m of methods; track m) {
+              <nz-option [nzValue]="m" [nzLabel]="methodLabels[m] | translate" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="iv-standard-cost">{{ 'INVENTORY.VALUATION.STANDARD_COST' | translate }}</nz-form-label>
+        <nz-form-control
+          [nzErrorTip]="serverError(itemForm, 'standard_cost') ?? ('INVENTORY.VALIDATION.DECIMAL4' | translate)"
+        >
+          <input nz-input id="iv-standard-cost" inputmode="decimal" formControlName="standard_cost" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="iv-weight">{{ 'INVENTORY.VALUATION.WEIGHT_KG' | translate }}</nz-form-label>
+        <nz-form-control
+          [nzErrorTip]="serverError(itemForm, 'weight_kg') ?? ('INVENTORY.VALIDATION.DECIMAL4' | translate)"
+        >
+          <input nz-input id="iv-weight" inputmode="decimal" formControlName="weight_kg" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="iv-volume">{{ 'INVENTORY.VALUATION.VOLUME_M3' | translate }}</nz-form-label>
+        <nz-form-control
+          [nzErrorTip]="serverError(itemForm, 'volume_m3') ?? ('INVENTORY.VALIDATION.DECIMAL4' | translate)"
+        >
+          <input nz-input id="iv-volume" inputmode="decimal" formControlName="volume_m3" />
+        </nz-form-control>
+      </nz-form-item>
+      <p class="iv-muted">{{ 'INVENTORY.VALUATION.REVALUATION_HINT' | translate }}</p>
+      @if (itemFormErrors().length) {
+        <nz-alert nzType="error" nzShowIcon [nzMessage]="itemErrors" />
+        <ng-template #itemErrors>
+          <ul class="iv-error-list">
+            @for (e of itemFormErrors(); track $index) {
+              <li>{{ e }}</li>
+            }
+          </ul>
+        </ng-template>
+      }
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- Category valuation modal -->
+<nz-modal
+  [nzVisible]="categoryModalOpen()"
+  [nzTitle]="('INVENTORY.VALUATION.EDIT_CATEGORY' | translate) + ' ' + (editingCategory()?.name ?? '')"
+  [nzOkText]="'COMMON.SAVE' | translate"
+  [nzCancelText]="'COMMON.CANCEL' | translate"
+  [nzOkLoading]="savingCategory()"
+  (nzOnCancel)="closeCategoryModal()"
+  (nzOnOk)="submitCategory()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form nzLayout="vertical" [formGroup]="categoryForm" (ngSubmit)="submitCategory()">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="iv-cat-method">{{ 'INVENTORY.VALUATION.CATEGORY_METHOD' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="serverError(categoryForm, 'valuation_method') ?? ('COMMON.VALIDATION.REQUIRED' | translate)">
+          <nz-select nzId="iv-cat-method" formControlName="valuation_method">
+            @for (m of methods; track m) {
+              <nz-option [nzValue]="m" [nzLabel]="methodLabels[m] | translate" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      @for (field of ['inventory_account_id', 'cogs_account_id', 'ppv_account_id', 'landed_cost_clearing_account_id']; track field) {
+        <nz-form-item>
+          <nz-form-label [nzFor]="'iv-cat-' + field">{{ 'INVENTORY.VALUATION.ACCOUNT_' + field.toUpperCase() | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="serverError(categoryForm, field) ?? ''">
+            @if (accounts().length) {
+              <nz-select
+                [nzId]="'iv-cat-' + field"
+                nzAllowClear
+                nzShowSearch
+                [formControlName]="field"
+                [nzPlaceHolder]="'INVENTORY.VALUATION.ACCOUNT_DEFAULT' | translate"
+              >
+                @for (a of accounts(); track a.id) {
+                  <nz-option [nzValue]="a.id" [nzLabel]="a.account_code + ' - ' + a.name" />
+                }
+              </nz-select>
+            } @else {
+              <input
+                nz-input
+                [id]="'iv-cat-' + field"
+                [formControlName]="field"
+                [placeholder]="'INVENTORY.VALUATION.ACCOUNT_DEFAULT' | translate"
+              />
+            }
+          </nz-form-control>
+        </nz-form-item>
+      }
+      @if (categoryFormErrors().length) {
+        <nz-alert nzType="error" nzShowIcon [nzMessage]="catErrors" />
+        <ng-template #catErrors>
+          <ul class="iv-error-list">
+            @for (e of categoryFormErrors(); track $index) {
+              <li>{{ e }}</li>
+            }
+          </ul>
+        </ng-template>
+      }
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- Snapshot modal -->
+<nz-modal
+  [nzVisible]="snapshotModalOpen()"
+  [nzTitle]="'INVENTORY.VALUATION.CAPTURE_SNAPSHOT' | translate"
+  [nzOkText]="'INVENTORY.VALUATION.CAPTURE_SNAPSHOT' | translate"
+  [nzCancelText]="'COMMON.CANCEL' | translate"
+  [nzOkLoading]="savingSnapshot()"
+  (nzOnCancel)="snapshotModalOpen.set(false)"
+  (nzOnOk)="submitSnapshot()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form nzLayout="vertical" [formGroup]="snapshotForm" (ngSubmit)="submitSnapshot()">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="iv-snap-item">{{ 'INVENTORY.FILTERS.ITEM' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="serverError(snapshotForm, 'stock_item_id') ?? ('COMMON.VALIDATION.REQUIRED' | translate)">
+          <nz-select nzId="iv-snap-item" nzShowSearch formControlName="stock_item_id">
+            @for (r of rows(); track r.item_id) {
+              <nz-option [nzValue]="r.item_id" [nzLabel]="r.sku + (r.name ? ' - ' + r.name : '')" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="iv-snap-wh">{{ 'INVENTORY.FILTERS.WAREHOUSE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="serverError(snapshotForm, 'warehouse_id') ?? ('COMMON.VALIDATION.REQUIRED' | translate)">
+          <nz-select nzId="iv-snap-wh" nzShowSearch formControlName="warehouse_id">
+            @for (w of warehouses(); track w.id) {
+              <nz-option [nzValue]="w.id" [nzLabel]="w.name" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="iv-snap-method">{{ 'INVENTORY.VALUATION.EFFECTIVE_METHOD' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select nzId="iv-snap-method" nzAllowClear formControlName="valuation_method">
+            @for (m of methods; track m) {
+              <nz-option [nzValue]="m" [nzLabel]="methodLabels[m] | translate" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      @if (snapshotFormErrors().length) {
+        <nz-alert nzType="error" nzShowIcon [nzMessage]="snapErrors" />
+        <ng-template #snapErrors>
+          <ul class="iv-error-list">
+            @for (e of snapshotFormErrors(); track $index) {
+              <li>{{ e }}</li>
+            }
+          </ul>
+        </ng-template>
+      }
+    </form>
+  </ng-container>
+</nz-modal>

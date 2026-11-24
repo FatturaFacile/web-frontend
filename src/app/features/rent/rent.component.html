@@ -1,0 +1,364 @@
+<div class="rent-container">
+  <app-page-header
+    [title]="'RENT.PAGE_TITLE' | translate"
+    [subtitle]="'RENT.PAGE_SUBTITLE' | translate"
+  >
+    <div class="header-actions">
+      <button nz-button nzType="primary" (click)="openRegisterVehicleModal()" appIconAction="create"></button>
+      <button nz-button (click)="loadVehicles(); loadBookings()">
+        <span nz-icon nzType="reload"></span>
+        {{ 'RENT.REFRESH' | translate }}
+      </button>
+    </div>
+  </app-page-header>
+
+  <nz-card class="main-card">
+    <nz-tabs [(nzSelectedIndex)]="selectedTabIndex">
+      <!-- TAB 1: Rental Fleet Vehicles -->
+      <nz-tab [nzTitle]="'RENT.TAB_FLEET' | translate">
+        <app-base-table [grid]="vehiclesGrid" [columns]="vehicleColumns()" [bordered]="true" exportFileName="rent-fleet" />
+        <ng-template #vehiclePlateTpl let-v><strong><code>{{ v.plate }}</code></strong></ng-template>
+        <ng-template #vehicleModelTpl let-v>{{ v.make ? v.make + ' ' : '' }}{{ v.model }}</ng-template>
+        <ng-template #vehicleStatusTpl let-v>
+          <nz-tag [nzColor]="getVehicleStatusBadgeColor(v.status)">{{ v.status | uppercase }}</nz-tag>
+        </ng-template>
+      </nz-tab>
+
+      <!-- TAB 2: Rental Bookings & Contracts -->
+      <nz-tab [nzTitle]="'RENT.TAB_BOOKINGS' | translate">
+        <app-base-table [grid]="bookingsGrid" [columns]="bookingColumns()" [actionsTemplate]="bookingActionsTpl" [bordered]="true" exportFileName="rent-bookings" />
+        <ng-template #bookingIdTpl let-b><code>{{ b.id }}</code></ng-template>
+        <ng-template #bookingVehicleTpl let-b>
+          <strong>{{ b.vehicle_plate || b.vehicle_id }}</strong>
+          @if (b.vehicle_model) {
+            <div class="sub-text">{{ b.vehicle_model }}</div>
+          }
+        </ng-template>
+        <ng-template #bookingRateTpl let-b>{{ b.daily_rate | money: 'EUR' }}</ng-template>
+        <ng-template #bookingTotalTpl let-b><strong>{{ b.total_amount | money: 'EUR' }}</strong></ng-template>
+        <ng-template #bookingStatusTpl let-b>
+          <nz-tag [nzColor]="getBookingStatusBadgeColor(b.status)">{{ b.status | uppercase }}</nz-tag>
+        </ng-template>
+        <ng-template #bookingActionsTpl let-b>
+          <div class="action-buttons">
+            <button nz-button nzType="link" nzSize="small" (click)="openBookingDetails(b)">
+              <span nz-icon nzType="eye"></span>
+              {{ 'RENT.DETAILS' | translate }}
+            </button>
+            @if (b.status === 'booked' || b.status === 'reserved') {
+              <button nz-button nzType="primary" nzSize="small" (click)="openCheckOutModal(b)">
+                <span nz-icon nzType="car"></span>
+                {{ 'RENT.CHECK_OUT' | translate }}
+              </button>
+            }
+            @if (b.status === 'active') {
+              <button nz-button nzType="primary" nzGhost nzSize="small" (click)="openCheckInModal(b)">
+                <span nz-icon nzType="check-circle"></span>
+                {{ 'RENT.CHECK_IN' | translate }}
+              </button>
+            }
+          </div>
+        </ng-template>
+      </nz-tab>
+
+      <!-- TAB 3: Automotive Vehicle Registry -->
+      <nz-tab [nzTitle]="'RENT.TAB_REGISTRY' | translate">
+        <div class="tab-toolbar">
+          <p class="description">{{ 'RENT.REGISTRY_DESCRIPTION' | translate }}</p>
+          <button nz-button nzType="primary" (click)="openRegisterVehicleModal()" appIconAction="create"></button>
+        </div>
+
+        <app-base-table [grid]="automotiveGrid" [columns]="automotiveColumns()" [actionsTemplate]="autoActionsTpl" [bordered]="true" exportFileName="rent-registry" />
+        <ng-template #autoPlateTpl let-av><strong><code>{{ av.license_plate }}</code></strong></ng-template>
+        <ng-template #autoVinTpl let-av><code>{{ av.vin_chassis || '-' }}</code></ng-template>
+        <ng-template #autoActionsTpl let-av>
+          <div class="action-buttons">
+            <button nz-button nzType="link" nzSize="small" (click)="openEditVehicleModal(av)" appIconAction="edit"></button>
+            <button nz-button nzType="link" nzDanger nzSize="small" (click)="deleteVehicle(av)" appIconAction="delete"></button>
+          </div>
+        </ng-template>
+      </nz-tab>
+    </nz-tabs>
+  </nz-card>
+
+  <!-- MODAL: Check-Out Handover Inspection -->
+  <nz-modal appModalActions
+    [nzVisible]="isCheckOutModalVisible()"
+    [nzTitle]="'RENT.CHECK_OUT_MODAL_TITLE' | translate"
+    (nzOnCancel)="closeCheckOutModal()"
+    (nzOnOk)="submitCheckOutInspection()"
+    [nzOkLoading]="loading()"
+    okAction="confirm"
+  >
+    <ng-container *nzModalContent>
+      <form nz-form [formGroup]="checkOutForm" nzLayout="vertical">
+        <ng-template #fieldTip let-control>
+          @if (control.errors?.['serverError']) {
+            {{ control.errors['serverError'] }}
+          } @else if (control.hasError('required')) {
+            {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+          } @else {
+            {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+          }
+        </ng-template>
+        <nz-alert
+          nzType="info"
+          [nzMessage]="'RENT.CHECK_OUT_INSPECTION_INFO' | translate"
+          nzShowIcon
+          class="inspection-alert"
+        ></nz-alert>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'RENT.START_MILEAGE' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-input-number formControlName="mileage" [nzMin]="0" class="full-width"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'RENT.FUEL_LEVEL' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-select formControlName="fuel_level">
+              <nz-option nzValue="8/8" [nzLabel]="'RENT.LBL_8_8_PIENO_FULL' | translate"></nz-option>
+              <nz-option nzValue="7/8" nzLabel="7/8"></nz-option>
+              <nz-option nzValue="6/8" nzLabel="6/8 (3/4)"></nz-option>
+              <nz-option nzValue="4/8" nzLabel="4/8 (1/2)"></nz-option>
+              <nz-option nzValue="2/8" nzLabel="2/8 (1/4)"></nz-option>
+              <nz-option nzValue="1/8" [nzLabel]="'RENT.LBL_1_8_RISERVA' | translate"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'RENT.DAMAGE_MARKERS' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <div class="damage-input-group">
+              <input
+                nz-input
+                [(ngModel)]="tempDamageMarker"
+                [ngModelOptions]="{ standalone: true }"
+                (keyup.enter)="addDamageMarker()"
+                [placeholder]="'RENT.DAMAGE_MARKER_PLACEHOLDER' | translate"
+              />
+              <button nz-button type="button" (click)="addDamageMarker()" appIconAction="add"></button>
+            </div>
+            <div class="damage-tags">
+              @for (dm of currentDamageMarkers(); track $index) {
+                <nz-tag nzMode="closeable" nzColor="orange" (nzOnClose)="removeDamageMarker($index)">
+                  {{ dm }}
+                </nz-tag>
+              }
+            </div>
+          </nz-form-control>
+        </nz-form-item>
+      </form>
+    </ng-container>
+  </nz-modal>
+
+  <!-- MODAL: Check-In Return Inspection -->
+  <nz-modal appModalActions
+    [nzVisible]="isCheckInModalVisible()"
+    [nzTitle]="'RENT.CHECK_IN_MODAL_TITLE' | translate"
+    (nzOnCancel)="closeCheckInModal()"
+    (nzOnOk)="submitCheckInInspection()"
+    [nzOkLoading]="loading()"
+    okAction="confirm"
+  >
+    <ng-container *nzModalContent>
+      <form nz-form [formGroup]="checkInForm" nzLayout="vertical">
+        <ng-template #fieldTip let-control>
+          @if (control.errors?.['serverError']) {
+            {{ control.errors['serverError'] }}
+          } @else if (control.hasError('required')) {
+            {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+          } @else {
+            {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+          }
+        </ng-template>
+        <nz-alert
+          nzType="success"
+          [nzMessage]="'RENT.CHECK_IN_INSPECTION_INFO' | translate"
+          nzShowIcon
+          class="inspection-alert"
+        ></nz-alert>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'RENT.RETURN_MILEAGE' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-input-number formControlName="mileage" [nzMin]="0" class="full-width"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'RENT.FUEL_LEVEL' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-select formControlName="fuel_level">
+              <nz-option nzValue="8/8" [nzLabel]="'RENT.LBL_8_8_PIENO_FULL' | translate"></nz-option>
+              <nz-option nzValue="7/8" nzLabel="7/8"></nz-option>
+              <nz-option nzValue="6/8" nzLabel="6/8 (3/4)"></nz-option>
+              <nz-option nzValue="4/8" nzLabel="4/8 (1/2)"></nz-option>
+              <nz-option nzValue="2/8" nzLabel="2/8 (1/4)"></nz-option>
+              <nz-option nzValue="1/8" [nzLabel]="'RENT.LBL_1_8_RISERVA' | translate"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'RENT.DAMAGE_MARKERS' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <div class="damage-input-group">
+              <input
+                nz-input
+                [(ngModel)]="tempDamageMarker"
+                [ngModelOptions]="{ standalone: true }"
+                (keyup.enter)="addDamageMarker()"
+                [placeholder]="'RENT.DAMAGE_MARKER_PLACEHOLDER' | translate"
+              />
+              <button nz-button type="button" (click)="addDamageMarker()" appIconAction="add"></button>
+            </div>
+            <div class="damage-tags">
+              @for (dm of currentDamageMarkers(); track $index) {
+                <nz-tag nzMode="closeable" nzColor="red" (nzOnClose)="removeDamageMarker($index)">
+                  {{ dm }}
+                </nz-tag>
+              }
+            </div>
+          </nz-form-control>
+        </nz-form-item>
+      </form>
+    </ng-container>
+  </nz-modal>
+
+  <!-- MODAL: Register / Edit Automotive Vehicle -->
+  <nz-modal appModalActions
+    [nzVisible]="isVehicleModalVisible()"
+    [nzTitle]="(isEditingVehicle() ? 'RENT.EDIT_VEHICLE' : 'RENT.REGISTER_VEHICLE') | translate"
+    (nzOnCancel)="closeVehicleModal()"
+    (nzOnOk)="submitVehicle()"
+    [nzOkLoading]="loading()"
+    okAction="save"
+  >
+    <ng-container *nzModalContent>
+      <form nz-form [formGroup]="vehicleForm" nzLayout="vertical">
+        <ng-template #fieldTip let-control>
+          @if (control.errors?.['serverError']) {
+            {{ control.errors['serverError'] }}
+          } @else if (control.hasError('required')) {
+            {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+          } @else {
+            {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+          }
+        </ng-template>
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'RENT.PLATE' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <input nz-input formControlName="license_plate" placeholder="e.g. TI 98765 / AA123BB" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <div class="grid-2">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'RENT.MAKE' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="fieldTip">
+              <input nz-input formControlName="make" [placeholder]="'RENT.LBL_E_G_VOLKSWAGEN' | translate" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'RENT.MODEL' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="fieldTip">
+              <input nz-input formControlName="model" [placeholder]="'RENT.LBL_E_G_GOLF_8' | translate" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div class="grid-2">
+          <nz-form-item>
+            <nz-form-label>{{ 'RENT.YEAR' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="fieldTip">
+              <nz-input-number formControlName="year" [nzMin]="1950" [nzMax]="2030" class="full-width"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label>{{ 'RENT.VIN' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="fieldTip">
+              <input nz-input formControlName="vin_chassis" placeholder="WVWZZZ..." />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'RENT.CUSTOMER' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-select formControlName="client_id" nzShowSearch [nzPlaceHolder]="'RENT.LBL_OWNER_CLIENT_NAME' | translate">
+              @for (contact of contacts(); track contact.id) {
+                <nz-option [nzValue]="contact.id" [nzLabel]="contactName(contact)"></nz-option>
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </form>
+    </ng-container>
+  </nz-modal>
+
+  <!-- DRAWER: Booking Details -->
+  <nz-modal appModalActions
+    [nzVisible]="isBookingDrawerVisible()"
+    [nzTitle]="'RENT.BOOKING_DETAILS' | translate"
+    (nzOnCancel)="closeBookingDrawer()"
+    [nzWidth]="800"
+    [nzFooter]="null"
+  >
+    <ng-container *nzModalContent>
+      @if (selectedBooking(); as b) {
+        <nz-descriptions [nzColumn]="1" nzBordered nzSize="small">
+          <nz-descriptions-item [nzTitle]="'RENT.BOOKING_ID' | translate">
+            <code>{{ b.id }}</code>
+          </nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'RENT.STATUS' | translate">
+            <nz-tag [nzColor]="getBookingStatusBadgeColor(b.status)">{{ b.status | uppercase }}</nz-tag>
+          </nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'RENT.VEHICLE' | translate">
+            {{ b.vehicle_plate || b.vehicle_id }} {{ b.vehicle_model ? '(' + b.vehicle_model + ')' : '' }}
+          </nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'RENT.CLIENT' | translate">
+            {{ b.client_name || b.client_id }}
+          </nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'RENT.START_DATE' | translate">
+            {{ b.start_date }}
+          </nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'RENT.END_DATE' | translate">
+            {{ b.end_date }}
+          </nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'RENT.DAILY_RATE' | translate">
+            {{ b.daily_rate | money: 'EUR' }}
+          </nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'RENT.TOTAL_AMOUNT' | translate">
+            <strong>{{ b.total_amount | money: 'EUR' }}</strong>
+          </nz-descriptions-item>
+          @if (b.deposit_amount) {
+            <nz-descriptions-item [nzTitle]="'RENT.DEPOSIT_AMOUNT' | translate">
+              {{ b.deposit_amount | money: 'EUR' }}
+            </nz-descriptions-item>
+          }
+          @if (b.check_out_mileage) {
+            <nz-descriptions-item [nzTitle]="'RENT.CHECK_OUT_MILEAGE' | translate">
+              {{ b.check_out_mileage }} km
+            </nz-descriptions-item>
+          }
+          @if (b.check_in_mileage) {
+            <nz-descriptions-item [nzTitle]="'RENT.CHECK_IN_MILEAGE' | translate">
+              {{ b.check_in_mileage }} km
+            </nz-descriptions-item>
+          }
+          @if (b.notes) {
+            <nz-descriptions-item [nzTitle]="'RENT.NOTES' | translate">
+              {{ b.notes }}
+            </nz-descriptions-item>
+          }
+        </nz-descriptions>
+      }
+    </ng-container>
+  </nz-modal>
+</div>

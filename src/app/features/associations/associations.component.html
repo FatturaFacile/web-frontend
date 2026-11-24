@@ -1,0 +1,776 @@
+<app-page-header
+  [title]="'ASSOCIATIONS.TITLE' | translate"
+  [subtitle]="'ASSOCIATIONS.SUBTITLE' | translate"
+>
+</app-page-header>
+
+<nz-card class="associations-card">
+  <nz-tabs [nzSelectedIndex]="selectedTabIndex()" (nzSelectedIndexChange)="onTabChange($event)">
+    <!-- TAB 1: LIBRO SOCI & TESSERAMENTO -->
+    <nz-tab [nzTitle]="'ASSOCIATIONS.TAB_MEMBERS' | translate">
+      <div class="tab-toolbar">
+        <div class="filter-group">
+          <input
+            nz-input
+            [placeholder]="'ASSOCIATIONS.SEARCH_MEMBERS' | translate"
+            [ngModel]="memberSearch()"
+            (ngModelChange)="memberSearch.set($event); applyMemberFilters()"
+            class="filter-input"
+          />
+
+          <nz-select
+            [ngModel]="memberStatusFilter()"
+            (ngModelChange)="memberStatusFilter.set($event); applyMemberFilters()"
+            [nzPlaceHolder]="'common.allStatuses' | translate"
+            class="filter-select"
+          >
+            <nz-option nzValue="" [nzLabel]="'ASSOCIATIONS.LBL_TUTTI' | translate"></nz-option>
+            <nz-option nzValue="active" [nzLabel]="'ASSOCIATIONS.LBL_ATTIVO' | translate"></nz-option>
+            <nz-option nzValue="candidate" [nzLabel]="'ASSOCIATIONS.LBL_CANDIDATO' | translate"></nz-option>
+            <nz-option nzValue="inactive" [nzLabel]="'ASSOCIATIONS.LBL_INATTIVO' | translate"></nz-option>
+            <nz-option nzValue="ceased" [nzLabel]="'ASSOCIATIONS.LBL_DECADUTO' | translate"></nz-option>
+          </nz-select>
+
+          <button nz-button nzType="default" (click)="loadMembers()">
+            <span nz-icon nzType="reload"></span>
+            {{ 'COMMON.RELOAD' | translate }}
+          </button>
+        </div>
+
+        <button nz-button nzType="primary" appIconAction="create" (click)="openCreateMemberModal()"></button>
+      </div>
+
+      <app-base-table [grid]="membersGrid" [columns]="memberColumns()" [actionsTemplate]="memberActionsTpl" exportFileName="members" />
+    </nz-tab>
+
+    <!-- TAB 2: QUOTE ASSOCIATIVE & INCASSI -->
+    <nz-tab [nzTitle]="'ASSOCIATIONS.TAB_FEES' | translate">
+      <div class="tab-toolbar">
+        <button nz-button nzType="primary" appIconAction="create" (click)="openCreateFeeModal()"></button>
+        <button nz-button nzType="default" (click)="loadFees()">
+          <span nz-icon nzType="reload"></span>
+          {{ 'COMMON.RELOAD' | translate }}
+        </button>
+      </div>
+
+      <app-base-table [grid]="feesGrid" [columns]="feeColumns()" [actionsTemplate]="feeActionsTpl" exportFileName="fee-assignments" />
+    </nz-tab>
+
+    <!-- TAB 3: CORSI & ATTIVITÀ SPORTIVE -->
+    <nz-tab [nzTitle]="'ASSOCIATIONS.TAB_COURSES' | translate">
+      <div class="tab-toolbar">
+        <button nz-button nzType="primary" appIconAction="create" (click)="openCreateCourseModal()"></button>
+        <button nz-button nzType="default" (click)="loadCourses()">
+          <span nz-icon nzType="reload"></span>
+          {{ 'COMMON.RELOAD' | translate }}
+        </button>
+      </div>
+
+      <app-base-table [grid]="coursesGrid" [columns]="courseColumns()" [actionsTemplate]="courseActionsTpl" exportFileName="courses" />
+    </nz-tab>
+
+    <!-- TAB 4: DONAZIONI & 5 PER MILLE -->
+    <nz-tab [nzTitle]="'ASSOCIATIONS.TAB_DONATIONS' | translate">
+      @if (fivePerMille(); as fpm) {
+        <div class="fpm-summary-banner">
+          <div>
+            <strong>Rendiconto 5 per Mille (Anno {{ fpm.year }})</strong>{{ 'ASSOCIATIONS.LBL_INCASSATO' | translate }} <strong>{{ fpm.total_received | money: 'CHF' }}</strong>
+          </div>
+        </div>
+      }
+
+      <div class="tab-toolbar">
+        <button nz-button nzType="primary" appIconAction="create" (click)="openCreateDonationModal()"></button>
+        <button nz-button nzType="default" (click)="loadDonations()">
+          <span nz-icon nzType="reload"></span>
+          {{ 'COMMON.RELOAD' | translate }}
+        </button>
+      </div>
+
+      <app-base-table [grid]="donationsGrid" [columns]="donationColumns()" [actionsTemplate]="donationActionsTpl" exportFileName="donations" />
+    </nz-tab>
+
+    <!-- TAB 5: REGISTRO VOLONTARI RUNTS & RIMBORSI -->
+    <nz-tab [nzTitle]="'ASSOCIATIONS.TAB_VOLUNTEERS' | translate">
+      <div class="volunteers-wrapper">
+        <div class="section-box">
+          <div class="tab-toolbar">
+            <h4>{{ 'ASSOCIATIONS.RUNTS_VOLUNTEERS' | translate }}</h4>
+            <button nz-button nzType="default" nzSize="small" (click)="loadVolunteers()">
+              <span nz-icon nzType="reload"></span>
+              {{ 'COMMON.RELOAD' | translate }}
+            </button>
+          </div>
+
+          <nz-table appGridExport [nzData]="volunteers()" [nzFrontPagination]="true" [nzLoading]="volunteersLoading()" #gridTbl4>
+            <thead>
+              <tr>
+                <th>{{ 'ASSOCIATIONS.VOLUNTEER' | translate }}</th>
+                <th [nzSortFn]="'activity' | gridSort" [nzFilters]="'activity' | gridFilterList: gridTbl4.nzData" [nzFilterFn]="'activity' | gridFilterFn">{{ 'ASSOCIATIONS.INSURANCE_POLICY' | translate }}</th>
+                <th>{{ 'ASSOCIATIONS.INSURANCE_EXPIRY' | translate }}</th>
+                <th [nzSortFn]="'started_on' | gridSort" [nzFilters]="'started_on' | gridFilterList: gridTbl4.nzData" [nzFilterFn]="'started_on' | gridFilterFn">{{ 'ASSOCIATIONS.REGISTERED_BOOK' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (vol of volunteers(); track vol.id) {
+                <tr>
+                  <td>
+                    <strong>{{ volunteerNameOf(vol) }}</strong>
+                  </td>
+                  <td>{{ vol.activity || '-' }}</td>
+                  <td>{{ vol.insurance_expires_on ? (vol.insurance_expires_on | date: 'dd/MM/yyyy') : '-' }}</td>
+                  <td>{{ vol.started_on | date: 'dd/MM/yyyy' }}</td>
+                </tr>
+              }
+            </tbody>
+          </nz-table>
+        </div>
+
+        <div class="section-box">
+          <div class="tab-toolbar">
+            <h4>{{ 'ASSOCIATIONS.EXPENSE_REIMBURSEMENTS' | translate }}</h4>
+            <button nz-button nzType="primary" nzSize="small" appIconAction="create" (click)="openCreateReimbModal()"></button>
+          </div>
+
+          <app-base-table [grid]="reimbursementsGrid" [columns]="reimbursementColumns()" [actionsTemplate]="reimbursementActionsTpl" exportFileName="reimbursements" />
+        </div>
+      </div>
+    </nz-tab>
+
+    <!-- TAB 6: ASSEMBLEE & VERBALI -->
+    <nz-tab [nzTitle]="'ASSOCIATIONS.TAB_MEETINGS' | translate">
+      <div class="tab-toolbar">
+        <button nz-button nzType="primary" appIconAction="create" (click)="openCreateMeetingModal()"></button>
+        <button nz-button nzType="default" (click)="loadMeetings()">
+          <span nz-icon nzType="reload"></span>
+          {{ 'COMMON.RELOAD' | translate }}
+        </button>
+      </div>
+
+      <app-base-table [grid]="meetingsGrid" [columns]="meetingColumns()" exportFileName="meetings" />
+    </nz-tab>
+  </nz-tabs>
+</nz-card>
+
+<!-- Cell and action templates of the server-driven grids -->
+<ng-template #dateTpl let-value="value">{{ value | date: 'dd/MM/yyyy' }}</ng-template>
+<ng-template #dateTimeTpl let-value="value">{{ value | date: 'dd/MM/yyyy HH:mm' }}</ng-template>
+<ng-template #textTpl let-value="value">{{ value ?? '-' }}</ng-template>
+<ng-template #taxCodeTpl let-value="value"><code>{{ value || '-' }}</code></ng-template>
+<ng-template #moneyTpl let-value="value"><strong>{{ value | money: 'CHF' }}</strong></ng-template>
+<ng-template #statusTpl let-row>
+  <nz-tag [nzColor]="getStatusColor(row.status)">{{ row.status | uppercase }}</nz-tag>
+</ng-template>
+<ng-template #memberTpl let-m>
+  <button type="button" class="link-button" (click)="openMemberDrawer(m)">
+    <strong>{{ personLabel(m) }}</strong>
+  </button>
+  @if (m.email) {
+    <div class="text-muted">{{ m.email }}</div>
+  }
+</ng-template>
+<ng-template #certificateTpl let-m>
+  @if (m.has_medical_certificate) {
+    <nz-tag nzColor="success">{{ 'ASSOCIATIONS.LBL_VALIDO' | translate }}</nz-tag>
+  } @else {
+    <nz-tag nzColor="error">{{ 'ASSOCIATIONS.LBL_MANCANTE' | translate }}</nz-tag>
+  }
+</ng-template>
+<ng-template #memberActionsTpl let-m>
+  <nz-space>
+    <button *nzSpaceItem nz-button nzType="default" nzSize="small" (click)="openMemberDrawer(m)">
+      <span nz-icon nzType="eye"></span>
+    </button>
+    <button *nzSpaceItem nz-button nzDanger nzSize="small" appIconAction="delete" (click)="deleteMember(m)"></button>
+  </nz-space>
+</ng-template>
+<ng-template #rowMemberTpl let-row>{{ memberNameOfRow(row) }}</ng-template>
+<ng-template #feeDescriptionTpl let-value="value"><nz-tag>{{ value }}</nz-tag></ng-template>
+<ng-template #feeActionsTpl let-fee>
+  <nz-space>
+    @if (fee.status === 'active') {
+      <button *nzSpaceItem nz-button nzType="primary" nzSize="small" (click)="openPaymentModal(fee)">
+        <span nz-icon nzType="check"></span>
+        {{ 'ASSOCIATIONS.COLLECT' | translate }}
+      </button>
+      <button *nzSpaceItem nz-button nzDanger nzSize="small" appIconAction="cancel" (click)="cancelFee(fee)"></button>
+    }
+  </nz-space>
+</ng-template>
+<ng-template #courseActionsTpl let-course>
+  <button nz-button nzType="default" nzSize="small" (click)="openEnrolModal(course)">
+    <span nz-icon nzType="plus"></span>
+    {{ 'ASSOCIATIONS.LBL_ISCRIVI' | translate }}
+  </button>
+</ng-template>
+<ng-template #donationKindTpl let-d>
+  <strong>{{ donationKindLabel(d.kind) }}</strong>
+  @if (d.purpose) {
+    <div class="text-muted">{{ d.purpose }}</div>
+  }
+</ng-template>
+<ng-template #donationAmountTpl let-d>
+  <strong>{{ d.amount | money: 'CHF' }}</strong>
+  @if (d.payment_method === 'cash') {
+    <nz-tag nzColor="orange">{{ 'ASSOCIATIONS.LBL_CONTANTI' | translate }}</nz-tag>
+  }
+</ng-template>
+<ng-template #receiptTpl let-d>
+  @if (d.receipts?.length) {
+    <nz-tag nzColor="success">{{ d.receipts?.[0]?.number }}</nz-tag>
+  } @else {
+    <span class="text-muted">{{ 'ASSOCIATIONS.LBL_NON_EMESSA' | translate }}</span>
+  }
+</ng-template>
+<ng-template #donationActionsTpl let-d>
+  @if (!d.receipts?.length) {
+    <button nz-button nzType="default" nzSize="small" (click)="generateReceipt(d)">
+      <span nz-icon nzType="check"></span>
+      {{ 'ASSOCIATIONS.LBL_RICEVUTA_FISCALE' | translate }}
+    </button>
+  }
+</ng-template>
+<ng-template #reimbursementActionsTpl let-r>
+  <nz-space>
+    @if (r.status === 'submitted') {
+      <button *nzSpaceItem nz-button nzType="primary" nzSize="small" appIconAction="confirm" (click)="decideReimb(r, true)"></button>
+      <button *nzSpaceItem nz-button nzDanger nzSize="small" appIconAction="cancel" (click)="decideReimb(r, false)"></button>
+    }
+    @if (r.status === 'approved') {
+      <button *nzSpaceItem nz-button nzType="default" nzSize="small" (click)="payReimb(r)">
+        {{ 'ASSOCIATIONS.LBL_LIQUIDA' | translate }}
+      </button>
+    }
+  </nz-space>
+</ng-template>
+<ng-template #meetingBodyTpl let-m><nz-tag>{{ meetingBodyLabel(m.body) }}</nz-tag></ng-template>
+
+<!-- MODAL: REGISTRA NUOVO SOCIO -->
+<nz-modal appModalActions
+  [nzVisible]="createMemberModalVisible()"
+  [nzTitle]="'ASSOCIATIONS.NEW_MEMBER' | translate"
+  [nzOkLoading]="createMemberSubmitting()"
+  okAction="create"
+  (nzOnCancel)="createMemberModalVisible.set(false)"
+  [nzOkDisabled]="memberForm.invalid"
+  (nzOnOk)="submitCreateMember()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="memberForm" nzLayout="vertical">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else if (control.hasError('endsBeforeStart')) {
+          {{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}
+        } @else if (control.hasError('futureDate')) {
+          {{ 'COMMON.VALIDATION.DATE_NOT_IN_FUTURE' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'ASSOCIATIONS.FIRST_NAME' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input formControlName="first_name" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'ASSOCIATIONS.LAST_NAME' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input formControlName="last_name" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'ASSOCIATIONS.FISCAL_CODE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input formControlName="tax_code" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'COMMON.EMAIL' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input formControlName="email" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'ASSOCIATIONS.JOIN_DATE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input type="date" formControlName="joined_on" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: ASSEGNA QUOTA ASSOCIATIVA -->
+<nz-modal appModalActions
+  [nzVisible]="createFeeModalVisible()"
+  [nzTitle]="'ASSOCIATIONS.ASSIGN_FEE' | translate"
+  [nzOkLoading]="createFeeSubmitting()"
+  okAction="create"
+  (nzOnCancel)="createFeeModalVisible.set(false)"
+  [nzOkDisabled]="feeForm.invalid"
+  (nzOnOk)="submitCreateFee()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="feeForm" nzLayout="vertical">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else if (control.hasError('endsBeforeStart')) {
+          {{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}
+        } @else if (control.hasError('futureDate')) {
+          {{ 'COMMON.VALIDATION.DATE_NOT_IN_FUTURE' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'ASSOCIATIONS.MEMBER' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <nz-select formControlName="member_id">
+            @for (m of members(); track m.id) {
+              <nz-option [nzValue]="m.id" [nzLabel]="m.first_name + ' ' + m.last_name"></nz-option>
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'ASSOCIATIONS.FEE_PLAN' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <nz-select formControlName="fee_plan_id">
+            @for (plan of feePlans(); track plan.id) {
+              <nz-option [nzValue]="plan.id" [nzLabel]="plan.name"></nz-option>
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'ASSOCIATIONS.STARTS_ON' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input type="date" formControlName="starts_on" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'ASSOCIATIONS.ENDS_ON' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input type="date" formControlName="ends_on" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: INCASSA QUOTA -->
+<nz-modal appModalActions
+  [nzVisible]="paymentModalVisible()"
+  [nzTitle]="'ASSOCIATIONS.COLLECT' | translate"
+  [nzOkLoading]="paymentSubmitting()"
+  okAction="confirm"
+  (nzOnCancel)="paymentModalVisible.set(false)"
+  [nzOkDisabled]="!isPaymentAmountValid() || !isPaymentDateValid()"
+  (nzOnOk)="submitPayment()"
+>
+  <ng-container *nzModalContent>
+    <p>{{ 'ASSOCIATIONS.LBL_REGISTRA_INCASSO_QUOTA_PER' | translate }} <strong>{{ memberNameOf(paymentFeeTarget()?.member_id) }}</strong></p>
+    <nz-form-item>
+      <nz-form-label nzRequired>{{ 'ASSOCIATIONS.AMOUNT' | translate }}</nz-form-label>
+      <nz-form-control [nzValidateStatus]="paymentAmountTouched() && !isPaymentAmountValid() ? 'error' : ''" [nzErrorTip]="(paymentAmount().trim() ? 'COMMON.VALIDATION.INVALID_VALUE' : 'COMMON.VALIDATION.REQUIRED') | translate">
+        <input nz-input [ngModel]="paymentAmount()" (ngModelChange)="paymentAmount.set($event)" />
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label nzRequired>{{ 'ASSOCIATIONS.PAYMENT_DATE' | translate }}</nz-form-label>
+      <nz-form-control [nzValidateStatus]="paymentAmountTouched() && !isPaymentDateValid() ? 'error' : ''" [nzErrorTip]="(paymentDate() ? 'COMMON.VALIDATION.DATE_NOT_IN_FUTURE' : 'COMMON.VALIDATION.REQUIRED') | translate">
+        <input nz-input type="date" [ngModel]="paymentDate()" (ngModelChange)="paymentDate.set($event)" />
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label nzRequired>{{ 'ASSOCIATIONS.PAYMENT_METHOD' | translate }}</nz-form-label>
+      <nz-form-control>
+        <nz-select [ngModel]="paymentMethod()" (ngModelChange)="paymentMethod.set($event)">
+          @for (method of paymentMethods; track method) {
+            <nz-option [nzValue]="method" [nzLabel]="'ASSOCIATIONS.PM_' + method.toUpperCase() | translate"></nz-option>
+          }
+        </nz-select>
+      </nz-form-control>
+    </nz-form-item>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: NUOVO CORSO -->
+<nz-modal appModalActions
+  [nzVisible]="createCourseModalVisible()"
+  [nzTitle]="'ASSOCIATIONS.NEW_COURSE' | translate"
+  [nzOkLoading]="createCourseSubmitting()"
+  okAction="create"
+  (nzOnCancel)="createCourseModalVisible.set(false)"
+  [nzOkDisabled]="courseForm.invalid"
+  (nzOnOk)="submitCreateCourse()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="courseForm" nzLayout="vertical">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else if (control.hasError('endsBeforeStart')) {
+          {{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}
+        } @else if (control.hasError('futureDate')) {
+          {{ 'COMMON.VALIDATION.DATE_NOT_IN_FUTURE' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'ASSOCIATIONS.COURSE_TITLE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input formControlName="title" [placeholder]="'ASSOCIATIONS.LBL_ES_PILATES_AND_POSTURALE' | translate" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'ASSOCIATIONS.STARTS_ON' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input type="date" formControlName="starts_on" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'ASSOCIATIONS.ENDS_ON' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input type="date" formControlName="ends_on" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'ASSOCIATIONS.CAPACITY' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <nz-input-number formControlName="capacity" [nzMin]="1"></nz-input-number>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: ISCRIVI SOCIO A CORSO -->
+<nz-modal appModalActions
+  [nzVisible]="enrolModalVisible()"
+  [nzTitle]="'ASSOCIATIONS.ENROL_MEMBER' | translate"
+  [nzOkLoading]="enrolSubmitting()"
+  okAction="create"
+  (nzOnCancel)="enrolModalVisible.set(false)"
+  [nzOkDisabled]="!enrolMemberId()"
+  (nzOnOk)="submitEnrol()"
+>
+  <ng-container *nzModalContent>
+    <p>{{ 'ASSOCIATIONS.LBL_CORSO' | translate }} <strong>{{ enrolCourseTarget()?.title }}</strong></p>
+    <nz-form-item>
+      <nz-form-label nzRequired>{{ 'ASSOCIATIONS.MEMBER' | translate }}</nz-form-label>
+      <nz-form-control [nzValidateStatus]="enrolSubmitted() && !enrolMemberId() ? 'error' : ''" [nzErrorTip]="'COMMON.VALIDATION.REQUIRED' | translate">
+        <nz-select [ngModel]="enrolMemberId()" (ngModelChange)="enrolMemberId.set($event)">
+          @for (m of members(); track m.id) {
+            <nz-option [nzValue]="m.id" [nzLabel]="m.first_name + ' ' + m.last_name"></nz-option>
+          }
+        </nz-select>
+      </nz-form-control>
+    </nz-form-item>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: NUOVA DONAZIONE -->
+<nz-modal appModalActions
+  [nzVisible]="createDonationModalVisible()"
+  [nzTitle]="'ASSOCIATIONS.NEW_DONATION' | translate"
+  [nzOkLoading]="createDonationSubmitting()"
+  okAction="create"
+  (nzOnCancel)="createDonationModalVisible.set(false)"
+  [nzOkDisabled]="donationForm.invalid"
+  (nzOnOk)="submitCreateDonation()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="donationForm" nzLayout="vertical">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else if (control.hasError('endsBeforeStart')) {
+          {{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}
+        } @else if (control.hasError('futureDate')) {
+          {{ 'COMMON.VALIDATION.DATE_NOT_IN_FUTURE' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'ASSOCIATIONS.DONATION_KIND' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <nz-select formControlName="kind">
+            <nz-option nzValue="money" [nzLabel]="'ASSOCIATIONS.KIND_MONEY' | translate"></nz-option>
+            <nz-option nzValue="in_kind" [nzLabel]="'ASSOCIATIONS.KIND_IN_KIND' | translate"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'ASSOCIATIONS.AMOUNT' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input formControlName="amount" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'ASSOCIATIONS.DATE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input type="date" formControlName="received_on" />
+        </nz-form-control>
+      </nz-form-item>
+
+      @if (donationForm.controls.kind.value === 'money') {
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'ASSOCIATIONS.PAYMENT_METHOD' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-select formControlName="payment_method">
+              <nz-option nzValue="cash" [nzLabel]="'ASSOCIATIONS.PM_CASH' | translate"></nz-option>
+              <nz-option nzValue="bank" [nzLabel]="'ASSOCIATIONS.PM_BANK' | translate"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      } @else {
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'ASSOCIATIONS.IN_KIND_DESCRIPTION' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <input nz-input formControlName="in_kind_description" />
+          </nz-form-control>
+        </nz-form-item>
+      }
+
+      <nz-form-item>
+        <nz-form-label>{{ 'ASSOCIATIONS.PURPOSE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input formControlName="purpose" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: NUOVO RIMBORSO SPESE -->
+<nz-modal appModalActions
+  [nzVisible]="createReimbModalVisible()"
+  [nzTitle]="'ASSOCIATIONS.NEW_REIMBURSEMENT' | translate"
+  [nzOkLoading]="reimbSubmitting()"
+  okAction="create"
+  (nzOnCancel)="createReimbModalVisible.set(false)"
+  [nzOkDisabled]="reimbForm.invalid"
+  (nzOnOk)="submitCreateReimb()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="reimbForm" nzLayout="vertical">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else if (control.hasError('endsBeforeStart')) {
+          {{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}
+        } @else if (control.hasError('futureDate')) {
+          {{ 'COMMON.VALIDATION.DATE_NOT_IN_FUTURE' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'ASSOCIATIONS.MEMBER' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <nz-select formControlName="member_id" nzShowSearch>
+            @for (v of volunteers(); track v.id) {
+              <nz-option [nzValue]="v.member_id" [nzLabel]="volunteerNameOf(v)"></nz-option>
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'ASSOCIATIONS.REIMBURSEMENT_KIND' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <nz-select formControlName="kind">
+            <nz-option nzValue="expense" [nzLabel]="'ASSOCIATIONS.KIND_EXPENSE' | translate"></nz-option>
+            <nz-option nzValue="mileage" [nzLabel]="'ASSOCIATIONS.KIND_MILEAGE' | translate"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'ASSOCIATIONS.DATE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input type="date" formControlName="incurred_on" />
+        </nz-form-control>
+      </nz-form-item>
+      @if (reimbForm.controls.kind.value === 'expense') {
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'ASSOCIATIONS.AMOUNT' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <input nz-input formControlName="amount" />
+          </nz-form-control>
+        </nz-form-item>
+      } @else {
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'ASSOCIATIONS.VEHICLE' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <input nz-input formControlName="vehicle" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'ASSOCIATIONS.PLATE' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <input nz-input formControlName="plate" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'ASSOCIATIONS.DISTANCE_KM' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <input nz-input formControlName="distance_km" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'ASSOCIATIONS.UNIT_PRICE' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <input nz-input formControlName="unit_price" />
+          </nz-form-control>
+        </nz-form-item>
+      }
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'COMMON.DESCRIPTION' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input formControlName="description" [placeholder]="'ASSOCIATIONS.LBL_ES_SPESE_VIVE_CARBURANTE_TRASFERTA' | translate" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: NUOVA ASSEMBLEA -->
+<nz-modal appModalActions
+  [nzVisible]="createMeetingModalVisible()"
+  [nzTitle]="'ASSOCIATIONS.NEW_MEETING' | translate"
+  [nzOkLoading]="meetingSubmitting()"
+  okAction="create"
+  (nzOnCancel)="createMeetingModalVisible.set(false)"
+  [nzOkDisabled]="meetingForm.invalid"
+  (nzOnOk)="submitCreateMeeting()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="meetingForm" nzLayout="vertical">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else if (control.hasError('endsBeforeStart')) {
+          {{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}
+        } @else if (control.hasError('futureDate')) {
+          {{ 'COMMON.VALIDATION.DATE_NOT_IN_FUTURE' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'ASSOCIATIONS.MEETING_TITLE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input formControlName="title" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'ASSOCIATIONS.MEETING_BODY' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <nz-select formControlName="body">
+            <nz-option nzValue="assembly" [nzLabel]="'ASSOCIATIONS.BODY_ASSEMBLY' | translate"></nz-option>
+            <nz-option nzValue="board" [nzLabel]="'ASSOCIATIONS.BODY_BOARD' | translate"></nz-option>
+            <nz-option nzValue="other" [nzLabel]="'ASSOCIATIONS.BODY_OTHER' | translate"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      @if (meetingForm.controls.body.value === 'other') {
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'ASSOCIATIONS.BODY_NAME' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <input nz-input formControlName="body_name" />
+          </nz-form-control>
+        </nz-form-item>
+      }
+      <nz-form-item>
+        <nz-form-label>{{ 'ASSOCIATIONS.SCHEDULED_AT' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input type="datetime-local" formControlName="scheduled_at" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>{{ 'ASSOCIATIONS.SECOND_CALL_AT' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input type="datetime-local" formControlName="second_call_at" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>{{ 'ASSOCIATIONS.LOCATION' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input formControlName="location" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- DRAWER: DETTAGLIO SOCIO -->
+<nz-modal appModalActions
+  [nzVisible]="memberDrawerVisible()"
+  [nzWidth]="720"
+  [nzFooter]="null"
+  [nzTitle]="selectedMember()?.first_name + ' ' + selectedMember()?.last_name"
+  (nzOnCancel)="memberDrawerVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    @if (selectedMember(); as m) {
+      <nz-descriptions [nzColumn]="1" nzBordered nzSize="small" class="mb-4">
+        <nz-descriptions-item [nzTitle]="'ASSOCIATIONS.MEMBER_NO' | translate">
+          <strong>{{ m.member_number || '-' }}</strong>
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'ASSOCIATIONS.FISCAL_CODE' | translate">
+          <code>{{ m.tax_code || '-' }}</code>
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'COMMON.STATUS' | translate">
+          <nz-tag [nzColor]="getStatusColor(m.status)">{{ m.status | uppercase }}</nz-tag>
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'ASSOCIATIONS.MED_CERTIFICATE' | translate">
+          @if (m.has_medical_certificate) {
+            <nz-tag nzColor="success">Valido fino al {{ m.medical_certificate_expiry | date: 'dd/MM/yyyy' }}</nz-tag>
+          } @else {
+            <nz-tag nzColor="error">{{ 'ASSOCIATIONS.LBL_CERTIFICATO_ASSENTE_O_SCADUTO' | translate }}</nz-tag>
+          }
+        </nz-descriptions-item>
+      </nz-descriptions>
+
+      @if (memberFeeStanding(); as fs) {
+        <div class="fee-standing-box" [class.in-good-standing]="fs.is_in_good_standing">
+          <strong>
+            {{ fs.is_in_good_standing ? 'In regola con le quote associative' : 'Quote in sospeso da regolarizzare' }}
+          </strong>
+          <div>{{ 'ASSOCIATIONS.LBL_IMPORTO_DOVUTO' | translate }} <strong>{{ fs.outstanding_amount | money: 'CHF' }}</strong></div>
+        </div>
+      }
+    }
+  </ng-container>
+</nz-modal>

@@ -1,0 +1,306 @@
+<app-page-header [title]="(order()?.work_order_number ?? '') + (order() ? ' - ' + order()?.title : '')" [subtitle]="'FSM.WO.DETAIL_SUBTITLE' | translate">
+  <div header-actions class="wod-actions">
+    <a nz-button [routerLink]="['/field-service/work-orders']">{{ 'FSM.WO.BACK' | translate }}</a>
+    @if (canCompleteAndBill()) {
+      <button nz-button type="button" (click)="openSettle()" data-testid="complete-and-bill">{{ 'FSM.WO.COMPLETE_AND_BILL' | translate }}</button>
+    }
+    @if (canWrite() && nextStep(); as step) {
+      <button nz-button nzType="primary" type="button" [nzLoading]="acting()" (click)="advance()" data-testid="advance">
+        {{ step === 'en_route' ? ('FSM.WO.START_JOURNEY' | translate) : ('FSM.WO.ARRIVE_ON_SITE' | translate) }}
+      </button>
+    }
+  </div>
+</app-page-header>
+
+@if (loadError()) {
+  <nz-alert class="wod-alert" nzType="error" nzShowIcon [nzMessage]="'FSM.WO.LOAD_ERROR' | translate" />
+}
+
+<nz-spin [nzSpinning]="loading()">
+  @if (order(); as wo) {
+    <nz-card class="wod-card" [nzTitle]="'FSM.WO.SUMMARY' | translate">
+      <nz-descriptions nzBordered nzSize="small" [nzColumn]="{ xs: 1, md: 2 }">
+        <nz-descriptions-item [nzTitle]="'FSM.WO.STATUS' | translate">
+          <nz-tag [nzColor]="tagColors[wo.status] ?? 'default'" data-testid="wo-status">{{ 'FSM.STATUS.' + wo.status.toUpperCase() | translate }}</nz-tag>
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'FSM.WO.TYPE' | translate">{{ 'FSM.TYPE.' + wo.work_order_type.toUpperCase() | translate }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'FSM.WO.PRIORITY' | translate">{{ 'FSM.PRIORITY.' + wo.priority.toUpperCase() | translate }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'FSM.WO.SCHEDULED' | translate">
+          {{ wo.scheduled_start ? wo.scheduled_start.slice(0, 16).replace('T', ' ') : '-' }}
+          @if (wo.scheduled_end) {
+            &rarr; {{ wo.scheduled_end.slice(0, 16).replace('T', ' ') }}
+          }
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'FSM.WO.SITE_ADDRESS' | translate">{{ wo.site?.address ?? '-' }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'FSM.WO.REQUIRED_SKILLS' | translate">
+          @for (skill of wo.required_skills; track skill) {
+            <nz-tag>{{ skill }}</nz-tag>
+          } @empty {
+            -
+          }
+        </nz-descriptions-item>
+        @if (wo.problem_description) {
+          <nz-descriptions-item [nzTitle]="'FSM.WO.PROBLEM' | translate" [nzSpan]="2">{{ wo.problem_description }}</nz-descriptions-item>
+        }
+      </nz-descriptions>
+    </nz-card>
+
+    <nz-card class="wod-card" [nzTitle]="'FSM.WO.PARTS' | translate">
+      <nz-table nzSize="small" [nzData]="wo.parts" [nzShowPagination]="false" data-testid="parts-table">
+        <thead>
+          <tr>
+            <th>{{ 'FSM.WO.PART' | translate }}</th>
+            <th>{{ 'FSM.WO.QUANTITY' | translate }}</th>
+            <th>{{ 'FSM.WO.UNIT_PRICE' | translate }}</th>
+            <th>{{ 'FSM.WO.LINE_TOTAL' | translate }}</th>
+            <th>{{ 'FSM.WO.COVERAGE' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (part of wo.parts; track part.id) {
+            <tr [attr.data-covered]="part.covered">
+              <td>{{ part.description || part.product_id }}</td>
+              <td>{{ part.quantity }}</td>
+              <td>{{ part.unit_price | money: currency() }}</td>
+              <td>{{ lineTotal(part) | money: currency() }}</td>
+              <td>
+                @if (part.covered) {
+                  <nz-tag nzColor="green" data-testid="covered-tag">{{ 'FSM.WO.COVERED' | translate }}</nz-tag>
+                } @else {
+                  <nz-tag nzColor="orange" data-testid="chargeable-tag">{{ 'FSM.WO.CHARGEABLE' | translate }}</nz-tag>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5">{{ 'FSM.WO.NO_PARTS' | translate }}</td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+      <dl class="wod-totals">
+        <dt>{{ 'FSM.WO.CHARGEABLE_TOTAL' | translate }}</dt>
+        <dd data-testid="chargeable-total">{{ chargeableTotal() | money: currency() }} ({{ chargeableParts().length }})</dd>
+        <dt>{{ 'FSM.WO.COVERED_LINES' | translate }}</dt>
+        <dd data-testid="covered-count">{{ coveredParts().length }}</dd>
+      </dl>
+
+      @if (canRecordParts()) {
+        <form nz-form nzLayout="inline" class="wod-part-form" [formGroup]="partForm" (ngSubmit)="recordPart()">
+          <nz-form-item class="wod-part-product">
+            <nz-form-label nzFor="wod-part-product">{{ 'FSM.WO.PRODUCT' | translate }}</nz-form-label>
+            <nz-form-control>
+              <app-fsm-product-select inputId="wod-part-product" formControlName="product_id" />
+            </nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label nzFor="wod-part-qty">{{ 'FSM.WO.QUANTITY' | translate }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number nzId="wod-part-qty" formControlName="quantity" [nzMin]="0.01" />
+            </nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label nzFor="wod-part-price">{{ 'FSM.WO.UNIT_PRICE' | translate }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number nzId="wod-part-price" formControlName="unit_price" [nzMin]="0" [nzStep]="0.01" />
+            </nz-form-control>
+          </nz-form-item>
+          <button nz-button nzType="primary" type="submit" [nzLoading]="partSaving()" [disabled]="partForm.invalid">
+            {{ 'FSM.WO.RECORD_PART' | translate }}
+          </button>
+        </form>
+        @if (partError()) {
+          <nz-alert class="wod-alert" nzType="error" nzShowIcon [nzMessage]="partError()" />
+        }
+      }
+    </nz-card>
+
+    <nz-card class="wod-card" [nzTitle]="'FSM.REPORT.TITLE' | translate" [nzExtra]="reportActions">
+      <ng-template #reportActions>
+        @if (canSign()) {
+          <button nz-button nzType="primary" type="button" (click)="openSign()" data-testid="sign-report">{{ 'FSM.REPORT.SIGN_OPEN' | translate }}</button>
+        }
+        @if (report(); as r) {
+          @if (r.has_pdf) {
+            <button nz-button type="button" (click)="downloadPdf()" data-testid="download-pdf">{{ 'FSM.REPORT.DOWNLOAD_PDF' | translate }}</button>
+          }
+          @if (canInvoice()) {
+            <button nz-button nzType="primary" type="button" (click)="openInvoice()" data-testid="convert-invoice">{{ 'FSM.REPORT.CONVERT_INVOICE' | translate }}</button>
+          }
+        }
+      </ng-template>
+
+      @if (report(); as r) {
+        <nz-descriptions nzBordered nzSize="small" [nzColumn]="{ xs: 1, md: 2 }">
+          <nz-descriptions-item [nzTitle]="'FSM.REPORT.NUMBER' | translate">{{ r.report_number }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'FSM.REPORT.SIGNED_AT' | translate">{{ r.signed_at.slice(0, 16).replace('T', ' ') }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'FSM.REPORT.SIGNER' | translate">
+            {{ r.customer_signer_name }}@if (r.customer_signer_role) { ({{ r.customer_signer_role }}) }
+          </nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'FSM.REPORT.SEAL' | translate">
+            @if (r.signature_intact) {
+              <nz-tag nzColor="green" data-testid="seal-ok">{{ 'FSM.REPORT.SEAL_OK' | translate }}</nz-tag>
+            } @else {
+              <nz-tag nzColor="red" data-testid="seal-broken">{{ 'FSM.REPORT.SEAL_BROKEN' | translate }}</nz-tag>
+            }
+          </nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'FSM.REPORT.LABOR_HOURS' | translate">{{ r.labor_hours }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'FSM.REPORT.TRAVEL' | translate">{{ r.travel_hours }} h / {{ r.travel_km }} km</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'FSM.REPORT.METERS' | translate">
+            {{ r.meter_reading_hours ?? '-' }} h / {{ r.meter_reading_cycles ?? '-' }} {{ 'FSM.REPORT.CYCLES' | translate }}
+          </nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'FSM.REPORT.CALLOUT_FEE' | translate">{{ (r.apply_callout_fee ? 'COMMON.YES' : 'COMMON.NO') | translate }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'FSM.REPORT.SUMMARY' | translate" [nzSpan]="2">{{ r.work_performed_summary }}</nz-descriptions-item>
+        </nz-descriptions>
+
+        @if (r.checklist.length > 0) {
+          <h3 class="wod-sub">{{ 'FSM.REPORT.CHECKLIST' | translate }}</h3>
+          <nz-table nzSize="small" [nzData]="r.checklist" [nzShowPagination]="false">
+            <tbody>
+              @for (c of r.checklist; track $index) {
+                <tr>
+                  <td>{{ c.item }}</td>
+                  <td>
+                    <nz-tag [nzColor]="resultColors[c.result]">{{ 'FSM.REPORT.RESULT_' + c.result.toUpperCase() | translate }}</nz-tag>
+                  </td>
+                  <td>{{ c.notes }}</td>
+                </tr>
+              }
+            </tbody>
+          </nz-table>
+        }
+
+        <h3 class="wod-sub">{{ 'FSM.REPORT.BILLING' | translate }}</h3>
+        <nz-table nzSize="small" [nzData]="r.billing.lines" [nzShowPagination]="false" data-testid="billing-table">
+          <thead>
+            <tr>
+              <th>{{ 'FSM.REPORT.LINE' | translate }}</th>
+              <th>{{ 'FSM.WO.QUANTITY' | translate }}</th>
+              <th>{{ 'FSM.REPORT.LIST_AMOUNT' | translate }}</th>
+              <th>{{ 'FSM.REPORT.CHARGED' | translate }}</th>
+              <th>{{ 'FSM.WO.COVERAGE' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (line of r.billing.lines; track $index) {
+              <tr>
+                <td>{{ 'FSM.REPORT.KIND_' + line.kind.toUpperCase() | translate }}: {{ line.description }}</td>
+                <td>{{ line.quantity }}</td>
+                <td>{{ line.list_amount | money: r.billing.currency }}</td>
+                <td>{{ line.charged_amount | money: r.billing.currency }}</td>
+                <td>
+                  @if (line.covered) {
+                    <nz-tag nzColor="green">{{ 'FSM.WO.COVERED' | translate }}</nz-tag>
+                  } @else {
+                    <nz-tag nzColor="orange">{{ 'FSM.WO.CHARGEABLE' | translate }}</nz-tag>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+        <dl class="wod-totals">
+          <dt>{{ 'FSM.REPORT.BILLABLE_TOTAL' | translate }}</dt>
+          <dd data-testid="billable-total">{{ r.billing.billable_total | money: r.billing.currency }}</dd>
+          <dt>{{ 'FSM.REPORT.COVERED_TOTAL' | translate }}</dt>
+          <dd>{{ r.billing.covered_total | money: r.billing.currency }}</dd>
+        </dl>
+
+        @if (r.invoice_id) {
+          <nz-alert nzType="success" nzShowIcon data-testid="invoiced-alert" [nzMessage]="'FSM.REPORT.ALREADY_INVOICED' | translate" />
+        } @else if (billableTotal() <= 0) {
+          <nz-alert nzType="info" nzShowIcon [nzMessage]="'FSM.REPORT.NOTHING_TO_INVOICE' | translate" />
+        }
+
+        @if (signatureSrc(); as src) {
+          <h3 class="wod-sub">{{ 'FSM.REPORT.SIGNATURE' | translate }}</h3>
+          <img class="wod-signature" [src]="src" [alt]="'FSM.REPORT.SIGNATURE_ALT' | translate: { name: r.customer_signer_name }" />
+        }
+      } @else {
+        <p data-testid="no-report">{{ 'FSM.REPORT.NONE' | translate }}</p>
+      }
+    </nz-card>
+  }
+</nz-spin>
+
+<nz-modal
+  [nzVisible]="invoiceOpen()"
+  [nzTitle]="'FSM.REPORT.CONVERT_INVOICE' | translate"
+  [nzOkText]="'FSM.REPORT.CONVERT_CONFIRM' | translate"
+  [nzCancelText]="'COMMON.CANCEL' | translate"
+  [nzOkLoading]="invoiceSaving()"
+  [nzOkDisabled]="invoiceForm.invalid"
+  [nzMaskClosable]="false"
+  (nzOnOk)="convertToInvoice()"
+  (nzOnCancel)="invoiceOpen.set(false)"
+>
+  <ng-container *nzModalContent>
+    <p>{{ 'FSM.REPORT.CONVERT_HINT' | translate }}</p>
+    @if (invoiceError()) {
+      <nz-alert class="wod-alert" nzType="error" nzShowIcon [nzMessage]="invoiceError()" />
+    }
+    <form nz-form nzLayout="vertical" [formGroup]="invoiceForm">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="wod-tax">{{ 'FSM.REPORT.TAX_RATE' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-input-number nzId="wod-tax" formControlName="tax_rate" [nzMin]="0" [nzMax]="100" [nzStep]="0.5" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<nz-modal
+  [nzVisible]="settleOpen()"
+  [nzTitle]="'FSM.WO.COMPLETE_AND_BILL' | translate"
+  [nzOkText]="'FSM.WO.COMPLETE_AND_BILL_CONFIRM' | translate"
+  [nzCancelText]="'COMMON.CANCEL' | translate"
+  [nzOkLoading]="settleSaving()"
+  [nzOkDisabled]="settleForm.invalid"
+  [nzMaskClosable]="false"
+  (nzOnOk)="completeAndBill()"
+  (nzOnCancel)="settleOpen.set(false)"
+>
+  <ng-container *nzModalContent>
+    <p>{{ 'FSM.WO.COMPLETE_AND_BILL_HINT' | translate }}</p>
+    @if (settleError()) {
+      <nz-alert class="wod-alert" nzType="error" nzShowIcon [nzMessage]="settleError()" />
+    }
+    <form nz-form nzLayout="vertical" [formGroup]="settleForm">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="wod-settle-tax">{{ 'FSM.REPORT.TAX_RATE' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-input-number nzId="wod-settle-tax" formControlName="tax_rate" [nzMin]="0" [nzMax]="100" [nzStep]="0.5" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="wod-settle-signer">{{ 'FSM.WO.SIGNED_BY' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input id="wod-settle-signer" formControlName="signed_by_customer_name" maxlength="150" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="wod-settle-notes">{{ 'FSM.WO.COMPLETION_NOTES' | translate }}</nz-form-label>
+        <nz-form-control>
+          <textarea nz-input id="wod-settle-notes" formControlName="completion_notes" rows="3" maxlength="5000"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="wod-settle-resolution">{{ 'FSM.WO.RESOLUTION_SUMMARY' | translate }}</nz-form-label>
+        <nz-form-control>
+          <textarea nz-input id="wod-settle-resolution" formControlName="resolution_summary" rows="3" maxlength="5000"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="wod-settle-due">{{ 'FSM.WO.DUE_DATE' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input id="wod-settle-due" type="date" formControlName="due_date" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+@if (order(); as wo) {
+  <app-fsm-sign-report-modal [(open)]="signOpen" [workOrderId]="wo.id" (signed)="onSigned()" />
+}

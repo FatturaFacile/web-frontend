@@ -1,0 +1,75 @@
+:host {
+  display: block;
+}
+
+.strong {
+  font-weight: 600;
+}
+
+.small {
+  font-size: var(--font-size-xs);
+}
+
+.text-info {
+  color: var(--status-info);
+}
+
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.cell-actions {
+  text-align: center;
+  white-space: nowrap;
+}
+
+.kpi-value {
+  font-size: var(--font-size-2xl);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.empty-state {
+  padding: var(--space-6);
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.line-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+
+  > div {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .line-description {
+    flex: 2;
+  }
+}
+
+.add-line {
+  margin-top: var(--space-2);
+}
+
+.info-box {
+  margin-bottom: var(--space-4);
+  padding: var(--space-3);
+  background: var(--bg-card-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+}
+
+.card-title {
+  margin-bottom: var(--space-1);
+  font-size: var(--font-size-lg);
+}
+
+.card-customer {
+  margin-bottom: var(--space-2);
+  font-size: var(--font-size-sm);
+}

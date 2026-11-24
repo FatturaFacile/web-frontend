@@ -1,0 +1,223 @@
+<app-page-header
+  [title]="'settings.title' | translate"
+  [subtitle]="'settings.subtitle' | translate"
+/>
+
+<nz-card>
+  <nz-tabs [(nzSelectedIndex)]="selectedTab" (nzSelectedIndexChange)="onTabChange($event)">
+    <!-- TAB 1: DATI TENANT -->
+    <nz-tab [nzTitle]="'settings.tabs.orgData' | translate">
+      <form nz-form nzLayout="vertical" [formGroup]="tenantForm" (ngSubmit)="saveTenantSettings()">
+        <div class="form-grid">
+          <nz-form-item>
+            <nz-form-label nzRequired nzFor="name">{{ 'settings.form.companyName' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="nameTip">
+              <input nz-input id="name" formControlName="name" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label nzFor="legal_name">{{ 'settings.form.legalName' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="invalidTip">
+              <input nz-input id="legal_name" formControlName="legal_name" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label nzFor="fiscal_code">{{ 'settings.form.taxId' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="invalidTip">
+              <input nz-input id="fiscal_code" formControlName="fiscal_code" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label nzFor="vat_number">{{ 'settings.form.vatNumber' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="invalidTip">
+              <input nz-input id="vat_number" formControlName="vat_number" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label nzFor="uid_number">{{ 'settings.form.uidNumber' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="invalidTip">
+              <input nz-input id="uid_number" formControlName="uid_number" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label nzFor="default_currency">{{ 'settings.form.currency' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="invalidTip">
+              <input nz-input id="default_currency" formControlName="default_currency" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label nzFor="iban">{{ 'settings.form.iban' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="invalidTip">
+              <input nz-input id="iban" formControlName="iban" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label nzFor="qr_iban">{{ 'settings.form.qrIban' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="invalidTip">
+              <input nz-input id="qr_iban" formControlName="qr_iban" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label nzFor="qrr_prefix">{{ 'settings.form.qrrPrefix' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="invalidTip">
+              <input nz-input id="qrr_prefix" formControlName="qrr_prefix" maxlength="6" inputmode="numeric" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label nzFor="default_reference_type">{{ 'settings.form.defaultReferenceType' | translate }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="default_reference_type" formControlName="default_reference_type">
+                <nz-option nzValue="QRR" [nzLabel]="'settings.options.refQrr' | translate" />
+                <nz-option nzValue="SCOR" [nzLabel]="'settings.options.refScor' | translate" />
+                <nz-option nzValue="NON" [nzLabel]="'settings.options.refNon' | translate" />
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label nzFor="qr_bill_perforation">{{ 'settings.form.perforation' | translate }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="qr_bill_perforation" formControlName="qr_bill_perforation">
+                <nz-option nzValue="NONE" [nzLabel]="'settings.options.perfNone' | translate" />
+                <nz-option nzValue="DASHED_LINE" [nzLabel]="'settings.options.perfDashed' | translate" />
+                <nz-option nzValue="DASHED_LINE_WITH_SCISSORS" [nzLabel]="'settings.options.perfDashedScissors' | translate" />
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label nzFor="sdi_code">{{ 'settings.form.sdiCode' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="invalidTip">
+              <input nz-input id="sdi_code" formControlName="sdi_code" maxlength="7" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label nzFor="pec_email">{{ 'settings.form.pecEmail' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="invalidTip">
+              <input nz-input id="pec_email" formControlName="pec_email" type="email" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label nzFor="customs_approved_exporter_number">{{ 'settings.form.customsApprovedExporterNumber' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="invalidTip">
+              <input nz-input id="customs_approved_exporter_number" formControlName="customs_approved_exporter_number" maxlength="50" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label nzFor="rex_exporter_number">{{ 'settings.form.rexExporterNumber' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="invalidTip">
+              <input nz-input id="rex_exporter_number" formControlName="rex_exporter_number" maxlength="50" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div class="form-actions">
+          <button
+            nz-button
+            nzType="primary"
+            type="submit"
+            appIconAction="save"
+            [nzLoading]="isSavingTenant()"
+            [disabled]="tenantForm.invalid"
+          ></button>
+        </div>
+      </form>
+    </nz-tab>
+
+    <!-- TAB 2: FILIALI -->
+    <nz-tab [nzTitle]="'settings.tabs.branches' | translate">
+      <app-base-table [grid]="branchGrid" [columns]="branchColumns()" [scroll]="{ x: '800px' }" [exportFileName]="'branches'" />
+    </nz-tab>
+
+    <!-- TAB 3: UTENTI -->
+    <nz-tab [nzTitle]="'settings.tabs.users' | translate">
+      <app-base-table
+        [data]="users()"
+        [columns]="userColumns()"
+        [loading]="loadingUsers()"
+        [total]="users().length"
+        [scroll]="{ x: '900px' }"
+      />
+    </nz-tab>
+
+    <!-- TAB 4: RUOLI & PERMESSI -->
+    <nz-tab [nzTitle]="'settings.tabs.roles' | translate">
+      <app-base-table
+        [data]="roles()"
+        [columns]="roleColumns()"
+        [loading]="loadingRoles()"
+        [total]="roles().length"
+        [scroll]="{ x: '900px' }"
+      />
+    </nz-tab>
+
+    <!-- TAB 5: AUDIT LOG -->
+    <nz-tab [nzTitle]="'settings.tabs.audit' | translate">
+      <div class="row-end mb-3">
+        <button
+          nz-button
+          nzType="default"
+          (click)="syncExchangeRates()"
+          [nzLoading]="isSyncingRates()"
+        >
+          <nz-icon nzType="sync" /> {{ 'settings.messages.ratesSynced' | translate }}
+        </button>
+      </div>
+      <app-base-table [grid]="auditGrid" [columns]="auditColumns()" [scroll]="{ x: '1000px' }" [exportFileName]="'audit-log'" />
+    </nz-tab>
+
+    <!-- TAB 6: FISCALE (issue #286), loaded when first opened -->
+    <nz-tab [nzTitle]="'SETTINGS.FISCAL.TAB' | translate">
+      <ng-template nz-tab>
+        <app-fiscal-settings />
+      </ng-template>
+    </nz-tab>
+  </nz-tabs>
+</nz-card>
+
+<!-- Templates -->
+<ng-template #nameTip let-control>
+  @if (control.hasError('maxlength')) {
+    {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+  } @else {
+    {{ 'validation.nameRequired' | translate }}
+  }
+</ng-template>
+
+<ng-template #invalidTip let-control>
+  @if (control.hasError('email')) {
+    {{ 'COMMON.VALIDATION.INVALID_EMAIL' | translate }}
+  } @else {
+    {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+  }
+</ng-template>
+
+<ng-template #dateTpl let-val="value">
+  {{ val | date: "dd.MM.yyyy HH:mm" }}
+</ng-template>
+
+<ng-template #activeTpl let-val="value">
+  <nz-tag [nzColor]="val ? 'success' : 'default'">
+    {{ (val ? 'common.status.active' : 'common.status.inactive') | translate }}
+  </nz-tag>
+</ng-template>
+
+<ng-template #primaryTpl let-val="value">
+  <nz-tag [nzColor]="val ? 'blue' : 'default'">
+    {{ (val ? 'COLUMNS.SEDE_CENTRALE' : 'COLUMNS.FILIALE') | translate }}
+  </nz-tag>
+</ng-template>
+
+<ng-template #auditUserTpl let-row>{{ row.user?.name ?? '-' }}</ng-template>

@@ -1,0 +1,397 @@
+<app-page-header
+  [title]="'treasury.title' | translate"
+  [subtitle]="'treasury.subtitle' | translate"
+/>
+
+<!-- Header Stats -->
+<div nz-row [nzGutter]="16" class="stats-row">
+  <div nz-col [nzSpan]="8">
+    <nz-card>
+      <nz-statistic [nzValue]="totalEurBalance()" [nzPrefix]="'€'" [nzTitle]="'treasury.stats.eurLiquidity' | translate" />
+    </nz-card>
+  </div>
+  <div nz-col [nzSpan]="8">
+    <nz-card>
+      <nz-statistic
+        [nzValue]="totalChfBalance()"
+        [nzPrefix]="'CHF'"
+        [nzTitle]="'treasury.stats.chfLiquidity' | translate"
+      />
+    </nz-card>
+  </div>
+  <div nz-col [nzSpan]="8">
+    <nz-card>
+      <nz-statistic [nzValue]="unreconciledCount()" [nzTitle]="'treasury.stats.toReconcile' | translate" />
+    </nz-card>
+  </div>
+</div>
+
+<nz-card>
+  <nz-tabs [(nzSelectedIndex)]="selectedTab">
+    <!-- TAB 1: MOVIMENTI BANCARI -->
+    <nz-tab [nzTitle]="'treasury.tabs.bankMovements' | translate">
+      <div class="tab-toolbar">
+        <input
+          class="search-input"
+          nz-input
+          type="search"
+         
+          [placeholder]="'treasury.searchPlaceholder' | translate"
+          [ngModel]="txGrid.filterParams().search ?? ''"
+          (ngModelChange)="onSearchChange($event)"
+        />
+
+        <span class="spacer"></span>
+        <button
+          nz-button
+          nzType="default"
+          type="button"
+          (click)="triggerAutoMatch()"
+          [nzLoading]="isReconciling()"
+        >
+          <nz-icon nzType="sync" /> {{ 'treasury.actions.autoReconcile' | translate }}
+        </button>
+        <button data-tour="reconcile" nz-button nzType="primary" type="button" (click)="isImportModalVisible.set(true)">
+          <nz-icon nzType="upload" /> {{ 'treasury.modal.title' | translate }}
+        </button>
+      </div>
+
+      <app-base-table [grid]="txGrid" [columns]="txColumns()" exportFileName="bank-transactions" />
+    </nz-tab>
+
+    <!-- TAB 2: CONTI BANCARI -->
+    <nz-tab [nzTitle]="'treasury.tabs.bankAccounts' | translate">
+      <div class="tab-intro">
+        <span class="text-muted">{{ 'treasury.lblRapportiBancariAttiviIbanVerificatiE' | translate }}</span>
+        <button nz-button nzType="primary" appIconAction="create" (click)="openAccountModal()"></button>
+      </div>
+
+      <app-base-table
+        [grid]="accountsGrid"
+        [columns]="accountColumns()"
+        [scroll]="{ x: '900px' }"
+        [actionsTemplate]="accountActionsTpl"
+      />
+
+      <ng-template #accountActionsTpl let-acc>
+        <button nz-button nzType="link" nzDanger nzSize="small" appIconAction="delete" (click)="deleteAccount(acc)"></button>
+      </ng-template>
+    </nz-tab>
+
+    <!-- TAB 3: ESTRATTI CONTO IMPORTATI -->
+    <nz-tab [nzTitle]="'treasury.tabs.statements' | translate">
+      <app-base-table
+        [grid]="statementsGrid"
+        [columns]="statementColumns()"
+        [scroll]="{ x: '1000px' }"
+        [actionsTemplate]="statementActionsTpl"
+      />
+
+      <ng-template #statementActionsTpl let-st>
+        <button
+          nz-button
+          nzType="link"
+          nzSize="small"
+          type="button"
+          (click)="reconcileStatement(st)"
+        >
+          {{ 'treasury.actions.reconcile' | translate }}
+        </button>
+      </ng-template>
+    </nz-tab>
+
+    <!-- TAB 4: DISTINTE DI PAGAMENTO (SEPA / PAIN.001 / RIBA) -->
+    <nz-tab [nzTitle]="'treasury.lblDistinteDiPagamentoBonificiAndRiba' | translate">
+      <div class="tab-intro">
+        <span class="text-muted">{{ 'treasury.lblDistinteDispositiveSepaCreditTransferPain' | translate }}</span>
+        <button nz-button nzType="primary" appIconAction="create" (click)="openBatchModal()"></button>
+      </div>
+
+      <app-base-table
+        [grid]="batchesGrid"
+        [columns]="batchColumns()"
+        [scroll]="{ x: '800px' }"
+        [actionsTemplate]="batchActionsTpl"
+        exportFileName="payment-batches"
+      />
+
+      <ng-template #batchActionsTpl let-b>
+        <div class="row-actions">
+          @if (b.status === 'draft') {
+            <button nz-button nzSize="small" nzType="default" (click)="submitBatchApproval(b)">
+              {{ 'treasury.lblInviaAppr' | translate }}
+            </button>
+          }
+          @if (b.status === 'pending_approval') {
+            <button nz-button nzSize="small" nzType="primary" (click)="approveBatch(b)">
+              {{ 'treasury.lblApprova' | translate }}
+            </button>
+          }
+          @if (b.status === 'approved') {
+            <button nz-button nzSize="small" nzType="default" (click)="exportBatchXml(b)">
+              <nz-icon nzType="upload" /> {{ 'treasury.lblGeneraXml' | translate }}
+            </button>
+          }
+          @if (b.status === 'exported' || b.status === 'approved') {
+            <button nz-button nzSize="small" nzType="primary" (click)="downloadBatchXml(b)">
+              <nz-icon nzType="download" /> {{ 'treasury.lblScaricaXml' | translate }}
+            </button>
+          }
+          @if (b.status !== 'cancelled' && b.status !== 'executed') {
+            <button nz-button nzSize="small" nzDanger nzType="text" (click)="cancelBatch(b)">
+              {{ 'treasury.lblAnnulla' | translate }}
+            </button>
+          }
+        </div>
+      </ng-template>
+    </nz-tab>
+
+    <!-- TAB 5: PREVISIONI FLUSSI DI CASSA (CASH FORECASTS) -->
+    <nz-tab [nzTitle]="'treasury.lblPrevisioneFlussiDiCassa' | translate">
+      <div class="tab-intro">
+        <span class="text-muted">{{ 'treasury.lblAnalisiDellaLiquiditaProspetticaESimulazione' | translate }}</span>
+        <div class="row-actions">
+          <button nz-button nzType="default" (click)="generateForecast(30)">
+            <nz-icon nzType="sync" /> {{ 'treasury.lblPrevisione30gg' | translate }}
+          </button>
+          <button nz-button nzType="primary" (click)="generateForecast(90)">
+            <nz-icon nzType="sync" /> {{ 'treasury.lblPrevisione90gg' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <app-base-table [grid]="forecastsGrid" [columns]="forecastColumns()" [scroll]="{ x: '800px' }" exportFileName="cash-forecasts" />
+    </nz-tab>
+  </nz-tabs>
+</nz-card>
+
+<!-- Modal: Nuovo Conto Bancario -->
+<nz-modal appModalActions
+  [nzVisible]="accountModalVisible()"
+  [nzTitle]="'treasury.lblRegistraNuovoContoBancario' | translate"
+  (nzOnCancel)="accountModalVisible.set(false)"
+  (nzOnOk)="submitAccount()"
+
+  okAction="save"
+  [nzOkDisabled]="accountForm.invalid"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="accountForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'treasury.lblNomeIstitutoBanca' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorKey(accountForm.controls.bank_name) | translate">
+          <input nz-input formControlName="bank_name" [placeholder]="'treasury.lblEsIntesaSanpaoloUbsSwitzerland' | translate" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'treasury.lblCodiceIban' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorKey(accountForm.controls.iban) | translate">
+          <input nz-input formControlName="iban" placeholder="IT... o CH..." />
+        </nz-form-control>
+      </nz-form-item>
+
+      <div class="form-row">
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'treasury.lblValuta' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorKey(accountForm.controls.currency) | translate">
+            <nz-select formControlName="currency">
+              <nz-option nzValue="EUR" nzLabel="EUR (€)" />
+              <nz-option nzValue="CHF" nzLabel="CHF (Fr.)" />
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'treasury.lblBicSwift' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorKey(accountForm.controls.bic_swift) | translate">
+            <input nz-input formControlName="bic_swift" [placeholder]="'treasury.lblEsBcititmm' | translate" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="form-row">
+        <nz-form-item>
+          <nz-form-label>{{ 'treasury.lblFilialeSede' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorKey(accountForm.controls.branch_name) | translate">
+            <input nz-input formControlName="branch_name" [placeholder]="'treasury.lblFilialeDiLuganoOMilano' | translate" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'treasury.lblSaldoIniziale' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-input-number class="w-full" formControlName="opening_balance" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal: Nuova Distinta di Pagamento -->
+<nz-modal appModalActions
+  [nzVisible]="batchModalVisible()"
+  [nzTitle]="'treasury.lblCreaDistintaDiPagamentoDispositiva' | translate"
+  (nzOnCancel)="batchModalVisible.set(false)"
+  (nzOnOk)="submitBatch()"
+
+  okAction="create"
+  [nzOkDisabled]="batchForm.invalid"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="batchForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'treasury.lblContoOrdinante' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorKey(batchForm.controls.bank_account_id) | translate">
+          <nz-select formControlName="bank_account_id">
+            @for (acc of bankAccounts(); track acc.id) {
+              <nz-option [nzValue]="acc.id" [nzLabel]="acc.bank_name + ' (' + acc.iban + ')'" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <div class="form-row">
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'treasury.lblMetodoDispositivo' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorKey(batchForm.controls.payment_method) | translate">
+            <nz-select formControlName="payment_method">
+              <nz-option nzValue="sepa_credit_transfer" [nzLabel]="'treasury.lblSepaCreditTransferPain001' | translate" />
+              <nz-option nzValue="sepa_instant" nzLabel="SEPA Instant" />
+              <nz-option nzValue="swiss_qr_pain001" [nzLabel]="'treasury.lblSwissQrPain001' | translate" />
+              <nz-option nzValue="riba" [nzLabel]="'treasury.lblRicevutaBancariaRiba' | translate" />
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'treasury.lblRiferimentoDistinta' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorKey(batchForm.controls.batch_reference) | translate">
+            <input nz-input formControlName="batch_reference" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <nz-divider nzText="Destinatario Beneficiario"></nz-divider>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'treasury.lblNomeBeneficiario' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorKey(batchForm.controls.recipient_name) | translate">
+          <input nz-input formControlName="recipient_name" [placeholder]="'treasury.lblFornitoreOCreditore' | translate" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'treasury.lblIbanBeneficiario' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorKey(batchForm.controls.recipient_iban) | translate">
+          <input nz-input formControlName="recipient_iban" [placeholder]="'treasury.lblIbanBeneficiario2' | translate" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <div class="form-row">
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'treasury.lblImportoBonifico' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorKey(batchForm.controls.amount) | translate">
+            <nz-input-number class="w-full" formControlName="amount" [nzMin]="0.01" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'treasury.lblCausaleRiferimento' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorKey(batchForm.controls.remittance_reference) | translate">
+            <input nz-input formControlName="remittance_reference" [placeholder]="'treasury.lblEsSaldFatt44' | translate" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal for importing CAMT / CBI file -->
+<nz-modal appModalActions
+  [(nzVisible)]="isImportModalVisible"
+  [nzTitle]="'treasury.modal.title' | translate"
+  (nzOnCancel)="isImportModalVisible.set(false)"
+  (nzOnOk)="submitImport()"
+  [nzOkDisabled]="!selectedFile()"
+  [nzOkLoading]="isUploading()"
+>
+  <ng-container *nzModalContent>
+    <p>{{ 'treasury.modal.description' | translate }}</p>
+    <div class="format-options">
+      <label>
+        <input
+          type="radio"
+          name="format"
+          value="camt"
+          [checked]="importFormat === 'camt'"
+          (change)="importFormat = 'camt'"
+        />
+        {{ 'treasury.modalFormats.camt' | translate }}
+      </label>
+      <label>
+        <input
+          type="radio"
+          name="format"
+          value="cbi"
+          [checked]="importFormat === 'cbi'"
+          (change)="importFormat = 'cbi'"
+        />
+        {{ 'treasury.modalFormats.cbi' | translate }}
+      </label>
+    </div>
+    <input type="file" (change)="onFileSelected($event)" accept=".xml,.cbi,.txt,.csv" />
+  </ng-container>
+</nz-modal>
+
+<!-- Shared Templates -->
+<ng-template #dateTpl let-val="value">
+  {{ val | date: "dd.MM.yyyy" }}
+</ng-template>
+
+<ng-template #currencyTpl let-item let-val="value">
+  <strong [style.color]="val < 0 ? 'var(--status-danger)' : 'var(--status-success)'">
+    {{ val | currency: item.currency || "EUR" : "symbol" : "1.2-2" }}
+  </strong>
+</ng-template>
+
+<ng-template #reconciledTpl let-val="value">
+  <nz-tag [nzColor]="val ? 'success' : 'warning'">
+    {{ (val ? 'treasury.reconciled.yes' : 'treasury.reconciled.no') | translate }}
+  </nz-tag>
+</ng-template>
+
+<ng-template #statusTpl let-val="value">
+  <nz-tag
+    [nzColor]="
+      val === 'reconciled' ? 'success' : val === 'partially_reconciled' ? 'processing' : 'default'
+    "
+  >
+    {{ 'treasury.statementStatus.' + val | translate }}
+  </nz-tag>
+</ng-template>
+
+<ng-template #txStatusTpl let-val="value">
+  <nz-tag [nzColor]="val === 'matched' || val === 'manual' ? 'success' : val === 'unmatched' ? 'warning' : 'default'">
+    {{ 'treasury.transactionStatus.' + val | translate }}
+  </nz-tag>
+</ng-template>
+
+<ng-template #batchRefTpl let-val="value"><strong>{{ val }}</strong></ng-template>
+
+<ng-template #batchMethodTpl let-val="value"><code>{{ val }}</code></ng-template>
+
+<ng-template #batchAmountTpl let-b let-val="value"><strong>{{ val | money: b.currency }}</strong></ng-template>
+
+<ng-template #batchStatusTpl let-b let-val="value">
+  <nz-tag [nzColor]="batchStatusColor(b.status)">{{ val }}</nz-tag>
+</ng-template>
+
+<ng-template #forecastAmountTpl let-cf let-val="value">{{ val | money: cf.currency }}</ng-template>
+
+<ng-template #forecastRiskTpl let-cf>
+  <nz-tag [nzColor]="cf.deficit_detected ? 'error' : 'success'">
+    {{ forecastRiskLabel(cf.deficit_detected ? 'deficit' : 'covered') }}
+  </nz-tag>
+</ng-template>

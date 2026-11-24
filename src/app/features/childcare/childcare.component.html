@@ -1,0 +1,994 @@
+<app-page-header
+  [title]="'CHILDCARE.PAGE_TITLE' | translate"
+  [subtitle]="'CHILDCARE.PAGE_SUBTITLE' | translate"
+>
+  <div class="header-actions">
+    @if (selectedTabIndex() === 0) {
+      <button nz-button nzType="default" (click)="openCreateGroupModal()">
+        <span nz-icon nzType="team"></span>
+        {{ 'CHILDCARE.NEW_GROUP' | translate }}
+      </button>
+      <button nz-button nzType="primary" appIconAction="create" (click)="openCreateChildModal()"></button>
+    } @else if (selectedTabIndex() === 1) {
+      <button nz-button nzType="default" (click)="openAbsenceModal()">
+        <span nz-icon nzType="close"></span>
+        {{ 'CHILDCARE.RECORD_ABSENCE' | translate }}
+      </button>
+      <button nz-button nzType="default" (click)="openCheckOutModal()">
+        <span nz-icon nzType="check"></span>
+        {{ 'CHILDCARE.CHECK_OUT' | translate }}
+      </button>
+      <button nz-button nzType="primary" (click)="openCheckInModal()">
+        <span nz-icon nzType="plus"></span>
+        {{ 'CHILDCARE.CHECK_IN' | translate }}
+      </button>
+    } @else if (selectedTabIndex() === 2) {
+      <button nz-button nzType="primary" appIconAction="create" (click)="openCreateNoteModal()"></button>
+    } @else if (selectedTabIndex() === 3) {
+      <button nz-button nzType="default" (click)="openCreateFeePlanModal()">
+        <span nz-icon nzType="dollar"></span>
+        {{ 'CHILDCARE.NEW_FEE_PLAN' | translate }}
+      </button>
+      <button nz-button nzType="primary" (click)="openBillingRunModal()">
+        <span nz-icon nzType="audit"></span>
+        {{ 'CHILDCARE.RUN_BILLING' | translate }}
+      </button>
+    } @else if (selectedTabIndex() === 4) {
+      <button nz-button nzType="primary" appIconAction="create" (click)="openCreateRequirementModal()"></button>
+    }
+  </div>
+</app-page-header>
+
+<div class="childcare-container">
+  <nz-tabs [(nzSelectedIndex)]="selectedTabIndex">
+    <!-- TAB 1: ANAGRAFICA BAMBINI & ISCRIZIONI -->
+    <nz-tab [nzTitle]="'CHILDCARE.TAB_CHILDREN' | translate">
+      <nz-card>
+        <div class="filter-toolbar">
+          <div class="filter-inputs">
+            <nz-input-wrapper class="search-input">
+              <nz-icon nzInputPrefix nzType="search" />
+              <input
+                type="text"
+                nz-input
+                [placeholder]="'CHILDCARE.SEARCH_PLACEHOLDER' | translate"
+                [ngModel]="filterSearch()"
+                (ngModelChange)="onSearchChange($event)"
+                (keyup.enter)="applySearch()"
+              />
+            </nz-input-wrapper>
+
+            <nz-select
+              class="status-select"
+              [ngModel]="filterStatus()"
+              (ngModelChange)="onStatusFilterChange($event)"
+              [nzPlaceHolder]="'CHILDCARE.FILTER_STATUS' | translate"
+              nzAllowClear
+            >
+              <nz-option nzValue="" [nzLabel]="'CHILDCARE.ALL_STATUSES' | translate"></nz-option>
+              <nz-option nzValue="active" [nzLabel]="'CHILDCARE.STATUS.ENROLLED' | translate"></nz-option>
+              <nz-option nzValue="waiting" [nzLabel]="'CHILDCARE.STATUS.WAITLIST' | translate"></nz-option>
+              <nz-option nzValue="left" [nzLabel]="'CHILDCARE.STATUS.WITHDRAWN' | translate"></nz-option>
+            </nz-select>
+
+            <button nz-button nzType="default" (click)="loadChildren()">
+              <span nz-icon nzType="reload"></span>
+              {{ 'CHILDCARE.REFRESH' | translate }}
+            </button>
+          </div>
+        </div>
+
+        <app-base-table [grid]="childGrid" [columns]="childColumns()" [actionsTemplate]="childActionsTpl" exportFileName="childcare-children" />
+      </nz-card>
+    </nz-tab>
+
+    <!-- TAB 2: REGISTRO PRESENZE GIORNALIERE -->
+    <nz-tab [nzTitle]="'CHILDCARE.TAB_ATTENDANCE' | translate">
+      <nz-card>
+        <div class="filter-toolbar">
+          <div class="filter-inputs">
+            <input
+              class="month-input"
+              type="month"
+              nz-input
+              [ngModel]="attendanceMonth()"
+              (ngModelChange)="attendanceMonth.set($event); loadAttendances()"
+            />
+            <button nz-button nzType="default" (click)="loadAttendances()">
+              <span nz-icon nzType="reload"></span>
+              {{ 'CHILDCARE.REFRESH' | translate }}
+            </button>
+          </div>
+        </div>
+
+        <nz-table appGridExport
+          #attendanceTable
+          [nzData]="attendances()"
+          [nzLoading]="attendancesLoading()"
+          [nzFrontPagination]="true"
+        >
+          <thead>
+            <tr>
+              <th [nzSortFn]="'date' | gridSort" [nzFilters]="'date' | gridFilterList: attendanceTable.nzData" [nzFilterFn]="'date' | gridFilterFn">{{ 'CHILDCARE.COL_DATE' | translate }}</th>
+              <th [nzSortFn]="'child_name' | gridSort" [nzFilters]="'child_name' | gridFilterList: attendanceTable.nzData" [nzFilterFn]="'child_name' | gridFilterFn">{{ 'CHILDCARE.COL_CHILD' | translate }}</th>
+              <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: attendanceTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'CHILDCARE.COL_STATUS' | translate }}</th>
+              <th>{{ 'CHILDCARE.COL_CHECK_IN' | translate }}</th>
+              <th>{{ 'CHILDCARE.COL_TEMP' | translate }}</th>
+              <th>{{ 'CHILDCARE.COL_CHECK_OUT' | translate }}</th>
+              <th [nzSortFn]="'picked_up_by' | gridSort" [nzFilters]="'picked_up_by' | gridFilterList: attendanceTable.nzData" [nzFilterFn]="'picked_up_by' | gridFilterFn">{{ 'CHILDCARE.COL_PICKED_UP_BY' | translate }}</th>
+              <th [nzSortFn]="'absence_reason' | gridSort" [nzFilters]="'absence_reason' | gridFilterList: attendanceTable.nzData" [nzFilterFn]="'absence_reason' | gridFilterFn">{{ 'CHILDCARE.COL_NOTES' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (att of attendanceTable.data; track att.id) {
+              <tr>
+                <td>{{ att.date | date: 'mediumDate' }}</td>
+                <td><strong>{{ att.child_name || att.child_id }}</strong></td>
+                <td>
+                  <nz-tag [nzColor]="getAttendanceColor(att.status)">
+                    {{ att.status | uppercase }}
+                  </nz-tag>
+                </td>
+                <td>{{ att.check_in_at ? (att.check_in_at | date: 'shortTime') : '-' }}</td>
+                <td>{{ att.temperature ? att.temperature + ' °C' : '-' }}</td>
+                <td>{{ att.check_out_at ? (att.check_out_at | date: 'shortTime') : '-' }}</td>
+                <td>{{ att.picked_up_by || '-' }}</td>
+                <td>{{ att.absence_reason || att.correction_reason || '-' }}</td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </nz-card>
+    </nz-tab>
+
+    <!-- TAB 3: DIARIO DI BORDO -->
+    <nz-tab [nzTitle]="'CHILDCARE.TAB_DAILY_LOG' | translate">
+      <nz-card>
+        <app-base-table [grid]="noteGrid" [columns]="noteColumns()" exportFileName="childcare-notes" />
+      </nz-card>
+    </nz-tab>
+
+    <!-- TAB 4: RETTE & FATTURAZIONE -->
+    <nz-tab [nzTitle]="'CHILDCARE.TAB_BILLING' | translate">
+      <div class="billing-summary-grid">
+        <nz-card>
+          <nz-statistic
+            [nzValue]="(totalBilledAmount() | number: '1.2-2') || '0.00'"
+            [nzTitle]="'CHILDCARE.STAT_TOTAL_BILLED' | translate"
+            nzPrefix="€"
+          ></nz-statistic>
+        </nz-card>
+        <nz-card>
+          <nz-statistic
+            [nzValue]="(totalSubsidyAmount() | number: '1.2-2') || '0.00'"
+            [nzTitle]="'CHILDCARE.STAT_TOTAL_SUBSIDIES' | translate"
+            nzPrefix="€"
+          ></nz-statistic>
+        </nz-card>
+        <nz-card>
+          <nz-statistic
+            [nzValue]="bills().length"
+            [nzTitle]="'CHILDCARE.STAT_TOTAL_BILLS' | translate"
+          ></nz-statistic>
+        </nz-card>
+      </div>
+
+      <nz-card class="mt-4">
+        <div class="filter-toolbar">
+          <div class="filter-inputs">
+            <input
+              class="month-input"
+              type="month"
+              nz-input
+              [ngModel]="billingPeriod()"
+              (ngModelChange)="billingPeriod.set($event); loadBills()"
+            />
+            <button nz-button nzType="default" (click)="loadBills()">
+              <span nz-icon nzType="reload"></span>
+              {{ 'CHILDCARE.REFRESH' | translate }}
+            </button>
+          </div>
+        </div>
+
+        <app-base-table [grid]="billGrid" [columns]="billColumns()" exportFileName="childcare-bills" />
+      </nz-card>
+    </nz-tab>
+
+    <!-- TAB 5: DOCUMENTI & REQUISITI -->
+    <nz-tab [nzTitle]="'CHILDCARE.TAB_DOCUMENTS' | translate">
+      <nz-card>
+        <h4>{{ 'CHILDCARE.REQUIREMENTS_TITLE' | translate }}</h4>
+        <nz-table appGridExport #reqTable [nzData]="requirements()" [nzLoading]="requirementsLoading()" [nzFrontPagination]="true">
+          <thead>
+            <tr>
+              <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: reqTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'CHILDCARE.COL_NAME' | translate }}</th>
+              <th>{{ 'CHILDCARE.COL_MANDATORY' | translate }}</th>
+              <th>{{ 'CHILDCARE.COL_REQUIRES_SIGNATURE' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (req of reqTable.data; track req.id) {
+              <tr>
+                <td><strong>{{ req.name }}</strong></td>
+                <td>
+                  <nz-tag [nzColor]="req.is_mandatory ? 'error' : 'default'">
+                    {{ (req.is_mandatory ? 'CHILDCARE.MANDATORY' : 'CHILDCARE.OPTIONAL') | translate }}
+                  </nz-tag>
+                </td>
+                <td>
+                  <nz-tag [nzColor]="req.requires_signature ? 'processing' : 'default'">
+                    {{ (req.requires_signature ? 'CHILDCARE.YES' : 'CHILDCARE.NO') | translate }}
+                  </nz-tag>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+
+        <h4 class="section-title">{{ 'CHILDCARE.OUTSTANDING_DOCS_TITLE' | translate }}</h4>
+        <nz-table appGridExport #outTable [nzData]="outstandingDocuments()" [nzFrontPagination]="true">
+          <thead>
+            <tr>
+              <th [nzSortFn]="'child_name' | gridSort" [nzFilters]="'child_name' | gridFilterList: outTable.nzData" [nzFilterFn]="'child_name' | gridFilterFn">{{ 'CHILDCARE.COL_CHILD' | translate }}</th>
+              <th [nzSortFn]="'title' | gridSort" [nzFilters]="'title' | gridFilterList: outTable.nzData" [nzFilterFn]="'title' | gridFilterFn">{{ 'CHILDCARE.COL_DOCUMENT_TITLE' | translate }}</th>
+              <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: outTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'CHILDCARE.COL_STATUS' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (doc of outTable.data; track doc.id) {
+              <tr>
+                <td><strong>{{ doc.child_name || doc.child_id }}</strong></td>
+                <td>{{ doc.title || doc.requirement_name }}</td>
+                <td>
+                  <nz-tag nzColor="warning">{{ doc.status | uppercase }}</nz-tag>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </nz-card>
+    </nz-tab>
+  </nz-tabs>
+</div>
+
+<!-- DRAWER: SCHEDA DETTAGLIO BAMBINO -->
+<nz-modal appModalActions
+  [nzVisible]="drawerVisible()"
+  [nzWidth]="960"
+  [nzFooter]="null"
+  [nzTitle]="('CHILDCARE.DRAWER_TITLE' | translate) + ': ' + (selectedChild()?.first_name || '') + ' ' + (selectedChild()?.last_name || '')"
+  (nzOnCancel)="closeChildDrawer()"
+>
+  <ng-container *nzModalContent>
+    @if (selectedChild(); as child) {
+      <nz-descriptions nzBordered [nzColumn]="2" nzSize="small">
+        <nz-descriptions-item [nzTitle]="'CHILDCARE.COL_NAME' | translate">
+          <strong>{{ child.first_name }} {{ child.last_name }}</strong>
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'CHILDCARE.COL_STATUS' | translate">
+          <nz-tag [nzColor]="getChildStatusColor(child.status)">{{ child.status | uppercase }}</nz-tag>
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'CHILDCARE.COL_BIRTH_DATE' | translate">
+          {{ child.birth_date ? (child.birth_date | date: 'mediumDate') : '-' }}
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'CHILDCARE.COL_GROUP' | translate">
+          {{ child.group_name || child.group_id || '-' }}
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'CHILDCARE.ALLERGIES' | translate">
+          {{ child.allergies || '-' }}
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'CHILDCARE.DIETARY_NOTES' | translate">
+          {{ child.dietary_notes || '-' }}
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'CHILDCARE.HEALTH_NOTES' | translate" [nzSpan]="2">
+          {{ child.health_notes || '-' }}
+        </nz-descriptions-item>
+      </nz-descriptions>
+
+      <!-- SEZIONE 1: FIGURE DI RIFERIMENTO E DELEGATI AL RITIRO -->
+      <div class="drawer-section">
+        <div class="drawer-section-header">
+          <h4>{{ 'CHILDCARE.REF_PERSONS_TITLE' | translate }}</h4>
+          <button nz-button nzType="primary" nzSize="small" appIconAction="add" (click)="openAddRefPersonModal()"></button>
+        </div>
+
+        <nz-table appGridExport #refTable [nzData]="refPersons()" [nzFrontPagination]="false" nzSize="small">
+          <thead>
+            <tr>
+              <th [nzSortFn]="'full_name' | gridSort" [nzFilters]="'full_name' | gridFilterList: refTable.nzData" [nzFilterFn]="'full_name' | gridFilterFn">{{ 'CHILDCARE.COL_NAME' | translate }}</th>
+              <th [nzSortFn]="'relationship' | gridSort" [nzFilters]="'relationship' | gridFilterList: refTable.nzData" [nzFilterFn]="'relationship' | gridFilterFn">{{ 'CHILDCARE.COL_RELATIONSHIP' | translate }}</th>
+              <th [nzSortFn]="'phone' | gridSort" [nzFilters]="'phone' | gridFilterList: refTable.nzData" [nzFilterFn]="'phone' | gridFilterFn">{{ 'CHILDCARE.COL_PHONE' | translate }}</th>
+              <th>{{ 'CHILDCARE.COL_CAN_PICK_UP' | translate }}</th>
+              <th>{{ 'CHILDCARE.COL_PORTAL_ACCESS' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of refTable.data; track p.id) {
+              <tr>
+                <td><strong>{{ p.full_name }}</strong></td>
+                <td>{{ p.relationship }}</td>
+                <td>{{ p.phone || '-' }}</td>
+                <td>
+                  <nz-tag [nzColor]="p.can_pick_up ? 'success' : 'default'">
+                    {{ (p.can_pick_up ? 'CHILDCARE.YES' : 'CHILDCARE.NO') | translate }}
+                  </nz-tag>
+                </td>
+                <td>
+                  <button
+                    nz-button
+                    nzType="default"
+                    nzSize="small"
+                    (click)="grantPortalAccess(p)"
+                  >
+                    <span nz-icon nzType="user"></span>
+                    {{ 'CHILDCARE.GRANT_PORTAL' | translate }}
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </div>
+
+      <!-- SEZIONE 2: DOCUMENTI DEL BAMBINO -->
+      <div class="drawer-section">
+        <h4>{{ 'CHILDCARE.CHILD_DOCS_TITLE' | translate }}</h4>
+        <nz-table appGridExport #docTable [nzData]="childDocuments()" [nzFrontPagination]="false" nzSize="small">
+          <thead>
+            <tr>
+              <th [nzSortFn]="'title' | gridSort" [nzFilters]="'title' | gridFilterList: docTable.nzData" [nzFilterFn]="'title' | gridFilterFn">{{ 'CHILDCARE.COL_DOCUMENT_TITLE' | translate }}</th>
+              <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: docTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'CHILDCARE.COL_STATUS' | translate }}</th>
+              <th [nzSortFn]="'signed_by' | gridSort" [nzFilters]="'signed_by' | gridFilterList: docTable.nzData" [nzFilterFn]="'signed_by' | gridFilterFn">{{ 'CHILDCARE.COL_SIGNED_BY' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (d of docTable.data; track d.id) {
+              <tr>
+                <td>{{ d.title }}</td>
+                <td><nz-tag [nzColor]="d.status === 'signed' ? 'success' : 'warning'">{{ d.status | uppercase }}</nz-tag></td>
+                <td>{{ d.signed_by || '-' }}</td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </div>
+    }
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: NUOVA ISCRIZIONE BAMBINO -->
+<nz-modal appModalActions
+  [nzVisible]="childModalVisible()"
+  [nzTitle]="'CHILDCARE.MODAL_NEW_CHILD' | translate"
+  (nzOnCancel)="childModalVisible.set(false)"
+  [nzOkDisabled]="childForm.invalid"
+  okAction="create"
+  (nzOnOk)="saveChild()"
+>
+  <ng-container *nzModalContent>
+    <form [formGroup]="childForm" nz-form nzLayout="vertical">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else if (control.hasError('endsBeforeStart')) {
+          {{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}
+        } @else if (control.hasError('futureDate')) {
+          {{ 'COMMON.VALIDATION.DATE_NOT_IN_FUTURE' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
+      <div class="modal-two-cols">
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'CHILDCARE.FIELD_FIRST_NAME' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <input nz-input formControlName="first_name" [placeholder]="'CHILDCARE.LBL_NOME' | translate" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'CHILDCARE.FIELD_LAST_NAME' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <input nz-input formControlName="last_name" [placeholder]="'CHILDCARE.LBL_COGNOME' | translate" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="modal-two-cols">
+        <nz-form-item>
+          <nz-form-label>{{ 'CHILDCARE.FIELD_BIRTH_DATE' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <input nz-input type="date" formControlName="birth_date" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'CHILDCARE.FIELD_GROUP' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-select formControlName="group_id" nzAllowClear>
+              @for (grp of groups(); track grp.id) {
+                <nz-option [nzValue]="grp.id" [nzLabel]="grp.name"></nz-option>
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="modal-two-cols">
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'CHILDCARE.FIELD_BILLING_CONTACT' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <input nz-input formControlName="billing_contact_id" [placeholder]="'CHILDCARE.LBL_ID_GENITORE_FATTURAZIONE' | translate" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'CHILDCARE.FIELD_ENROLLED_ON' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <input nz-input type="date" formControlName="enrolled_on" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'CHILDCARE.FIELD_ALLERGIES' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input formControlName="allergies" [placeholder]="'CHILDCARE.LBL_ES_LATTOSIO_GLUTINE_POLLINE' | translate" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'CHILDCARE.FIELD_DIETARY_NOTES' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input formControlName="dietary_notes" [placeholder]="'CHILDCARE.LBL_DIETA_VEGETARIANA_NO_SUINO_ETC' | translate" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'CHILDCARE.FIELD_HEALTH_NOTES' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <textarea nz-input formControlName="health_notes" rows="2"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: CREA GRUPPO / SEZIONE -->
+<nz-modal appModalActions
+  [nzVisible]="groupModalVisible()"
+  [nzTitle]="'CHILDCARE.MODAL_NEW_GROUP' | translate"
+  (nzOnCancel)="groupModalVisible.set(false)"
+  [nzOkDisabled]="groupForm.invalid"
+  okAction="create"
+  (nzOnOk)="saveGroup()"
+>
+  <ng-container *nzModalContent>
+    <form [formGroup]="groupForm" nz-form nzLayout="vertical">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else if (control.hasError('endsBeforeStart')) {
+          {{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}
+        } @else if (control.hasError('futureDate')) {
+          {{ 'COMMON.VALIDATION.DATE_NOT_IN_FUTURE' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CHILDCARE.FIELD_GROUP_NAME' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input formControlName="name" [placeholder]="'CHILDCARE.LBL_ES_COCCINELLE_PULCINI_ORSETTI' | translate" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'CHILDCARE.FIELD_CAPACITY' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <nz-input-number formControlName="capacity" [nzMin]="1" [nzMax]="100"></nz-input-number>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: CHECK-IN -->
+<nz-modal appModalActions
+  [nzVisible]="checkInModalVisible()"
+  [nzTitle]="'CHILDCARE.MODAL_CHECK_IN' | translate"
+  (nzOnCancel)="checkInModalVisible.set(false)"
+  [nzOkDisabled]="checkInForm.invalid"
+  okAction="confirm"
+  (nzOnOk)="saveCheckIn()"
+>
+  <ng-container *nzModalContent>
+    <form [formGroup]="checkInForm" nz-form nzLayout="vertical">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else if (control.hasError('endsBeforeStart')) {
+          {{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}
+        } @else if (control.hasError('futureDate')) {
+          {{ 'COMMON.VALIDATION.DATE_NOT_IN_FUTURE' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CHILDCARE.FIELD_CHILD' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input formControlName="child_id" [placeholder]="'CHILDCARE.LBL_ID_BAMBINO' | translate" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'CHILDCARE.FIELD_TEMPERATURE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input formControlName="temperature" placeholder="36.5" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: CHECK-OUT -->
+<nz-modal appModalActions
+  [nzVisible]="checkOutModalVisible()"
+  [nzTitle]="'CHILDCARE.MODAL_CHECK_OUT' | translate"
+  (nzOnCancel)="checkOutModalVisible.set(false)"
+  [nzOkDisabled]="checkOutForm.invalid"
+  okAction="confirm"
+  (nzOnOk)="saveCheckOut()"
+>
+  <ng-container *nzModalContent>
+    <form [formGroup]="checkOutForm" nz-form nzLayout="vertical">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else if (control.hasError('endsBeforeStart')) {
+          {{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}
+        } @else if (control.hasError('futureDate')) {
+          {{ 'COMMON.VALIDATION.DATE_NOT_IN_FUTURE' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CHILDCARE.FIELD_CHILD' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <nz-select formControlName="child_id" nzShowSearch>
+            @for (child of children(); track child.id) {
+              <nz-option [nzValue]="child.id" [nzLabel]="child.first_name + ' ' + child.last_name"></nz-option>
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CHILDCARE.FIELD_PICKED_UP_BY' | translate }}</nz-form-label>
+        <nz-form-control
+          [nzErrorTip]="checkOutForm.controls.picked_up_by.errors?.['serverError'] ?? ('CHILDCARE.PICKED_UP_BY_REQUIRED' | translate)"
+          [nzExtra]="pickUpPersons().length === 0 && checkOutForm.controls.child_id.value ? ('CHILDCARE.NO_PICK_UP_PERSONS' | translate) : ''"
+        >
+          <nz-select formControlName="picked_up_by" [nzPlaceHolder]="'CHILDCARE.PICKED_UP_BY_PLACEHOLDER' | translate">
+            @for (person of pickUpPersons(); track person.id) {
+              <nz-option [nzValue]="person.id" [nzLabel]="person.full_name + ' (' + person.relationship + ')'"></nz-option>
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: REGISTRA ASSENZA -->
+<nz-modal appModalActions
+  [nzVisible]="absenceModalVisible()"
+  [nzTitle]="'CHILDCARE.MODAL_ABSENCE' | translate"
+  (nzOnCancel)="absenceModalVisible.set(false)"
+  [nzOkDisabled]="absenceForm.invalid"
+  okAction="save"
+  (nzOnOk)="saveAbsence()"
+>
+  <ng-container *nzModalContent>
+    <form [formGroup]="absenceForm" nz-form nzLayout="vertical">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else if (control.hasError('endsBeforeStart')) {
+          {{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}
+        } @else if (control.hasError('futureDate')) {
+          {{ 'COMMON.VALIDATION.DATE_NOT_IN_FUTURE' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CHILDCARE.FIELD_CHILD' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input formControlName="child_id" [placeholder]="'CHILDCARE.LBL_ID_BAMBINO' | translate" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CHILDCARE.FIELD_DATE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input type="date" formControlName="date" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CHILDCARE.FIELD_REASON' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <nz-select formControlName="reason">
+            @for (reason of absenceReasons; track reason) {
+              <nz-option [nzValue]="reason" [nzLabel]="'CHILDCARE.ABSENCE_' + reason.toUpperCase() | translate"></nz-option>
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: NOTA GIORNALIERA -->
+<nz-modal appModalActions
+  [nzVisible]="noteModalVisible()"
+  [nzTitle]="'CHILDCARE.MODAL_NEW_NOTE' | translate"
+  (nzOnCancel)="noteModalVisible.set(false)"
+  [nzOkDisabled]="noteForm.invalid"
+  okAction="create"
+  (nzOnOk)="saveNote()"
+>
+  <ng-container *nzModalContent>
+    <form [formGroup]="noteForm" nz-form nzLayout="vertical">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else if (control.hasError('endsBeforeStart')) {
+          {{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}
+        } @else if (control.hasError('futureDate')) {
+          {{ 'COMMON.VALIDATION.DATE_NOT_IN_FUTURE' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CHILDCARE.FIELD_CHILD' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input formControlName="child_id" [placeholder]="'CHILDCARE.LBL_ID_BAMBINO' | translate" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CHILDCARE.FIELD_CATEGORY' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <nz-select formControlName="category">
+            <nz-option nzValue="general" [nzLabel]="'CHILDCARE.CAT_GENERAL' | translate"></nz-option>
+            <nz-option nzValue="meal" [nzLabel]="'CHILDCARE.CAT_MEAL' | translate"></nz-option>
+            <nz-option nzValue="sleep" [nzLabel]="'CHILDCARE.CAT_NAP' | translate"></nz-option>
+            <nz-option nzValue="activity" [nzLabel]="'CHILDCARE.CAT_ACTIVITY' | translate"></nz-option>
+            <nz-option nzValue="health" [nzLabel]="'CHILDCARE.CAT_HEALTH' | translate"></nz-option>
+            <nz-option nzValue="behaviour" [nzLabel]="'CHILDCARE.CAT_MOOD' | translate"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CHILDCARE.FIELD_BODY' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <textarea nz-input formControlName="body" rows="3" [placeholder]="'CHILDCARE.LBL_DETTAGLI_ATTIVITA_O_EVENTO' | translate"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'CHILDCARE.FIELD_VISIBLE_TO_FAMILY' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <nz-switch formControlName="visible_to_family"></nz-switch>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: NUOVO PIANO RETTA -->
+<nz-modal appModalActions
+  [nzVisible]="feePlanModalVisible()"
+  [nzTitle]="'CHILDCARE.MODAL_NEW_FEE_PLAN' | translate"
+  (nzOnCancel)="feePlanModalVisible.set(false)"
+  [nzOkDisabled]="feePlanForm.invalid"
+  okAction="create"
+  (nzOnOk)="saveFeePlan()"
+>
+  <ng-container *nzModalContent>
+    <form [formGroup]="feePlanForm" nz-form nzLayout="vertical">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else if (control.hasError('endsBeforeStart')) {
+          {{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}
+        } @else if (control.hasError('futureDate')) {
+          {{ 'COMMON.VALIDATION.DATE_NOT_IN_FUTURE' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CHILDCARE.FIELD_PLAN_NAME' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input formControlName="name" [placeholder]="'CHILDCARE.LBL_ES_TEMPO_PIENO_PART_TIME_MATTINA' | translate" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <div class="modal-two-cols">
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'CHILDCARE.FIELD_BASIS' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-select formControlName="basis">
+              <nz-option nzValue="monthly_flat" [nzLabel]="'CHILDCARE.BASIS_MONTHLY' | translate"></nz-option>
+              <nz-option nzValue="per_day" [nzLabel]="'CHILDCARE.BASIS_DAILY' | translate"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'CHILDCARE.FIELD_AMOUNT' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <input nz-input formControlName="amount" placeholder="850.00" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: LANCIA FATTURAZIONE MENSILE -->
+<nz-modal appModalActions
+  [nzVisible]="billingRunModalVisible()"
+  [nzTitle]="'CHILDCARE.MODAL_BILLING_RUN' | translate"
+  (nzOnCancel)="billingRunModalVisible.set(false)"
+  [nzOkDisabled]="billingRunForm.invalid"
+  okAction="confirm"
+  (nzOnOk)="executeBillingRun()"
+>
+  <ng-container *nzModalContent>
+    <form [formGroup]="billingRunForm" nz-form nzLayout="vertical">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else if (control.hasError('endsBeforeStart')) {
+          {{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}
+        } @else if (control.hasError('futureDate')) {
+          {{ 'COMMON.VALIDATION.DATE_NOT_IN_FUTURE' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CHILDCARE.FIELD_PERIOD' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input type="month" formControlName="period" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CHILDCARE.FIELD_RUN_DATE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input type="date" formControlName="date" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: AGGIUNGI DELEGATO / FIGURA DI RIFERIMENTO -->
+<nz-modal appModalActions
+  [nzVisible]="refPersonModalVisible()"
+  [nzTitle]="'CHILDCARE.MODAL_ADD_REF_PERSON' | translate"
+  (nzOnCancel)="refPersonModalVisible.set(false)"
+  [nzOkDisabled]="refPersonForm.invalid"
+  okAction="add"
+  (nzOnOk)="saveRefPerson()"
+>
+  <ng-container *nzModalContent>
+    <form [formGroup]="refPersonForm" nz-form nzLayout="vertical">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else if (control.hasError('endsBeforeStart')) {
+          {{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}
+        } @else if (control.hasError('futureDate')) {
+          {{ 'COMMON.VALIDATION.DATE_NOT_IN_FUTURE' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CHILDCARE.FIELD_FULL_NAME' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input formControlName="full_name" [placeholder]="'CHILDCARE.LBL_NOME_E_COGNOME' | translate" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <div class="modal-two-cols">
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'CHILDCARE.FIELD_RELATIONSHIP' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-select formControlName="relationship">
+              @for (relationship of relationships; track relationship) {
+                <nz-option [nzValue]="relationship" [nzLabel]="'CHILDCARE.REL_' + relationship.toUpperCase() | translate"></nz-option>
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'CHILDCARE.FIELD_PHONE' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <input nz-input formControlName="phone" placeholder="+39 333 1234567" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="modal-two-cols">
+        <nz-form-item>
+          <nz-form-label>{{ 'CHILDCARE.FIELD_IS_GUARDIAN' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-switch formControlName="is_guardian"></nz-switch>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'CHILDCARE.FIELD_CAN_PICK_UP' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-switch formControlName="can_pick_up"></nz-switch>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: NUOVO REQUISITO DOCUMENTALE -->
+<nz-modal appModalActions
+  [nzVisible]="requirementModalVisible()"
+  [nzTitle]="'CHILDCARE.MODAL_NEW_REQUIREMENT' | translate"
+  (nzOnCancel)="requirementModalVisible.set(false)"
+  [nzOkDisabled]="requirementForm.invalid"
+  okAction="create"
+  (nzOnOk)="saveRequirement()"
+>
+  <ng-container *nzModalContent>
+    <form [formGroup]="requirementForm" nz-form nzLayout="vertical">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else if (control.hasError('endsBeforeStart')) {
+          {{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}
+        } @else if (control.hasError('futureDate')) {
+          {{ 'COMMON.VALIDATION.DATE_NOT_IN_FUTURE' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'CHILDCARE.FIELD_REQUIREMENT_NAME' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input formControlName="name" [placeholder]="'CHILDCARE.LBL_ES_LIBRETTO_VACCINAZIONI_CONSENSO_USCITE' | translate" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <div class="modal-two-cols">
+        <nz-form-item>
+          <nz-form-label>{{ 'CHILDCARE.FIELD_MANDATORY' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-switch formControlName="is_mandatory"></nz-switch>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'CHILDCARE.FIELD_REQUIRES_SIGNATURE' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-switch formControlName="requires_signature"></nz-switch>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- Cell templates of the server-driven grids -->
+<ng-template #childNameTpl let-child>
+  <strong>{{ child.first_name }} {{ child.last_name }}</strong>
+  @if (child.allergies) {
+    <br /><small class="text-danger">{{ 'CHILDCARE.ALLERGIES' | translate }}: {{ child.allergies }}</small>
+  }
+</ng-template>
+
+<ng-template #childGroupTpl let-child>
+  <nz-tag>{{ child.group_name || child.group_id || '-' }}</nz-tag>
+</ng-template>
+
+<ng-template #childBirthTpl let-child>
+  {{ child.birth_date ? (child.birth_date | date: 'mediumDate') : '-' }}
+</ng-template>
+
+<ng-template #childEnrolledTpl let-child>
+  {{ child.enrolled_on | date: 'mediumDate' }}
+</ng-template>
+
+<ng-template #childStatusTpl let-child>
+  <nz-tag [nzColor]="getChildStatusColor(child.status)">
+    {{ childStatusLabel(child.status) | uppercase }}
+  </nz-tag>
+</ng-template>
+
+<ng-template #childBillingTpl let-child>
+  {{ child.billing_contact_name || child.billing_contact_id }}
+</ng-template>
+
+<ng-template #childActionsTpl let-child>
+  <nz-space>
+    <button *nzSpaceItem nz-button nzType="default" nzSize="small" (click)="openChildDrawer(child)">
+      <span nz-icon nzType="folder-open"></span>
+      {{ 'CHILDCARE.ACTION_MANAGE' | translate }}
+    </button>
+    @if (child.status === 'waiting') {
+      <button *nzSpaceItem nz-button nzType="primary" nzSize="small" (click)="admitChild(child)">
+        <span nz-icon nzType="check"></span>
+        {{ 'CHILDCARE.ACTION_ADMIT' | translate }}
+      </button>
+    }
+  </nz-space>
+</ng-template>
+
+<ng-template #noteDateTpl let-n>{{ n.date | date: 'mediumDate' }}</ng-template>
+
+<ng-template #noteChildTpl let-n><strong>{{ n.child_name || n.child_id }}</strong></ng-template>
+
+<ng-template #noteCategoryTpl let-n>
+  <nz-tag [nzColor]="getCategoryColor(n.category)">{{ n.category | uppercase }}</nz-tag>
+</ng-template>
+
+<ng-template #noteFamilyTpl let-n>
+  <nz-tag [nzColor]="n.visible_to_family ? 'success' : 'default'">
+    {{ (n.visible_to_family ? 'CHILDCARE.YES' : 'CHILDCARE.NO') | translate }}
+  </nz-tag>
+</ng-template>
+
+<ng-template #billPeriodTpl let-bill><strong>{{ bill.period }}</strong></ng-template>
+
+<ng-template #billChildTpl let-bill>{{ bill.child_name || bill.child_id }}</ng-template>
+
+<ng-template #billContactTpl let-bill>{{ bill.contact_name || bill.contact_id }}</ng-template>
+
+<ng-template #billGrossTpl let-bill>{{ bill.gross_amount | money: bill.currency }}</ng-template>
+
+<ng-template #billSubsidyTpl let-bill>{{ bill.subsidy_amount | money: bill.currency }}</ng-template>
+
+<ng-template #billNetTpl let-bill><strong>{{ bill.net_amount | money: bill.currency }}</strong></ng-template>
+
+<ng-template #billStatusTpl let-bill>
+  <nz-tag [nzColor]="bill.status === 'paid' ? 'success' : 'blue'">{{ bill.status | uppercase }}</nz-tag>
+</ng-template>

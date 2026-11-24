@@ -1,0 +1,182 @@
+<nz-modal
+  [nzVisible]="open()"
+  [nzTitle]="'RMA.PASSPORT.NEW' | translate"
+  [nzWidth]="720"
+  [nzOkText]="'COMMON.SAVE' | translate"
+  [nzCancelText]="'COMMON.CANCEL' | translate"
+  [nzOkLoading]="saving()"
+  (nzOnOk)="submit()"
+  (nzOnCancel)="open.set(false)"
+>
+  <ng-container *nzModalContent>
+    <form nz-form nzLayout="vertical" [formGroup]="form" (ngSubmit)="submit()">
+      <div class="rma-form-grid">
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="pp-serial">{{
+            'RMA.FIELDS.SERIAL' | translate
+          }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip('serial_number')">
+            <input nz-input id="pp-serial" formControlName="serial_number" maxlength="100" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="pp-customer">{{
+            'RMA.FIELDS.CUSTOMER' | translate
+          }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip('current_owner_customer_id')">
+            <app-customer-select
+              inputId="pp-customer"
+              formControlName="current_owner_customer_id"
+              [placeholder]="'RMA.PASSPORT.SEARCH_CUSTOMER' | translate"
+            />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="pp-delivery">{{
+            'RMA.PASSPORT.DELIVERY_DATE' | translate
+          }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip('delivery_date')">
+            <input nz-input type="date" id="pp-delivery" formControlName="delivery_date" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="pp-jurisdiction">{{
+            'RMA.PASSPORT.JURISDICTION' | translate
+          }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip('jurisdiction')">
+            <nz-select
+              nzId="pp-jurisdiction"
+              formControlName="jurisdiction"
+              nzAllowClear
+              [nzPlaceHolder]="'RMA.PASSPORT.FROM_CUSTOMER' | translate"
+            >
+              <nz-option nzValue="CH" [nzLabel]="'COMMON.SWITZERLAND' | translate" />
+              <nz-option nzValue="IT" [nzLabel]="'COMMON.ITALY' | translate" />
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="pp-customer-type">{{
+            'RMA.PASSPORT.CUSTOMER_TYPE' | translate
+          }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip('customer_type')">
+            <nz-select
+              nzId="pp-customer-type"
+              formControlName="customer_type"
+              nzAllowClear
+              [nzPlaceHolder]="'RMA.PASSPORT.FROM_CUSTOMER' | translate"
+            >
+              <nz-option nzValue="b2b" [nzLabel]="'RMA.CUSTOMER_TYPE.B2B' | translate" />
+              <nz-option nzValue="b2c" [nzLabel]="'RMA.CUSTOMER_TYPE.B2C' | translate" />
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="pp-contract-months">{{
+            'RMA.PASSPORT.CONTRACT_MONTHS' | translate
+          }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip('contract_warranty_months')">
+            <nz-input-number
+              nzId="pp-contract-months"
+              formControlName="contract_warranty_months"
+              [nzMin]="1"
+              [nzMax]="60"
+              [nzStep]="1"
+            />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="pp-contract-ref">{{
+            'RMA.PASSPORT.CONTRACT_CLAUSE' | translate
+          }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip('contract_clause_reference')">
+            <input nz-input id="pp-contract-ref" formControlName="contract_clause_reference" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="pp-firmware">{{
+            'RMA.PASSPORT.FIRMWARE' | translate
+          }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip('installed_firmware_version')">
+            <input nz-input id="pp-firmware" formControlName="installed_firmware_version" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="pp-invoice">{{
+            'RMA.PASSPORT.INVOICE_ID' | translate
+          }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip('original_sales_invoice_id')">
+            <input nz-input id="pp-invoice" formControlName="original_sales_invoice_id" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="pp-stock-serial">{{
+            'RMA.PASSPORT.STOCK_SERIAL_ID' | translate
+          }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip('stock_serial_number_id')">
+            <input nz-input id="pp-stock-serial" formControlName="stock_serial_number_id" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="pp-product">{{
+            'RMA.PASSPORT.PRODUCT_ID' | translate
+          }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip('product_id')">
+            <input nz-input id="pp-product" formControlName="product_id" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <h4>{{ 'RMA.PASSPORT.AS_BUILT_COMPONENTS' | translate }}</h4>
+      <div formArrayName="components">
+        @for (row of components.controls; track row; let i = $index) {
+          <div class="rma-row-grid" [formGroupName]="i">
+            <nz-form-item>
+              <nz-form-label nzRequired [nzFor]="'pp-pos-' + i">{{
+                'RMA.FIELDS.POSITION' | translate
+              }}</nz-form-label>
+              <nz-form-control [nzErrorTip]="errorTip('components.' + i + '.position')">
+                <input nz-input [id]="'pp-pos-' + i" formControlName="position" />
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+              <nz-form-label nzRequired [nzFor]="'pp-cserial-' + i">{{
+                'RMA.FIELDS.COMPONENT_SERIAL' | translate
+              }}</nz-form-label>
+              <nz-form-control [nzErrorTip]="errorTip('components.' + i + '.component_serial')">
+                <input nz-input [id]="'pp-cserial-' + i" formControlName="component_serial" />
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+              <nz-form-label [nzFor]="'pp-role-' + i">{{
+                'RMA.FIELDS.ROLE' | translate
+              }}</nz-form-label>
+              <nz-form-control>
+                <input nz-input [id]="'pp-role-' + i" formControlName="role" />
+              </nz-form-control>
+            </nz-form-item>
+            <button
+              nz-button
+              nzDanger
+              type="button"
+              class="rma-row-remove"
+              (click)="removeComponent(i)"
+              [attr.aria-label]="'RMA.ACTIONS.REMOVE_ROW' | translate"
+            >
+              <i class="fa-solid fa-trash" aria-hidden="true"></i>
+            </button>
+          </div>
+        }
+      </div>
+      <button nz-button nzType="dashed" type="button" (click)="addComponent()">
+        <i class="fa-solid fa-plus" aria-hidden="true"></i>&nbsp;{{
+          'RMA.PASSPORT.ADD_COMPONENT' | translate
+        }}
+      </button>
+
+      @for (msg of formErrors(); track msg) {
+        <p class="rma-form-error" role="alert">{{ msg }}</p>
+      }
+    </form>
+  </ng-container>
+</nz-modal>

@@ -1,0 +1,417 @@
+<nz-modal appModalActions
+  [nzVisible]="open()"
+  [nzWidth]="1240"
+  [nzFooter]="null"
+  [nzTitle]="drawerTitle"
+  (nzOnCancel)="close()"
+>
+  <ng-template #drawerTitle>
+    <div class="drawer-title">
+      <div class="drawer-title-main">
+        <span class="drawer-title-id">
+          {{ ticket()?.ticket_number ? '#' + ticket()?.ticket_number : ('HELPDESK_SLA.TICKET_DETAIL' | translate) }}
+        </span>
+        @if (ticket()) {
+          <nz-tag [nzColor]="statusColor()">{{ ticket()?.status }}</nz-tag>
+          <nz-tag [nzColor]="priorityColor()">{{ ticket()?.priority }}</nz-tag>
+          <nz-tag [nzColor]="slaColor()">{{ 'HELPDESK_SLA.SLA_STATE' | translate: { state: ticket()?.sla_state ?? '' } }}</nz-tag>
+        }
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-container *nzModalContent>
+    <nz-spin [nzSpinning]="loading()">
+      @if (ticket(); as currentTicket) {
+        <!-- Action Toolbar -->
+        <div class="action-toolbar">
+          <button nz-button nzSize="small" (click)="openStatusModal()">
+            <i nz-icon nzType="swap"></i> {{ 'TICKET_TOOLS.LBL_CAMBIA_STATO' | translate }}
+          </button>
+          <button nz-button nzSize="small" (click)="openAssignModal()">
+            <i nz-icon nzType="user-add"></i> {{ 'TICKET_TOOLS.LBL_ASSEGNA' | translate }}
+          </button>
+          @if (ticket()?.status !== 'resolved' && ticket()?.status !== 'closed') {
+            <button nz-button nzSize="small" nzType="primary" (click)="openResolveModal()">
+              <i nz-icon nzType="check-circle"></i> {{ 'TICKET_TOOLS.LBL_RISOLVI' | translate }}
+            </button>
+          }
+          @if (ticket()?.status !== 'closed' && ticket()?.status !== 'resolved') {
+            <button nz-button nzSize="small" (click)="escalateToFieldService()">
+              <i nz-icon nzType="tool"></i> {{ 'TICKET_TOOLS.LBL_FIELD_SERVICE' | translate }}
+            </button>
+          }
+          @if (ticket()?.status !== 'closed') {
+            <button nz-button nzSize="small" nzDanger appIconAction="close" (click)="confirmClose()"></button>
+          }
+          @if (ticket()?.status === 'closed' || ticket()?.status === 'resolved') {
+            <button nz-button nzSize="small" (click)="confirmReopen()">
+              <i nz-icon nzType="redo"></i> {{ 'TICKET_TOOLS.LBL_RIAPRI' | translate }}
+            </button>
+          }
+        </div>
+
+        <!-- Tabs: Dettagli, Conversazione, Cronologia -->
+        <div class="drawer-layout">
+        <div class="drawer-main">
+        <nz-tabs>
+          <!-- TAB 1: DETTAGLI & MODIFICA -->
+          <nz-tab [nzTitle]="'TICKET_TOOLS.LBL_DETTAGLI_AND_MODIFICA' | translate">
+            <nz-descriptions nzBordered [nzColumn]="2" nzSize="small" class="ticket-descriptions">
+              <nz-descriptions-item [nzTitle]="'TICKET_TOOLS.LBL_CANALE' | translate">{{ ticket()?.channel || '-' }}</nz-descriptions-item>
+              <nz-descriptions-item [nzTitle]="'TICKET_TOOLS.LBL_TIPO' | translate">{{ ticket()?.type || '-' }}</nz-descriptions-item>
+              <nz-descriptions-item [nzTitle]="'TICKET_TOOLS.LBL_ASSEGNATO_A' | translate">{{ ticket()?.assigned_to_id || ('HELPDESK_SLA.UNASSIGNED' | translate) }}</nz-descriptions-item>
+              <nz-descriptions-item [nzTitle]="'TICKET_TOOLS.LBL_TEAM' | translate">{{ ticket()?.service_team_id || '-' }}</nz-descriptions-item>
+              <nz-descriptions-item [nzTitle]="'TICKET_TOOLS.LBL_CREAZIONE' | translate">{{ ticket()?.created_at | date:'dd/MM/yyyy HH:mm' }}</nz-descriptions-item>
+              <nz-descriptions-item [nzTitle]="'TICKET_TOOLS.LBL_SCADENZA_RISPOSTA_SLA' | translate">
+                {{ (ticket()?.response_due_at | date:'dd/MM/yyyy HH:mm') || '-' }}
+              </nz-descriptions-item>
+              <nz-descriptions-item [nzTitle]="'TICKET_TOOLS.LBL_SCADENZA_RISOLUZIONE_SLA' | translate">
+                {{ (ticket()?.resolution_due_at | date:'dd/MM/yyyy HH:mm') || '-' }}
+              </nz-descriptions-item>
+              <nz-descriptions-item [nzTitle]="'TICKET_TOOLS.LBL_SLA_BREACHED' | translate">
+                @if (ticket()?.is_sla_breached) {
+                  <nz-tag nzColor="error">{{ 'TICKET_TOOLS.LBL_BREACHED' | translate }}</nz-tag>
+                } @else {
+                  <nz-tag nzColor="success">{{ 'TICKET_TOOLS.LBL_NEL_LIMITE' | translate }}</nz-tag>
+                }
+              </nz-descriptions-item>
+              @if (ticket()?.resolved_at) {
+                <nz-descriptions-item [nzTitle]="'TICKET_TOOLS.LBL_RISOLTO_IL' | translate" [nzSpan]="2">
+                  {{ ticket()?.resolved_at | date:'dd/MM/yyyy HH:mm' }}
+                </nz-descriptions-item>
+              }
+              @if (ticket()?.closed_at) {
+                <nz-descriptions-item [nzTitle]="'TICKET_TOOLS.LBL_CHIUSO_IL' | translate" [nzSpan]="2">
+                  {{ ticket()?.closed_at | date:'dd/MM/yyyy HH:mm' }}
+                </nz-descriptions-item>
+              }
+            </nz-descriptions>
+
+            <form nz-form nzLayout="vertical" [formGroup]="form" (ngSubmit)="saveDetails()">
+              <nz-form-item>
+                <nz-form-label nzRequired nzFor="subject">{{ 'TICKET_TOOLS.LBL_OGGETTO_TITOLO' | translate }}</nz-form-label>
+                <nz-form-control [nzErrorTip]="subjectErr">
+                  <input nz-input id="subject" formControlName="subject" />
+                  <ng-template #subjectErr let-control>
+                    @if (getErrorMessage('subject')) {
+                      {{ getErrorMessage('subject') }}
+                    } @else if (control.hasError('required')) {
+                      {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+                    } @else if (control.hasError('maxlength')) {
+                      {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+                    }
+                  </ng-template>
+                </nz-form-control>
+              </nz-form-item>
+
+              <div class="form-row">
+                <nz-form-item>
+                  <nz-form-label nzFor="priority">{{ 'TICKET_TOOLS.LBL_PRIORITA' | translate }}</nz-form-label>
+                  <nz-form-control>
+                    <nz-select id="priority" formControlName="priority">
+                      <nz-option nzValue="low" [nzLabel]="'TICKET_TOOLS.LBL_BASSA' | translate"></nz-option>
+                      <nz-option nzValue="medium" [nzLabel]="'TICKET_TOOLS.LBL_MEDIA' | translate"></nz-option>
+                      <nz-option nzValue="high" [nzLabel]="'TICKET_TOOLS.LBL_ALTA' | translate"></nz-option>
+                      <nz-option nzValue="critical" [nzLabel]="'TICKET_TOOLS.LBL_CRITICA' | translate"></nz-option>
+                    </nz-select>
+                  </nz-form-control>
+                </nz-form-item>
+
+                <nz-form-item>
+                  <nz-form-label nzFor="type">{{ 'TICKET_TOOLS.LBL_TIPO' | translate }}</nz-form-label>
+                  <nz-form-control>
+                    <nz-select id="type" formControlName="type">
+                      <nz-option nzValue="incident" [nzLabel]="'TICKET_TOOLS.LBL_INCIDENTE' | translate"></nz-option>
+                      <nz-option nzValue="request" [nzLabel]="'TICKET_TOOLS.LBL_RICHIESTA' | translate"></nz-option>
+                      <nz-option nzValue="problem" [nzLabel]="'TICKET_TOOLS.LBL_PROBLEMA' | translate"></nz-option>
+                      <nz-option nzValue="change" [nzLabel]="'TICKET_TOOLS.LBL_MODIFICA' | translate"></nz-option>
+                      <nz-option nzValue="inquiry" [nzLabel]="'TICKET_TOOLS.LBL_INFO_DOMANDA' | translate"></nz-option>
+                    </nz-select>
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+
+              <div class="form-row">
+                <nz-form-item>
+                  <nz-form-label nzFor="impact">{{ 'TICKET_TOOLS.LBL_IMPATTO' | translate }}</nz-form-label>
+                  <nz-form-control>
+                    <nz-select id="impact" formControlName="impact">
+                      <nz-option nzValue="low" [nzLabel]="'TICKET_TOOLS.LBL_BASSO' | translate"></nz-option>
+                      <nz-option nzValue="medium" [nzLabel]="'TICKET_TOOLS.LBL_MEDIO' | translate"></nz-option>
+                      <nz-option nzValue="high" [nzLabel]="'TICKET_TOOLS.LBL_ALTO' | translate"></nz-option>
+                    </nz-select>
+                  </nz-form-control>
+                </nz-form-item>
+
+                <nz-form-item>
+                  <nz-form-label nzFor="urgency">{{ 'TICKET_TOOLS.LBL_URGENZA' | translate }}</nz-form-label>
+                  <nz-form-control>
+                    <nz-select id="urgency" formControlName="urgency">
+                      <nz-option nzValue="low" [nzLabel]="'TICKET_TOOLS.LBL_BASSA' | translate"></nz-option>
+                      <nz-option nzValue="medium" [nzLabel]="'TICKET_TOOLS.LBL_NORMALE' | translate"></nz-option>
+                      <nz-option nzValue="high" [nzLabel]="'TICKET_TOOLS.LBL_IMMEDIATA' | translate"></nz-option>
+                    </nz-select>
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+
+              <div class="form-row">
+                <nz-form-item>
+                  <nz-form-label nzFor="contact_email">{{ 'TICKET_TOOLS.LBL_EMAIL_CONTATTO' | translate }}</nz-form-label>
+                  <nz-form-control
+                    [nzErrorTip]="form.controls.contact_email.hasError('email') ? ('COMMON.VALIDATION.INVALID_EMAIL' | translate) : ('COMMON.VALIDATION.INVALID_VALUE' | translate)"
+                  >
+                    <input nz-input id="contact_email" formControlName="contact_email" />
+                  </nz-form-control>
+                </nz-form-item>
+
+                <nz-form-item>
+                  <nz-form-label nzFor="contact_phone">{{ 'TICKET_TOOLS.LBL_TELEFONO_CONTATTO' | translate }}</nz-form-label>
+                  <nz-form-control [nzErrorTip]="'COMMON.VALIDATION.INVALID_VALUE' | translate">
+                    <input nz-input id="contact_phone" formControlName="contact_phone" />
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+
+              <nz-form-item>
+                <nz-form-label nzFor="description">{{ 'TICKET_TOOLS.LBL_DESCRIZIONE' | translate }}</nz-form-label>
+                <nz-form-control>
+                  <textarea nz-input id="description" rows="4" formControlName="description"></textarea>
+                </nz-form-control>
+              </nz-form-item>
+
+              <div class="form-actions-end">
+                <button nz-button nzType="primary" type="submit" appIconAction="save" [nzLoading]="isSaving()" [disabled]="form.invalid"></button>
+              </div>
+            </form>
+          </nz-tab>
+
+          <!-- TAB 2: CONVERSAZIONE & NOTE -->
+          <nz-tab [nzTitle]="'HELPDESK_SLA.TAB_CONVERSATION' | translate: { count: messages().length }">
+            <!-- Messages timeline / list -->
+            <div class="message-list">
+              @if (messages().length === 0) {
+                <div class="empty-note">{{ 'TICKET_TOOLS.LBL_NESSUN_MESSAGGIO_PRESENTE' | translate }}</div>
+              } @else {
+                @for (msg of messages(); track msg.id) {
+                  <div
+                    class="message"
+                    [class.message-internal]="msg.visibility === 'internal'"
+                    [class.message-customer]="msg.visibility !== 'internal'"
+                    [attr.data-visibility]="msg.visibility === 'internal' ? 'internal' : 'customer'"
+                    role="group"
+                    [attr.aria-label]="(msg.visibility === 'internal' ? 'HELPDESK_SLA.INTERNAL_NOTE_ARIA' : 'HELPDESK_SLA.CUSTOMER_REPLY_ARIA') | translate"
+                  >
+                    <div class="message-head">
+                      <div class="message-author">
+                        @if (msg.visibility === 'internal') {
+                          <i nz-icon nzType="lock" aria-hidden="true"></i>
+                        } @else {
+                          <i nz-icon nzType="mail" aria-hidden="true"></i>
+                        }
+                        <strong>{{ msg.author_name || msg.author_type }}</strong>
+                        @if (msg.visibility === 'internal') {
+                          <nz-tag nzColor="gold">{{ 'HELPDESK_SLA.INTERNAL_NOTE_BADGE' | translate }}</nz-tag>
+                        } @else {
+                          <nz-tag nzColor="blue">{{ 'HELPDESK_SLA.CUSTOMER_REPLY_BADGE' | translate }}</nz-tag>
+                        }
+                      </div>
+                      <span class="message-date">
+                        {{ msg.created_at | date:'dd/MM/yyyy HH:mm' }}
+                      </span>
+                    </div>
+                    <div class="message-body">{{ msg.body }}</div>
+                    @for (attachment of msg.attachments ?? []; track attachment.id) {
+                      <button nz-button nzType="link" nzSize="small" type="button" (click)="downloadAttachment(attachment)">
+                        <i nz-icon nzType="download"></i> {{ attachment.filename }}
+                      </button>
+                    }
+                  </div>
+                }
+              }
+            </div>
+
+            <nz-divider [nzText]="'HELPDESK_SLA.ADD_REPLY_OR_NOTE' | translate"></nz-divider>
+
+            <!-- Reply Form -->
+            <form nz-form nzLayout="vertical" [formGroup]="replyForm" (ngSubmit)="postReply()">
+              <nz-form-item>
+                <nz-form-control>
+                  <textarea
+                    nz-input
+                    rows="3"
+                    formControlName="body"
+                    [placeholder]="'TICKET_TOOLS.LBL_SCRIVI_UNA_RISPOSTA_PER_IL_CLIENTE' | translate"
+                  ></textarea>
+                </nz-form-control>
+              </nz-form-item>
+
+              <div class="reply-actions">
+                <nz-radio-group formControlName="visibility">
+                  <label for="ticket-detail-drawer-public" appRadioControl nz-radio nzValue="public">{{ 'TICKET_TOOLS.LBL_RISPOSTA_PUBBLICA' | translate }}</label>
+                  <label for="ticket-detail-drawer-internal" appRadioControl nz-radio nzValue="internal">{{ 'TICKET_TOOLS.LBL_NOTA_INTERNA' | translate }}</label>
+                </nz-radio-group>
+
+                <button
+                  nz-button
+                  nzType="primary"
+                  type="submit"
+                  [nzLoading]="isPostingMessage()"
+                  [disabled]="replyForm.invalid"
+                >
+                  {{ 'TICKET_TOOLS.LBL_INVIA' | translate }}
+                </button>
+              </div>
+            </form>
+          </nz-tab>
+
+          <!-- TAB 3: CRONOLOGIA ATTIVITÀ -->
+          <nz-tab [nzTitle]="'HELPDESK_SLA.TAB_ACTIVITY' | translate: { count: activities().length }">
+            <div class="activity-list">
+              @if (activities().length === 0) {
+                <div class="empty-note">{{ 'TICKET_TOOLS.LBL_NESSUNA_ATTIVITA_REGISTRATA' | translate }}</div>
+              } @else {
+                <nz-timeline>
+                  @for (act of activities(); track act.id) {
+                    <nz-timeline-item>
+                      <div class="activity-title">
+                        <strong>{{ act.type }}</strong>
+                        @if (act.from_value || act.to_value) {
+                          <span>: {{ act.from_value || '-' }} &rarr; {{ act.to_value }}</span>
+                        }
+                      </div>
+                      <div class="activity-meta">
+                        {{ act.created_at | date:'dd/MM/yyyy HH:mm' }}
+                        @if (act.actor_user_id) {
+                          - {{ 'HELPDESK_SLA.ACTOR' | translate: { user: act.actor_user_id } }}
+                        }
+                      </div>
+                    </nz-timeline-item>
+                  }
+                </nz-timeline>
+              }
+            </div>
+          </nz-tab>
+
+          <!-- TAB 4: STRUMENTI AGENTE -->
+          <nz-tab [nzTitle]="'TICKET_TOOLS.TAB' | translate">
+            <app-ticket-agent-tools
+              [ticket]="currentTicket"
+              [messages]="messages()"
+              (changed)="onToolsChanged()"
+              (insertReply)="insertReply($event)"
+            />
+          </nz-tab>
+
+          <!-- TAB 5: SLA, TEMPO E ESCALATION -->
+          <nz-tab [nzTitle]="'HELPDESK_SLA.TAB_SLA' | translate">
+            <app-ticket-sla-panel [ticket]="currentTicket" />
+            <nz-divider />
+            <app-ticket-time-log [ticket]="currentTicket" (logged)="onTimeLogged()" />
+            <nz-divider />
+            <app-ticket-handoff [ticket]="currentTicket" (handedOff)="onToolsChanged()" />
+          </nz-tab>
+        </nz-tabs>
+        </div>
+        <div class="drawer-aside">
+          <app-ticket-customer-context [ticketId]="currentTicket.id" [refreshToken]="contextRefresh()" />
+        </div>
+        </div>
+      }
+    </nz-spin>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL CAMBIA STATO -->
+<nz-modal appModalActions
+  [nzVisible]="statusModalVisible()"
+  [nzTitle]="'TICKET_TOOLS.LBL_CAMBIA_STATO_DEL_TICKET' | translate"
+  (nzOnCancel)="statusModalVisible.set(false)"
+  (nzOnOk)="confirmStatusChange()"
+>
+  <ng-container *nzModalContent>
+    <div class="modal-field">
+      <span class="modal-field-label">{{ 'TICKET_TOOLS.LBL_NUOVO_STATO' | translate }}</span>
+      <nz-select class="w-full" [ngModel]="targetStatus()" (ngModelChange)="targetStatus.set($event)">
+        <nz-option nzValue="new" [nzLabel]="'TICKET_TOOLS.LBL_NUOVO_NEW' | translate"></nz-option>
+        <nz-option nzValue="open" [nzLabel]="'TICKET_TOOLS.LBL_APERTO_OPEN' | translate"></nz-option>
+        <nz-option nzValue="pending_customer" [nzLabel]="'TICKET_TOOLS.LBL_IN_ATTESA_CLIENTE_PENDING_CUSTOMER' | translate"></nz-option>
+        <nz-option nzValue="on_hold" [nzLabel]="'TICKET_TOOLS.LBL_IN_ATTESA_SOSPESO_ON_HOLD' | translate"></nz-option>
+        <nz-option nzValue="resolved" [nzLabel]="'TICKET_TOOLS.LBL_RISOLTO_RESOLVED' | translate"></nz-option>
+        <nz-option nzValue="closed" [nzLabel]="'TICKET_TOOLS.LBL_CHIUSO_CLOSED' | translate"></nz-option>
+      </nz-select>
+    </div>
+    <div class="modal-field">
+      <span class="modal-field-label">{{ 'TICKET_TOOLS.LBL_NOTA_DI_TRANSIZIONE_OPZIONALE' | translate }}</span>
+      <textarea
+        nz-input
+        rows="3"
+        [ngModel]="statusNote()"
+        (ngModelChange)="statusNote.set($event)"
+        [placeholder]="'TICKET_TOOLS.LBL_MOTIVO_DEL_CAMBIO_DI_STATO' | translate"
+      ></textarea>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL ASSEGNA TICKET -->
+<nz-modal appModalActions
+  [nzVisible]="assignModalVisible()"
+  [nzTitle]="'TICKET_TOOLS.LBL_ASSEGNA_TICKET' | translate"
+  (nzOnCancel)="assignModalVisible.set(false)"
+  [nzOkDisabled]="!assignedUserId().trim()"
+  (nzOnOk)="confirmAssign()"
+>
+  <ng-container *nzModalContent>
+    <div class="modal-field">
+      <span class="modal-field-label">{{ 'TICKET_TOOLS.LBL_ID_UTENTE_AGENTE_UUID' | translate }}</span>
+      <input
+        nz-input
+        [ngModel]="assignedUserId()"
+        (ngModelChange)="assignedUserId.set($event)"
+        [placeholder]="'TICKET_TOOLS.LBL_UUID_DELL_UTENTE_ASSEGNATARIO' | translate"
+      />
+    </div>
+    <div class="modal-field">
+      <span class="modal-field-label">{{ 'TICKET_TOOLS.LBL_ID_TEAM_DI_ASSISTENZA_OPZIONALE' | translate }}</span>
+      <input
+        nz-input
+        [ngModel]="assignedTeamId()"
+        (ngModelChange)="assignedTeamId.set($event)"
+        [placeholder]="'TICKET_TOOLS.LBL_UUID_DEL_TEAM_DI_SERVIZIO' | translate"
+      />
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL RISOLVI TICKET -->
+<nz-modal appModalActions
+  [nzVisible]="resolveModalVisible()"
+  [nzTitle]="'TICKET_TOOLS.LBL_RISOLVI_TICKET' | translate"
+  (nzOnCancel)="resolveModalVisible.set(false)"
+  (nzOnOk)="confirmResolve()"
+>
+  <ng-container *nzModalContent>
+    <div class="modal-field">
+      <span class="modal-field-label">{{ 'TICKET_TOOLS.LBL_NOTE_DI_RISOLUZIONE' | translate }}</span>
+      <textarea
+        nz-input
+        rows="3"
+        [ngModel]="resolutionNotes()"
+        (ngModelChange)="resolutionNotes.set($event)"
+        [placeholder]="'TICKET_TOOLS.LBL_DESCRIVI_COME_E_STATO_RISOLTO_IL' | translate"
+      ></textarea>
+    </div>
+    <div class="modal-field">
+      <span class="modal-field-label">{{ 'TICKET_TOOLS.LBL_CAUSA_PRINCIPALE_ROOT_CAUSE' | translate }}</span>
+      <textarea
+        nz-input
+        rows="2"
+        [ngModel]="rootCause()"
+        (ngModelChange)="rootCause.set($event)"
+        [placeholder]="'TICKET_TOOLS.LBL_ES_GUASTO_HARDWARE_ERRORE_DI_CONFIGURAZIONE' | translate"
+      ></textarea>
+    </div>
+  </ng-container>
+</nz-modal>

@@ -1,0 +1,170 @@
+<nz-modal
+  [nzVisible]="open()"
+  [nzTitle]="'RMA.ACTIONS.DIAGNOSIS' | translate"
+  [nzWidth]="960"
+  [nzOkText]="'COMMON.SAVE' | translate"
+  [nzCancelText]="'COMMON.CANCEL' | translate"
+  [nzOkLoading]="store.busy()"
+  (nzOnOk)="submit()"
+  (nzOnCancel)="open.set(false)"
+>
+  <ng-container *nzModalContent>
+    <form nz-form nzLayout="vertical" [formGroup]="form" (ngSubmit)="submit()">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="diag-notes">{{
+          'RMA.FIELDS.DIAGNOSTIC_NOTES' | translate
+        }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip('lab_bench_diagnostic_notes')">
+          <textarea
+            nz-input
+            id="diag-notes"
+            rows="4"
+            formControlName="lab_bench_diagnostic_notes"
+          ></textarea>
+        </nz-form-control>
+      </nz-form-item>
+
+      <div class="rma-toolbar">
+        <label for="diagnosis-dialog-repair-feasible" nzId="diagnosis-dialog-repair-feasible" nz-checkbox formControlName="repair_feasible">{{
+          'RMA.DIAGNOSIS.REPAIR_FEASIBLE' | translate
+        }}</label>
+        <label for="diagnosis-dialog-parts-available" nzId="diagnosis-dialog-parts-available" nz-checkbox formControlName="parts_available">{{
+          'RMA.DIAGNOSIS.PARTS_AVAILABLE' | translate
+        }}</label>
+        <label for="diagnosis-dialog-goodwill" nzId="diagnosis-dialog-goodwill" nz-checkbox formControlName="goodwill">{{
+          'RMA.DIAGNOSIS.GOODWILL' | translate
+        }}</label>
+      </div>
+
+      <h4>{{ 'RMA.DIAGNOSIS.LINES' | translate }}</h4>
+      <div formArrayName="lines">
+        @for (row of form.controls.lines.controls; track row; let i = $index) {
+          <fieldset class="diag-line" [formGroupName]="i">
+            <legend>
+              {{ 'RMA.DIAGNOSIS.LINE' | translate: { n: i + 1 } }} &middot;
+              {{ 'RMA.LINE_TYPE.' + row.controls.line_type.value.toUpperCase() | translate }}
+            </legend>
+            <div class="rma-form-grid">
+              <nz-form-item>
+                <nz-form-label nzRequired [nzFor]="'diag-desc-' + i">{{
+                  'RMA.FIELDS.DESCRIPTION' | translate
+                }}</nz-form-label>
+                <nz-form-control [nzErrorTip]="errorTip('lines.' + i + '.description')">
+                  <input nz-input [id]="'diag-desc-' + i" formControlName="description" />
+                </nz-form-control>
+              </nz-form-item>
+              <nz-form-item>
+                <nz-form-label nzRequired [nzFor]="'diag-qty-' + i">{{
+                  'RMA.FIELDS.QTY' | translate
+                }}</nz-form-label>
+                <nz-form-control [nzErrorTip]="errorTip('lines.' + i + '.qty')">
+                  <nz-input-number
+                    [nzId]="'diag-qty-' + i"
+                    formControlName="qty"
+                    [nzMin]="0"
+                    [nzStep]="1"
+                  />
+                </nz-form-control>
+              </nz-form-item>
+              <nz-form-item>
+                <nz-form-label nzRequired [nzFor]="'diag-cost-' + i">{{
+                  'RMA.FIELDS.UNIT_COST' | translate
+                }}</nz-form-label>
+                <nz-form-control [nzErrorTip]="errorTip('lines.' + i + '.unit_cost')">
+                  <nz-input-number
+                    [nzId]="'diag-cost-' + i"
+                    formControlName="unit_cost"
+                    [nzMin]="0"
+                    [nzPrecision]="2"
+                  />
+                </nz-form-control>
+              </nz-form-item>
+              <nz-form-item>
+                <nz-form-label nzRequired [nzFor]="'diag-price-' + i">{{
+                  'RMA.FIELDS.UNIT_PRICE' | translate
+                }}</nz-form-label>
+                <nz-form-control [nzErrorTip]="errorTip('lines.' + i + '.unit_price')">
+                  <nz-input-number
+                    [nzId]="'diag-price-' + i"
+                    formControlName="unit_price"
+                    [nzMin]="0"
+                    [nzPrecision]="2"
+                  />
+                </nz-form-control>
+              </nz-form-item>
+              @if (row.controls.line_type.value === 'part') {
+                <nz-form-item>
+                  <nz-form-label [nzFor]="'diag-product-' + i">{{
+                    'RMA.FIELDS.PRODUCT_ID' | translate
+                  }}</nz-form-label>
+                  <nz-form-control [nzErrorTip]="errorTip('lines.' + i + '.product_id')">
+                    <input nz-input [id]="'diag-product-' + i" formControlName="product_id" />
+                  </nz-form-control>
+                </nz-form-item>
+                <nz-form-item>
+                  <nz-form-label [nzFor]="'diag-defective-' + i">{{
+                    'RMA.FIELDS.DEFECTIVE_SERIAL' | translate
+                  }}</nz-form-label>
+                  <nz-form-control [nzErrorTip]="errorTip('lines.' + i + '.defective_part_serial')">
+                    <input
+                      nz-input
+                      [id]="'diag-defective-' + i"
+                      formControlName="defective_part_serial"
+                    />
+                  </nz-form-control>
+                </nz-form-item>
+                <nz-form-item>
+                  <nz-form-label [nzFor]="'diag-supplier-' + i">{{
+                    'RMA.FIELDS.SUPPLIER_ID' | translate
+                  }}</nz-form-label>
+                  <nz-form-control [nzErrorTip]="errorTip('lines.' + i + '.supplier_id')">
+                    <input nz-input [id]="'diag-supplier-' + i" formControlName="supplier_id" />
+                  </nz-form-control>
+                </nz-form-item>
+                <nz-form-item>
+                  <nz-form-label [nzFor]="'diag-replacement-' + i">{{
+                    'RMA.FIELDS.REPLACEMENT_SERIAL' | translate
+                  }}</nz-form-label>
+                  <nz-form-control
+                    [nzErrorTip]="errorTip('lines.' + i + '.replacement_part_serial')"
+                  >
+                    <input
+                      nz-input
+                      [id]="'diag-replacement-' + i"
+                      formControlName="replacement_part_serial"
+                    />
+                  </nz-form-control>
+                </nz-form-item>
+              }
+            </div>
+            <button nz-button nzDanger type="button" (click)="removeLine(i)">
+              <i class="fa-solid fa-trash" aria-hidden="true"></i>&nbsp;{{
+                'RMA.ACTIONS.REMOVE_ROW' | translate
+              }}
+            </button>
+          </fieldset>
+        }
+      </div>
+      <div class="rma-toolbar">
+        <button nz-button nzType="dashed" type="button" (click)="addLine('part')">
+          <i class="fa-solid fa-plus" aria-hidden="true"></i>&nbsp;{{
+            'RMA.DIAGNOSIS.ADD_PART' | translate
+          }}
+        </button>
+        <button nz-button nzType="dashed" type="button" (click)="addLine('labour')">
+          <i class="fa-solid fa-plus" aria-hidden="true"></i>&nbsp;{{
+            'RMA.DIAGNOSIS.ADD_LABOUR' | translate
+          }}
+        </button>
+        <span>
+          {{ 'RMA.DIAGNOSIS.PREVIEW_TOTAL' | translate }}:
+          <strong>{{ previewTotal() | appCurrency: currency() }}</strong>
+        </span>
+      </div>
+      <p>{{ 'RMA.DIAGNOSIS.COVERAGE_HINT' | translate }}</p>
+      @for (msg of formErrors(); track msg) {
+        <p class="rma-form-error" role="alert">{{ msg }}</p>
+      }
+    </form>
+  </ng-container>
+</nz-modal>

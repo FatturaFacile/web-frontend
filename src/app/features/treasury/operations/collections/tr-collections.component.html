@@ -1,0 +1,82 @@
+<nz-card>
+  <nz-tabs>
+    <nz-tab [nzTitle]="'TR.COLLECTIONS' | translate">
+      <div class="toolbar">
+        <nz-select
+          class="status-filter"
+          nzAllowClear
+          [attr.aria-label]="'TR.STATUS' | translate"
+          [nzPlaceHolder]="'TR.ALL_STATUSES' | translate"
+          [(ngModel)]="statusFilter"
+          (ngModelChange)="onStatusChange($event)"
+        >
+          @for (status of statuses; track status) {
+            <nz-option [nzValue]="status" [nzLabel]="status" />
+          }
+        </nz-select>
+      </div>
+      <app-base-table [grid]="grid" [columns]="columns()" [actionsTemplate]="actionsTpl" [scroll]="{ x: '900px' }" [exportFileName]="'collections'" />
+      <ng-template #amountTpl let-item let-value="value">{{ value | money: currency() }}</ng-template>
+      <ng-template #statusTpl let-item><nz-tag>{{ item.status }}</nz-tag></ng-template>
+      <ng-template #actionsTpl let-item>
+        @if (canWrite && item.status !== 'collected') {
+          <button nz-button nzSize="small" type="button" (click)="openRecord(item)">{{ 'TR.RECORD_COLLECTION' | translate }}</button>
+        }
+      </ng-template>
+    </nz-tab>
+
+    <nz-tab [nzTitle]="'TR.AGING' | translate">
+      <nz-table appGridExport #agingTable nzSize="small" [nzData]="aging()" [nzShowPagination]="false">
+        <tbody>
+          @for (row of agingTable.data; track row.key) {
+            <tr>
+              <td>{{ row.key }}</td>
+              <td>{{ row.value }}</td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <nz-tab [nzTitle]="'TR.DUNNING_READINESS' | translate">
+      @if (dunning(); as readiness) {
+        <p>{{ 'TR.EVALUATED_COUNT' | translate }}: {{ readiness.evaluated_count }}</p>
+        <nz-table appGridExport #dunningTable nzSize="middle" [nzData]="readiness.overdue_items" [nzPageSize]="20">
+          <thead>
+            <tr>
+              <th [nzSortFn]="'due_date' | gridSort" [nzFilters]="'due_date' | gridFilterList: dunningTable.nzData" [nzFilterFn]="'due_date' | gridFilterFn">{{ 'TR.DUE_DATE' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'expected_amount' | gridSort" [nzFilters]="'expected_amount' | gridFilterList: dunningTable.nzData" [nzFilterFn]="'expected_amount' | gridFilterFn">{{ 'TR.EXPECTED_AMOUNT' | translate }}</th>
+              <th [nzSortFn]="'aging_bucket' | gridSort" [nzFilters]="'aging_bucket' | gridFilterList: dunningTable.nzData" [nzFilterFn]="'aging_bucket' | gridFilterFn">{{ 'TR.AGING_BUCKET' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'dunning_level' | gridSort" [nzFilters]="'dunning_level' | gridFilterList: dunningTable.nzData" [nzFilterFn]="'dunning_level' | gridFilterFn">{{ 'TR.DUNNING_LEVEL' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of dunningTable.data; track item.id) {
+              <tr>
+                <td>{{ item.due_date }}</td>
+                <td nzAlign="right">{{ item.expected_amount | money: currency() }}</td>
+                <td>{{ item.aging_bucket }}</td>
+                <td nzAlign="right">{{ item.dunning_level }}</td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      }
+    </nz-tab>
+  </nz-tabs>
+</nz-card>
+
+<nz-modal appModalActions
+  [nzVisible]="recordTarget() !== null"
+  [nzTitle]="'TR.RECORD_COLLECTION' | translate"
+  [nzOkDisabled]="!recordAmount"
+  (nzOnOk)="confirmRecord()"
+  (nzOnCancel)="recordTarget.set(null)"
+>
+  <ng-container *nzModalContent>
+    <label for="co-amount">{{ 'TR.AMOUNT' | translate }}</label>
+    <nz-input-number class="w-full" id="co-amount" [(ngModel)]="recordAmount" [nzMin]="0.01" [nzPrecision]="2" />
+    <label class="field-label" for="co-date">{{ 'TR.DATE' | translate }}</label>
+    <input id="co-date" nz-input type="date" [(ngModel)]="recordDate" />
+  </ng-container>
+</nz-modal>

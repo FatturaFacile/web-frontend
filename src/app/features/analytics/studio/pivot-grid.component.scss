@@ -1,0 +1,92 @@
+.grid-tools {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.truncated {
+  color: var(--ant-warning-color, #d48806);
+  font-size: 12px;
+}
+
+.scroller {
+  max-height: 60vh;
+  overflow: auto;
+  border: 1px solid var(--ant-border-color-split, #f0f0f0);
+  border-radius: 6px;
+}
+
+table.pivot {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+}
+
+thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--ant-background-color-light, #fafafa);
+  border-bottom: 1px solid var(--ant-border-color-split, #f0f0f0);
+  padding: 6px 8px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+thead tr:nth-child(2) th {
+  top: 33px;
+}
+
+th.group {
+  text-align: center;
+  border-left: 1px solid var(--ant-border-color-split, #f0f0f0);
+}
+
+th.num,
+td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+td,
+tbody th {
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--ant-border-color-split, #f0f0f0);
+  white-space: nowrap;
+  font-weight: normal;
+  text-align: left;
+}
+
+td.num {
+  text-align: right;
+}
+
+td.total,
+th.total {
+  border-left: 1px solid var(--ant-border-color-split, #f0f0f0);
+  font-weight: 600;
+}
+
+tr.row-subtotal td,
+tr.row-subtotal th {
+  font-weight: 600;
+  background: var(--ant-background-color-light, #fafafa);
+}
+
+tr.row-grand_total td,
+tr.row-grand_total th {
+  font-weight: 700;
+  border-top: 2px solid var(--ant-border-color-base, #d9d9d9);
+}
+
+.toggle {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  padding: 2px 4px;
+  margin-right: 4px;
+  min-width: 24px;
+  min-height: 24px;
+}

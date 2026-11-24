@@ -1,0 +1,504 @@
+import { DatePipe } from '@angular/common';
+import { Component, computed, effect, inject, input, model, output, signal } from '@angular/core';
+import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
+import { NzDividerModule } from 'ng-zorro-antd/divider';
+import { NzFormModule } from 'ng-zorro-antd/form';
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
+import { NzRadioModule } from 'ng-zorro-antd/radio';
+import { NzSelectModule } from 'ng-zorro-antd/select';
+import { NzSpaceModule } from 'ng-zorro-antd/space';
+import { NzSpinModule } from 'ng-zorro-antd/spin';
+import { NzTabsModule } from 'ng-zorro-antd/tabs';
+import { NzTagModule } from 'ng-zorro-antd/tag';
+import { NzTimelineModule } from 'ng-zorro-antd/timeline';
+import {
+  applyServerErrors,
+  AssignTicketRequest,
+  ChangeTicketStatusRequest,
+  HelpdeskTicketActivityResource,
+  HelpdeskTicketMessageResource,
+  ResolveTicketRequest,
+  serverErrorMessage,
+  StoreTicketMessageRequest,
+  TicketApiService,
+  TicketAttachment,
+  TicketPriority,
+  TicketResource,
+  TicketStatus,
+  TicketType,
+  UpdateHelpdeskTicketRequest,
+  TranslateService,
+} from '@core';
+import { downloadBlob, TranslatePipe, IconActionDirective, ModalActionsDirective, RadioControlDirective } from '@shared';
+import { TicketCustomerContextComponent } from '../../../helpdesk/sla/ticket-customer-context.component';
+import { TicketHandoffComponent } from '../../../helpdesk/sla/ticket-handoff.component';
+import { TicketSlaPanelComponent } from '../../../helpdesk/sla/ticket-sla-panel.component';
+import { TicketTimeLogComponent } from '../../../helpdesk/sla/ticket-time-log.component';
+import { TicketAgentToolsComponent } from '../ticket-agent-tools/ticket-agent-tools.component';
+
+@Component({
+  selector: 'app-ticket-detail-drawer',
+  styleUrl: './ticket-detail-drawer.component.scss',
+  imports: [
+    RadioControlDirective,
+    ModalActionsDirective,
+    IconActionDirective,
+    DatePipe,
+    FormsModule,
+    ReactiveFormsModule,
+    NzTabsModule,
+    NzFormModule,
+    NzInputModule,
+    NzSelectModule,
+    NzButtonModule,
+    NzTagModule,
+    NzDescriptionsModule,
+    NzTimelineModule,
+    NzSpinModule,
+    NzSpaceModule,
+    NzModalModule,
+    NzRadioModule,
+    NzDividerModule,
+    NzIconModule,
+    TicketAgentToolsComponent,
+    TicketCustomerContextComponent,
+    TicketHandoffComponent,
+    TicketSlaPanelComponent,
+    TicketTimeLogComponent,
+    TranslatePipe,
+  ],
+  templateUrl: './ticket-detail-drawer.component.html',
+})
+export class TicketDetailDrawerComponent {
+  private readonly translate = inject(TranslateService);
+  private readonly fb = inject(NonNullableFormBuilder);
+  private readonly api = inject(TicketApiService);
+  private readonly message = inject(NzMessageService);
+  private readonly modal = inject(NzModalService);
+
+  readonly ticketId = input<string | null>(null);
+  readonly open = model.required<boolean>();
+  readonly updated = output<void>();
+
+  protected readonly loading = signal(false);
+  protected readonly isSaving = signal(false);
+  protected readonly isPostingMessage = signal(false);
+  protected readonly ticket = signal<TicketResource | null>(null);
+  protected readonly messages = signal<HelpdeskTicketMessageResource[]>([]);
+  protected readonly activities = signal<HelpdeskTicketActivityResource[]>([]);
+  protected readonly contextRefresh = signal(0);
+
+  // Modals state
+  protected readonly statusModalVisible = signal(false);
+  protected readonly targetStatus = signal<TicketStatus>('open');
+  protected readonly statusNote = signal('');
+
+  protected readonly assignModalVisible = signal(false);
+  protected readonly assignedUserId = signal('');
+  protected readonly assignedTeamId = signal('');
+
+  protected readonly resolveModalVisible = signal(false);
+  protected readonly resolutionNotes = signal('');
+  protected readonly rootCause = signal('');
+
+  // Main edit form
+  protected readonly form = this.fb.group({
+    subject: this.fb.control<string>('', [Validators.required, Validators.maxLength(200)]),
+    description: this.fb.control<string>(''),
+    type: this.fb.control<TicketType>('incident'),
+    priority: this.fb.control<TicketPriority>('medium'),
+    impact: this.fb.control<'low' | 'medium' | 'high' | ''>('medium'),
+    urgency: this.fb.control<'low' | 'medium' | 'high' | ''>('medium'),
+    contact_name: this.fb.control<string>('', [Validators.maxLength(180)]),
+    contact_email: this.fb.control<string>('', [Validators.email, Validators.maxLength(180)]),
+    contact_phone: this.fb.control<string>('', [Validators.maxLength(50)]),
+  });
+
+  // Reply message form
+  protected readonly replyForm = this.fb.group({
+    body: this.fb.control<string>('', [Validators.required, Validators.maxLength(20000)]),
+    visibility: this.fb.control<'public' | 'internal'>('public'),
+  });
+
+  protected readonly statusColor = computed(() => {
+    const s = this.ticket()?.status;
+    switch (s) {
+      case 'new':
+        return 'cyan';
+      case 'open':
+        return 'blue';
+      case 'pending_customer':
+        return 'purple';
+      case 'on_hold':
+        return 'warning';
+      case 'resolved':
+        return 'success';
+      case 'closed':
+        return 'default';
+      default:
+        return 'default';
+    }
+  });
+
+  protected readonly priorityColor = computed(() => {
+    const p = this.ticket()?.priority;
+    switch (p) {
+      case 'critical':
+        return 'error';
+      case 'high':
+        return 'warning';
+      case 'medium':
+        return 'blue';
+      case 'low':
+        return 'default';
+      default:
+        return 'default';
+    }
+  });
+
+  protected readonly slaColor = computed(() => {
+    const s = this.ticket()?.sla_state;
+    switch (s) {
+      case 'ok':
+        return 'success';
+      case 'warning':
+        return 'warning';
+      case 'breached':
+        return 'error';
+      case 'paused':
+        return 'default';
+      default:
+        return 'default';
+    }
+  });
+
+  constructor() {
+    effect(() => {
+      const id = this.ticketId();
+      const isOpen = this.open();
+      if (isOpen && id) {
+        this.loadTicket(id);
+      }
+    });
+  }
+
+  loadTicket(id: string): void {
+    this.loading.set(true);
+    this.api.getTicket(id).subscribe({
+      next: (res) => {
+        const t = res.data;
+        this.ticket.set(t);
+        this.form.patchValue({
+          subject: t.subject || t.title || '',
+          description: t.description || '',
+          type: (t.type as TicketType) || 'incident',
+          priority: t.priority || 'medium',
+          impact: t.impact || 'medium',
+          urgency: t.urgency || 'medium',
+          contact_name: '',
+          contact_email: t.contact_email || '',
+          contact_phone: t.contact_phone || '',
+        });
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.loading.set(false);
+        this.message.error(err?.error?.detail || err?.message || this.translate.instant('TICKET_TOOLS.MSG_ERRORE_NEL_CARICAMENTO_DEL_TICKET'));
+      },
+    });
+
+    this.api.getTicketMessages(id).subscribe({
+      next: (res) => {
+        this.messages.set(res.data || []);
+        if ((res.meta?.unread ?? 0) > 0) {
+          this.api.markRead(id).subscribe({ error: () => undefined });
+        }
+      },
+      error: () => {
+        this.messages.set([]);
+      },
+    });
+
+    this.api.getTicketActivities(id).subscribe({
+      next: (res) => {
+        this.activities.set(res.data || []);
+      },
+      error: () => {
+        this.activities.set([]);
+      },
+    });
+  }
+
+  protected getErrorMessage(controlName: string): string | null {
+    return serverErrorMessage(this.form, controlName);
+  }
+
+  protected close(): void {
+    this.open.set(false);
+  }
+
+  protected onToolsChanged(): void {
+    const id = this.ticketId();
+    if (id) {
+      this.loadTicket(id);
+      this.updated.emit();
+    }
+  }
+
+  /** Time logged on the ticket changes the hours left on the contract shown in the customer panel. */
+  protected onTimeLogged(): void {
+    this.contextRefresh.update((value) => value + 1);
+    this.updated.emit();
+  }
+
+  protected insertReply(text: string): void {
+    this.replyForm.patchValue({ body: text });
+  }
+
+  protected downloadAttachment(attachment: TicketAttachment): void {
+    const id = this.ticketId();
+    if (!id) {
+      return;
+    }
+    this.api.downloadAttachment(id, attachment.id).subscribe({
+      next: (blob) => downloadBlob(blob, attachment.filename),
+      error: () => this.message.error(this.translate.instant('TICKET_TOOLS.MSG_ERRORE_NEL_DOWNLOAD_DELL_ALLEGATO')),
+    });
+  }
+
+  protected saveDetails(): void {
+    const id = this.ticketId();
+    if (!id) return;
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    const val = this.form.getRawValue();
+    const payload: UpdateHelpdeskTicketRequest = {
+      subject: val.subject.trim(),
+      description: val.description.trim() || undefined,
+      type: val.type,
+      priority: val.priority,
+      impact: val.impact ? (val.impact as 'low' | 'medium' | 'high') : null,
+      urgency: val.urgency ? (val.urgency as 'low' | 'medium' | 'high') : null,
+      contact_name: val.contact_name.trim() || null,
+      contact_email: val.contact_email.trim() || null,
+      contact_phone: val.contact_phone.trim() || null,
+    };
+
+    this.isSaving.set(true);
+    this.api.updateTicket(id, payload).subscribe({
+      next: (res) => {
+        this.isSaving.set(false);
+        this.ticket.set(res.data);
+        this.message.success(this.translate.instant('TICKET_TOOLS.MSG_TICKET_AGGIORNATO'));
+        this.updated.emit();
+      },
+      error: (err) => {
+        this.isSaving.set(false);
+        const unmapped = applyServerErrors(this.form, err);
+        if (unmapped.length > 0) {
+          this.message.error(unmapped.join('; '));
+        } else {
+          this.message.error(err?.error?.detail || err?.message || this.translate.instant('TICKET_TOOLS.MSG_ERRORE_DURANTE_L_AGGIORNAMENTO'));
+        }
+      },
+    });
+  }
+
+  protected postReply(): void {
+    const id = this.ticketId();
+    if (!id || this.replyForm.invalid) return;
+
+    const val = this.replyForm.getRawValue();
+    const payload: StoreTicketMessageRequest = {
+      body: val.body.trim(),
+      visibility: val.visibility,
+    };
+
+    this.isPostingMessage.set(true);
+    this.api.addTicketMessage(id, payload).subscribe({
+      next: (res) => {
+        this.isPostingMessage.set(false);
+        this.replyForm.reset({ body: '', visibility: 'public' });
+        this.messages.update((list) => [...list, res.data]);
+        this.message.success(this.translate.instant('TICKET_TOOLS.MSG_MESSAGGIO_INVIATO'));
+      },
+      error: (err) => {
+        this.isPostingMessage.set(false);
+        this.message.error(err?.error?.detail || err?.message || this.translate.instant('TICKET_TOOLS.MSG_ERRORE_NELL_INVIO_DEL_MESSAGGIO'));
+      },
+    });
+  }
+
+  // Action modals handlers
+  protected openStatusModal(): void {
+    const current = this.ticket()?.status || 'open';
+    this.targetStatus.set(current);
+    this.statusNote.set('');
+    this.statusModalVisible.set(true);
+  }
+
+  protected confirmStatusChange(): void {
+    const id = this.ticketId();
+    if (!id) return;
+
+    const payload: ChangeTicketStatusRequest = {
+      status: this.targetStatus(),
+      note: this.statusNote().trim() || null,
+    };
+
+    this.api.changeTicketStatus(id, payload).subscribe({
+      next: (res) => {
+        this.statusModalVisible.set(false);
+        this.ticket.set(res.data);
+        this.message.success(this.translate.instant('TICKET_TOOLS.MSG_STATO_DEL_TICKET_AGGIORNATO'));
+        this.loadTicket(id);
+        this.updated.emit();
+      },
+      error: (err) => {
+        this.message.error(err?.error?.detail || err?.message || this.translate.instant('TICKET_TOOLS.MSG_ERRORE_NEL_CAMBIO_DI_STATO'));
+      },
+    });
+  }
+
+  protected openAssignModal(): void {
+    const t = this.ticket();
+    this.assignedUserId.set(t?.assigned_to_id || '');
+    this.assignedTeamId.set(t?.service_team_id || '');
+    this.assignModalVisible.set(true);
+  }
+
+  protected confirmAssign(): void {
+    const id = this.ticketId();
+    if (!id || !this.assignedUserId().trim()) {
+      this.message.warning(this.translate.instant('TICKET_TOOLS.MSG_INSERISCI_L_ID_UTENTE_DA_ASSEGNARE'));
+      return;
+    }
+
+    const payload: AssignTicketRequest = {
+      assigned_to_id: this.assignedUserId().trim(),
+      service_team_id: this.assignedTeamId().trim() || null,
+    };
+
+    this.api.assignTicket(id, payload).subscribe({
+      next: (res) => {
+        this.assignModalVisible.set(false);
+        this.ticket.set(res.data);
+        this.message.success(this.translate.instant('TICKET_TOOLS.MSG_TICKET_ASSEGNATO_CON_SUCCESSO'));
+        this.loadTicket(id);
+        this.updated.emit();
+      },
+      error: (err) => {
+        this.message.error(err?.error?.detail || err?.message || this.translate.instant('TICKET_TOOLS.MSG_ERRORE_NELL_ASSEGNAZIONE'));
+      },
+    });
+  }
+
+  protected openResolveModal(): void {
+    this.resolutionNotes.set('');
+    this.rootCause.set('');
+    this.resolveModalVisible.set(true);
+  }
+
+  protected confirmResolve(): void {
+    const id = this.ticketId();
+    if (!id) return;
+
+    const payload: ResolveTicketRequest = {
+      resolution_notes: this.resolutionNotes().trim() || null,
+      root_cause: this.rootCause().trim() || null,
+    };
+
+    this.api.resolveTicket(id, payload).subscribe({
+      next: (res) => {
+        this.resolveModalVisible.set(false);
+        this.ticket.set(res.data);
+        this.message.success(this.translate.instant('TICKET_TOOLS.MSG_TICKET_CONTRASSEGNATO_COME_RISOLTO'));
+        this.loadTicket(id);
+        this.updated.emit();
+      },
+      error: (err) => {
+        this.message.error(err?.error?.detail || err?.message || this.translate.instant('TICKET_TOOLS.MSG_ERRORE_NELLA_RISOLUZIONE'));
+      },
+    });
+  }
+
+  protected escalateToFieldService(): void {
+    const id = this.ticketId();
+    if (!id) return;
+
+    this.modal.confirm({
+      nzTitle: this.translate.instant('TICKET_TOOLS.DLG_FIELD_SERVICE_TITLE'),
+      nzContent: this.translate.instant('TICKET_TOOLS.DLG_FIELD_SERVICE_BODY'),
+      nzOkText: this.translate.instant('TICKET_TOOLS.LBL_FIELD_SERVICE'),
+      nzOnOk: () => {
+        this.api.escalateToFieldService(id, {}).subscribe({
+          next: () => {
+            this.message.success(this.translate.instant('TICKET_TOOLS.MSG_FIELD_SERVICE_CREATED'));
+            this.loadTicket(id);
+            this.updated.emit();
+          },
+          error: (err) => {
+            this.message.error(err?.error?.detail || err?.message || this.translate.instant('TICKET_TOOLS.MSG_FIELD_SERVICE_FAILED'));
+          },
+        });
+      },
+    });
+  }
+
+  protected confirmClose(): void {
+    const id = this.ticketId();
+    if (!id) return;
+
+    this.modal.confirm({
+      nzTitle: this.translate.instant('TICKET_TOOLS.DLG_CONFERMA_CHIUSURA_TICKET'),
+      nzContent: this.translate.instant('TICKET_TOOLS.DLG_SEI_SICURO_DI_VOLER_CHIUDERE_DEFINITIVAMENTE'),
+      nzOkText: this.translate.instant('TICKET_TOOLS.DLG_CHIUDI_TICKET'),
+      nzOkDanger: true,
+      nzOnOk: () => {
+        this.api.closeTicket(id).subscribe({
+          next: (res) => {
+            this.ticket.set(res.data);
+            this.message.success(this.translate.instant('TICKET_TOOLS.MSG_TICKET_CHIUSO_CON_SUCCESSO'));
+            this.loadTicket(id);
+            this.updated.emit();
+          },
+          error: (err) => {
+            this.message.error(err?.error?.detail || err?.message || this.translate.instant('TICKET_TOOLS.MSG_ERRORE_NELLA_CHIUSURA'));
+          },
+        });
+      },
+    });
+  }
+
+  protected confirmReopen(): void {
+    const id = this.ticketId();
+    if (!id) return;
+
+    this.modal.confirm({
+      nzTitle: this.translate.instant('TICKET_TOOLS.DLG_RIAPRI_TICKET'),
+      nzContent: this.translate.instant('TICKET_TOOLS.DLG_VUOI_RIAPRIRE_QUESTO_TICKET_E_RIAVVIARE'),
+      nzOkText: this.translate.instant('TICKET_TOOLS.DLG_RIAPRI'),
+      nzOnOk: () => {
+        this.api.reopenTicket(id).subscribe({
+          next: (res) => {
+            this.ticket.set(res.data);
+            this.message.success(this.translate.instant('TICKET_TOOLS.MSG_TICKET_RIAPERTO'));
+            this.loadTicket(id);
+            this.updated.emit();
+          },
+          error: (err) => {
+            this.message.error(err?.error?.detail || err?.message || this.translate.instant('TICKET_TOOLS.MSG_ERRORE_NELLA_RIAPERTURA'));
+          },
+        });
+      },
+    });
+  }
+}

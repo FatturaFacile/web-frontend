@@ -1,0 +1,59 @@
+version: "1.0"
+
+linter: jetbrains/qodana-js:2026.2
+
+profile:
+  name: qodana.recommended
+
+include:
+  - name: JSUnusedLocalSymbols
+  - name: JSUnusedGlobalSymbols
+  - name: HtmlUnknownAttribute
+  - name: HtmlUnknownTag
+  - name: CheckTagEmptyBody
+
+# Explicit, motivated exclusions (full scan on dev and on PRs).
+# Anything not listed here must be fixed in code.
+exclude:
+  # Duplicated code: token-level matches between tests and sources
+  # are acceptable in test fixtures and setup code.
+  - name: DuplicatedCode
+
+  # Unused global symbols.
+  # API clients, generated schemas, tooling configuration,
+  # infrastructure services and facades may be consumed by
+  # features that are introduced incrementally.
+  - name: JSUnusedGlobalSymbols
+    paths:
+      - src/app/core/api
+      - src/app/core/models
+      - playwright.config.ts
+      - proxy.conf.mjs
+      - src/app/core/auth/token-storage.service.ts
+      - src/app/core/i18n/i18n.service.ts
+      - src/app/core/lookups/lookup.service.ts
+      - src/app/core/state/app.store.ts
+      - src/app/core/state/list-facade.ts
+      - src/app/data-access/mappers/time-attendance.mapper.ts
+      - src/app/shared/components/base-table/table-state.service.ts
+      - src/app/features/hr/self-service/self-service.component.spec.ts
+
+  # The brand logo is an SVG.
+  - name: ES6PreferShortImport
+
+  # NgOptimizedImage exclusions.
+  - name: AngularNgOptimizedImage
+    paths:
+      - src/app/layout/sidebar/sidebar.component.html
+      - src/app/features/settings/pages/document-templates/document-templates.component.html
+
+failureConditions:
+  severityThresholds:
+    critical: 0
+    high: 0
+    moderate: 800
+    low: 150
+
+  testCoverageThresholds:
+    fresh: 70
+    total: 55

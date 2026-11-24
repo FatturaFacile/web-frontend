@@ -1,0 +1,253 @@
+name: CI
+
+on:
+  # Branches other than main are checked through their pull request, so a push to
+  # a PR branch no longer runs the pipeline twice
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_call:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Setup PNPM
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+        with:
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run linter
+        run: pnpm run lint
+
+      - name: Run unit tests with coverage
+        run: pnpm run test:ci
+
+  build:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Setup PNPM
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+        with:
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Angular application
+        run: pnpm run build --configuration production
+
+  e2e:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Setup PNPM
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+        with:
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # ng serve runs over HTTPS and reads certs/localhost.*, which are git-ignored (each developer uses mkcert):
+      # in CI a throwaway self-signed pair is enough, the Playwright config ignores certificate errors.
+      - name: Generate local HTTPS certificate
+        run: >-
+          openssl req -x509 -newkey rsa:2048 -nodes -days 1 -subj "/CN=localhost"
+          -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
+          -keyout certs/localhost.key -out certs/localhost.crt
+
+      - name: Install Playwright Browsers
+        run: pnpm exec playwright install --with-deps
+
+      - name: Run Playwright E2E Tests
+        run: pnpm exec playwright test e2e/inventory.spec.ts e2e/invoicing.spec.ts e2e/payments.spec.ts
+
+      - name: Upload Playwright Report
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 15
+
+  a11y:
+    # Accessibility audit (axe, WCAG AA) of the pages covered by tests/accessibility*.spec.ts
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Setup PNPM
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+        with:
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Same throwaway certificate as the e2e job: ng serve runs over HTTPS
+      - name: Generate local HTTPS certificate
+        run: >-
+          openssl req -x509 -newkey rsa:2048 -nodes -days 1 -subj "/CN=localhost"
+          -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
+          -keyout certs/localhost.key -out certs/localhost.crt
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run Playwright accessibility suite
+        run: pnpm run e2e:a11y
+
+      - name: Upload accessibility report
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-a11y-report
+          path: playwright-report/
+          retention-days: 15
+
+  storybook:
+    # The design system (Storybook) must keep building
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Setup PNPM
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+        with:
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Storybook
+        run: pnpm run build-storybook
+
+  qodana:
+    # Non-blocking: the Qodana Cloud organisation has the Community licence, which does not include the JS linter.
+    # The job only runs when the repository variable QODANA_ENABLED is "true" (set it once an Ultimate licence is active):
+    # with the Community licence the scan always fails at start-up.
+    continue-on-error: true
+    # Fork and Dependabot pull requests get no repository secrets: skip what needs them
+    if: >-
+      vars.QODANA_ENABLED == 'true' && github.actor != 'dependabot[bot]' &&
+      (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+      security-events: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      # Qodana resolves Angular pipes, imports and types through node_modules: without it every
+      # pipe/import is reported as unresolved (hundreds of false critical problems)
+      - name: Setup PNPM
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+        with:
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Qodana Scan
+        uses: JetBrains/qodana-action@aa698739cd4b8204ad53291bea7e16cd75da3c9f # v2026.3.1
+        with:
+          # Full scan also on pull requests (as on dev) and keep the SARIF report as an artifact
+          pr-mode: false
+          upload-result: true
+        env:
+          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
+
+  notify:
+    needs:
+      - validate
+      - build
+      - e2e
+      - a11y
+      - storybook
+      - qodana
+    # Fork and Dependabot pull requests get no repository secrets: skip what needs them
+    if: >-
+      always() && github.actor != 'dependabot[bot]' &&
+      (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Telegram Notification
+        uses: appleboy/telegram-action@68ac04bda0e0f4755e24649161566b4b6732cc83 # v1.1.2
+        with:
+          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            Pipeline Status: ${{ (contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')) && 'FAILED ❌' || 'SUCCESS ✅' }}
+
+            🚀 Repository: ${{ github.repository }}
+            🌿 Branch / Ref: ${{ github.ref }}
+            👤 Author: ${{ github.actor }}
+            📌 Event: ${{ github.event_name }}
+            🔗 Commit: ${{ github.sha }}
+            📊 Jobs Overview:
+            • Validate: ${{ needs.validate.result }}
+            • Build: ${{ needs.build.result }}
+            • E2E: ${{ needs.e2e.result }}
+            • A11y: ${{ needs.a11y.result }}
+            • Storybook: ${{ needs.storybook.result }}
+            • Qodana: ${{ needs.qodana.result }}

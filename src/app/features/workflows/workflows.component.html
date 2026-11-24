@@ -1,0 +1,599 @@
+<app-page-header
+  [title]="'WORKFLOWS.TITLE' | translate"
+  [subtitle]="'WORKFLOWS.SUBTITLE' | translate"
+>
+</app-page-header>
+
+<nz-card class="workflows-card">
+  <nz-tabs [nzSelectedIndex]="selectedTabIndex()" (nzSelectedIndexChange)="onTabChange($event)">
+    <!-- TAB 1: INBOX / ATTIVITÀ PENDING -->
+    <nz-tab [nzTitle]="'WORKFLOWS.TAB_INBOX' | translate">
+      <div class="tab-toolbar">
+        <div class="filter-group">
+          <input
+            nz-input
+            [placeholder]="'WORKFLOWS.FILTER_CODE' | translate"
+            [ngModel]="taskFilterCode()"
+            (ngModelChange)="onTaskCodeChange($event)"
+            class="filter-input"
+          />
+          <button nz-button nzType="default" (click)="loadTasks()">
+            <span nz-icon nzType="reload"></span>
+            {{ 'COMMON.RELOAD' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <app-base-table [grid]="tasksGrid" [columns]="taskColumns()" [actionsTemplate]="taskActionsTpl" exportFileName="workflow-tasks" />
+    </nz-tab>
+
+    <!-- TAB 2: ISTANZE RUNNING & AUDIT HASH VERIFY -->
+    <nz-tab [nzTitle]="'WORKFLOWS.TAB_INSTANCES' | translate">
+      <div class="tab-toolbar">
+        <div class="filter-group">
+          <nz-select
+            [ngModel]="instanceStatusFilter()"
+            (ngModelChange)="onInstanceStatusChange($event)"
+            [nzPlaceHolder]="'common.allStatuses' | translate"
+            class="filter-select"
+          >
+            <nz-option nzValue="" [nzLabel]="'WORKFLOWS.LBL_TUTTI' | translate"></nz-option>
+            <nz-option nzValue="pending" [nzLabel]="'WORKFLOWS.LBL_IN_CORSO' | translate"></nz-option>
+            <nz-option nzValue="approved" [nzLabel]="'WORKFLOWS.LBL_APPROVATI' | translate"></nz-option>
+            <nz-option nzValue="rejected" [nzLabel]="'WORKFLOWS.LBL_RIFIUTATI' | translate"></nz-option>
+            <nz-option nzValue="cancelled" [nzLabel]="'WORKFLOWS.LBL_ANNULLATI' | translate"></nz-option>
+          </nz-select>
+          <button nz-button nzType="default" (click)="loadInstances()">
+            <span nz-icon nzType="reload"></span>
+            {{ 'COMMON.RELOAD' | translate }}
+          </button>
+        </div>
+        <button nz-button nzType="primary" (click)="openStartModal()">
+          <span nz-icon nzType="plus"></span>
+          {{ 'WORKFLOWS.START_INSTANCE' | translate }}
+        </button>
+      </div>
+
+      <app-base-table [grid]="instancesGrid" [columns]="instanceColumns()" [actionsTemplate]="instanceActionsTpl" exportFileName="workflow-instances" />
+    </nz-tab>
+
+    <!-- TAB 3: DEFINIZIONI & BPMN DESIGNER -->
+    <nz-tab [nzTitle]="'WORKFLOWS.TAB_DEFINITIONS' | translate">
+      <div class="tab-toolbar">
+        <div class="filter-group">
+          <input
+            nz-input
+            [placeholder]="'WORKFLOWS.SEARCH_DEFINITIONS' | translate"
+            [ngModel]="definitionSearch()"
+            (ngModelChange)="onDefinitionSearchChange($event)"
+            class="filter-input"
+          />
+          <button nz-button nzType="default" (click)="loadDefinitions()">
+            <span nz-icon nzType="reload"></span>
+            {{ 'COMMON.RELOAD' | translate }}
+          </button>
+        </div>
+        <button nz-button nzType="primary" (click)="openCreateDefModal()" appIconAction="create"></button>
+      </div>
+
+      <app-base-table [grid]="definitionsGrid" [columns]="definitionColumns()" [actionsTemplate]="definitionActionsTpl" exportFileName="workflow-definitions" />
+    </nz-tab>
+
+    <!-- TAB 4: DELEGHE ED ESCALATION RULES -->
+    <nz-tab [nzTitle]="'WORKFLOWS.TAB_DELEGATIONS' | translate">
+      <div class="delegations-wrapper">
+        <div class="section-box">
+          <div class="tab-toolbar">
+            <h4>{{ 'WORKFLOWS.OUT_OF_OFFICE' | translate }}</h4>
+            <button nz-button nzType="primary" nzSize="small" (click)="openCreateDelegationModal()" appIconAction="add"></button>
+          </div>
+
+          <app-base-table [grid]="delegationsGrid" [columns]="delegationColumns()" [actionsTemplate]="delegationActionsTpl" [scroll]="{ x: '700px' }" exportFileName="workflow-delegations" />
+        </div>
+
+        <div class="section-box">
+          <div class="tab-toolbar">
+            <h4>{{ 'WORKFLOWS.ESCALATION_RULES' | translate }}</h4>
+            <button nz-button nzType="primary" nzSize="small" (click)="openCreateRuleModal()" appIconAction="add"></button>
+          </div>
+
+          <app-base-table [grid]="rulesGrid" [columns]="ruleColumns()" [actionsTemplate]="ruleActionsTpl" [scroll]="{ x: '700px' }" exportFileName="workflow-escalation-rules" />
+        </div>
+      </div>
+    </nz-tab>
+
+    <!-- TAB 5: SLA REPORT & PERFORMANCE -->
+    <nz-tab [nzTitle]="'WORKFLOWS.TAB_SLA' | translate">
+      <div class="sla-wrapper">
+        <button nz-button nzType="default" (click)="loadSlaReport()" class="mb-3">
+          <span nz-icon nzType="reload"></span>
+          {{ 'COMMON.RELOAD' | translate }}
+        </button>
+
+        @if (slaReport(); as rep) {
+          <div class="sla-metrics-grid">
+            <nz-card>
+              <nz-statistic
+                [nzValue]="rep.figures.average_approval_time_hours"
+                [nzTitle]="'WORKFLOWS.AVG_HOURS' | translate"
+                [nzSuffix]="'h'"
+              ></nz-statistic>
+            </nz-card>
+            <nz-card>
+              <nz-statistic
+                [nzValue]="rep.figures.sla_compliance_rate_percent"
+                [nzTitle]="'WORKFLOWS.COMPLIANCE_RATE' | translate"
+                [nzSuffix]="'%'"
+              ></nz-statistic>
+            </nz-card>
+            <nz-card>
+              <nz-statistic
+                [nzValue]="rep.figures.total_completed_instances"
+                [nzTitle]="'WORKFLOWS.TOTAL_COMPLETED' | translate"
+              ></nz-statistic>
+            </nz-card>
+            <nz-card>
+              <nz-statistic
+                [nzValue]="rep.figures.breached_steps_count"
+                [nzTitle]="'WORKFLOWS.BREACHED_COUNT' | translate"
+                [nzValueStyle]="{ color: 'var(--status-danger)' }"
+              ></nz-statistic>
+            </nz-card>
+          </div>
+
+          @if (rep.bottlenecks && rep.bottlenecks.length > 0) {
+            <h4 class="mt-4">{{ 'WORKFLOWS.BOTTLENECKS' | translate }}</h4>
+            <nz-table appGridExport [nzData]="rep.bottlenecks" [nzFrontPagination]="false" [nzShowPagination]="false" #gridTbl52>
+              <thead>
+                <tr>
+                  <th [nzSortFn]="'step_name' | gridSort" [nzFilters]="'step_name' | gridFilterList: gridTbl52.nzData" [nzFilterFn]="'step_name' | gridFilterFn">{{ 'WORKFLOWS.STEP' | translate }}</th>
+                  <th [nzSortFn]="'average_hours' | gridSort" [nzFilters]="'average_hours' | gridFilterList: gridTbl52.nzData" [nzFilterFn]="'average_hours' | gridFilterFn">{{ 'WORKFLOWS.AVG_HOURS' | translate }}</th>
+                  <th [nzSortFn]="'breached_count' | gridSort" [nzFilters]="'breached_count' | gridFilterList: gridTbl52.nzData" [nzFilterFn]="'breached_count' | gridFilterFn">{{ 'WORKFLOWS.BREACHED_COUNT' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (b of rep.bottlenecks; track b.step_name) {
+                  <tr>
+                    <td>
+                      <strong>{{ b.step_name }}</strong>
+                    </td>
+                    <td>{{ b.average_hours }} h</td>
+                    <td>
+                      <nz-tag nzColor="error">{{ b.breached_count }}</nz-tag>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </nz-table>
+          }
+        } @else {
+          <nz-empty></nz-empty>
+        }
+      </div>
+    </nz-tab>
+  </nz-tabs>
+</nz-card>
+
+<!-- MODAL: REGISTRA DECISIONE (APPROVE / REJECT) -->
+<nz-modal appModalActions
+  [nzVisible]="decisionModalVisible()"
+  [nzTitle]="(decisionType() === 'approved' ? 'WORKFLOWS.MODAL_APPROVE_TITLE' : 'WORKFLOWS.MODAL_REJECT_TITLE') | translate"
+  [nzOkLoading]="decisionSubmitting()"
+  (nzOnCancel)="decisionModalVisible.set(false)"
+  (nzOnOk)="submitDecision()"
+  [nzOkDisabled]="decisionType() === 'rejected' && !decisionComment().trim()"
+>
+  <ng-container *nzModalContent>
+    @if (selectedTask(); as t) {
+      <div class="mb-3">
+        <p>
+          {{ 'WORKFLOWS.CONFIRM_DECISION' | translate }}:
+          <strong>{{ t.workflow_name }}</strong> ({{ t.node_name }})
+        </p>
+        <p class="text-muted">
+          {{ 'WORKFLOWS.DOCUMENT' | translate }}: {{ t.approvable_type }} #{{ t.approvable_id }}
+        </p>
+      </div>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'WORKFLOWS.COMMENT' | translate }}</nz-form-label>
+        <nz-form-control>
+          <textarea
+            nz-input
+            rows="3"
+            maxlength="2000"
+            [placeholder]="'WORKFLOWS.COMMENT_PLACEHOLDER' | translate"
+            [ngModel]="decisionComment()"
+            (ngModelChange)="decisionComment.set($event)"
+          ></textarea>
+        </nz-form-control>
+      </nz-form-item>
+    }
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: AVVIA NUOVA ISTANZA -->
+<nz-modal appModalActions
+  [nzVisible]="startModalVisible()"
+  [nzTitle]="'WORKFLOWS.START_INSTANCE' | translate"
+  [nzOkLoading]="startSubmitting()"
+  (nzOnCancel)="startModalVisible.set(false)"
+  (nzOnOk)="submitStartWorkflow()"
+  [nzOkDisabled]="startForm.invalid"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="startForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'WORKFLOWS.PROCESS_CODE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(startForm, 'workflow_code')">
+          <input nz-input formControlName="workflow_code" [placeholder]="'WORKFLOWS.LBL_ES_PURCHASE_APPROVAL' | translate" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'WORKFLOWS.DOCUMENT_TYPE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(startForm, 'approvable_type')">
+          <nz-select formControlName="approvable_type">
+            @for (type of approvableTypes; track type.value) {
+              <nz-option [nzValue]="type.value" [nzLabel]="type.labelKey | translate"></nz-option>
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'WORKFLOWS.DOCUMENT_ID' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(startForm, 'approvable_id')">
+          <input nz-input formControlName="approvable_id" [placeholder]="'WORKFLOWS.LBL_UUID_DEL_DOCUMENTO' | translate" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'WORKFLOWS.NOTE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(startForm, 'context_note')">
+          <textarea nz-input rows="2" formControlName="context_note"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: AUDIT TRAIL & HASH CHAIN VERIFICATION -->
+<nz-modal appModalActions
+  [nzVisible]="auditModalVisible()"
+  [nzTitle]="'WORKFLOWS.AUDIT_TITLE' | translate"
+  [nzFooter]="null"
+  nzWidth="720px"
+  (nzOnCancel)="auditModalVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    @if (auditVerification(); as ver) {
+      <div class="audit-verification-banner" [class.valid]="ver.is_valid">
+        <strong>
+          {{ ver.is_valid ? ('WORKFLOWS.CHAIN_VALID' | translate) : ('WORKFLOWS.CHAIN_TAMPERED' | translate) }}
+        </strong>
+        <span>
+          ({{ ver.verified_entries }} / {{ ver.chain_length }} hash blocks verified)
+        </span>
+      </div>
+    }
+
+    <nz-table appGridExport
+      [nzData]="auditEntries()"
+      [nzFrontPagination]="false"
+      [nzShowPagination]="false"
+      [nzLoading]="auditLoading()" #gridTbl53>
+      <thead>
+        <tr>
+          <th [nzSortFn]="'sequence' | gridSort" [nzFilters]="'sequence' | gridFilterList: gridTbl53.nzData" [nzFilterFn]="'sequence' | gridFilterFn">#</th>
+          <th [nzSortFn]="'event_type' | gridSort" [nzFilters]="'event_type' | gridFilterList: gridTbl53.nzData" [nzFilterFn]="'event_type' | gridFilterFn">{{ 'WORKFLOWS.EVENT' | translate }}</th>
+          <th [nzSortFn]="'actor_name' | gridSort" [nzFilters]="'actor_name' | gridFilterList: gridTbl53.nzData" [nzFilterFn]="'actor_name' | gridFilterFn">{{ 'WORKFLOWS.ACTOR' | translate }}</th>
+          <th [nzSortFn]="'created_at' | gridSort" [nzFilters]="'created_at' | gridFilterList: gridTbl53.nzData" [nzFilterFn]="'created_at' | gridFilterFn">{{ 'WORKFLOWS.LBL_TIMESTAMP' | translate }}</th>
+          <th>{{ 'WORKFLOWS.LBL_CRYPTOGRAPHIC_HASH' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (entry of auditEntries(); track entry.id) {
+          <tr>
+            <td>{{ entry.sequence }}</td>
+            <td>
+              <nz-tag>{{ entry.event_type }}</nz-tag>
+            </td>
+            <td>{{ entry.actor_name || entry.actor_id || 'System' }}</td>
+            <td>{{ entry.created_at | date: 'dd/MM/yyyy HH:mm:ss' }}</td>
+            <td>
+              <code class="hash-code">{{ entry.hash?.slice(0, 16) }}...</code>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: CREA DEFINIZIONE -->
+<nz-modal appModalActions
+  [nzVisible]="createDefModalVisible()"
+  [nzTitle]="'WORKFLOWS.NEW_DEFINITION' | translate"
+  [nzOkLoading]="createDefSubmitting()"
+  (nzOnCancel)="createDefModalVisible.set(false)"
+  (nzOnOk)="submitCreateDefinition()"
+
+  okAction="create"
+  [nzOkDisabled]="defForm.invalid"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="defForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'WORKFLOWS.CODE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(defForm, 'code')">
+          <input nz-input formControlName="code" maxlength="100" (input)="uppercaseDefinitionCode()" [placeholder]="'WORKFLOWS.LBL_ES_INVOICE_APPROVAL_CODE' | translate" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'COMMON.NAME' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(defForm, 'name')">
+          <input nz-input formControlName="name" [placeholder]="'WORKFLOWS.LBL_ES_APPROVAZIONE_FATTURE_FORNITORE' | translate" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'COMMON.DESCRIPTION' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(defForm, 'description')">
+          <textarea nz-input rows="2" formControlName="description"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'WORKFLOWS.TARGET_DOC' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(defForm, 'target_entity_type')">
+          <nz-select formControlName="target_entity_type">
+            @for (type of approvableTypes; track type.value) {
+              <nz-option [nzValue]="type.value" [nzLabel]="type.labelKey | translate"></nz-option>
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: CREA DELEGA -->
+<nz-modal appModalActions
+  [nzVisible]="createDelegationVisible()"
+  [nzTitle]="'WORKFLOWS.ADD_DELEGATION' | translate"
+  [nzOkLoading]="delegationSubmitting()"
+  (nzOnCancel)="createDelegationVisible.set(false)"
+  (nzOnOk)="submitCreateDelegation()"
+
+  okAction="add"
+  [nzOkDisabled]="delegationForm.invalid"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="delegationForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'WORKFLOWS.DELEGATED_TO' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(delegationForm, 'delegate_user_id')">
+          <input nz-input formControlName="delegate_user_id" [placeholder]="'WORKFLOWS.LBL_UUID_UTENTE_DELEGATO' | translate" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'WORKFLOWS.SCOPE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(delegationForm, 'scope')">
+          <nz-select formControlName="scope">
+            @for (scope of delegationScopes; track scope) {
+              <nz-option [nzValue]="scope" [nzLabel]="'WORKFLOWS.SCOPE_' + scope.toUpperCase() | translate"></nz-option>
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'WORKFLOWS.STARTS_AT' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(delegationForm, 'starts_at')">
+          <input nz-input type="datetime-local" formControlName="starts_at" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'WORKFLOWS.ENDS_AT' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(delegationForm, 'ends_at')">
+          <input nz-input type="datetime-local" formControlName="ends_at" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'WORKFLOWS.REASON' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(delegationForm, 'reason')">
+          <input nz-input formControlName="reason" [placeholder]="'WORKFLOWS.LBL_ES_FERIE_ESTIVE' | translate" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: CREA REGOLA ESCALATION -->
+<nz-modal appModalActions
+  [nzVisible]="createRuleVisible()"
+  [nzTitle]="'WORKFLOWS.ADD_RULE' | translate"
+  [nzOkLoading]="ruleSubmitting()"
+  (nzOnCancel)="createRuleVisible.set(false)"
+  (nzOnOk)="submitCreateRule()"
+
+  okAction="add"
+  [nzOkDisabled]="ruleForm.invalid"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="ruleForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'COMMON.NAME' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(ruleForm, 'name')">
+          <input nz-input formControlName="name" [placeholder]="'WORKFLOWS.LBL_ES_SOLLECITO_24H_ED_ESCALATION_48H' | translate" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'WORKFLOWS.REMINDER_H' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(ruleForm, 'reminder_hours')">
+          <nz-input-number formControlName="reminder_hours" [nzMin]="1" [nzMax]="8760" [nzPrecision]="0"></nz-input-number>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'WORKFLOWS.ESCALATION_H' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(ruleForm, 'escalation_hours')">
+          <nz-input-number formControlName="escalation_hours" [nzMin]="1" [nzMax]="8760" [nzPrecision]="0"></nz-input-number>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'WORKFLOWS.ESCALATE_TO' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(ruleForm, 'escalate_to_type')">
+          <nz-select formControlName="escalate_to_type">
+            @for (target of escalationTargets; track target.value) {
+              <nz-option [nzValue]="target.value" [nzLabel]="target.labelKey | translate"></nz-option>
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      @if (ruleForm.controls.escalate_to_type.value !== 'reporting_manager') {
+        <nz-form-item>
+          <nz-form-label>{{ 'WORKFLOWS.ESCALATE_TO_ID' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(ruleForm, 'escalate_to_id')">
+            <input nz-input formControlName="escalate_to_id" maxlength="255" />
+          </nz-form-control>
+        </nz-form-item>
+      }
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- Cells of the server-driven grids -->
+<ng-template #taskProcessTpl let-task>
+  <strong>{{ task.workflow_name || task.workflow_code }}</strong>
+  <div class="text-muted">{{ task.workflow_code }}</div>
+</ng-template>
+<ng-template #taskDocumentTpl let-task>
+  <nz-tag>{{ task.approvable_type }}</nz-tag>
+  <span>{{ task.approvable_label || task.approvable_id }}</span>
+</ng-template>
+<ng-template #taskStepTpl let-task><strong>{{ task.node_name }}</strong></ng-template>
+<ng-template #taskInitiatorTpl let-task>{{ task.initiator_name || ('WORKFLOWS.SYSTEM' | translate) }}</ng-template>
+<ng-template #taskDueTpl let-task>
+  @if (task.due_at) {
+    <span>{{ task.due_at | date: 'dd/MM/yyyy HH:mm' }}</span>
+  } @else {
+    <span class="text-muted">-</span>
+  }
+</ng-template>
+<ng-template #taskStateTpl let-task>
+  <nz-tag nzColor="processing">{{ 'WORKFLOWS.STATE_PENDING' | translate }}</nz-tag>
+  @if (task.is_overdue) {
+    <nz-tag nzColor="error">{{ 'WORKFLOWS.LBL_SLA_BREACH' | translate }}</nz-tag>
+  }
+  @if (task.escalated_at) {
+    <nz-tag nzColor="warning">{{ 'WORKFLOWS.LBL_ESCALATED' | translate }}</nz-tag>
+  }
+</ng-template>
+<ng-template #taskActionsTpl let-task>
+  <nz-space>
+    <button *nzSpaceItem nz-button nzType="primary" nzSize="small" (click)="openDecisionModal(task, 'approved')">
+      <span nz-icon nzType="check"></span>
+      {{ 'WORKFLOWS.APPROVE' | translate }}
+    </button>
+    <button *nzSpaceItem nz-button nzDanger nzSize="small" (click)="openDecisionModal(task, 'rejected')">
+      <span nz-icon nzType="close"></span>
+      {{ 'WORKFLOWS.REJECT' | translate }}
+    </button>
+  </nz-space>
+</ng-template>
+
+<ng-template #instanceIdTpl let-inst><span class="monospace-id">{{ inst.id.slice(0, 8) }}...</span></ng-template>
+<ng-template #instanceProcessTpl let-inst>{{ inst.definition?.name || inst.workflow_definition_id }}</ng-template>
+<ng-template #instanceDocumentTpl let-inst>
+  <nz-tag>{{ inst.approvable_type }}</nz-tag>
+  <span>#{{ inst.approvable_id }}</span>
+</ng-template>
+<ng-template #instanceStatusTpl let-inst>
+  <nz-tag [nzColor]="getStatusColor(inst.status)">{{ inst.status | uppercase }}</nz-tag>
+</ng-template>
+<ng-template #instanceStartedTpl let-inst>{{ inst.started_at | date: 'dd/MM/yyyy HH:mm' }}</ng-template>
+<ng-template #instanceCompletedTpl let-inst>
+  @if (inst.completed_at) {
+    <span>{{ inst.completed_at | date: 'dd/MM/yyyy HH:mm' }}</span>
+  } @else {
+    <span class="text-muted">-</span>
+  }
+</ng-template>
+<ng-template #instanceActionsTpl let-inst>
+  <nz-space>
+    <button *nzSpaceItem nz-button nzType="default" nzSize="small" (click)="openAuditTrail(inst)">
+      <span nz-icon nzType="audit"></span>
+      {{ 'WORKFLOWS.LBL_AUDIT' | translate }}
+    </button>
+    @if (inst.status === 'pending') {
+      <button *nzSpaceItem nz-button nzDanger nzSize="small" (click)="cancelInstance(inst)">
+        <span nz-icon nzType="close"></span>
+        {{ 'COMMON.CANCEL' | translate }}
+      </button>
+    }
+  </nz-space>
+</ng-template>
+
+<ng-template #definitionCodeTpl let-def><code>{{ def.code }}</code></ng-template>
+<ng-template #definitionNameTpl let-def>
+  <strong>{{ def.name }}</strong>
+  @if (def.description) {
+    <div class="text-muted">{{ def.description }}</div>
+  }
+</ng-template>
+<ng-template #definitionTargetTpl let-def><nz-tag>{{ def.target_entity_type }}</nz-tag></ng-template>
+<ng-template #definitionVersionTpl let-def>v{{ def.version }}</ng-template>
+<ng-template #definitionPublishedTpl let-def>
+  @if (def.status === 'published') {
+    <nz-tag nzColor="success">{{ 'WORKFLOWS.LBL_PUBBLICATO' | translate }}</nz-tag>
+  } @else {
+    <nz-tag nzColor="warning">{{ 'WORKFLOWS.LBL_BOZZA' | translate }}</nz-tag>
+  }
+</ng-template>
+<ng-template #definitionActiveTpl let-def>
+  <nz-tag [nzColor]="def.is_active ? 'success' : 'default'">
+    {{ (def.is_active ? 'WORKFLOWS.STATE_ACTIVE' : 'WORKFLOWS.STATE_INACTIVE') | translate }}
+  </nz-tag>
+</ng-template>
+<ng-template #definitionActionsTpl let-def>
+  <nz-space>
+    @if (def.status !== 'published') {
+      <button *nzSpaceItem nz-button nzType="primary" nzSize="small" (click)="publishDefinition(def)">
+        <span nz-icon nzType="check"></span>
+        {{ 'WORKFLOWS.LBL_PUBBLICA' | translate }}
+      </button>
+    }
+    <button *nzSpaceItem nz-button nzDanger nzSize="small" (click)="deleteDefinition(def)" appIconAction="delete"></button>
+  </nz-space>
+</ng-template>
+
+<ng-template #delegationScopeTpl let-del>{{ 'WORKFLOWS.SCOPE_' + (del.scope || 'all').toUpperCase() | translate }}</ng-template>
+<ng-template #delegationPeriodTpl let-del>{{ del.starts_at | date: 'dd/MM/yyyy' }} - {{ del.ends_at | date: 'dd/MM/yyyy' }}</ng-template>
+<ng-template #delegationStateTpl let-del>
+  <nz-tag [nzColor]="del.is_active ? 'success' : 'default'">
+    {{ (del.is_active ? 'WORKFLOWS.STATE_ACTIVE' : 'WORKFLOWS.STATE_EXPIRED') | translate }}
+  </nz-tag>
+</ng-template>
+<ng-template #delegationActionsTpl let-del>
+  <button nz-button nzDanger nzSize="small" (click)="deleteDelegation(del)">
+    <span nz-icon nzType="delete"></span>
+    {{ 'WORKFLOWS.REVOKE' | translate }}
+  </button>
+</ng-template>
+
+<ng-template #ruleNameTpl let-rule><strong>{{ rule.name }}</strong></ng-template>
+<ng-template #ruleReminderTpl let-rule>{{ rule.reminder_hours }} h</ng-template>
+<ng-template #ruleEscalationTpl let-rule>{{ rule.escalation_hours }} h</ng-template>
+<ng-template #ruleTargetTpl let-rule><nz-tag>{{ rule.escalate_to_type }}</nz-tag></ng-template>
+<ng-template #ruleActionsTpl let-rule>
+  <button nz-button nzDanger nzSize="small" (click)="deleteEscalationRule(rule)" appIconAction="delete"></button>
+</ng-template>

@@ -1,0 +1,381 @@
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
+import { of } from 'rxjs';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzModalRef } from 'ng-zorro-antd/modal';
+import { provideNzIcons } from 'ng-zorro-antd/icon';
+import { en_US, provideNzI18n } from 'ng-zorro-antd/i18n';
+import { provideNzDateFnsAdapter } from 'ng-zorro-antd/core/time';
+import { icons } from '../../icons-provider';
+import {
+  ManufacturingApiService,
+  MfgBomResource,
+  MfgMrpRunResource,
+  MfgPlannedOrderResource,
+  MfgProductionOrderResource,
+  MfgShortageResource,
+  MfgWorkCenterResource,
+} from '@core';
+import { ManufacturingComponent } from './manufacturing.component';
+
+describe('ManufacturingComponent', () => {
+  let component: ManufacturingComponent;
+  let fixture: ComponentFixture<ManufacturingComponent>;
+  let apiService: Partial<ManufacturingApiService>;
+  let messageService: Partial<NzMessageService>;
+
+  const mockOrder: MfgProductionOrderResource = {
+    id: 'po-1',
+    order_number: 'PO-2026-001',
+    mfg_item_id: 'item-1',
+    status: 'planned',
+    target_quantity: '10.0000',
+    completed_quantity: '0.0000',
+    scrapped_quantity: '0.0000',
+    uom: 'PZ',
+    planned_start_date: '2026-04-01T08:00:00Z',
+    planned_end_date: '2026-04-05T17:00:00Z',
+  };
+
+  const mockBom: MfgBomResource = {
+    id: 'bom-1',
+    bom_number: 'BOM-001',
+    mfg_item_id: 'item-1',
+    name: 'Distinta Base 1',
+    revision: 'A',
+    status: 'draft',
+    base_quantity: '1.0000',
+    uom: 'PZ',
+  };
+
+  const mockMrpRun: MfgMrpRunResource = {
+    id: 'mrp-1',
+    run_number: 'MRP-2026-001',
+    run_type: 'regenerative',
+    status: 'completed',
+    horizon_start_date: '2026-04-01',
+    horizon_end_date: '2026-06-30',
+    total_items_processed: 25,
+    total_planned_orders: 5,
+    total_shortages: 2,
+  };
+
+  const mockPlannedOrder: MfgPlannedOrderResource = {
+    id: 'plan-1',
+    planned_order_number: 'PLN-001',
+    mrp_run_id: 'mrp-1',
+    mfg_item_id: 'item-1',
+    order_type: 'make',
+    quantity: '10.0000',
+    net_requirement: '10.0000',
+    bom_level: 1,
+    uom: 'PZ',
+    start_date: '2026-04-01',
+    due_date: '2026-04-10',
+    status: 'planned',
+    bom_id: null,
+    routing_id: null,
+    converted_order_id: null,
+    converted_at: null,
+  };
+
+  const mockShortage: MfgShortageResource = {
+    id: 'short-1',
+    mrp_run_id: 'mrp-1',
+    mfg_item_id: 'item-comp-1',
+    required_date: '2026-04-05',
+    gross_requirement: '20.0000',
+    available_inventory: '5.0000',
+    scheduled_receipts: '0.0000',
+    safety_stock: '5.0000',
+    net_shortage: '20.0000',
+    recommended_action: 'Emetti Ordine Acquisto',
+  };
+
+  const mockWorkCenter: MfgWorkCenterResource = {
+    id: 'wc-1',
+    work_center_code: 'WC-01',
+    name: 'Linea Assemblaggio',
+    capacity_hours_per_day: '8.00',
+    status: 'active',
+  };
+
+  beforeEach(async () => {
+    apiService = {
+      getProductionOrders: vi.fn().mockReturnValue(of({ data: [mockOrder], meta: { total: 1 } })),
+      createProductionOrder: vi.fn().mockReturnValue(of({ data: mockOrder })),
+      releaseProductionOrder: vi.fn().mockReturnValue(of({ data: { ...mockOrder, status: 'released' } })),
+      startProductionOrder: vi.fn().mockReturnValue(of({ data: { ...mockOrder, status: 'in_progress' } })),
+      completeProductionOrder: vi.fn().mockReturnValue(of({ data: { ...mockOrder, status: 'completed' } })),
+      closeProductionOrder: vi.fn().mockReturnValue(of({ data: { ...mockOrder, status: 'closed' } })),
+      cancelProductionOrder: vi.fn().mockReturnValue(of({ data: { ...mockOrder, status: 'cancelled' } })),
+      getBoms: vi.fn().mockReturnValue(of({ data: [mockBom], meta: { total: 1 } })),
+      createBom: vi.fn().mockReturnValue(of({ data: mockBom })),
+      activateBom: vi.fn().mockReturnValue(of({ data: { ...mockBom, status: 'active' } })),
+      reviseBom: vi.fn().mockReturnValue(of({ data: { ...mockBom, revision: 'B' } })),
+      explodeBom: vi.fn().mockReturnValue(of({ data: { tree: 'exploded' } })),
+      getMrpRuns: vi.fn().mockReturnValue(of({ data: [mockMrpRun], meta: { total: 1 } })),
+      runMrp: vi.fn().mockReturnValue(of({ data: mockMrpRun })),
+      getPlannedOrders: vi.fn().mockReturnValue(of({ data: [mockPlannedOrder], meta: { total: 1 } })),
+      convertPlannedOrder: vi.fn().mockReturnValue(of({ data: mockOrder })),
+      getShortages: vi.fn().mockReturnValue(of({ data: [mockShortage], meta: { total: 1 } })),
+      getWorkCenters: vi.fn().mockReturnValue(of({ data: [mockWorkCenter], meta: { total: 1 } })),
+      createWorkCenter: vi.fn().mockReturnValue(of({ data: mockWorkCenter })),
+      getRoutings: vi.fn().mockReturnValue(of({ data: [], meta: { total: 0 } })),
+    };
+
+    messageService = {
+      success: vi.fn(),
+      error: vi.fn(),
+      warning: vi.fn(),
+      info: vi.fn(),
+    };
+
+    await TestBed.configureTestingModule({
+      imports: [ManufacturingComponent],
+      providers: [
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideNzIcons(icons),
+        provideNzI18n(en_US),
+        provideNzDateFnsAdapter(),
+        { provide: ManufacturingApiService, useValue: apiService },
+        { provide: NzMessageService, useValue: messageService },
+      ],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(ManufacturingComponent);
+    component = fixture.componentInstance;
+    vi.spyOn((component as unknown as { modal: { confirm: (opts: { nzOnOk?: () => void }) => NzModalRef } }).modal, 'confirm').mockImplementation(config => {
+      if (config.nzOnOk) config.nzOnOk();
+      return {} as NzModalRef;
+    });
+    fixture.detectChanges();
+    // The grids load after their debounce (0 ms for the first request).
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  });
+
+  it('initializes and loads production orders, BOMs, MRP runs, and work centers', () => {
+    expect(component).toBeTruthy();
+    expect(component.orders().length).toBe(1);
+    expect(component.boms().length).toBe(1);
+    expect(component.mrpRuns().length).toBe(1);
+    expect(component.plannedOrders().length).toBe(1);
+    expect(component.shortages().length).toBe(1);
+    expect(component.workCenters().length).toBe(1);
+    expect(component.kpiTotalOrders()).toBe(1);
+  });
+
+  it('submits a new production order form', () => {
+    component.openCreateOrderModal();
+    expect(component.isCreateOrderModalVisible()).toBe(true);
+
+    component.orderForm.patchValue({
+      mfg_item_id: '11111111-1111-4111-8111-111111111111',
+      target_quantity: 25,
+      planned_start_date: new Date('2026-05-01'),
+      planned_end_date: new Date('2026-05-10'),
+      notes: 'Test order notes',
+    });
+
+    component.submitCreateOrder();
+    expect(apiService.createProductionOrder).toHaveBeenCalled();
+    expect(component.isCreateOrderModalVisible()).toBe(false);
+  });
+
+  it('releases, starts, completes and closes production orders', () => {
+    component.releaseOrder(mockOrder);
+    expect(apiService.releaseProductionOrder).toHaveBeenCalledWith('po-1');
+
+    component.startOrder(mockOrder);
+    expect(apiService.startProductionOrder).toHaveBeenCalledWith('po-1');
+
+    component.completeOrder(mockOrder);
+    expect(apiService.completeProductionOrder).toHaveBeenCalledWith('po-1');
+
+    component.closeOrder(mockOrder);
+    expect(apiService.closeProductionOrder).toHaveBeenCalledWith('po-1');
+  });
+
+  it('cancels a production order only with a reason', () => {
+    component.cancelOrder(mockOrder);
+    expect(component.cancellingOrder()).toEqual(mockOrder);
+
+    component.confirmCancelOrder();
+    expect(apiService.cancelProductionOrder).not.toHaveBeenCalled();
+
+    component.cancelReason.set('Customer withdrew the order');
+    component.confirmCancelOrder();
+    expect(apiService.cancelProductionOrder).toHaveBeenCalledWith('po-1', 'Customer withdrew the order');
+    expect(component.cancellingOrder()).toBeNull();
+  });
+
+  it('looks up the active BOMs of the typed item for the order form', () => {
+    component.openCreateOrderModal();
+    component.onOrderItemChange('not-a-uuid');
+    expect(apiService.getBoms).toHaveBeenCalledTimes(1); // only the initial list load
+
+    const itemId = '9e6a0d4b-70c8-47fb-a3d5-d0ff097a82dc';
+    (apiService.getBoms as ReturnType<typeof vi.fn>).mockReturnValueOnce(of({ data: [], meta: { total: 0 } }));
+    component.onOrderItemChange(itemId);
+    expect(apiService.getBoms).toHaveBeenLastCalledWith({ mfg_item_id: itemId, status: 'active', per_page: 50 });
+    expect(component.orderBomsChecked()).toBe(true);
+    expect(component.orderBoms()).toEqual([]);
+  });
+
+  it('creates and activates a BOM', () => {
+    component.openCreateBomModal();
+    expect(component.isCreateBomModalVisible()).toBe(true);
+
+    component.bomForm.patchValue({
+      mfg_item_id: '22222222-2222-4222-8222-222222222222',
+      bom_number: 'BOM-2026-01',
+      name: 'Nuova Distinta Test',
+      revision: 'A',
+      base_quantity: 1,
+      uom: 'PZ',
+    });
+    component.bomComponentsFormArray.at(0).patchValue({
+      component_item_id: '33333333-3333-4333-8333-333333333333',
+      quantity_per: 2,
+    });
+
+    component.submitCreateBom();
+    expect(apiService.createBom).toHaveBeenCalled();
+    expect(component.isCreateBomModalVisible()).toBe(false);
+
+    component.activateBom(mockBom);
+    expect(apiService.activateBom).toHaveBeenCalledWith('bom-1');
+  });
+
+  it('runs MRP and converts planned order into production order', () => {
+    component.openRunMrpModal();
+    expect(component.isRunMrpModalVisible()).toBe(true);
+
+    component.mrpForm.patchValue({
+      horizon_start_date: new Date('2026-04-01'),
+      horizon_end_date: new Date('2026-06-30'),
+      run_type: 'regenerative',
+    });
+
+    component.submitRunMrp();
+    expect(apiService.runMrp).toHaveBeenCalled();
+    expect(component.isRunMrpModalVisible()).toBe(false);
+
+    component.convertPlannedOrder(mockPlannedOrder);
+    expect(apiService.convertPlannedOrder).toHaveBeenCalledWith('plan-1');
+  });
+
+  it('creates a work center', () => {
+    component.openCreateWorkCenterModal();
+    expect(component.isCreateWorkCenterModalVisible()).toBe(true);
+
+    component.workCenterForm.patchValue({
+      work_center_code: 'WC-02',
+      name: 'Reparto Saldatura',
+      capacity_hours_per_day: 16,
+      hourly_cost_rate: 65,
+    });
+
+    component.submitCreateWorkCenter();
+    expect(apiService.createWorkCenter).toHaveBeenCalled();
+    expect(component.isCreateWorkCenterModalVisible()).toBe(false);
+  });
+  describe('validation', () => {
+    it('does not call the API when the order form is empty', () => {
+      component.openCreateOrderModal();
+      component.orderForm.patchValue({ mfg_item_id: '' });
+
+      component.submitCreateOrder();
+
+      expect(apiService.createProductionOrder).not.toHaveBeenCalled();
+      expect(component.errorTip(component.orderForm, 'mfg_item_id')).toBe('COMMON.VALIDATION.REQUIRED');
+    });
+
+    it('refuses an item id that is not a UUID and an end date before the start date', () => {
+      component.openCreateOrderModal();
+      component.orderForm.patchValue({
+        mfg_item_id: 'item-1',
+        planned_start_date: new Date('2026-05-10'),
+        planned_end_date: new Date('2026-05-01'),
+      });
+
+      component.submitCreateOrder();
+
+      expect(apiService.createProductionOrder).not.toHaveBeenCalled();
+      expect(component.orderForm.controls.mfg_item_id.hasError('pattern')).toBe(true);
+      expect(component.orderForm.controls.planned_end_date.hasError('dateOrder')).toBe(true);
+    });
+
+    it('does not call the API when the BOM form is empty, and the BOM number stays optional', () => {
+      component.openCreateBomModal();
+
+      component.submitCreateBom();
+
+      expect(apiService.createBom).not.toHaveBeenCalled();
+      expect(component.bomForm.controls.name.hasError('required')).toBe(true);
+      expect(component.bomForm.controls.bom_number.hasError('required')).toBe(false);
+    });
+
+    it('does not call the API when the work center form is empty', () => {
+      component.openCreateWorkCenterModal();
+
+      component.submitCreateWorkCenter();
+
+      expect(apiService.createWorkCenter).not.toHaveBeenCalled();
+      expect(component.errorTip(component.workCenterForm, 'work_center_code')).toBe('COMMON.VALIDATION.REQUIRED');
+    });
+
+    it('does not run MRP when the horizon ends before it starts', () => {
+      component.openRunMrpModal();
+      component.mrpForm.patchValue({
+        horizon_start_date: new Date('2026-06-30'),
+        horizon_end_date: new Date('2026-04-01'),
+      });
+
+      component.submitRunMrp();
+
+      expect(apiService.runMrp).not.toHaveBeenCalled();
+    });
+
+    it('does not run MRP when the horizon exceeds two years from its start, and accepts exactly two years', () => {
+      component.openRunMrpModal();
+      component.mrpForm.patchValue({
+        horizon_start_date: new Date(2026, 3, 1),
+        horizon_end_date: new Date(2028, 3, 2),
+      });
+      expect(component.mrpForm.controls.horizon_end_date.hasError('exceedsMax')).toBe(true);
+      component.submitRunMrp();
+      expect(apiService.runMrp).not.toHaveBeenCalled();
+
+      component.mrpForm.patchValue({ horizon_end_date: new Date(2028, 3, 1) });
+      expect(component.mrpForm.controls.horizon_end_date.valid).toBe(true);
+    });
+  });
+
+  it('maps the calculated columns of the grids to the server columns', () => {
+    const columns = component as unknown as {
+      orderColumns: () => { key: string; serverKey?: string }[];
+      bomColumns: () => { key: string; serverKey?: string }[];
+      routingColumns: () => { key: string; serverKey?: string }[];
+    };
+    const serverKeyOf = (list: { key: string; serverKey?: string }[], key: string) => list.find((c) => c.key === key)?.serverKey ?? key;
+
+    expect(serverKeyOf(columns.orderColumns(), 'item_code')).toBe('mfgItem.item_code');
+    expect(serverKeyOf(columns.bomColumns(), 'item_code')).toBe('mfgItem.item_code');
+    expect(serverKeyOf(columns.bomColumns(), 'components_count')).toBe('components_count');
+    expect(serverKeyOf(columns.routingColumns(), 'operations_count')).toBe('operations_count');
+  });
+
+  it('sends the search text and the status to the orders grid', () => {
+    component.searchOrders('  PO-1 ');
+    component.filterOrdersByStatus('released');
+
+    expect(component.ordersGrid.filterParams()).toEqual({ search: 'PO-1', status: 'released' });
+    expect(component.ordersGrid.pageIndex()).toBe(1);
+  });
+});

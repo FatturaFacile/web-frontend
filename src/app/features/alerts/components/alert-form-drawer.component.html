@@ -1,0 +1,75 @@
+<nz-modal appModalActions
+  [nzVisible]="open()"
+  [nzTitle]="(alert() ? 'alerts.form.editTitle' : 'alerts.form.createTitle') | translate"
+  [nzWidth]="720"
+  [nzFooter]="null"
+  (nzOnCancel)="open.set(false)"
+>
+  <ng-container *nzModalContent>
+    <form nz-form nzLayout="vertical" [formGroup]="form" (ngSubmit)="submit()">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="title">{{ "alerts.form.title" | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input
+            nz-input
+            id="title"
+            formControlName="title"
+            [placeholder]="'alerts.form.titlePlaceholder' | translate"
+          />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzFor="severity">{{ "alerts.form.severity" | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <nz-select id="severity" formControlName="severity">
+            <nz-option nzValue="info" [nzLabel]="'alerts.lblInformativoBlu' | translate" />
+            <nz-option nzValue="warning" [nzLabel]="'alerts.lblAttenzioneArancione' | translate" />
+            <nz-option nzValue="critical" [nzLabel]="'alerts.lblCriticoBloccanteRosso' | translate" />
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzFor="message">{{ "alerts.form.message" | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <textarea
+            nz-input
+            id="message"
+            formControlName="message"
+            rows="4"
+            [placeholder]="'alerts.form.messagePlaceholder' | translate"
+          ></textarea>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzFor="is_active">{{ "alerts.form.isActive" | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <nz-switch id="is_active" formControlName="is_active" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <div class="footer-actions">
+        <button nz-button type="button" appIconAction="cancel" (click)="open.set(false)"></button>
+        <button
+          nz-button
+          nzType="primary"
+          type="submit"
+          appIconAction="save"
+          [nzLoading]="isSaving()"
+          [disabled]="form.invalid"
+        ></button>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>

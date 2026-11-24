@@ -1,0 +1,180 @@
+:host {
+  display: block;
+}
+
+.analytics-container {
+  display: block;
+}
+
+.header-actions {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.tab-content {
+  margin-top: var(--space-4);
+}
+
+.ml-1 {
+  margin-left: var(--space-1);
+}
+
+// Filter strips above KPIs and tables
+.toolbar-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+
+  label {
+    color: var(--text-secondary);
+  }
+}
+
+.select-sm {
+  width: 140px;
+}
+
+.select-md {
+  width: 180px;
+}
+
+.select-lg {
+  width: 200px;
+}
+
+.checkbox-input {
+  accent-color: var(--primary-color);
+}
+
+// Two-column revenue tab: comparison table (7/12) and dimension breakdown (5/12), stacked below 1200px
+.split-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+
+  @media (min-width: 1200px) {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  }
+}
+
+.share-badge {
+  display: inline-block;
+  padding: 0 var(--space-2);
+  background: var(--status-neutral-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: var(--font-size-xs);
+}
+
+// KPI tiles
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--space-4);
+}
+
+.kpi-card {
+  transition: box-shadow 0.2s;
+
+  &:hover {
+    box-shadow: var(--elevated-shadow);
+  }
+
+  &.kpi-unavailable {
+    opacity: 0.6;
+    background: var(--bg-card-secondary);
+  }
+}
+
+.kpi-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-3);
+}
+
+.kpi-label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.kpi-forbidden {
+  padding: var(--space-4) 0;
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.kpi-value-row {
+  margin-bottom: var(--space-2);
+}
+
+.kpi-main-val {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.kpi-variance {
+  display: flex;
+  align-items: center;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+
+  &.positive {
+    color: var(--status-success);
+  }
+
+  &.negative {
+    color: var(--status-danger);
+  }
+
+  .variance-sub {
+    font-weight: 400;
+  }
+}
+
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-4);
+}
+
+.stat-card {
+  .stat-title {
+    display: block;
+    margin-bottom: var(--space-2);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  .stat-value {
+    display: block;
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.inflow-card {
+  border-left: 4px solid var(--kpi-orders);
+}
+
+.outflow-card {
+  border-left: 4px solid var(--status-danger);
+}
+
+.liquidity-card {
+  border-left: 4px solid var(--kpi-revenue);
+}
+
+.overdue-card {
+  border-left: 4px solid var(--kpi-pending);
+}

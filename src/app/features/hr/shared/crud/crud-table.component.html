@@ -1,0 +1,143 @@
+<div class="flex justify-between items-center mb-3 gap-2">
+  <h3 class="m-0">{{ config().titleKey | translate }}</h3>
+  <div class="flex gap-2">
+    <button nz-button type="button" [attr.aria-label]="'hrmCommon.refresh' | translate" (click)="reload()">
+      <nz-icon nzType="reload" />
+    </button>
+    @if (config().canWrite && config().create) {
+      <button
+        nz-button
+        nzType="primary"
+        type="button"
+        (click)="openForm(null)"
+        appIconAction="add"
+      ></button>
+    }
+  </div>
+</div>
+
+@for (field of columns(); track field.key) {
+  <ng-template #cellTpl let-row>{{ cell(row, field) }}</ng-template>
+}
+
+<app-base-table
+  [grid]="serverDriven() ? grid : undefined"
+  [data]="rows()"
+  [loading]="loading()"
+  [total]="rows().length"
+  [pageSize]="rows().length > 15 ? rows().length : 15"
+  [columns]="tableColumns()"
+  [actionsTemplate]="config().canWrite || config().rowActions ? actionsTpl : undefined"
+  [exportFileName]="config().titleKey"
+  [scroll]="{}"
+/>
+
+<ng-template #actionsTpl let-row>
+    @for (action of config().rowActions; track action.labelKey) {
+      @if ((!action.visible || action.visible(row)) && (!action.writeOnly || config().canWrite)) {
+        @if (action.input; as prompt) {
+          <app-reason-button
+            [labelKey]="action.labelKey"
+            [fieldLabelKey]="prompt.labelKey"
+            [kind]="prompt.kind"
+            [options]="prompt.options?.() ?? []"
+            [optional]="prompt.optional ?? false"
+            (confirmed)="runAction(action, row, $event)"
+          />
+        } @else {
+          <button nz-button nzSize="small" type="button" (click)="runAction(action, row)">
+            {{ action.labelKey | translate }}
+          </button>
+        }
+      }
+    }
+    @if (config().canWrite && !isReadonly(row)) {
+      @if (config().update) {
+        <button
+          nz-button
+          nzSize="small"
+          type="button"
+          (click)="openForm(row)"
+          appIconAction="edit"
+        ></button>
+      }
+      @if (config().remove && config().removeWithReason) {
+        <app-reason-button labelKey="hrmCommon.delete" [danger]="true" [minLength]="config().removeReasonMinLength ?? 3" (confirmed)="remove(row, $event)" />
+      } @else if (config().remove) {
+        <button
+          nz-button
+          nzSize="small"
+          nzDanger
+          type="button"
+          nz-popconfirm
+          [nzPopconfirmTitle]="'hrmShared.confirmDelete' | translate"
+          (nzOnConfirm)="remove(row)"
+          appIconAction="delete"
+        ></button>
+      }
+    }
+</ng-template>
+
+<nz-modal appModalActions
+  okAction="save"
+  [nzVisible]="formOpen()"
+  [nzTitle]="config().titleKey | translate"
+  [nzOkLoading]="saving()"
+  [nzOkDisabled]="form.invalid"
+  (nzOnOk)="save()"
+  (nzOnCancel)="formOpen.set(false)"
+>
+  <ng-container *nzModalContent>
+    <form nz-form nzLayout="vertical" [formGroup]="form">
+      @for (field of formFields(); track field.key) {
+        @if (field.type === 'boolean') {
+          <nz-form-item>
+            <nz-form-control>
+              <label [attr.for]="'crud-table-' + field.key" [nzId]="'crud-table-' + field.key" nz-checkbox [formControlName]="field.key">{{ field.labelKey | translate }}</label>
+            </nz-form-control>
+          </nz-form-item>
+        } @else {
+          <nz-form-item>
+            <nz-form-label [nzRequired]="isRequired(field)" [nzFor]="'crud-' + field.key">
+              {{ field.labelKey | translate }}
+            </nz-form-label>
+            <nz-form-control [nzErrorTip]="errorTip(field.key)">
+              @switch (field.type) {
+                @case ('select') {
+                  <nz-select [id]="'crud-' + field.key" [formControlName]="field.key" nzAllowClear nzShowSearch>
+                    @for (option of field.options?.(); track option.value) {
+                      <nz-option [nzValue]="option.value" [nzLabel]="optionText(option)" />
+                    }
+                  </nz-select>
+                }
+                @case ('textarea') {
+                  <textarea nz-input rows="3" [id]="'crud-' + field.key" [formControlName]="field.key"></textarea>
+                }
+                @case ('datetime') {
+                  <input nz-input type="datetime-local" [id]="'crud-' + field.key" [formControlName]="field.key" />
+                }
+                @case ('date') {
+                  <input nz-input type="date" [id]="'crud-' + field.key" [formControlName]="field.key" />
+                }
+                @case ('decimal') {
+                  <input nz-input inputmode="decimal" [id]="'crud-' + field.key" [formControlName]="field.key" />
+                }
+                @case ('integer') {
+                  <input nz-input inputmode="numeric" [id]="'crud-' + field.key" [formControlName]="field.key" />
+                }
+                @default {
+                  <input
+                    nz-input
+                    [id]="'crud-' + field.key"
+                    [attr.maxlength]="field.maxLength ?? null"
+                    [formControlName]="field.key"
+                  />
+                }
+              }
+            </nz-form-control>
+          </nz-form-item>
+        }
+      }
+    </form>
+  </ng-container>
+</nz-modal>

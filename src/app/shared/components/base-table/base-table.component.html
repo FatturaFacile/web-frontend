@@ -1,0 +1,367 @@
+<div class="base-table-container">
+  <!-- Toolbar: density, column visibility, bulk selection bar, custom toolbar slot -->
+  <div class="table-toolbar">
+    <div class="toolbar-left">
+      @if (selectable() && selectedItems().length > 0) {
+        <div class="selection-summary">
+          <span class="selection-count">
+            {{ 'common.table.selectedCount' | translate: { count: selectedItems().length } }}
+          </span>
+          <button nz-button nzType="link" nzSize="small" type="button" (click)="clearSelection()">
+            {{ 'common.table.deselectAll' | translate }}
+          </button>
+        </div>
+      }
+      @if (toolbarExtra()) {
+        <ng-container [ngTemplateOutlet]="toolbarExtra()!" />
+      }
+    </div>
+
+    <div class="toolbar-right">
+      <nz-select
+        class="group-select"
+        nzAllowClear
+        nzSize="small"
+        data-testid="grid-group-by"
+        [nzPlaceHolder]="label('common.table.groupBy', 'Raggruppa per')"
+        [ngModel]="groupBy()"
+        (ngModelChange)="setGroupBy($event)"
+      >
+        @for (col of groupColumns(); track col.key) {
+          <nz-option [nzLabel]="col.header | translate" [nzValue]="col.key" />
+        }
+      </nz-select>
+      @if (exportable()) {
+        <button
+          nz-button
+          nzType="text"
+          nzSize="small"
+          type="button"
+          data-testid="grid-export-xlsx"
+          [title]="label('common.table.exportXlsx', 'Esporta in Excel (xlsx)')"
+          [attr.aria-label]="label('common.table.exportXlsx', 'Esporta in Excel (xlsx)')"
+          (click)="exportToXlsx()"
+        >
+          <nz-icon nzType="file-excel" />
+        </button>
+      }
+      <!-- Density Toggle -->
+      <button
+        nz-button
+        nzType="text"
+        nzSize="small"
+        type="button"
+        nz-dropdown
+        [nzDropdownMenu]="densityMenu"
+        nzTrigger="click"
+        [title]="'common.table.density' | translate"
+      >
+        <nz-icon nzType="column-height" />
+      </button>
+      <nz-dropdown-menu #densityMenu="nzDropdownMenu">
+        <ul nz-menu>
+          <li
+            nz-menu-item
+            [nzSelected]="currentDensity() === 'default'"
+            tabindex="0"
+            (click)="setDensity('default')"
+            (keydown.enter)="setDensity('default')"
+            (keydown.space)="setDensity('default')"
+          >
+            {{ 'common.table.densityDefault' | translate }}
+          </li>
+          <li
+            nz-menu-item
+            [nzSelected]="currentDensity() === 'middle'"
+            tabindex="0"
+            (click)="setDensity('middle')"
+            (keydown.enter)="setDensity('middle')"
+            (keydown.space)="setDensity('middle')"
+          >
+            {{ 'common.table.densityMiddle' | translate }}
+          </li>
+          <li
+            nz-menu-item
+            [nzSelected]="currentDensity() === 'small'"
+            tabindex="0"
+            (click)="setDensity('small')"
+            (keydown.enter)="setDensity('small')"
+            (keydown.space)="setDensity('small')"
+          >
+            {{ 'common.table.densitySmall' | translate }}
+          </li>
+        </ul>
+      </nz-dropdown-menu>
+
+      <!-- Column Visibility Toggle -->
+      <button
+        nz-button
+        nzType="text"
+        nzSize="small"
+        type="button"
+        nz-dropdown
+        [nzDropdownMenu]="columnVisibilityMenu"
+        nzTrigger="click"
+        [title]="'common.table.visibleColumns' | translate"
+      >
+        <nz-icon nzType="setting" />
+      </button>
+      <nz-dropdown-menu #columnVisibilityMenu="nzDropdownMenu">
+        <div class="column-visibility-dropdown">
+          <div class="dropdown-header">{{ 'common.table.visibleColumns' | translate }}</div>
+          <ul nz-menu>
+            @for (col of allColumns(); track col.key) {
+              <li
+                nz-menu-item
+                tabindex="-1"
+                (click)="$event.stopPropagation()"
+                (keydown)="$event.stopPropagation()"
+              >
+                <label [attr.for]="uid + '-col-' + col.key.toString()" [nzId]="uid + '-col-' + col.key.toString()"
+                  nz-checkbox
+                  [ngModel]="isColumnVisible(col.key)"
+                  (ngModelChange)="toggleColumnVisibility(col.key, $event)"
+                >
+                  {{ col.header | translate }}
+                </label>
+              </li>
+            }
+          </ul>
+        </div>
+      </nz-dropdown-menu>
+    </div>
+  </div>
+
+  <!-- Table Skeleton on initial load -->
+  @if (isLoading() && rows().length === 0) {
+    <nz-skeleton [nzActive]="true" [nzParagraph]="{ rows: 6 }" />
+  } @else {
+    <nz-table
+      [nzData]="tableData()"
+      [nzFrontPagination]="false"
+      [nzLoading]="isLoading()"
+      [nzTotal]="rowTotal()"
+      [nzPageIndex]="currentPage()"
+      [nzPageSize]="currentPageSize()"
+      [nzPageSizeOptions]="pageSizeOptions()"
+      [nzShowSizeChanger]="showSizeChanger()"
+      [nzShowQuickJumper]="showQuickJumper()"
+      [nzBordered]="bordered()"
+      [nzSize]="currentDensity()"
+      [nzScroll]="tableScroll()"
+      [nzVirtualItemSize]="virtualItemSize()"
+      [nzVirtualMaxBufferPx]="virtualMaxBufferPx()"
+      [nzVirtualMinBufferPx]="virtualItemSize() * 4"
+      [nzShowPagination]="!virtualScroll()"
+      [nzNoResult]="customEmptyTemplate() || emptyFallback"
+      (nzPageIndexChange)="onPageIndexChange($event)"
+      (nzPageSizeChange)="onPageSizeChange($event)"
+    >
+      <thead>
+        <tr>
+          @if (expandable()) {
+            <th nzWidth="48px" nzLeft></th>
+          }
+          @if (selectable()) {
+            <th
+              nzWidth="48px"
+              nzLeft
+              [nzChecked]="isAllSelected()"
+              [nzIndeterminate]="isIndeterminate()"
+              (nzCheckedChange)="onSelectAll($event)"
+            ></th>
+          }
+
+          @for (col of visibleColumns(); track col.key) {
+            <th
+              [nzWidth]="col.width ?? null"
+              [nzLeft]="col.fixed === 'left'"
+              [nzRight]="col.fixed === 'right'"
+              nzAlign="center"
+              [nzShowSort]="col.sortable !== false"
+              [nzSortOrder]="
+                currentSort()?.key === col.key ? currentSort()!.order : (col.sortOrder ?? null)
+              "
+              (nzSortOrderChange)="onSortChange(col.key, $event)"
+              [nzCustomFilter]="col.filterable !== false"
+            >
+              {{ col.header | translate }}
+
+              @if (col.filterable !== false) {
+                <nz-filter-trigger
+                  [nzVisible]="isFilterVisible(col.key)"
+                  (nzVisibleChange)="setFilterVisible(col.key, $event)"
+                  [nzActive]="hasColumnFilter(col.key)"
+                  [nzDropdownMenu]="filterMenu"
+                >
+                  <nz-icon nzType="search" />
+                </nz-filter-trigger>
+              }
+
+              <nz-dropdown-menu #filterMenu="nzDropdownMenu">
+                @if (col.filterable !== false) {
+                  <div class="table-filter-popover">
+                    @if (col.customFilterTemplate) {
+                      <ng-container
+                        [ngTemplateOutlet]="col.customFilterTemplate"
+                        [ngTemplateOutletContext]="{ column: col }"
+                      />
+                    } @else {
+                      <div class="popover-content">
+                        <input
+                          nz-input
+                          type="text"
+                          [placeholder]="label('common.table.search', 'Cerca') + ' ' + (col.header | translate)"
+                          [ngModel]="draft(col.key).text"
+                          (ngModelChange)="draft(col.key).text = $event"
+                          (keydown.enter)="applyColumnFilter(col.key)"
+                        />
+                        @if ((filterOptions()[col.key.toString()] ?? []).length > 0) {
+                          <div class="filter-options">
+                            @for (opt of filterOptions()[col.key.toString()]; track opt.value) {
+                              <label [attr.for]="uid + '-flt-' + col.key.toString() + '-' + $index" [nzId]="uid + '-flt-' + col.key.toString() + '-' + $index"
+                                nz-checkbox
+                                [ngModel]="draft(col.key).selected.includes(opt.value)"
+                                (ngModelChange)="toggleDraftValue(col.key, opt.value, $event)"
+                                >{{ opt.label }}</label
+                              >
+                            }
+                          </div>
+                        }
+                      </div>
+                    }
+                    <div class="popover-footer">
+                      <button
+                        nz-button
+                        nzSize="small"
+                        type="button"
+                        (click)="resetColumnFilter(col.key)"
+                      >
+                        {{ 'common.table.reset' | translate }}
+                      </button>
+                      <button
+                        nz-button
+                        nzType="primary"
+                        nzSize="small"
+                        type="button"
+                        (click)="applyColumnFilter(col.key)"
+                      >
+                        {{ 'common.table.search' | translate }}
+                      </button>
+                    </div>
+                  </div>
+                }
+              </nz-dropdown-menu>
+            </th>
+          }
+
+          @if (actionsTemplate()) {
+            <th nzWidth="90px" nzRight nzAlign="center">{{ 'common.table.actions' | translate }}</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @if (virtualScroll()) {
+          <ng-template nz-virtual-scroll let-row let-index="index">
+            <ng-container
+              [ngTemplateOutlet]="rowTemplate"
+              [ngTemplateOutletContext]="{ $implicit: row }"
+            />
+          </ng-template>
+        } @else {
+          @for (row of viewRows(); track rowTrack(row, $index)) {
+            <ng-container
+              [ngTemplateOutlet]="rowTemplate"
+              [ngTemplateOutletContext]="{ $implicit: row }"
+            />
+            @if (row.kind === 'row' && expandable() && isRowExpanded(row.item) && detailTemplate()) {
+              <tr [nzExpand]="isRowExpanded(row.item)">
+                <ng-container
+                  [ngTemplateOutlet]="detailTemplate()!"
+                  [ngTemplateOutletContext]="{ $implicit: row.item }"
+                />
+              </tr>
+            }
+          }
+        }
+        <!-- Declared inside nz-table so row/cell directives resolve the table's injector. -->
+        <ng-template #rowTemplate let-row>
+          @if (row.kind === 'group') {
+            <tr class="group-row" data-testid="grid-group-row">
+              <td [attr.colspan]="totalColumnCount()" (click)="toggleGroup(row.key)">
+                <nz-icon [nzType]="row.collapsed ? 'right' : 'down'" />
+                <strong>{{ row.label }}</strong>
+                @if (row.count !== null) {
+                  <span class="group-count">({{ row.count }})</span>
+                }
+              </td>
+            </tr>
+          } @else {
+          @let item = row.item;
+          <tr
+            class="table-row"
+            role="row"
+            tabindex="0"
+            [class.row-selected]="isItemSelected(item)"
+            [hidden]="row.hidden"
+            [attr.aria-selected]="selectable() ? isItemSelected(item) : null"
+            [attr.aria-expanded]="expandable() ? isRowExpanded(item) : null"
+            (click)="onRowClick(item)"
+            (keydown.enter)="onRowKeyActivate($event, item)"
+            (keydown.space)="onRowKeyActivate($event, item)"
+          >
+            @if (expandable()) {
+              <td
+                nzLeft
+                [nzExpand]="isRowExpanded(item)"
+                (nzExpandChange)="toggleRowExpanded(item, $event)"
+              ></td>
+            }
+            @if (selectable()) {
+              <td
+                nzLeft
+                [nzChecked]="isItemSelected(item)"
+                (nzCheckedChange)="onSelectItem(item, $event)"
+                (click)="$event.stopPropagation()"
+              ></td>
+            }
+
+            @for (col of visibleColumns(); track col.key) {
+              <td
+                [nzLeft]="col.fixed === 'left'"
+                [nzRight]="col.fixed === 'right'"
+                [nzAlign]="col.align ?? 'left'"
+              >
+                @if (col.customCellTemplate) {
+                  <ng-container
+                    [ngTemplateOutlet]="col.customCellTemplate"
+                    [ngTemplateOutletContext]="{
+                      $implicit: item,
+                      value: getCellValue(item, col.key),
+                    }"
+                  />
+                } @else {
+                  {{ getColumnValue(item, col) }}
+                }
+              </td>
+            }
+
+            @if (actionsTemplate()) {
+              <td nzRight nzAlign="right" (click)="$event.stopPropagation()">
+                <ng-container
+                  [ngTemplateOutlet]="actionsTemplate()!"
+                  [ngTemplateOutletContext]="{ $implicit: item }"
+                />
+              </td>
+            }
+          </tr>
+          }
+        </ng-template>
+      </tbody>
+    </nz-table>
+  }
+
+  <ng-template #emptyFallback>
+    <nz-empty [nzNotFoundContent]="emptyText() ?? ('common.table.noData' | translate)" />
+  </ng-template>
+</div>

@@ -1,0 +1,910 @@
+<app-page-header
+  [title]="'WORKSHOP.PAGE_TITLE' | translate"
+  [subtitle]="'WORKSHOP.PAGE_SUBTITLE' | translate"
+>
+  <div class="header-actions">
+    @if (selectedTabIndex() === 0) {
+      <button nz-button nzType="primary" appIconAction="create" (click)="openCreateFolderModal()"></button>
+    } @else if (selectedTabIndex() === 1) {
+      <button nz-button nzType="primary" appIconAction="create" (click)="openCreateStockModal()"></button>
+    } @else if (selectedTabIndex() === 2) {
+      <button nz-button nzType="primary" appIconAction="create" (click)="openCreateRecurringModal()"></button>
+    }
+  </div>
+</app-page-header>
+
+<div class="workshop-container">
+  <nz-tabs [(nzSelectedIndex)]="selectedTabIndex">
+    <!-- TAB 1: COMMESSE D'OFFICINA -->
+    <nz-tab [nzTitle]="'WORKSHOP.TAB_FOLDERS' | translate">
+      <nz-card>
+        <!-- Filter Toolbar -->
+        <div class="filter-toolbar">
+          <div class="filter-inputs">
+            <nz-input-wrapper class="search-input">
+              <nz-icon nzInputPrefix nzType="search" />
+              <input
+                type="text"
+                nz-input
+                [placeholder]="'WORKSHOP.SEARCH_PLACEHOLDER' | translate"
+                [ngModel]="filterFolderSearch()"
+                (ngModelChange)="filterFolderSearch.set($event)"
+                (keyup.enter)="applyFolderFilters()"
+              />
+            </nz-input-wrapper>
+
+            <nz-select
+              class="status-select"
+              [ngModel]="filterFolderStatus()"
+              (ngModelChange)="filterFolderStatus.set($event); applyFolderFilters()"
+              [nzPlaceHolder]="'WORKSHOP.FILTER_STATUS' | translate"
+              nzAllowClear
+            >
+              <nz-option nzValue="" [nzLabel]="'WORKSHOP.ALL_STATUSES' | translate"></nz-option>
+              <nz-option nzValue="draft" [nzLabel]="'WORKSHOP.STATUS.DRAFT' | translate"></nz-option>
+              <nz-option nzValue="open" [nzLabel]="'WORKSHOP.STATUS.OPEN' | translate"></nz-option>
+              <nz-option nzValue="in_progress" [nzLabel]="'WORKSHOP.STATUS.IN_PROGRESS' | translate"></nz-option>
+              <nz-option nzValue="completed" [nzLabel]="'WORKSHOP.STATUS.COMPLETED' | translate"></nz-option>
+              <nz-option nzValue="delivered" [nzLabel]="'WORKSHOP.STATUS.DELIVERED' | translate"></nz-option>
+              <nz-option nzValue="cancelled" [nzLabel]="'WORKSHOP.STATUS.CANCELLED' | translate"></nz-option>
+            </nz-select>
+
+            <button nz-button nzType="default" (click)="loadFolders()">
+              <span nz-icon nzType="reload"></span>
+              {{ 'WORKSHOP.REFRESH' | translate }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Folders Table -->
+        <app-base-table
+          [grid]="foldersGrid"
+          [columns]="folderColumns()"
+          [actionsTemplate]="folderActions"
+          exportFileName="workshop-folders"
+        />
+
+        <ng-template #folderActions let-folder>
+                  <nz-space>
+                    <button
+                      *nzSpaceItem
+                      nz-button
+                      nzType="default"
+                      nzSize="small"
+                      (click)="openFolderDrawer(folder)"
+                    >
+                      <span nz-icon nzType="folder-open"></span>
+                      {{ 'WORKSHOP.ACTION_MANAGE' | translate }}
+                    </button>
+                    @if (folder.status === 'open') {
+                      <button
+                        *nzSpaceItem
+                        nz-button
+                        nzType="dashed"
+                        nzSize="small"
+                        (click)="changeFolderStatus(folder, 'in_progress')"
+                      >
+                        {{ 'WORKSHOP.ACTION_START_WORK' | translate }}
+                      </button>
+                    }
+                    @if (folder.status === 'in_progress') {
+                      <button
+                        *nzSpaceItem
+                        nz-button
+                        nzType="primary"
+                        nzSize="small"
+                        (click)="changeFolderStatus(folder, 'completed')"
+                      >
+                        {{ 'WORKSHOP.ACTION_COMPLETE' | translate }}
+                      </button>
+                    }
+                    @if (folder.status === 'completed') {
+                      <button
+                        *nzSpaceItem
+                        nz-button
+                        nzType="default"
+                        nzSize="small"
+                        (click)="changeFolderStatus(folder, 'delivered')"
+                      >
+                        {{ 'WORKSHOP.ACTION_DELIVER' | translate }}
+                      </button>
+                    }
+                    <button
+                      *nzSpaceItem
+                      nz-button
+                      nzType="text"
+                      nzSize="small"
+                      (click)="convertToQuote(folder)"
+                      [title]="'WORKSHOP.ACTION_QUOTE' | translate"
+                    >
+                      <span nz-icon nzType="file-text"></span>
+                    </button>
+                    <button
+                      *nzSpaceItem
+                      nz-button
+                      nzType="text"
+                      nzSize="small"
+                      (click)="convertToDeliveryNote(folder)"
+                      [title]="'WORKSHOP.ACTION_DELIVERY_NOTE' | translate"
+                    >
+                      <span nz-icon nzType="car"></span>
+                    </button>
+                    <button
+                      *nzSpaceItem
+                      nz-button
+                      nzType="text"
+                      nzSize="small"
+                      (click)="convertToInvoice(folder)"
+                      [title]="'WORKSHOP.ACTION_INVOICE' | translate"
+                    >
+                      <span nz-icon nzType="dollar"></span>
+                    </button>
+                  </nz-space>
+        </ng-template>
+      </nz-card>
+    </nz-tab>
+
+    <!-- TAB 2: PARCO AUTO & STOCK USATO -->
+    <nz-tab [nzTitle]="'WORKSHOP.TAB_STOCK' | translate">
+      <nz-card>
+        <div class="filter-toolbar">
+          <div class="filter-inputs">
+            <nz-select
+              class="status-select"
+              [ngModel]="filterStockStatus()"
+              (ngModelChange)="filterStockStatus.set($event); applyStockFilters()"
+              [nzPlaceHolder]="'WORKSHOP.FILTER_STATUS' | translate"
+              nzAllowClear
+            >
+              <nz-option nzValue="" [nzLabel]="'WORKSHOP.ALL_STATUSES' | translate"></nz-option>
+              <nz-option nzValue="in_stock" [nzLabel]="'WORKSHOP.STOCK_AVAILABLE' | translate"></nz-option>
+              <nz-option nzValue="reserved" [nzLabel]="'WORKSHOP.STOCK_RESERVED' | translate"></nz-option>
+              <nz-option nzValue="sold" [nzLabel]="'WORKSHOP.STOCK_SOLD' | translate"></nz-option>
+            </nz-select>
+
+            <button nz-button nzType="default" (click)="loadStock()">
+              <span nz-icon nzType="reload"></span>
+              {{ 'WORKSHOP.REFRESH' | translate }}
+            </button>
+          </div>
+        </div>
+
+        <app-base-table
+          [grid]="stockGrid"
+          [columns]="stockColumns()"
+          [actionsTemplate]="stockActions"
+          exportFileName="vehicle-stock"
+        />
+
+        <ng-template #stockActions let-unit>
+                  @if (unit.status !== 'sold') {
+                    <button
+                      nz-button
+                      nzType="primary"
+                      nzSize="small"
+                      (click)="openSellStockModal(unit)"
+                    >
+                      <span nz-icon nzType="shopping-cart"></span>
+                      {{ 'WORKSHOP.ACTION_SELL' | translate }}
+                    </button>
+                  }
+        </ng-template>
+      </nz-card>
+    </nz-tab>
+
+    <!-- TAB 3: TAGLIANDI & MANUTENZIONI PERIODICHE -->
+    <nz-tab [nzTitle]="'WORKSHOP.TAB_RECURRING' | translate">
+      <nz-card>
+        <app-base-table
+          [grid]="recurringGrid"
+          [columns]="recurringColumns()"
+          [actionsTemplate]="recurringActions"
+          exportFileName="recurring-services"
+        />
+
+        <ng-template #recurringActions let-rec>
+                  @if (rec.is_active) {
+                    <button
+                      nz-button
+                      nzType="text"
+                      nzDanger
+                      nzSize="small"
+                      nz-popconfirm
+                      [nzPopconfirmTitle]="'WORKSHOP.CONFIRM_STOP_RECURRING' | translate"
+                      (nzOnConfirm)="stopRecurring(rec.id)"
+                    >
+                      <span nz-icon nzType="pause-circle"></span>
+                      {{ 'WORKSHOP.ACTION_STOP' | translate }}
+                    </button>
+                  }
+        </ng-template>
+      </nz-card>
+    </nz-tab>
+  </nz-tabs>
+</div>
+
+<!-- DRAWER: GESTIONE COMMESSA & RIGHE & TEMPI & STORICO -->
+<nz-modal appModalActions
+  [nzVisible]="drawerVisible()"
+  [nzWidth]="960"
+  [nzFooter]="null"
+  [nzTitle]="('WORKSHOP.DRAWER_TITLE' | translate) + ': ' + (selectedFolder()?.folder_number || '')"
+  (nzOnCancel)="closeFolderDrawer()"
+>
+  <ng-container *nzModalContent>
+    @if (selectedFolder(); as folder) {
+      <nz-descriptions nzBordered [nzColumn]="2" nzSize="small">
+        <nz-descriptions-item [nzTitle]="'WORKSHOP.COL_VEHICLE' | translate">
+          {{ folder.license_plate || folder.vehicle_id }} - {{ folder.vehicle_model || folder.vin }}
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'WORKSHOP.COL_STATUS' | translate">
+          <nz-tag [nzColor]="getFolderStatusColor(folder.status)">{{ folder.status | uppercase }}</nz-tag>
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'WORKSHOP.COL_CUSTOMER' | translate">
+          {{ folder.customer_name || '-' }}
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'WORKSHOP.COL_MILEAGE_IN' | translate">
+          {{ folder.mileage_in ? (folder.mileage_in | number) + ' km' : '-' }}
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'WORKSHOP.COL_TOTAL_NET' | translate">
+          {{ folder.total_net | money: folder.currency }}
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'WORKSHOP.COL_TOTAL_GROSS' | translate">
+          <strong>{{ folder.total_gross | money: folder.currency }}</strong>
+        </nz-descriptions-item>
+      </nz-descriptions>
+
+      <!-- SEZIONE 1: RIGHE COMMESSA (RICAMBI & MANODOPERA) -->
+      <div class="drawer-section">
+        <div class="drawer-section-header">
+          <h4>{{ 'WORKSHOP.LINES_TITLE' | translate }}</h4>
+          <button nz-button nzType="primary" nzSize="small" appIconAction="add" (click)="openAddLineModal()"></button>
+        </div>
+
+        <nz-table appGridExport #linesTable [nzData]="folderLines()" [nzFrontPagination]="false" nzSize="small">
+          <thead>
+            <tr>
+              <th [nzSortFn]="'line_type' | gridSort" [nzFilters]="'line_type' | gridFilterList: linesTable.nzData" [nzFilterFn]="'line_type' | gridFilterFn">{{ 'WORKSHOP.COL_LINE_TYPE' | translate }}</th>
+              <th [nzSortFn]="'description' | gridSort" [nzFilters]="'description' | gridFilterList: linesTable.nzData" [nzFilterFn]="'description' | gridFilterFn">{{ 'WORKSHOP.COL_DESCRIPTION' | translate }}</th>
+              <th [nzSortFn]="'quantity' | gridSort" [nzFilters]="'quantity' | gridFilterList: linesTable.nzData" [nzFilterFn]="'quantity' | gridFilterFn">{{ 'WORKSHOP.COL_QTY' | translate }}</th>
+              <th [nzSortFn]="'unit_price' | gridSort" [nzFilters]="'unit_price' | gridFilterList: linesTable.nzData" [nzFilterFn]="'unit_price' | gridFilterFn">{{ 'WORKSHOP.COL_PRICE' | translate }}</th>
+              <th [nzSortFn]="'tax_rate' | gridSort" [nzFilters]="'tax_rate' | gridFilterList: linesTable.nzData" [nzFilterFn]="'tax_rate' | gridFilterFn">{{ 'WORKSHOP.COL_VAT' | translate }}</th>
+              <th [nzSortFn]="'subtotal' | gridSort" [nzFilters]="'subtotal' | gridFilterList: linesTable.nzData" [nzFilterFn]="'subtotal' | gridFilterFn">{{ 'WORKSHOP.COL_SUBTOTAL' | translate }}</th>
+              <th>{{ 'WORKSHOP.COL_ACTIONS' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (line of linesTable.data; track line.id) {
+              <tr>
+                <td>
+                  <nz-tag>{{ line.line_type | uppercase }}</nz-tag>
+                </td>
+                <td>{{ line.description }}</td>
+                <td>{{ line.quantity }}</td>
+                <td>{{ line.unit_price | money: folder.currency }}</td>
+                <td>{{ line.tax_rate }}%</td>
+                <td>
+                  <strong>{{ line.subtotal | money: folder.currency }}</strong>
+                </td>
+                <td>
+                  <button
+                    nz-button
+                    nzType="text"
+                    nzDanger
+                    nzSize="small"
+                    nz-popconfirm
+                    appIconAction="delete"
+                    [nzPopconfirmTitle]="'WORKSHOP.CONFIRM_DELETE_LINE' | translate"
+                    (nzOnConfirm)="deleteLine(line.id)"
+                  ></button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </div>
+
+      <!-- SEZIONE 2: TIMBRATURE MECCANICI & TEMPO LAVORO -->
+      <div class="drawer-section">
+        <div class="drawer-section-header">
+          <h4>{{ 'WORKSHOP.TIME_TITLE' | translate }}</h4>
+          <nz-space>
+            <button
+              *nzSpaceItem
+              nz-button
+              nzType="default"
+              nzSize="small"
+              [nzLoading]="timerLoading()"
+              (click)="startTimeEntry(folder.id)"
+            >
+              <span nz-icon nzType="clock-circle"></span>
+              {{ 'WORKSHOP.START_TIMER' | translate }}
+            </button>
+            <button
+              *nzSpaceItem
+              nz-button
+              nzType="primary"
+              nzSize="small"
+              (click)="openTimeBillModal()"
+            >
+              <span nz-icon nzType="calculator"></span>
+              {{ 'WORKSHOP.BILL_TIME' | translate }}
+            </button>
+          </nz-space>
+        </div>
+
+        <nz-table appGridExport #timeTable [nzData]="folderTimeEntries()" [nzFrontPagination]="false" nzSize="small">
+          <thead>
+            <tr>
+              <th [nzSortFn]="'technician_name' | gridSort" [nzFilters]="'technician_name' | gridFilterList: timeTable.nzData" [nzFilterFn]="'technician_name' | gridFilterFn">{{ 'WORKSHOP.COL_TECH' | translate }}</th>
+              <th [nzSortFn]="'started_at' | gridSort" [nzFilters]="'started_at' | gridFilterList: timeTable.nzData" [nzFilterFn]="'started_at' | gridFilterFn">{{ 'WORKSHOP.COL_START' | translate }}</th>
+              <th>{{ 'WORKSHOP.COL_STOP' | translate }}</th>
+              <th [nzSortFn]="'minutes' | gridSort" [nzFilters]="'minutes' | gridFilterList: timeTable.nzData" [nzFilterFn]="'minutes' | gridFilterFn">{{ 'WORKSHOP.COL_MINUTES' | translate }}</th>
+              <th>{{ 'WORKSHOP.COL_BILLED' | translate }}</th>
+              <th>{{ 'WORKSHOP.COL_ACTIONS' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (entry of timeTable.data; track entry.id) {
+              <tr>
+                <td>{{ entry.technician_name || entry.technician_user_id }}</td>
+                <td>{{ entry.started_at | date: 'short' }}</td>
+                <td>{{ entry.stopped_at ? (entry.stopped_at | date: 'short') : '-' }}</td>
+                <td>
+                  <strong>{{ entry.minutes }} min</strong>
+                </td>
+                <td>
+                  <nz-tag [nzColor]="entry.is_billed ? 'success' : 'default'">
+                    {{ (entry.is_billed ? 'WORKSHOP.BILLED' : 'WORKSHOP.NOT_BILLED') | translate }}
+                  </nz-tag>
+                </td>
+                <td>
+                  @if (!entry.stopped_at) {
+                    <button
+                      nz-button
+                      nzType="default"
+                      nzDanger
+                      nzSize="small"
+                      [nzLoading]="timerLoading()"
+                      (click)="stopTimeEntry(entry.id)"
+                    >
+                      <span nz-icon nzType="stop"></span>
+                      {{ 'WORKSHOP.STOP_TIMER' | translate }}
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </div>
+
+      <!-- SEZIONE 3: STORICO INTERVENTI DEL VEICOLO -->
+      <div class="drawer-section">
+        <h4>{{ 'WORKSHOP.VEHICLE_HISTORY_TITLE' | translate }}</h4>
+        <nz-table appGridExport #historyTable [nzData]="vehicleHistory()" [nzFrontPagination]="false" nzSize="small">
+          <thead>
+            <tr>
+              <th [nzSortFn]="'folder_number' | gridSort" [nzFilters]="'folder_number' | gridFilterList: historyTable.nzData" [nzFilterFn]="'folder_number' | gridFilterFn">{{ 'WORKSHOP.COL_NUMBER' | translate }}</th>
+              <th [nzSortFn]="'kind' | gridSort" [nzFilters]="'kind' | gridFilterList: historyTable.nzData" [nzFilterFn]="'kind' | gridFilterFn">{{ 'WORKSHOP.COL_KIND' | translate }}</th>
+              <th [nzSortFn]="'status' | gridSort" [nzFilters]="'status' | gridFilterList: historyTable.nzData" [nzFilterFn]="'status' | gridFilterFn">{{ 'WORKSHOP.COL_STATUS' | translate }}</th>
+              <th>{{ 'WORKSHOP.COL_MILEAGE' | translate }}</th>
+              <th>{{ 'WORKSHOP.COL_DATE' | translate }}</th>
+              <th [nzSortFn]="'total_gross' | gridSort" [nzFilters]="'total_gross' | gridFilterList: historyTable.nzData" [nzFilterFn]="'total_gross' | gridFilterFn">{{ 'WORKSHOP.COL_TOTAL' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of historyTable.data; track item.id) {
+              <tr>
+                <td>{{ item.folder_number }}</td>
+                <td><nz-tag>{{ item.kind | uppercase }}</nz-tag></td>
+                <td><nz-tag>{{ item.status | uppercase }}</nz-tag></td>
+                <td>{{ item.mileage_in ? (item.mileage_in | number) + ' km' : '-' }}</td>
+                <td>{{ item.completed_at ? (item.completed_at | date: 'mediumDate') : '-' }}</td>
+                <td><strong>{{ item.total_gross | money: folder.currency }}</strong></td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </div>
+    }
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: CREA COMMESSA -->
+<nz-modal appModalActions
+  [nzVisible]="folderModalVisible()"
+  [nzTitle]="'WORKSHOP.MODAL_NEW_FOLDER' | translate"
+  okAction="create"
+  (nzOnCancel)="folderModalVisible.set(false)"
+  [nzOkDisabled]="folderForm.invalid"
+  (nzOnOk)="saveFolder()"
+>
+  <ng-container *nzModalContent>
+    <form [formGroup]="folderForm" nz-form nzLayout="vertical">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else if (control.hasError('endsBeforeStart')) {
+          {{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_VEHICLE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <nz-select
+            formControlName="vehicle_id"
+            nzShowSearch
+            [nzPlaceHolder]="'WORKSHOP.PH_SELECT_VEHICLE' | translate"
+            [nzOptions]="vehicleOptions()"
+          />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'WORKSHOP.FIELD_CLIENT' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <nz-select
+            formControlName="contact_id"
+            nzShowSearch
+            nzServerSearch
+            nzAllowClear
+            [nzPlaceHolder]="'WORKSHOP.PH_SELECT_CLIENT' | translate"
+            [nzOptions]="contactOptions()"
+            (nzOnSearch)="contactSearch.set($event)"
+          />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_KIND' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <nz-select formControlName="kind">
+            <nz-option nzValue="mechanics" [nzLabel]="'WORKSHOP.KIND_MECHANICS' | translate"></nz-option>
+            <nz-option nzValue="bodywork" [nzLabel]="'WORKSHOP.KIND_BODYWORK' | translate"></nz-option>
+            <nz-option nzValue="tyres" [nzLabel]="'WORKSHOP.KIND_TYRES' | translate"></nz-option>
+            <nz-option nzValue="inspection" [nzLabel]="'WORKSHOP.KIND_INSPECTION' | translate"></nz-option>
+            <nz-option nzValue="other" [nzLabel]="'WORKSHOP.KIND_OTHER' | translate"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'WORKSHOP.FIELD_RECEIVED_AT' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input type="date" formControlName="received_at" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'WORKSHOP.FIELD_PROMISED_AT' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input type="date" formControlName="promised_at" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'WORKSHOP.FIELD_MILEAGE_IN' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <nz-input-number formControlName="mileage_in" [nzMin]="0"></nz-input-number>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'WORKSHOP.FIELD_NOTES' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <textarea nz-input formControlName="complaint" rows="3"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: AGGIUNGI RIGA COMMESSA -->
+<nz-modal appModalActions
+  [nzVisible]="lineModalVisible()"
+  [nzTitle]="'WORKSHOP.MODAL_ADD_LINE' | translate"
+  okAction="add"
+  (nzOnCancel)="lineModalVisible.set(false)"
+  [nzOkDisabled]="lineForm.invalid"
+  (nzOnOk)="saveLine()"
+>
+  <ng-container *nzModalContent>
+    <form [formGroup]="lineForm" nz-form nzLayout="vertical">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else if (control.hasError('endsBeforeStart')) {
+          {{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_LINE_TYPE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <nz-select formControlName="line_type">
+            <nz-option nzValue="part" [nzLabel]="'WORKSHOP.TYPE_PART' | translate"></nz-option>
+            <nz-option nzValue="labour" [nzLabel]="'WORKSHOP.TYPE_LABOUR' | translate"></nz-option>
+            <nz-option nzValue="paint" [nzLabel]="'WORKSHOP.TYPE_PAINT' | translate"></nz-option>
+            <nz-option nzValue="sublet" [nzLabel]="'WORKSHOP.TYPE_SUBLET' | translate"></nz-option>
+            <nz-option nzValue="other" [nzLabel]="'WORKSHOP.TYPE_OTHER' | translate"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_DESCRIPTION' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input formControlName="description" [placeholder]="'WORKSHOP.LBL_DESCRIZIONE_RICAMBIO_O_INTERVENTO' | translate" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <div class="modal-two-cols">
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_QTY' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-input-number formControlName="quantity" [nzMin]="0.01"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_PRICE' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <input nz-input formControlName="unit_price" placeholder="0.00" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_VAT' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input formControlName="tax_rate" placeholder="22.00" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: FATTURA ORE MECCANICO -->
+<nz-modal appModalActions
+  [nzVisible]="timeBillModalVisible()"
+  [nzTitle]="'WORKSHOP.MODAL_BILL_TIME' | translate"
+  okAction="confirm"
+  (nzOnCancel)="timeBillModalVisible.set(false)"
+  [nzOkDisabled]="timeBillForm.invalid"
+  (nzOnOk)="billTimeEntries()"
+>
+  <ng-container *nzModalContent>
+    <form [formGroup]="timeBillForm" nz-form nzLayout="vertical">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else if (control.hasError('endsBeforeStart')) {
+          {{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_HOURLY_RATE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input formControlName="hourly_rate" placeholder="50.00" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_VAT' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input formControlName="tax_rate" placeholder="22.00" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'WORKSHOP.FIELD_DESCRIPTION' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input formControlName="description" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: NUOVO VEICOLO STOCK -->
+<nz-modal appModalActions
+  [nzVisible]="stockModalVisible()"
+  [nzTitle]="'WORKSHOP.MODAL_NEW_STOCK' | translate"
+  okAction="create"
+  (nzOnCancel)="stockModalVisible.set(false)"
+  [nzOkDisabled]="stockForm.invalid"
+  (nzOnOk)="saveStock()"
+>
+  <ng-container *nzModalContent>
+    <form [formGroup]="stockForm" nz-form nzLayout="vertical">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else if (control.hasError('endsBeforeStart')) {
+          {{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
+      <div class="modal-two-cols">
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_STOCK_NUMBER' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <input nz-input formControlName="stock_number" placeholder="STK-2026-001" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_CONDITION' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-select formControlName="condition">
+              <nz-option nzValue="used" [nzLabel]="'WORKSHOP.CONDITION_USED' | translate"></nz-option>
+              <nz-option nzValue="new" [nzLabel]="'WORKSHOP.CONDITION_NEW' | translate"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="modal-two-cols">
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_MAKE' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <input nz-input formControlName="make" placeholder="Fiat, BMW, Audi..." />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_MODEL' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <input nz-input formControlName="model" placeholder="Panda, Serie 3, Golf..." />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="modal-two-cols">
+        <nz-form-item>
+          <nz-form-label>{{ 'WORKSHOP.FIELD_YEAR' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-input-number formControlName="year" [nzMin]="1950" [nzMax]="2050"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'WORKSHOP.FIELD_MILEAGE' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-input-number formControlName="mileage_km" [nzMin]="0"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="modal-two-cols">
+        <nz-form-item>
+          <nz-form-label>{{ 'WORKSHOP.FIELD_PURCHASE_COST' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <input nz-input formControlName="purchase_price" placeholder="0.00" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_LIST_PRICE' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <input nz-input formControlName="list_price" placeholder="15000.00" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: REGISTRA VENDITA STOCK -->
+<nz-modal appModalActions
+  [nzVisible]="sellStockModalVisible()"
+  [nzTitle]="'WORKSHOP.MODAL_SELL_STOCK' | translate"
+  okAction="confirm"
+  (nzOnCancel)="sellStockModalVisible.set(false)"
+  [nzOkDisabled]="sellStockForm.invalid"
+  (nzOnOk)="saveSellStock()"
+>
+  <ng-container *nzModalContent>
+    <form [formGroup]="sellStockForm" nz-form nzLayout="vertical">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else if (control.hasError('endsBeforeStart')) {
+          {{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_BUYER' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <nz-select
+            formControlName="buyer_contact_id"
+            nzShowSearch
+            nzServerSearch
+            [nzPlaceHolder]="'WORKSHOP.PH_SELECT_CLIENT' | translate"
+            [nzOptions]="contactOptions()"
+            (nzOnSearch)="contactSearch.set($event)"
+          />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_SALE_DATE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input type="date" formControlName="sale_date" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <div class="modal-two-cols">
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_SALE_PRICE' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <input nz-input formControlName="sale_price" placeholder="15000.00" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_VAT' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <input nz-input formControlName="tax_rate" placeholder="22.00" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: NUOVA MANUTENZIONE PERIODICA -->
+<nz-modal appModalActions
+  [nzVisible]="recurringModalVisible()"
+  [nzTitle]="'WORKSHOP.MODAL_NEW_RECURRING' | translate"
+  okAction="create"
+  (nzOnCancel)="recurringModalVisible.set(false)"
+  [nzOkDisabled]="recurringForm.invalid"
+  (nzOnOk)="saveRecurringService()"
+>
+  <ng-container *nzModalContent>
+    <form [formGroup]="recurringForm" nz-form nzLayout="vertical">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else if (control.hasError('endsBeforeStart')) {
+          {{ 'COMMON.VALIDATION.END_AFTER_START' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_VEHICLE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <nz-select
+            formControlName="vehicle_id"
+            nzShowSearch
+            [nzPlaceHolder]="'WORKSHOP.PH_SELECT_VEHICLE' | translate"
+            [nzOptions]="vehicleOptions()"
+          />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_SERVICE_TYPE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <nz-select formControlName="service_type">
+            @for (type of recurringTypes; track type) {
+              <nz-option [nzValue]="type" [nzLabel]="'WORKSHOP.SERVICE_TYPE_' + type.toUpperCase() | translate"></nz-option>
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_SERVICE_NAME' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input nz-input formControlName="name" [placeholder]="'WORKSHOP.LBL_ES_TAGLIANDO_30_000_KM_REVISIONE' | translate" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <div class="modal-two-cols">
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_INTERVAL' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-select formControlName="interval">
+              @for (interval of recurringIntervals; track interval) {
+                <nz-option [nzValue]="interval" [nzLabel]="'WORKSHOP.INTERVAL_' + interval.toUpperCase() | translate"></nz-option>
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_START_DATE' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <input nz-input type="date" formControlName="start_date" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="modal-two-cols">
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_PRICE' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <input nz-input formControlName="unit_price" placeholder="150.00" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ 'WORKSHOP.FIELD_VAT' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <input nz-input formControlName="tax_rate" placeholder="22.00" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- Cell templates of the server-driven grids (value = cell value, $implicit = row) -->
+<ng-template #folderNumberTpl let-folder><strong>{{ folder.folder_number }}</strong></ng-template>
+<ng-template #folderVehicleTpl let-folder>
+  <div>{{ folder.license_plate || folder.vehicle_id }}</div>
+  <small class="text-muted">{{ folder.vehicle_model || folder.vin }}</small>
+</ng-template>
+<ng-template #kindTpl let-folder><nz-tag>{{ folder.kind | uppercase }}</nz-tag></ng-template>
+<ng-template #folderStatusTpl let-folder>
+  <nz-tag [nzColor]="getFolderStatusColor(folder.status)">{{ folder.status | uppercase }}</nz-tag>
+</ng-template>
+<ng-template #mileageTpl let-folder>{{ folder.mileage_in ? (folder.mileage_in | number) + ' km' : '-' }}</ng-template>
+<ng-template #moneyTpl let-row let-v="value">{{ v ? (v | money: row.currency) : '-' }}</ng-template>
+<ng-template #strongMoneyTpl let-row let-v="value"><strong>{{ v | money: row.currency }}</strong></ng-template>
+<ng-template #stockNumberTpl let-unit>
+  <strong>{{ unit.stock_number }}</strong>
+  @if (unit.vin) {
+    <br /><small class="text-muted">{{ unit.vin }}</small>
+  }
+</ng-template>
+<ng-template #makeModelTpl let-unit><strong>{{ unit.make }} {{ unit.model }}</strong></ng-template>
+<ng-template #conditionTpl let-unit>
+  <nz-tag [nzColor]="unit.condition === 'new' ? 'cyan' : 'orange'">{{ unit.condition | uppercase }}</nz-tag>
+</ng-template>
+<ng-template #yearKmTpl let-unit>
+  {{ unit.year || '-' }} / {{ unit.mileage_km ? (unit.mileage_km | number) + ' km' : '-' }}
+</ng-template>
+<ng-template #stockStatusTpl let-unit>
+  <nz-tag [nzColor]="getStockStatusColor(unit.status)">{{ unit.status | uppercase }}</nz-tag>
+</ng-template>
+<ng-template #buyerTpl let-unit>
+  @if (unit.buyer_name) {
+    {{ unit.buyer_name }}
+    <br /><small class="text-muted">{{ unit.sold_at | date: 'mediumDate' }}</small>
+  } @else {
+    -
+  }
+</ng-template>
+<ng-template #strongTpl let-v="value"><strong>{{ v }}</strong></ng-template>
+<ng-template #plainTagTpl let-v="value"><nz-tag>{{ v }}</nz-tag></ng-template>
+<ng-template #dateTpl let-v="value">{{ v | date: 'mediumDate' }}</ng-template>
+<ng-template #activeTpl let-rec>
+  <nz-tag [nzColor]="rec.is_active ? 'success' : 'default'">
+    {{ (rec.is_active ? 'WORKSHOP.ACTIVE' : 'WORKSHOP.STOPPED') | translate }}
+  </nz-tag>
+</ng-template>

@@ -1,0 +1,320 @@
+<nz-card [nzTitle]="'GL.PN_TITLE' | translate">
+  <app-gl-error-alert [error]="store.error()" />
+
+  <div class="pn-header">
+    <div class="pn-field">
+      <label for="pn-date">{{ 'GL.PN_POSTING_DATE' | translate }}</label>
+      <input
+        id="pn-date"
+        nz-input
+        type="date"
+        [ngModel]="store.postingDate()"
+        (ngModelChange)="store.setPostingDate($event)"
+      />
+    </div>
+    <div class="pn-field pn-field-wide">
+      <label for="pn-description">{{ 'GL.PN_DESCRIPTION' | translate }}</label>
+      <input
+        id="pn-description"
+        nz-input
+        maxlength="500"
+        [ngModel]="store.description()"
+        (ngModelChange)="store.setDescription($event)"
+      />
+    </div>
+    <div class="pn-field">
+      <label for="pn-ledger">{{ 'GL.PN_BOOK' | translate }}</label>
+      <nz-select
+        id="pn-ledger"
+        class="pn-select"
+        [ngModel]="store.ledger()"
+        (ngModelChange)="store.setLedger($event)"
+      >
+        @for (code of books; track code) {
+          <nz-option [nzValue]="code" [nzLabel]="bookLabelKey(code) | translate" />
+        }
+      </nz-select>
+    </div>
+    <fieldset class="pn-propagate">
+      <legend>{{ 'GL.PN_PROPAGATE' | translate }}</legend>
+      @for (code of store.otherBooks(); track code) {
+        <label [attr.for]="'gl-prima-nota-field-' + $index" [nzId]="'gl-prima-nota-field-' + $index"
+          nz-checkbox
+          [ngModel]="store.propagateTo().includes(code)"
+          (ngModelChange)="store.togglePropagation(code, $event)"
+        >
+          {{ bookLabelKey(code) | translate }}
+        </label>
+      }
+    </fieldset>
+  </div>
+
+  <section class="pn-template" [attr.aria-label]="'GL.PN_TEMPLATE' | translate">
+    <div class="pn-field">
+      <label for="pn-template">{{ 'GL.PN_TEMPLATE' | translate }}</label>
+      <nz-select
+        id="pn-template"
+        class="pn-select pn-select-wide"
+        nzAllowClear
+        nzShowSearch
+        [nzPlaceHolder]="'GL.PN_TEMPLATE_PLACEHOLDER' | translate"
+        [ngModel]="store.templateId()"
+        (ngModelChange)="store.selectTemplate($event)"
+      >
+        @for (template of store.templates(); track template.id) {
+          <nz-option [nzValue]="template.id" [nzLabel]="template.code + ' - ' + template.name" />
+        }
+      </nz-select>
+    </div>
+
+    @if (store.selectedTemplate(); as template) {
+      @for (parameter of template.parameters; track parameter.key) {
+        <div class="pn-field">
+          @switch (parameter.type) {
+            @case ('amount') {
+              <label [for]="'pn-tpl-' + parameter.key">{{
+                'GL.PN_TEMPLATE_AMOUNT' | translate
+              }}</label>
+              <input
+                [id]="'pn-tpl-' + parameter.key"
+                nz-input
+                inputmode="decimal"
+                class="pn-amount"
+                [ngModel]="store.templateValues().amount"
+                (ngModelChange)="store.setTemplateValue({ amount: $event })"
+              />
+            }
+            @case ('rate') {
+              <label [for]="'pn-tpl-' + parameter.key">{{
+                'GL.PN_TEMPLATE_RATE' | translate
+              }}</label>
+              <input
+                [id]="'pn-tpl-' + parameter.key"
+                nz-input
+                inputmode="decimal"
+                class="pn-amount"
+                [ngModel]="store.templateValues().taxRate"
+                (ngModelChange)="store.setTemplateValue({ taxRate: $event })"
+              />
+            }
+            @default {
+              <label [for]="'pn-tpl-' + parameter.key">{{ parameter.key }}</label>
+              <nz-select
+                [id]="'pn-tpl-' + parameter.key"
+                class="pn-select pn-select-wide"
+                nzShowSearch
+                nzAllowClear
+                [ngModel]="store.templateValues().accounts[parameter.key] ?? null"
+                (ngModelChange)="store.setTemplateAccount(parameter.key, $event ?? '')"
+              >
+                @for (account of store.postableAccounts(); track account.id) {
+                  <nz-option
+                    [nzValue]="account.account_code ?? account.id"
+                    [nzLabel]="accountLabel(account)"
+                  />
+                }
+              </nz-select>
+            }
+          }
+        </div>
+      }
+      <button
+        nz-button
+        type="button"
+        [nzLoading]="store.hydrating()"
+        [disabled]="!store.templateValues().amount"
+        (click)="store.hydrateFromTemplate()"
+      >
+        {{ 'GL.PN_TEMPLATE_APPLY' | translate }}
+      </button>
+    }
+  </section>
+
+  <table class="pn-grid">
+    <caption class="sr-only">
+      {{
+        'GL.PN_LINES' | translate
+      }}
+    </caption>
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">{{ 'GL.COL_ACCOUNT' | translate }}</th>
+        <th scope="col">{{ 'GL.COL_DESCRIPTION' | translate }}</th>
+        <th scope="col" class="num">{{ 'GL.PN_DEBIT' | translate }}</th>
+        <th scope="col" class="num">{{ 'GL.PN_CREDIT' | translate }}</th>
+        <th scope="col">{{ 'GL.COST_CENTER' | translate }}</th>
+        <th scope="col">{{ 'GL.COMPETENCE_PERIOD' | translate }}</th>
+        <th scope="col">
+          <span class="sr-only">{{ 'GL.PN_REMOVE_LINE' | translate }}</span>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (line of store.lines(); track line.key; let index = $index) {
+        <tr
+          [attr.data-line-key]="line.key"
+          [class.pn-line-invalid]="!!line.accountQuery && !line.accountId"
+        >
+          <td>{{ index + 1 }}</td>
+          <td>
+            <input
+              nz-input
+              [id]="'pn-account-' + line.key"
+              [attr.aria-label]="'GL.COL_ACCOUNT' | translate"
+              [ngModel]="line.accountQuery"
+              (ngModelChange)="onAccountInput(line.key, $event)"
+              [nzAutocomplete]="accountAuto"
+              autocomplete="off"
+            />
+            <nz-autocomplete #accountAuto>
+              @for (account of store.accountOptions(line.accountQuery); track account.id) {
+                <nz-auto-option [nzValue]="account.id" [nzLabel]="accountLabel(account)">{{
+                  accountLabel(account)
+                }}</nz-auto-option>
+              }
+            </nz-autocomplete>
+          </td>
+          <td>
+            <input
+              nz-input
+              maxlength="255"
+              [attr.aria-label]="'GL.COL_DESCRIPTION' | translate"
+              [ngModel]="line.description"
+              (ngModelChange)="store.updateLine(line.key, { description: $event })"
+            />
+          </td>
+          <td>
+            <input
+              nz-input
+              class="num"
+              inputmode="decimal"
+              [attr.aria-label]="'GL.PN_DEBIT' | translate"
+              [ngModel]="line.debit"
+              (ngModelChange)="store.updateLine(line.key, { debit: $event })"
+            />
+          </td>
+          <td>
+            <input
+              nz-input
+              class="num"
+              inputmode="decimal"
+              [attr.aria-label]="'GL.PN_CREDIT' | translate"
+              [ngModel]="line.credit"
+              (ngModelChange)="store.updateLine(line.key, { credit: $event })"
+            />
+          </td>
+          <td>
+            <nz-select
+              class="pn-select"
+              nzAllowClear
+              [attr.aria-label]="'GL.COST_CENTER' | translate"
+              [ngModel]="line.costCenterId"
+              (ngModelChange)="store.updateLine(line.key, { costCenterId: $event ?? null })"
+            >
+              @for (center of lookups.costCenters(); track center.id) {
+                <nz-option [nzValue]="center.id" [nzLabel]="center.code + ' ' + center.name" />
+              }
+            </nz-select>
+          </td>
+          <td>
+            <div class="pn-competence">
+              <input
+                nz-input
+                type="date"
+                [attr.aria-label]="'GL.COMPETENCE_START' | translate"
+                [ngModel]="line.competenceStartDate ?? ''"
+                (ngModelChange)="store.updateLine(line.key, { competenceStartDate: $event || null })"
+              />
+              <input
+                nz-input
+                type="date"
+                [attr.aria-label]="'GL.COMPETENCE_END' | translate"
+                [ngModel]="line.competenceEndDate ?? ''"
+                (ngModelChange)="store.updateLine(line.key, { competenceEndDate: $event || null })"
+              />
+              @if (lineCompetencePreview(line); as cp) {
+                <nz-tag>{{ cp.periodDays }}/{{ cp.totalDays }}d · {{ cp.transitoryAmount | money: currency() }}</nz-tag>
+              }
+            </div>
+          </td>
+          <td>
+            <button
+              nz-button
+              nzSize="small"
+              nzType="text"
+              type="button"
+              [attr.aria-label]="'GL.PN_REMOVE_LINE' | translate"
+              (click)="store.removeLine(line.key)"
+            >
+              &times;
+            </button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+
+  <div
+    class="pn-balance"
+    role="status"
+    aria-live="polite"
+    [class.pn-balanced]="store.balanced()"
+    [class.pn-unbalanced]="!store.balanced()"
+  >
+    <span
+      >{{ 'GL.PN_DEBIT_TOTAL' | translate }}:
+      <strong>{{ store.totals().debitCents / 100 | money: currency() }}</strong></span
+    >
+    <span
+      >{{ 'GL.PN_CREDIT_TOTAL' | translate }}:
+      <strong>{{ store.totals().creditCents / 100 | money: currency() }}</strong></span
+    >
+    <span>
+      {{ 'GL.PN_DIFFERENCE' | translate }}:
+      <strong>{{ store.totals().differenceCents / 100 | money: currency() }}</strong>
+    </span>
+    <nz-tag [nzColor]="store.balanced() ? 'green' : 'red'">
+      {{ (store.balanced() ? 'GL.PN_BALANCED' : 'GL.PN_NOT_BALANCED') | translate }}
+    </nz-tag>
+  </div>
+
+  @if (store.issues().length > 0) {
+    <ul class="pn-issues" [attr.aria-label]="'GL.PN_ISSUES' | translate">
+      @for (issue of store.issues(); track issue) {
+        <li>{{ issueKey(issue) | translate }}</li>
+      }
+    </ul>
+  }
+
+  <div class="pn-actions">
+    <button nz-button type="button" (click)="addLine()">
+      {{ 'GL.PN_ADD_LINE' | translate }} (Alt+N)
+    </button>
+    <button nz-button type="button" [disabled]="store.balanced()" (click)="balance()">
+      {{ 'GL.PN_BALANCE' | translate }} (Alt+B)
+    </button>
+    <button
+      nz-button
+      type="button"
+      [disabled]="!canWrite || !store.canSubmit()"
+      [nzLoading]="store.submitting()"
+      (click)="submit('draft')"
+    >
+      {{ 'GL.PN_SAVE_DRAFT' | translate }} (Ctrl+S)
+    </button>
+    <button
+      nz-button
+      nzType="primary"
+      type="button"
+      data-testid="pn-post"
+      [disabled]="!canWrite || !store.canSubmit()"
+      [nzLoading]="store.submitting()"
+      (click)="submit('posted')"
+    >
+      {{ 'GL.PN_POST' | translate }} (Ctrl+Enter)
+    </button>
+    <a routerLink="/general-ledger/journals">{{ 'GL.PN_OPEN_JOURNALS' | translate }}</a>
+  </div>
+  <p class="pn-shortcuts">{{ 'GL.PN_SHORTCUTS' | translate }}</p>
+</nz-card>

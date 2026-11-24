@@ -1,0 +1,42 @@
+:host {
+  display: block;
+}
+
+// Rows of form fields inside the plan and work-order modals
+.form-row {
+  display: flex;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+
+  nz-form-item {
+    flex: 1 1 180px;
+    min-width: 0;
+  }
+
+  nz-select {
+    min-width: 180px;
+  }
+}
+
+.part-form {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+
+  input[nz-input] {
+    flex: 3;
+  }
+
+  nz-input-number {
+    flex: 1;
+  }
+}
+
+.work-order-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  flex-wrap: wrap;
+}

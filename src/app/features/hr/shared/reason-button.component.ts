@@ -1,0 +1,109 @@
+import { Component, input, output, signal } from '@angular/core';
+import { AbstractControl, FormControl, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
+import { ModalActionsDirective, TranslatePipe } from '@shared';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzModalModule } from 'ng-zorro-antd/modal';
+import { NzSelectModule } from 'ng-zorro-antd/select';
+import { CrudOption } from './crud/crud.types';
+
+export type PromptKind = 'reason' | 'decimal' | 'date' | 'select';
+
+/**
+ * Button that asks for one value in a modal before emitting. By default a mandatory reason
+ * (cancel, reopen, delete with reason); `kind` turns it into a decimal, date or select prompt.
+ */
+@Component({
+  selector: 'app-reason-button',
+  styleUrl: './reason-button.component.scss',
+  imports: [ModalActionsDirective, ReactiveFormsModule, NzButtonModule, NzInputModule, NzModalModule, NzSelectModule, TranslatePipe],
+  template: `
+    <button nz-button nzSize="small" type="button" [nzDanger]="danger()" [nzLoading]="loading()" (click)="open()">
+      {{ labelKey() | translate }}
+    </button>
+    <nz-modal appModalActions
+      [nzVisible]="visible()"
+      [nzTitle]="labelKey() | translate"
+      [nzOkDanger]="danger()"
+      [nzOkDisabled]="reason.invalid"
+      (nzOnOk)="confirm()"
+      (nzOnCancel)="visible.set(false)"
+    >
+      <ng-container *nzModalContent>
+        <label for="reason-input">{{ fieldLabelKey() | translate }}</label>
+        @switch (kind()) {
+          @case ('decimal') {
+            <input nz-input id="reason-input" inputmode="decimal" [formControl]="reason" />
+          }
+          @case ('date') {
+            <input nz-input id="reason-input" type="date" [formControl]="reason" />
+          }
+          @case ('select') {
+            <nz-select id="reason-input" class="w-full" nzShowSearch [formControl]="reason">
+              @for (option of options(); track option.value) {
+                <nz-option [nzValue]="option.value" [nzLabel]="option.label ?? option.value" />
+              }
+            </nz-select>
+          }
+          @default {
+            <textarea nz-input id="reason-input" rows="3" maxlength="500" [formControl]="reason"></textarea>
+          }
+        }
+        @if (reason.touched && reason.invalid) {
+          <div class="ant-form-item-explain-error" role="alert">
+            @if (reason.errors?.['minlength']) {
+              {{ 'hrmCommon.tooShort' | translate: { min: effectiveMinLength() } }}
+            } @else {
+              {{ (reason.errors?.['pattern'] ? 'hrmCommon.invalidDecimal' : 'hrmCommon.required') | translate }}
+            }
+          </div>
+        }
+      </ng-container>
+    </nz-modal>
+  `,
+})
+export class ReasonButtonComponent {
+  readonly labelKey = input.required<string>();
+  readonly fieldLabelKey = input('hrmCommon.reason');
+  readonly danger = input(false);
+  readonly loading = input(false);
+  readonly kind = input<PromptKind>('reason');
+  readonly options = input<CrudOption[]>([]);
+  /** An empty value is allowed (emits an empty string). */
+  readonly optional = input(false);
+  /** Minimum length of a `reason` prompt (API `min:3`; 5 for reopening a payroll run). */
+  readonly minLength = input(3);
+  readonly confirmed = output<string>();
+
+  protected readonly visible = signal(false);
+  protected readonly reason = new FormControl('', { nonNullable: true });
+
+  protected effectiveMinLength(): number {
+    return this.kind() === 'reason' ? this.minLength() : 0;
+  }
+
+  protected open(): void {
+    this.reason.setValidators([
+      ...(this.optional() ? [] : [Validators.required]),
+      ...(this.effectiveMinLength() > 0 ? [(control: AbstractControl<string>) => this.tooShort(control)] : []),
+      ...(this.kind() === 'decimal' ? [Validators.pattern(/^(\d+(\.\d{1,4})?)?$/)] : []),
+    ]);
+    this.reason.reset();
+    this.visible.set(true);
+  }
+
+  /** Mirrors `min:N` on the trimmed text (the emitted value is trimmed). */
+  private tooShort(control: AbstractControl<string>): ValidationErrors | null {
+    const length = control.value.trim().length;
+    return length > 0 && length < this.effectiveMinLength() ? { minlength: true } : null;
+  }
+
+  protected confirm(): void {
+    if (this.reason.invalid) {
+      this.reason.markAsTouched();
+      return;
+    }
+    this.visible.set(false);
+    this.confirmed.emit(this.reason.value.trim());
+  }
+}

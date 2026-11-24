@@ -1,0 +1,166 @@
+<nz-card>
+  <div class="toolbar">
+    <input
+      class="search-input"
+      nz-input
+      type="search"
+      [attr.aria-label]="'GL.SEARCH' | translate"
+      [placeholder]="'GL.SEARCH' | translate"
+      [(ngModel)]="search"
+      (ngModelChange)="onSearch()"
+    />
+    <nz-select
+      class="type-filter"
+      nzAllowClear
+      [attr.aria-label]="'GL.ACCOUNT_TYPE' | translate"
+      [nzPlaceHolder]="'GL.ACCOUNT_TYPE' | translate"
+      [(ngModel)]="typeFilter"
+      (ngModelChange)="load()"
+    >
+      @for (type of accountTypes; track type) {
+        <nz-option [nzValue]="type" [nzLabel]="'GL.ACCOUNT_TYPE_' + type.toUpperCase() | translate" />
+      }
+    </nz-select>
+    <span class="spacer"></span>
+    @if (canWrite && templates().length > 0) {
+      <nz-select
+        class="type-filter"
+        [attr.aria-label]="'GL.TEMPLATE_SELECT' | translate"
+        [nzPlaceHolder]="'GL.TEMPLATE_SELECT' | translate"
+        [(ngModel)]="selectedTemplate"
+      >
+        @for (template of templates(); track template.key) {
+          <nz-option [nzValue]="template.key" [nzLabel]="template.name + ' (' + template.accounts + ')'" />
+        }
+      </nz-select>
+      <button
+        nz-button
+        type="button"
+        nz-popconfirm
+        [nzPopconfirmTitle]="'GL.TEMPLATE_IMPORT_CONFIRM' | translate"
+        (nzOnConfirm)="importTemplate()"
+        [disabled]="!selectedTemplate || importing()"
+        [nzLoading]="importing()"
+      >
+        {{ 'GL.TEMPLATE_IMPORT' | translate }}
+      </button>
+    }
+    @if (canWrite) {
+      <button nz-button nzType="primary" type="button" (click)="openModal(null)" appIconAction="create"></button>
+    }
+  </div>
+
+  @if (importResult(); as result) {
+    <nz-alert
+      class="import-result"
+      nzType="success"
+      nzShowIcon
+      nzCloseable
+      [nzMessage]="
+        ('GL.TEMPLATE_IMPORT_DONE' | translate) +
+        ': ' +
+        ('GL.TEMPLATE_CREATED' | translate) +
+        ' ' +
+        result.created +
+        ', ' +
+        ('GL.TEMPLATE_SKIPPED' | translate) +
+        ' ' +
+        result.skipped
+      "
+      (nzOnClose)="importResult.set(null)"
+    />
+  }
+
+  <app-base-table [grid]="grid" [columns]="columns()" [actionsTemplate]="actionsTpl" [exportFileName]="'gl-accounts'" />
+
+  <ng-template #codeTpl let-account>{{ account.account_code }}</ng-template>
+  <ng-template #typeTpl let-account>{{ 'GL.ACCOUNT_TYPE_' + account.account_type.toUpperCase() | translate }}</ng-template>
+  <ng-template #balanceTpl let-account>{{ 'GL.NORMAL_' + account.normal_balance.toUpperCase() | translate }}</ng-template>
+  <ng-template #statusTpl let-account>
+    <nz-tag [nzColor]="account.is_active ? 'green' : 'default'">{{ (account.is_active ? 'GL.ACTIVE' : 'GL.INACTIVE') | translate }}</nz-tag>
+  </ng-template>
+  <ng-template #actionsTpl let-account>
+    @if (canWrite) {
+      <button nz-button nzSize="small" type="button" (click)="openModal(account)" appIconAction="edit"></button>
+      <button
+        nz-button
+        nzSize="small"
+        nzDanger
+        type="button"
+        nz-popconfirm
+        [nzPopconfirmTitle]="'GL.CONFIRM_DELETE' | translate"
+        (nzOnConfirm)="remove(account)"
+        appIconAction="delete"
+      ></button>
+    }
+  </ng-template>
+</nz-card>
+
+<nz-modal appModalActions
+  [nzVisible]="modalOpen()"
+  [nzTitle]="'GL.ACCOUNT_FORM' | translate"
+  [nzOkLoading]="saving()"
+  (nzOnOk)="save()"
+  (nzOnCancel)="modalOpen.set(false)"
+  okAction="save"
+>
+  <ng-container *nzModalContent>
+    @for (message of formErrors(); track message) {
+      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" />
+    }
+    <form nz-form nzLayout="vertical" [formGroup]="form">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="acc-code">{{ 'GL.COL_CODE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="form.controls.account_code.errors?.['serverError'] ?? ('GL.REQUIRED' | translate)">
+          <input id="acc-code" nz-input formControlName="account_code" maxlength="50" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="acc-name">{{ 'GL.COL_NAME' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="form.controls.name.errors?.['serverError'] ?? ('GL.REQUIRED' | translate)">
+          <input id="acc-name" nz-input formControlName="name" maxlength="255" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="acc-type">{{ 'GL.ACCOUNT_TYPE' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select id="acc-type" formControlName="account_type">
+            @for (type of accountTypes; track type) {
+              <nz-option [nzValue]="type" [nzLabel]="'GL.ACCOUNT_TYPE_' + type.toUpperCase() | translate" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="acc-balance">{{ 'GL.NORMAL_BALANCE' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select id="acc-balance" formControlName="normal_balance">
+            <nz-option nzValue="debit" [nzLabel]="'GL.NORMAL_DEBIT' | translate" />
+            <nz-option nzValue="credit" [nzLabel]="'GL.NORMAL_CREDIT' | translate" />
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="acc-currency">{{ 'GL.FX_CURRENCY' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input id="acc-currency" nz-input formControlName="currency" maxlength="3" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="acc-reporting">{{ 'GL.REPORTING_CLASS' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select id="acc-reporting" formControlName="reporting_class" nzAllowClear>
+            @for (reportingClass of reportingClasses; track reportingClass) {
+              <nz-option [nzValue]="reportingClass" [nzLabel]="'GL.REPORTING_' + reportingClass.toUpperCase() | translate" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <div class="checks">
+        <label for="gl-accounts-allows-manual-posting" nzId="gl-accounts-allows-manual-posting" nz-checkbox formControlName="allows_manual_posting">{{ 'GL.ALLOWS_MANUAL_POSTING' | translate }}</label>
+        <label for="gl-accounts-is-cost-center-mandatory" nzId="gl-accounts-is-cost-center-mandatory" nz-checkbox formControlName="is_cost_center_mandatory">{{ 'GL.COST_CENTER_MANDATORY' | translate }}</label>
+        <label for="gl-accounts-is-active" nzId="gl-accounts-is-active" nz-checkbox formControlName="is_active">{{ 'GL.ACTIVE' | translate }}</label>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>

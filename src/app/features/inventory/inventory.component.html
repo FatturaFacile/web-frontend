@@ -1,0 +1,828 @@
+<app-page-header
+  [title]="'INVENTORY.TITLE' | translate"
+  [subtitle]="'INVENTORY.SUBTITLE' | translate"
+/>
+
+<nz-card>
+  <nz-tabs [nzSelectedIndex]="selectedTabIndex()" (nzSelectedIndexChange)="onTabChange($event)">
+    <!-- TAB 0: STOCK LEVELS & BALANCES -->
+    <nz-tab [nzTitle]="'INVENTORY.TABS.STOCK_LEVELS' | translate">
+      <div class="metrics-grid">
+        <nz-row [nzGutter]="16">
+          <nz-col [nzSpan]="6">
+            <nz-card nzSize="small">
+              <nz-statistic
+                [nzValue]="totalOnHand()"
+                [nzTitle]="'INVENTORY.METRICS.ON_HAND' | translate"
+                [nzPrefix]="iconBox"
+              ></nz-statistic>
+              <ng-template #iconBox><nz-icon nzType="database" /></ng-template>
+            </nz-card>
+          </nz-col>
+          <nz-col [nzSpan]="6">
+            <nz-card nzSize="small">
+              <nz-statistic
+                [nzValue]="totalAvailable()"
+                [nzTitle]="'INVENTORY.METRICS.AVAILABLE' | translate"
+                [nzValueStyle]="{ color: 'var(--status-success)' }"
+                [nzPrefix]="iconCheck"
+              ></nz-statistic>
+              <ng-template #iconCheck><nz-icon nzType="check-circle" /></ng-template>
+            </nz-card>
+          </nz-col>
+          <nz-col [nzSpan]="6">
+            <nz-card nzSize="small">
+              <nz-statistic
+                [nzValue]="totalReserved()"
+                [nzTitle]="'INVENTORY.METRICS.RESERVED' | translate"
+                [nzValueStyle]="{ color: 'var(--status-warning)' }"
+                [nzPrefix]="iconLock"
+              ></nz-statistic>
+              <ng-template #iconLock><nz-icon nzType="lock" /></ng-template>
+            </nz-card>
+          </nz-col>
+          <nz-col [nzSpan]="6">
+            <nz-card nzSize="small">
+              <nz-statistic
+                [nzValue]="totalShortfall()"
+                [nzTitle]="'INVENTORY.METRICS.SHORTFALL' | translate"
+                [nzValueStyle]="{ color: 'var(--status-danger)' }"
+                [nzPrefix]="iconWarn"
+              ></nz-statistic>
+              <ng-template #iconWarn><nz-icon nzType="warning" /></ng-template>
+            </nz-card>
+          </nz-col>
+        </nz-row>
+      </div>
+
+      <div class="toolbar">
+        <nz-select
+          class="filter-select"
+          [ngModel]="selectedWarehouseFilter()"
+          (ngModelChange)="onWarehouseFilterChange($event)"
+          [nzPlaceHolder]="'INVENTORY.SELECT_WAREHOUSE' | translate"
+          nzAllowClear
+        >
+          @for (w of warehouses(); track w.id) {
+            <nz-option [nzValue]="w.id" [nzLabel]="w.name + ' (' + w.code + ')'"></nz-option>
+          }
+        </nz-select>
+
+        <button nz-button nzType="default" (click)="loadStockLevels()" [nzLoading]="loading()">
+          <nz-icon nzType="reload" /> {{ 'COMMON.REFRESH' | translate }}
+        </button>
+
+        <div class="spacer"></div>
+
+        <button data-tour="stock-move" nz-button nzType="primary" (click)="openTransferModal()">
+          <nz-icon nzType="swap" /> {{ 'INVENTORY.ACTIONS.TRANSFER' | translate }}
+        </button>
+        <button nz-button nzType="default" (click)="openAdjustmentModal()">
+          <nz-icon nzType="edit" /> {{ 'INVENTORY.ACTIONS.ADJUSTMENT' | translate }}
+        </button>
+      </div>
+
+      <nz-table appGridExport
+        [nzScroll]="{ x: '900px' }"
+        #stockTable
+        [nzData]="stockLevels()"
+        [nzLoading]="loading()"
+        [nzFrontPagination]="true"
+        [nzPageSize]="10"
+        nzSize="middle"
+      >
+        <thead>
+          <tr>
+            <th [nzSortFn]="'sku' | gridSort" [nzFilters]="'sku' | gridFilterList: stockTable.nzData" [nzFilterFn]="'sku' | gridFilterFn">{{ 'INVENTORY.COL_SKU' | translate }}</th>
+            <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: stockTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'INVENTORY.COL_NAME' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'on_hand' | gridSort" [nzFilters]="'on_hand' | gridFilterList: stockTable.nzData" [nzFilterFn]="'on_hand' | gridFilterFn">{{ 'INVENTORY.COL_ON_HAND' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'reserved' | gridSort" [nzFilters]="'reserved' | gridFilterList: stockTable.nzData" [nzFilterFn]="'reserved' | gridFilterFn">{{ 'INVENTORY.COL_RESERVED' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'available' | gridSort" [nzFilters]="'available' | gridFilterList: stockTable.nzData" [nzFilterFn]="'available' | gridFilterFn">{{ 'INVENTORY.COL_AVAILABLE' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'shortfall' | gridSort" [nzFilters]="'shortfall' | gridFilterList: stockTable.nzData" [nzFilterFn]="'shortfall' | gridFilterFn">{{ 'INVENTORY.COL_SHORTFALL' | translate }}</th>
+            <th nzAlign="center">{{ 'COMMON.STATUS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of stockTable.data; track row.product_id) {
+            <tr>
+              <td><code>{{ row.sku || '-' }}</code></td>
+              <td><strong>{{ row.name }}</strong></td>
+              <td nzAlign="right">{{ row.on_hand | number:'1.0-4' }}</td>
+              <td nzAlign="right">{{ row.reserved | number:'1.0-4' }}</td>
+              <td nzAlign="right">
+                <span [class]="row.available <= 0 ? 'text-danger' : 'text-success'">
+                  {{ row.available | number:'1.0-4' }}
+                </span>
+              </td>
+              <td nzAlign="right">
+                @if (row.shortfall > 0) {
+                  <nz-tag nzColor="error">-{{ row.shortfall | number:'1.0-4' }}</nz-tag>
+                } @else {
+                  <span>0</span>
+                }
+              </td>
+              <td nzAlign="center">
+                @if (row.available > 0) {
+                  <nz-tag nzColor="success">{{ 'INVENTORY.STATUS.IN_STOCK' | translate }}</nz-tag>
+                } @else if (row.shortfall > 0) {
+                  <nz-tag nzColor="error">{{ 'INVENTORY.STATUS.OUT_OF_STOCK' | translate }}</nz-tag>
+                } @else {
+                  <nz-tag nzColor="warning">{{ 'INVENTORY.STATUS.LOW_STOCK' | translate }}</nz-tag>
+                }
+              </td>
+            </tr>
+          } @empty {
+            @if (!loading()) {
+              <tr>
+                <td colspan="7"><nz-empty nzNotFoundImage="simple"></nz-empty></td>
+              </tr>
+            }
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <!-- TAB 1: STOCK MOVEMENTS & TRANSFERS -->
+    <nz-tab [nzTitle]="'INVENTORY.TABS.MOVEMENTS' | translate">
+      <div class="toolbar">
+        <nz-select
+          class="filter-select"
+          [ngModel]="movementTypeFilter()"
+          (ngModelChange)="setMovementType($event)"
+          [nzPlaceHolder]="'INVENTORY.FILTER_MOVEMENT_TYPE' | translate"
+          nzAllowClear
+        >
+          <nz-option nzValue="INTERNAL_TRANSFER" [nzLabel]="'INVENTORY.LBL_INTERNAL_TRANSFER' | translate"></nz-option>
+          <nz-option nzValue="PURCHASE_RECEIPT" [nzLabel]="'INVENTORY.LBL_PURCHASE_RECEIPT_ENTRATA' | translate"></nz-option>
+          <nz-option nzValue="SALES_DELIVERY" [nzLabel]="'INVENTORY.LBL_SALES_DELIVERY_USCITA' | translate"></nz-option>
+          <nz-option nzValue="ADJUSTMENT_IN" [nzLabel]="'INVENTORY.LBL_ADJUSTMENT_IN' | translate"></nz-option>
+          <nz-option nzValue="ADJUSTMENT_OUT" [nzLabel]="'INVENTORY.LBL_ADJUSTMENT_OUT' | translate"></nz-option>
+          <nz-option nzValue="SCRAP" [nzLabel]="'INVENTORY.LBL_SCRAP_ROTTAMAZIONE' | translate"></nz-option>
+        </nz-select>
+
+        <button nz-button nzType="default" (click)="loadMovements()" [nzLoading]="loading()">
+          <nz-icon nzType="reload" /> {{ 'COMMON.REFRESH' | translate }}
+        </button>
+
+        <div class="spacer"></div>
+
+        <button nz-button nzType="primary" (click)="openTransferModal()" appIconAction="create"></button>
+      </div>
+
+      <app-base-table
+        [grid]="movementsGrid"
+        [columns]="movementColumns()"
+        [scroll]="{ x: '900px' }"
+        exportFileName="stock-movements"
+      />
+
+      <ng-template #movementDateTpl let-m>{{ m.created_at ? (m.created_at | date:'short') : '-' }}</ng-template>
+      <ng-template #movementNumberTpl let-m><code>{{ m.movement_number || m.id.substring(0, 8) }}</code></ng-template>
+      <ng-template #movementTypeTpl let-m><nz-tag nzColor="blue">{{ m.movement_type }}</nz-tag></ng-template>
+      <ng-template #movementQtyTpl let-m>{{ m.quantity | number:'1.0-4' }}</ng-template>
+      <ng-template #movementSignedTpl let-m>
+        <!-- The quantity is always positive: the direction comes from signed_quantity or from the bins -->
+        @switch (movementSign(m)) {
+          @case ('in') {
+            <nz-tag nzColor="success">+{{ (m.signed_quantity ?? m.quantity) | number:'1.0-4' }}</nz-tag>
+          }
+          @case ('out') {
+            <nz-tag nzColor="error">-{{ (m.signed_quantity !== undefined ? -m.signed_quantity : m.quantity) | number:'1.0-4' }}</nz-tag>
+          }
+          @case ('move') {
+            <nz-tag nzColor="default">{{ m.source_bin?.code || '?' }} &rarr; {{ m.destination_bin?.code || '?' }}</nz-tag>
+          }
+          @default {
+            <nz-tag nzColor="default">0</nz-tag>
+          }
+        }
+      </ng-template>
+      <ng-template #movementCostTpl let-m>{{ m.unit_cost | money: authStore.activeCurrency() }}</ng-template>
+      <ng-template #movementValuationTpl let-m>{{ (m.total_valuation ?? (m.unit_cost * m.quantity)) | money: authStore.activeCurrency() }}</ng-template>
+      <ng-template #movementRefTpl let-m>
+        <small>{{ m.reference_type || '-' }} {{ m.reference_id ? '#' + m.reference_id : '' }}</small>
+      </ng-template>
+      <ng-template #movementNotesTpl let-m><small class="desc-text">{{ m.notes || '-' }}</small></ng-template>
+    </nz-tab>
+
+    <!-- TAB 2: ADJUSTMENTS -->
+    <nz-tab [nzTitle]="'INVENTORY.TABS.ADJUSTMENTS' | translate">
+      <div class="toolbar">
+        <button nz-button nzType="primary" (click)="openAdjustmentModal()" appIconAction="create"></button>
+        <nz-select
+          class="filter-select"
+          [ngModel]="adjustmentStatusFilter()"
+          (ngModelChange)="setAdjustmentStatus($event)"
+          [nzPlaceHolder]="'INVENTORY.FILTER_ADJUSTMENT_STATUS' | translate"
+          nzAllowClear
+        >
+          <nz-option nzValue="draft" [nzLabel]="'INVENTORY.ADJ_STATUS.DRAFT' | translate"></nz-option>
+          <nz-option nzValue="pending_approval" [nzLabel]="'COMMON.STATUS_PENDING' | translate"></nz-option>
+          <nz-option nzValue="approved" [nzLabel]="'COMMON.STATUS_APPROVED' | translate"></nz-option>
+          <nz-option nzValue="rejected" [nzLabel]="'COMMON.STATUS_REJECTED' | translate"></nz-option>
+        </nz-select>
+        <button nz-button nzType="default" (click)="loadAdjustments()" [nzLoading]="loading()">
+          <nz-icon nzType="reload" /> {{ 'COMMON.REFRESH' | translate }}
+        </button>
+        @if (!canApproveAdjustments()) {
+          <small class="desc-text">{{ 'INVENTORY.ADJ_APPROVAL_HINT' | translate }}</small>
+        }
+      </div>
+
+      <app-base-table
+        [grid]="adjustmentsGrid"
+        [columns]="adjustmentColumns()"
+        [scroll]="{ x: '900px' }"
+        [actionsTemplate]="adjustmentActionsTpl"
+        exportFileName="inventory-adjustments"
+      />
+
+      <ng-template #adjustmentNumberTpl let-adj><code>{{ adj.adjustment_number }}</code></ng-template>
+      <ng-template #adjustmentReasonTpl let-adj><nz-tag>{{ adj.reason }}</nz-tag></ng-template>
+      <ng-template #adjustmentChangeTpl let-adj>{{ (adj.net_valuation_change ?? 0) | money: authStore.activeCurrency() }}</ng-template>
+      <ng-template #adjustmentStatusTpl let-adj>
+        @switch (adj.status) {
+          @case ('approved') {
+            <nz-tag nzColor="success">{{ 'COMMON.STATUS_APPROVED' | translate }}</nz-tag>
+          }
+          @case ('rejected') {
+            <nz-tag nzColor="error">{{ 'COMMON.STATUS_REJECTED' | translate }}</nz-tag>
+          }
+          @case ('pending_approval') {
+            <nz-tag nzColor="processing">{{ 'COMMON.STATUS_PENDING' | translate }}</nz-tag>
+          }
+          @case ('draft') {
+            <nz-tag>{{ 'INVENTORY.ADJ_STATUS.DRAFT' | translate }}</nz-tag>
+          }
+          @default {
+            <nz-tag>{{ adj.status }}</nz-tag>
+          }
+        }
+      </ng-template>
+      <ng-template #adjustmentDateTpl let-adj>{{ adj.created_at ? (adj.created_at | date:'short') : '-' }}</ng-template>
+      <ng-template #adjustmentActionsTpl let-adj>
+        @if (adj.status === 'pending_approval' && canApproveAdjustments()) {
+          <button nz-button nzType="link" nzSize="small" (click)="approveAdjustment(adj.id)">
+            <nz-icon nzType="check" /> {{ 'COMMON.APPROVE' | translate }}
+          </button>
+          <button nz-button nzType="link" nzDanger nzSize="small" (click)="openRejectAdjustment(adj)">
+            <nz-icon nzType="close" /> {{ 'COMMON.REJECT' | translate }}
+          </button>
+        } @else if (adj.status === 'rejected' && adj.rejection_reason) {
+          <small class="desc-text">{{ adj.rejection_reason }}</small>
+        }
+      </ng-template>
+    </nz-tab>
+
+    <!-- TAB 3: PHYSICAL COUNTS -->
+    <nz-tab [nzTitle]="'INVENTORY.TABS.COUNTS' | translate">
+      <div class="toolbar">
+        <button nz-button nzType="primary" (click)="openCountModal()" appIconAction="create"></button>
+        <button nz-button nzType="default" (click)="loadCounts()" [nzLoading]="loading()">
+          <nz-icon nzType="reload" /> {{ 'COMMON.REFRESH' | translate }}
+        </button>
+      </div>
+
+      <app-base-table
+        [grid]="countsGrid"
+        [columns]="countColumns()"
+        [scroll]="{ x: '900px' }"
+        [actionsTemplate]="countActionsTpl"
+        exportFileName="inventory-counts"
+      />
+
+      <ng-template #countNumberTpl let-c><code>{{ c.session_number }}</code></ng-template>
+      <ng-template #countTypeTpl let-c><nz-tag nzColor="purple">{{ c.count_type }}</nz-tag></ng-template>
+      <ng-template #countDateTpl let-c>{{ c.scheduled_date | date:'mediumDate' }}</ng-template>
+      <ng-template #countStatusTpl let-c>
+        @switch (c.status) {
+          @case ('reconciled') {
+            <nz-tag nzColor="success">{{ 'INVENTORY.STATUS.RECONCILED' | translate }}</nz-tag>
+          }
+          @case ('in_progress') {
+            <nz-tag nzColor="processing">{{ 'INVENTORY.STATUS.IN_PROGRESS' | translate }}</nz-tag>
+          }
+          @default {
+            <nz-tag nzColor="default">{{ c.status }}</nz-tag>
+          }
+        }
+      </ng-template>
+      <ng-template #countActionsTpl let-c>
+        @if (c.status !== 'reconciled') {
+          <button
+            nz-button
+            nzType="link"
+            nzSize="small"
+            nz-popconfirm
+            [nzPopconfirmTitle]="'INVENTORY.CONFIRM_RECONCILE' | translate"
+            (nzOnConfirm)="reconcileCount(c.id)"
+          >
+            <nz-icon nzType="sync" /> {{ 'INVENTORY.ACTIONS.RECONCILE' | translate }}
+          </button>
+        }
+      </ng-template>
+    </nz-tab>
+
+    <!-- TAB 4: VALUATION -->
+    <nz-tab [nzTitle]="'INVENTORY.TABS.VALUATION' | translate">
+      <div class="toolbar">
+        <nz-select
+          class="filter-select"
+          [ngModel]="selectedWarehouseFilter()"
+          (ngModelChange)="onWarehouseFilterChange($event); loadValuation()"
+          [nzPlaceHolder]="'INVENTORY.SELECT_WAREHOUSE' | translate"
+          nzAllowClear
+        >
+          @for (w of warehouses(); track w.id) {
+            <nz-option [nzValue]="w.id" [nzLabel]="w.name"></nz-option>
+          }
+        </nz-select>
+
+        <nz-date-picker
+          [ngModel]="valuationDateValue()"
+          (ngModelChange)="onValuationDateChange($event)"
+          [nzDisabledDate]="disableFutureDates"
+          [nzAllowClear]="false"
+          nzFormat="yyyy-MM-dd"
+          [attr.aria-label]="'INVENTORY.VALUATION.AS_OF' | translate"
+        ></nz-date-picker>
+
+        <nz-select
+          class="filter-select-sm"
+          [ngModel]="valuationMethod()"
+          (ngModelChange)="valuationMethod.set($event); loadValuation()"
+          [nzPlaceHolder]="'INVENTORY.VALUATION.METHOD' | translate"
+          nzAllowClear
+        >
+          <nz-option nzValue="fifo" nzLabel="FIFO"></nz-option>
+          <nz-option nzValue="moving_average" [nzLabel]="'INVENTORY.VALUATION.MOVING_AVERAGE' | translate"></nz-option>
+          <nz-option nzValue="standard_cost" [nzLabel]="'INVENTORY.VALUATION.STANDARD_COST' | translate"></nz-option>
+        </nz-select>
+
+        <button nz-button nzType="default" (click)="loadValuation()" [nzLoading]="loading()">
+          <nz-icon nzType="reload" /> {{ 'COMMON.REFRESH' | translate }}
+        </button>
+      </div>
+
+      @if (valuation(); as v) {
+        <nz-row class="valuation-metrics" [nzGutter]="16">
+          <nz-col [nzSpan]="8">
+            <nz-card nzSize="small">
+              <nz-statistic
+                [nzValue]="v.total_value"
+                [nzTitle]="'INVENTORY.VALUATION.TOTAL' | translate"
+                [nzPrefix]="authStore.activeCurrency() === 'CHF' ? 'CHF ' : '€ '"
+              ></nz-statistic>
+            </nz-card>
+          </nz-col>
+          <nz-col [nzSpan]="8">
+            <nz-card nzSize="small">
+              <nz-statistic
+                [nzValue]="v.items.length"
+                [nzTitle]="'INVENTORY.VALUATION.ITEMS_COUNT' | translate"
+                [nzPrefix]="iconCount"
+              ></nz-statistic>
+              <ng-template #iconCount><nz-icon nzType="database" /></ng-template>
+            </nz-card>
+          </nz-col>
+          <nz-col [nzSpan]="8">
+            <nz-card nzSize="small">
+              <nz-statistic
+                [nzValue]="v.as_of.substring(0, 10)"
+                [nzTitle]="'INVENTORY.VALUATION.AS_OF' | translate"
+              ></nz-statistic>
+            </nz-card>
+          </nz-col>
+        </nz-row>
+
+        <nz-table appGridExport #valTable [nzScroll]="{ x: '800px' }" [nzData]="v.items" nzSize="middle" [nzFrontPagination]="true" [nzPageSize]="10">
+          <thead>
+            <tr>
+              <th [nzSortFn]="'sku' | gridSort" [nzFilters]="'sku' | gridFilterList: valTable.nzData" [nzFilterFn]="'sku' | gridFilterFn">{{ 'INVENTORY.COL_SKU' | translate }}</th>
+              <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: valTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'INVENTORY.COL_NAME' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'quantity' | gridSort" [nzFilters]="'quantity' | gridFilterList: valTable.nzData" [nzFilterFn]="'quantity' | gridFilterFn">{{ 'INVENTORY.COL_QTY' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'unit_cost' | gridSort" [nzFilters]="'unit_cost' | gridFilterList: valTable.nzData" [nzFilterFn]="'unit_cost' | gridFilterFn">{{ 'INVENTORY.COL_UNIT_COST' | translate }}</th>
+              <th nzAlign="right" [nzSortFn]="'value' | gridSort" [nzFilters]="'value' | gridFilterList: valTable.nzData" [nzFilterFn]="'value' | gridFilterFn">{{ 'INVENTORY.COL_VALUATION' | translate }}</th>
+              <th>{{ 'INVENTORY.VALUATION.COST_SOURCE' | translate }}</th>
+              <th nzAlign="right">{{ 'COMMON.ACTIONS' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of valTable.data; track item.stock_item_id + item.warehouse_id) {
+              <tr>
+                <td><code>{{ item.sku }}</code></td>
+                <td>{{ item.name }}</td>
+                <td nzAlign="right">{{ item.quantity | number: '1.0-4' }}</td>
+                <td nzAlign="right">{{ item.unit_cost | money: authStore.activeCurrency() }}</td>
+                <td nzAlign="right">{{ item.value | money: authStore.activeCurrency() }}</td>
+                <td>
+                  <small class="desc-text">{{ 'INVENTORY.COST_SOURCE.' + item.cost_source | translate }}</small>
+                </td>
+                <td nzAlign="right">
+                  <button
+                    nz-button
+                    nzType="link"
+                    nzSize="small"
+                    [nzLoading]="saving()"
+                    (click)="captureSnapshot(item.stock_item_id, item.warehouse_id)"
+                  >
+                    <nz-icon nzType="sync" /> {{ 'INVENTORY.ACTIONS.CAPTURE_SNAPSHOT' | translate }}
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      } @else {
+        @if (!loading()) {
+          <nz-empty nzNotFoundImage="simple"></nz-empty>
+        }
+      }
+    </nz-tab>
+
+    <!-- TAB 5: PRODUCTS CATALOG -->
+    <nz-tab [nzTitle]="'INVENTORY.TABS.CATALOG' | translate">
+      <div class="toolbar">
+        <input
+          nz-input
+          type="search"
+          class="search-input"
+          [placeholder]="'COMMON.SEARCH' | translate"
+          [value]="searchTerm()"
+          (input)="onSearch($event)"
+        />
+
+        <div class="spacer"></div>
+
+        <button nz-button nzType="primary" (click)="openCreateModal()" appIconAction="add"></button>
+      </div>
+
+      <app-base-table
+        [grid]="productsGrid"
+        [columns]="productColumns()"
+        [scroll]="{ x: '900px' }"
+        [actionsTemplate]="productActionsTpl"
+        exportFileName="inventory-products"
+      />
+
+      <ng-template #productSkuTpl let-it><strong>{{ it.sku }}</strong></ng-template>
+      <ng-template #productNameTpl let-it>
+        <div>{{ it.name }}</div>
+        @if (it.description) {
+          <small class="desc-text">{{ it.description }}</small>
+        }
+      </ng-template>
+      <ng-template #productUomTpl let-it><strong>{{ it.unit_measure }}</strong></ng-template>
+      <ng-template #productHsTpl let-it><code>{{ it.hs_code || '-' }}</code></ng-template>
+      <ng-template #productCostTpl let-it>{{ +it.cost_price | money: authStore.activeCurrency() }}</ng-template>
+      <ng-template #productPriceTpl let-it>{{ +it.sale_price | money: authStore.activeCurrency() }}</ng-template>
+      <ng-template #productActionsTpl let-it>
+        <button nz-button nzType="text" nzSize="small" (click)="openEditModal(it)" appIconAction="edit"></button>
+        <button
+          nz-button
+          nzType="text"
+          nzDanger
+          nzSize="small"
+          nz-popconfirm
+          [nzPopconfirmTitle]="'COMMON.CONFIRM_DELETE' | translate"
+          (nzOnConfirm)="deleteProduct(it)"
+          appIconAction="delete"
+        ></button>
+      </ng-template>
+    </nz-tab>
+  </nz-tabs>
+</nz-card>
+
+<!-- MODAL: TRANSFER -->
+<nz-modal appModalActions
+  [(nzVisible)]="transferModalVisible"
+  [nzTitle]="'INVENTORY.MODALS.TRANSFER_TITLE' | translate"
+  [nzOkLoading]="saving()"
+  (nzOnCancel)="transferModalVisible.set(false)"
+  (nzOnOk)="submitTransfer()"
+  nzWidth="600px"
+  okAction="create"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="transferForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'INVENTORY.COL_WAREHOUSE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(transferForm, 'warehouse_id')">
+          <nz-select formControlName="warehouse_id" (ngModelChange)="onTransferWarehouseChange($event)">
+            @for (w of warehouses(); track w.id) {
+              <nz-option [nzValue]="w.id" [nzLabel]="w.name + ' (' + w.code + ')'"></nz-option>
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'INVENTORY.COL_PRODUCT_ID' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(transferForm, 'stock_item_id')">
+          <nz-input-wrapper>
+            <nz-icon nzInputPrefix nzType="search" />
+            <input nz-input formControlName="stock_item_id" [placeholder]="'INVENTORY.LBL_UUID_ARTICOLO' | translate" />
+          </nz-input-wrapper>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-row [nzGutter]="16">
+        <nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'INVENTORY.COL_QTY' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="errorTip(transferForm, 'quantity')">
+              <nz-input-number class="w-full" formControlName="quantity" [nzMin]="0.0001"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </nz-col>
+        <nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'INVENTORY.COL_SOURCE_BIN' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="errorTip(transferForm, 'source_bin_id')">
+              <nz-select formControlName="source_bin_id" nzShowSearch>
+                @for (b of bins(); track b.id) {
+                  <nz-option [nzValue]="b.id" [nzLabel]="b.code" [nzDisabled]="b.is_locked"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </nz-col>
+        <nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'INVENTORY.COL_DESTINATION_BIN' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="errorTip(transferForm, 'destination_bin_id')">
+              <nz-select formControlName="destination_bin_id" nzShowSearch>
+                @for (b of bins(); track b.id) {
+                  <nz-option [nzValue]="b.id" [nzLabel]="b.code" [nzDisabled]="b.is_locked"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </nz-col>
+      </nz-row>
+      <p class="desc-text">{{ 'INVENTORY.TRANSFER_HINT' | translate }}</p>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'INVENTORY.COL_NOTES' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(transferForm, 'notes')">
+          <textarea nz-input formControlName="notes" rows="2"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: ADJUSTMENT -->
+<nz-modal appModalActions
+  [(nzVisible)]="adjustmentModalVisible"
+  [nzTitle]="'INVENTORY.MODALS.ADJUSTMENT_TITLE' | translate"
+  [nzOkLoading]="saving()"
+  (nzOnCancel)="adjustmentModalVisible.set(false)"
+  (nzOnOk)="submitAdjustment()"
+  nzWidth="600px"
+  okAction="create"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="adjustmentForm" nzLayout="vertical">
+      <nz-row [nzGutter]="16">
+        <nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'INVENTORY.COL_WAREHOUSE' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="errorTip(adjustmentForm, 'warehouse_id')">
+              <nz-select formControlName="warehouse_id" (ngModelChange)="onAdjustmentWarehouseChange($event)">
+                @for (w of warehouses(); track w.id) {
+                  <nz-option [nzValue]="w.id" [nzLabel]="w.name"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </nz-col>
+        <nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'INVENTORY.COL_REASON' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="errorTip(adjustmentForm, 'reason')">
+              <nz-select formControlName="reason">
+                <nz-option nzValue="cycle_count_variance" [nzLabel]="'INVENTORY.LBL_CYCLE_COUNT_VARIANCE' | translate"></nz-option>
+                <nz-option nzValue="damage_loss" [nzLabel]="'INVENTORY.LBL_DAMAGE_LOSS' | translate"></nz-option>
+                <nz-option nzValue="obsolete_write_off" [nzLabel]="'INVENTORY.LBL_OBSOLETE_WRITE_OFF' | translate"></nz-option>
+                <nz-option nzValue="found_stock" [nzLabel]="'INVENTORY.LBL_FOUND_STOCK' | translate"></nz-option>
+                <nz-option nzValue="scrap" [nzLabel]="'INVENTORY.LBL_SCRAP' | translate"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </nz-col>
+      </nz-row>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'INVENTORY.COL_PRODUCT_ID' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(adjustmentForm, 'stock_item_id')">
+          <input nz-input formControlName="stock_item_id" [placeholder]="'INVENTORY.LBL_UUID_ARTICOLO' | translate" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'INVENTORY.COL_BIN' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(adjustmentForm, 'warehouse_bin_id')">
+          <nz-select formControlName="warehouse_bin_id" nzShowSearch>
+            @for (b of bins(); track b.id) {
+              <nz-option [nzValue]="b.id" [nzLabel]="b.code" [nzDisabled]="b.is_locked"></nz-option>
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <p class="desc-text">{{ 'INVENTORY.ADJ_THRESHOLD_HINT' | translate }}</p>
+
+      <nz-row [nzGutter]="16">
+        <nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'INVENTORY.COL_QTY_DELTA' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="errorTip(adjustmentForm, 'quantity_delta')">
+              <nz-input-number class="w-full" formControlName="quantity_delta"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </nz-col>
+        <nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'INVENTORY.COL_UNIT_COST' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="errorTip(adjustmentForm, 'unit_cost')">
+              <nz-input-number class="w-full" formControlName="unit_cost" [nzMin]="0"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </nz-col>
+      </nz-row>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'INVENTORY.COL_NOTES' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(adjustmentForm, 'notes')">
+          <textarea nz-input formControlName="notes" rows="2"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: REJECT ADJUSTMENT -->
+<nz-modal appModalActions
+  [nzVisible]="rejectingAdjustment() !== null"
+  [nzTitle]="'INVENTORY.MODALS.REJECT_TITLE' | translate"
+  [nzOkLoading]="saving()"
+  [nzOkDisabled]="!rejectionReason().trim()"
+  [nzOkDanger]="true"
+  (nzOnCancel)="rejectingAdjustment.set(null)"
+  (nzOnOk)="confirmRejectAdjustment()"
+  okAction="confirm"
+>
+  <ng-container *nzModalContent>
+    <nz-form-item>
+      <nz-form-label nzRequired nzFor="rejection-reason">{{ 'INVENTORY.REJECTION_REASON' | translate }}</nz-form-label>
+      <nz-form-control>
+        <textarea
+          nz-input
+          id="rejection-reason"
+          rows="3"
+          maxlength="500"
+          [ngModel]="rejectionReason()"
+          (ngModelChange)="rejectionReason.set($event)"
+        ></textarea>
+      </nz-form-control>
+    </nz-form-item>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: COUNT SESSION -->
+<nz-modal appModalActions
+  [(nzVisible)]="countModalVisible"
+  [nzTitle]="'INVENTORY.MODALS.COUNT_TITLE' | translate"
+  [nzOkLoading]="saving()"
+  (nzOnCancel)="countModalVisible.set(false)"
+  (nzOnOk)="submitCount()"
+  nzWidth="500px"
+  okAction="create"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="countForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'INVENTORY.COL_WAREHOUSE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(countForm, 'warehouse_id')">
+          <nz-select formControlName="warehouse_id">
+            @for (w of warehouses(); track w.id) {
+              <nz-option [nzValue]="w.id" [nzLabel]="w.name"></nz-option>
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'INVENTORY.COL_COUNT_TYPE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(countForm, 'count_type')">
+          <nz-select formControlName="count_type">
+            <nz-option nzValue="full_physical" [nzLabel]="'INVENTORY.LBL_FULL_PHYSICAL_INVENTORY' | translate"></nz-option>
+            <nz-option nzValue="cycle_count_abc" [nzLabel]="'INVENTORY.LBL_ABC_CYCLE_COUNT' | translate"></nz-option>
+            <nz-option nzValue="spot_check" [nzLabel]="'INVENTORY.LBL_SPOT_CHECK' | translate"></nz-option>
+            <nz-option nzValue="zone_sweep" [nzLabel]="'INVENTORY.LBL_ZONE_SWEEP' | translate"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'INVENTORY.COL_SCHEDULED_DATE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(countForm, 'scheduled_date')">
+          <input nz-input type="date" formControlName="scheduled_date" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'INVENTORY.COL_NOTES' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(countForm, 'notes')">
+          <textarea nz-input formControlName="notes" rows="2"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MODAL: CREATE PRODUCT -->
+<nz-modal appModalActions
+  [(nzVisible)]="createModalVisible"
+  [nzTitle]="(editingProduct() ? 'INVENTORY.EDIT_MODAL_TITLE' : 'INVENTORY.ADD_MODAL_TITLE') | translate"
+  [nzOkLoading]="saving()"
+  nzWidth="640px"
+  (nzOnCancel)="createModalVisible.set(false)"
+  (nzOnOk)="submitCreateProduct()"
+  okAction="create"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="productForm" nzLayout="vertical">
+     <nz-tabs [(nzSelectedIndex)]="productModalTab">
+      <nz-tab [nzTitle]="'CUSTOMS_CODES.PRODUCT.TAB_GENERAL' | translate">
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'INVENTORY.COL_SKU' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(productForm, 'sku')">
+          <input nz-input formControlName="sku" placeholder="es. ART-001" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ 'INVENTORY.COL_DESC' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(productForm, 'name')">
+          <input nz-input formControlName="name" [placeholder]="'INVENTORY.LBL_DESCRIZIONE_PRODOTTO' | translate" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-row [nzGutter]="16">
+        <nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'INVENTORY.LBL_UDM' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="errorTip(productForm, 'unit_measure')">
+              <nz-select formControlName="unit_measure">
+                <nz-option nzValue="Pz" [nzLabel]="'INVENTORY.LBL_PEZZI_PZ' | translate"></nz-option>
+                <nz-option nzValue="Kg" [nzLabel]="'INVENTORY.LBL_CHILOGRAMMI_KG' | translate"></nz-option>
+                <nz-option nzValue="M" [nzLabel]="'INVENTORY.LBL_METRI_M' | translate"></nz-option>
+                <nz-option nzValue="Ore" [nzLabel]="'INVENTORY.LBL_ORE' | translate"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </nz-col>
+        <nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'SALES.INVOICES.ITEM.TAX_RATE' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="errorTip(productForm, 'tax_rate')">
+              <nz-input-number class="w-full" formControlName="tax_rate" [nzMin]="0" [nzMax]="100" [nzStep]="0.1"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </nz-col>
+      </nz-row>
+
+      <nz-row [nzGutter]="16">
+        <nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'INVENTORY.COL_UNIT_COST' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="errorTip(productForm, 'cost_price')">
+              <nz-input-number class="w-full" formControlName="cost_price" [nzMin]="0" [nzStep]="0.01"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </nz-col>
+        <nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ 'SALES.INVOICES.ITEM.PRICE' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="errorTip(productForm, 'sale_price')">
+              <nz-input-number class="w-full" formControlName="sale_price" [nzMin]="0" [nzStep]="0.01"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </nz-col>
+      </nz-row>
+
+      <nz-form-item>
+        <nz-form-label>{{ 'INVENTORY.COL_HS' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(productForm, 'hs_code')">
+          <input nz-input formControlName="hs_code" placeholder="es. 8471.3000" />
+        </nz-form-control>
+      </nz-form-item>
+      </nz-tab>
+      <nz-tab [nzTitle]="'CUSTOMS_CODES.PRODUCT.TAB_CUSTOMS' | translate">
+        <app-product-customs-origin [form]="productForm.controls.customs" />
+      </nz-tab>
+     </nz-tabs>
+    </form>
+  </ng-container>
+</nz-modal>

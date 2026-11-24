@@ -1,0 +1,29 @@
+:host {
+  display: block;
+}
+
+.rp-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.rp-filter {
+  width: 200px;
+  min-width: 180px;
+}
+
+.rp-spacer {
+  flex: 1 1 auto;
+}
+
+.rp-actions-col {
+  white-space: nowrap;
+}
+
+.rp-hint {
+  margin: var(--space-2) 0;
+  color: var(--text-muted);
+}

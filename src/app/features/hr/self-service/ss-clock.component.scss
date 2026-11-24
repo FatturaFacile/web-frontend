@@ -1,0 +1,36 @@
+.clock-state {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  background: var(--ff-color-neutral-bg);
+
+  &[data-state='Working'] {
+    background: var(--ff-color-success-bg);
+    border: 1px solid var(--ff-color-success);
+  }
+
+  &[data-state='OnBreak'] {
+    background: var(--ff-color-warning-bg);
+    border: 1px solid var(--ff-color-warning);
+  }
+}
+
+.clock-label {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.clock-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+tr.deleted {
+  opacity: 0.45;
+  text-decoration: line-through;
+}

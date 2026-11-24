@@ -1,0 +1,61 @@
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 16px;
+
+  &__search {
+    max-width: 260px;
+  }
+
+  &__filter {
+    min-width: 180px;
+  }
+
+  .spacer {
+    flex: 1;
+  }
+}
+
+.load-error {
+  color: #a8071a;
+}
+
+.actions {
+  white-space: nowrap;
+
+  > * + * {
+    margin-inline-start: 6px;
+  }
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  min-width: 200px;
+  padding: 4px 0;
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 6px 16px rgb(0 0 0 / 12%);
+
+  &__item {
+    text-align: start;
+    padding: 6px 12px;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    color: rgb(0 0 0 / 88%);
+
+    &:hover,
+    &:focus-visible {
+      background: #e6f4ff;
+      outline: 2px solid #1677ff;
+      outline-offset: -2px;
+    }
+
+    &--danger {
+      color: #a8071a;
+    }
+  }
+}

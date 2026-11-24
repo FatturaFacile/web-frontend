@@ -1,0 +1,115 @@
+<app-page-header
+  [title]="'TIRE_HOTEL.TITLE' | translate"
+  [subtitle]="'TIRE_HOTEL.SUBTITLE' | translate"
+>
+  <button nz-button nzType="primary" type="button" (click)="checkInOpen.set(true)">{{ 'TIRE_HOTEL.CHECK_IN' | translate }}</button>
+</app-page-header>
+<app-tire-check-in [(open)]="checkInOpen" (checkedIn)="loadTireRecords()" />
+
+<div nz-row [nzGutter]="16" class="kpi-row">
+  <div nz-col [nzXs]="24" [nzSm]="8">
+    <nz-card>
+      <nz-statistic
+        [nzValue]="totalSets()"
+        [nzTitle]="'TIRE_HOTEL.SETS_STORED' | translate"
+        [nzPrefix]="tireIcon"
+      />
+      <ng-template #tireIcon><i class="fa-solid fa-circle-dot fa-icon-spaced"></i></ng-template>
+    </nz-card>
+  </div>
+  <div nz-col [nzXs]="24" [nzSm]="8">
+    <nz-card>
+      <nz-statistic
+        [nzValue]="winterCount()"
+        [nzTitle]="'TIRE_HOTEL.WINTER_TIRES' | translate"
+        [nzValueStyle]="{ color: 'var(--primary-color)' }"
+      />
+    </nz-card>
+  </div>
+  <div nz-col [nzXs]="24" [nzSm]="8">
+    <nz-card>
+      <nz-statistic
+        [nzValue]="summerCount()"
+        [nzTitle]="'TIRE_HOTEL.SUMMER_TIRES' | translate"
+        [nzValueStyle]="{ color: 'var(--status-warning)' }"
+      />
+    </nz-card>
+  </div>
+</div>
+
+
+
+<nz-card [nzTitle]="'TIRE_HOTEL.LOG_TITLE' | translate">
+  <app-base-table
+    [grid]="grid"
+    [columns]="columns()"
+    [actionsTemplate]="actionsTpl"
+    exportFileName="tire-hotel"
+    size="middle"
+  />
+
+  <ng-template #plateTpl let-tire>
+    @if (tire.license_plate) {
+      <nz-tag nzColor="blue">{{ tire.license_plate }}</nz-tag>
+      <div>
+        <small>{{ tire.make }} {{ tire.vehicle_model }}</small>
+      </div>
+    } @else {
+      <small>{{ tire.vehicle_id }}</small>
+    }
+  </ng-template>
+  <ng-template #seasonTpl let-tire>
+    @if (tire.season === "winter") {
+      <nz-tag nzColor="blue"
+        ><i class="fa-solid fa-snowflake fa-icon-spaced"></i>
+        {{ "automotive.tireHotel.season.winter" | translate }}</nz-tag
+      >
+    } @else if (tire.season === "summer") {
+      <nz-tag nzColor="orange"
+        ><i class="fa-solid fa-sun fa-icon-spaced"></i>
+        {{ "automotive.tireHotel.season.summer" | translate }}</nz-tag
+      >
+    } @else {
+      <nz-tag>{{ "TIRE_HOTEL.SEASON_ALL" | translate }}</nz-tag>
+    }
+  </ng-template>
+  <ng-template #brandTpl let-tire>
+    {{ tire.brand }} {{ tire.model }}
+    <div>
+      <small>{{ tire.size }}@if (tire.dot) { • DOT: {{ tire.dot }} }</small>
+    </div>
+  </ng-template>
+  <ng-template #treadTpl let-tire>
+    <span class="depth-badge">
+      {{ "TIRE_HOTEL.TREAD_FRONT" | translate }}: {{ tire.front_left_tread_mm }} /
+      {{ tire.front_right_tread_mm }} mm
+    </span>
+    <span class="depth-badge">
+      {{ "TIRE_HOTEL.TREAD_REAR" | translate }}: {{ tire.rear_left_tread_mm }} /
+      {{ tire.rear_right_tread_mm }} mm
+    </span>
+  </ng-template>
+  <ng-template #rackTpl let-tire>
+    <nz-tag nzColor="geekblue">
+      <i class="fa-solid fa-warehouse fa-icon-spaced"></i>
+      {{ tire.warehouse_shelf_location }}
+    </nz-tag>
+  </ng-template>
+  <ng-template #statusTpl let-tire>
+    <nz-tag>{{ tire.status }}</nz-tag>
+  </ng-template>
+  <ng-template #actionsTpl let-tire>
+            <button
+              nz-button
+              nzSize="small"
+              nzType="default"
+              nz-popconfirm
+              [nzPopconfirmTitle]="'TIRE_HOTEL.CHECK_OUT_CONFIRM' | translate"
+              (nzOnConfirm)="checkOut(tire)"
+              [nzLoading]="checkingOutId() === tire.id"
+            >
+              <i class="fa-solid fa-right-from-bracket fa-icon-spaced"></i>
+              {{ "TIRE_HOTEL.CHECK_OUT" | translate }}
+            </button>
+  </ng-template>
+</nz-card>

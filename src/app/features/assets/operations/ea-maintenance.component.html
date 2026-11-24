@@ -1,0 +1,312 @@
+<nz-card>
+  <nz-tabs>
+    <nz-tab [nzTitle]="'EA.PLANS' | translate">
+      @if (canWrite) {
+        <button nz-button nzType="primary" class="mb-4" type="button" appIconAction="add" (click)="openPlanModal(null)"></button>
+      }
+      <app-base-table [grid]="plansGrid" [columns]="planColumns()" [actionsTemplate]="planActionsTpl" exportFileName="maintenance-plans" />
+      <ng-template #planTriggerTpl let-plan>{{ plan.trigger_type ? ('EA.TRIGGER_' + plan.trigger_type.toUpperCase() | translate) : '' }}</ng-template>
+      <ng-template #planDueTpl let-plan>{{ plan.next_due_date ?? '' }}</ng-template>
+      <ng-template #planCostTpl let-plan>{{ plan.estimated_cost | money: 'EUR' }}</ng-template>
+      <ng-template #planActiveTpl let-plan>
+        <nz-tag [nzColor]="plan.is_active ? 'green' : 'default'">{{ (plan.is_active ? 'EA.ACTIVE' : 'EA.INACTIVE') | translate }}</nz-tag>
+      </ng-template>
+      <ng-template #planActionsTpl let-plan>
+        @if (canWrite) {
+          <button nz-button nzSize="small" type="button" appIconAction="edit" (click)="openPlanModal(plan)"></button>
+          <button nz-button nzSize="small" nzType="primary" type="button" (click)="openWorkOrderFromPlan(plan)">{{ 'EA.OPEN_WORK_ORDER' | translate }}</button>
+        }
+      </ng-template>
+    </nz-tab>
+
+    <nz-tab [nzTitle]="'EA.DUE_PLANS' | translate">
+      <nz-table #dueTable nzSize="middle" [nzData]="duePlans()" [nzShowPagination]="false">
+        <thead>
+          <tr>
+            <th [nzSortFn]="'name' | gridSort" [nzFilters]="'name' | gridFilterList: dueTable.nzData" [nzFilterFn]="'name' | gridFilterFn">{{ 'EA.NAME' | translate }}</th>
+            <th>{{ 'EA.NEXT_DUE' | translate }}</th>
+            <th>{{ 'EA.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (plan of dueTable.data; track plan.id) {
+            <tr>
+              <td>{{ plan.name }}</td>
+              <td>{{ plan.next_due_date ?? '' }}</td>
+              <td>
+                @if (canWrite) {
+                  <button nz-button nzSize="small" nzType="primary" type="button" (click)="openWorkOrderFromPlan(plan)">{{ 'EA.OPEN_WORK_ORDER' | translate }}</button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+  </nz-tabs>
+</nz-card>
+
+<nz-modal appModalActions
+  [nzVisible]="planModalOpen()"
+  [nzTitle]="'EA.PLAN_FORM' | translate"
+  nzWidth="720px"
+  [nzOkLoading]="saving()"
+  [nzOkDisabled]="planForm.invalid"
+  okAction="save"
+  (nzOnOk)="savePlan()"
+  (nzOnCancel)="planModalOpen.set(false)"
+>
+  <ng-container *nzModalContent>
+    @for (message of formErrors(); track message) {
+      <nz-alert class="mb-3" nzType="error" nzShowIcon [nzMessage]="message" />
+    }
+    <form nz-form nzLayout="vertical" [formGroup]="planForm">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="pl-name">{{ 'EA.NAME' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="fieldTip">
+          <input id="pl-name" nz-input formControlName="name" maxlength="200" />
+        </nz-form-control>
+      </nz-form-item>
+      <div class="form-row">
+        <nz-form-item>
+          <nz-form-label nzFor="pl-asset" [nzRequired]="!planForm.controls.asset_class_id.value">{{ 'EA.ASSET' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-select id="pl-asset" formControlName="asset_id" nzAllowClear nzShowSearch>
+              @for (asset of assets(); track asset.id) {
+                <nz-option [nzValue]="asset.id" [nzLabel]="(asset.asset_number ? asset.asset_number + ' - ' : '') + (asset.name ?? '')" />
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="pl-class">{{ 'EA.ASSET_CLASS' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-select id="pl-class" formControlName="asset_class_id" nzAllowClear nzShowSearch>
+              @for (assetClass of assetClasses(); track assetClass.id) {
+                <nz-option [nzValue]="assetClass.id" [nzLabel]="assetClass.name" />
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <div class="form-row">
+        <nz-form-item>
+          <nz-form-label nzFor="pl-code">{{ 'EA.CODE' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input id="pl-code" nz-input formControlName="plan_code" maxlength="60" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="pl-type">{{ 'EA.MAINTENANCE_TYPE' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-select id="pl-type" formControlName="maintenance_type">
+              @for (type of types; track type) {
+                <nz-option [nzValue]="type" [nzLabel]="'EA.TYPE_' + type.toUpperCase() | translate" />
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="pl-trigger">{{ 'EA.TRIGGER' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-select id="pl-trigger" formControlName="trigger_type">
+              @for (trigger of triggers; track trigger) {
+                <nz-option [nzValue]="trigger" [nzLabel]="'EA.TRIGGER_' + trigger.toUpperCase() | translate" />
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <div class="form-row">
+        <nz-form-item>
+          <nz-form-label nzFor="pl-freq">{{ 'EA.FREQUENCY_DAYS' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-input-number id="pl-freq" formControlName="frequency_days" [nzMin]="1" [nzMax]="3650" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="pl-meter" [nzRequired]="meterRequired()">{{ 'EA.METER_CODE' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <input id="pl-meter" nz-input formControlName="meter_code" maxlength="40" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="pl-interval" [nzRequired]="meterRequired()">{{ 'EA.METER_INTERVAL' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="fieldTip">
+            <nz-input-number id="pl-interval" formControlName="meter_interval_units" [nzMin]="0" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="pl-lead">{{ 'EA.LEAD_TIME_DAYS' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-input-number id="pl-lead" formControlName="lead_time_days" [nzMin]="0" [nzMax]="365" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <div class="form-row">
+        <nz-form-item>
+          <nz-form-label nzFor="pl-cost">{{ 'EA.ESTIMATED_COST' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-input-number id="pl-cost" formControlName="estimated_cost" [nzMin]="0" [nzPrecision]="2" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="pl-due">{{ 'EA.NEXT_DUE' | translate }}</nz-form-label>
+          <nz-form-control>
+            <input id="pl-due" nz-input type="date" formControlName="next_due_date" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="pl-active">{{ 'EA.ACTIVE' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-switch id="pl-active" formControlName="is_active" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>
+
+@if (workOrder(); as detail) {
+  <nz-modal appModalActions
+    [nzVisible]="workOrderModal() === 'detail'"
+    [nzTitle]="('EA.WORK_ORDER' | translate) + ' ' + (detail.data.work_order_number ?? '')"
+    nzWidth="760px"
+    [nzFooter]="null"
+    (nzOnCancel)="workOrderModal.set(null)"
+  >
+    <ng-container *nzModalContent>
+      <p>
+        <nz-tag>{{ detail.data.status }}</nz-tag>
+        <nz-tag>{{ detail.data.maintenance_type }}</nz-tag>
+        {{ 'EA.SCHEDULED_DATE' | translate }}: {{ detail.data.scheduled_date ?? '' }}
+      </p>
+      <p>
+        {{ 'EA.TOTAL_COST' | translate }}: <strong>{{ detail.data.total_cost | money: 'EUR' }}</strong>
+        ({{ 'EA.LABOR_COST' | translate }} {{ detail.data.labor_cost | money: 'EUR' }},
+        {{ 'EA.PARTS_COST' | translate }} {{ detail.data.parts_cost | money: 'EUR' }})
+      </p>
+      <nz-table #partTable nzSize="small" [nzData]="detail.parts" [nzShowPagination]="false">
+        <thead>
+          <tr>
+            <th [nzSortFn]="'product_id' | gridSort" [nzFilters]="'product_id' | gridFilterList: partTable.nzData" [nzFilterFn]="'product_id' | gridFilterFn">{{ 'EA.PRODUCT' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'quantity' | gridSort" [nzFilters]="'quantity' | gridFilterList: partTable.nzData" [nzFilterFn]="'quantity' | gridFilterFn">{{ 'EA.QUANTITY' | translate }}</th>
+            <th nzAlign="right" [nzSortFn]="'total_cost' | gridSort" [nzFilters]="'total_cost' | gridFilterList: partTable.nzData" [nzFilterFn]="'total_cost' | gridFilterFn">{{ 'EA.TOTAL_COST' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (part of partTable.data; track part.id) {
+            <tr>
+              <td>{{ part.product_id }}</td>
+              <td nzAlign="right">{{ part.quantity }}</td>
+              <td nzAlign="right">{{ part.total_cost | money: 'EUR' }}</td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+
+      @if (canWrite && !detail.data.is_locked && detail.data.status !== 'completed' && detail.data.status !== 'cancelled') {
+        <form class="part-form" nz-form [formGroup]="partForm">
+          <input nz-input formControlName="product_id" [attr.aria-label]="'EA.PRODUCT_ID' | translate" [placeholder]="'EA.PRODUCT_ID' | translate" />
+          <nz-input-number formControlName="quantity" [nzMin]="0" [nzPrecision]="4" [attr.aria-label]="'EA.QUANTITY' | translate" />
+          <button nz-button type="button" appIconAction="add" [disabled]="partForm.invalid" (click)="addPart(detail.data)"></button>
+        </form>
+        <div class="work-order-actions">
+          @if (detail.data.status !== 'in_progress') {
+            <nz-switch [attr.aria-label]="'EA.STOPS_ASSET' | translate" [(ngModel)]="stopsAsset" />
+            <span>{{ 'EA.STOPS_ASSET' | translate }}</span>
+            <button nz-button type="button" (click)="startWorkOrder(detail.data)">{{ 'EA.START' | translate }}</button>
+          }
+          <button nz-button nzType="primary" type="button" (click)="openComplete()">{{ 'EA.COMPLETE' | translate }}</button>
+          <button nz-button nzDanger type="button" (click)="workOrderModal.set('cancel')">{{ 'EA.CANCEL_WORK_ORDER' | translate }}</button>
+        </div>
+      }
+    </ng-container>
+  </nz-modal>
+
+  <nz-modal appModalActions
+    [nzVisible]="workOrderModal() === 'complete'"
+    [nzTitle]="'EA.COMPLETE' | translate"
+    [nzOkDisabled]="completeForm.invalid"
+    okAction="confirm"
+    (nzOnOk)="completeWorkOrder(detail.data)"
+    (nzOnCancel)="workOrderModal.set('detail')"
+  >
+    <ng-container *nzModalContent>
+      <form nz-form nzLayout="vertical" [formGroup]="completeForm">
+      <ng-template #fieldTip let-control>
+        @if (control.errors?.['serverError']) {
+          {{ control.errors['serverError'] }}
+        } @else if (control.hasError('required')) {
+          {{ 'COMMON.VALIDATION.REQUIRED' | translate }}
+        } @else {
+          {{ 'COMMON.VALIDATION.INVALID_VALUE' | translate }}
+        }
+      </ng-template>
+        <div class="form-row">
+          <nz-form-item>
+            <nz-form-label nzFor="cw-labor">{{ 'EA.LABOR_COST' | translate }}</nz-form-label>
+            <nz-form-control><nz-input-number id="cw-labor" formControlName="labor_cost" [nzMin]="0" [nzPrecision]="2" /></nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label nzFor="cw-parts">{{ 'EA.PARTS_COST' | translate }}</nz-form-label>
+            <nz-form-control><nz-input-number id="cw-parts" formControlName="parts_cost" [nzMin]="0" [nzPrecision]="2" /></nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label nzFor="cw-external">{{ 'EA.EXTERNAL_COST' | translate }}</nz-form-label>
+            <nz-form-control><nz-input-number id="cw-external" formControlName="external_service_cost" [nzMin]="0" [nzPrecision]="2" /></nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label nzFor="cw-downtime">{{ 'EA.DOWNTIME_HOURS' | translate }}</nz-form-label>
+            <nz-form-control><nz-input-number id="cw-downtime" formControlName="downtime_hours" [nzMin]="0" [nzPrecision]="2" /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <nz-form-item>
+          <nz-form-label nzFor="cw-condition">{{ 'EA.CONDITION_AFTER' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-select id="cw-condition" formControlName="condition_after_maintenance" nzAllowClear>
+              @for (condition of conditions; track condition) {
+                <nz-option [nzValue]="condition" [nzLabel]="'EA.CONDITION_' + condition.toUpperCase() | translate" />
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="cw-meter">{{ 'EA.METER_READING' | translate }}</nz-form-label>
+          <nz-form-control><nz-input-number id="cw-meter" formControlName="meter_reading" [nzMin]="0" /></nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="cw-upgrade">{{ 'EA.CAPITALIZE_UPGRADE' | translate }}</nz-form-label>
+          <nz-form-control><nz-switch id="cw-upgrade" formControlName="capitalize_as_upgrade" /></nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="cw-notes">{{ 'EA.RESOLUTION_NOTES' | translate }}</nz-form-label>
+          <nz-form-control><textarea id="cw-notes" nz-input rows="3" formControlName="resolution_notes"></textarea></nz-form-control>
+        </nz-form-item>
+      </form>
+    </ng-container>
+  </nz-modal>
+
+  <nz-modal appModalActions
+    [nzVisible]="workOrderModal() === 'cancel'"
+    [nzTitle]="'EA.CANCEL_WORK_ORDER' | translate"
+    [nzOkDanger]="true"
+    okAction="confirm"
+    (nzOnOk)="cancelWorkOrder(detail.data)"
+    (nzOnCancel)="workOrderModal.set('detail')"
+  >
+    <ng-container *nzModalContent>
+      <label for="cw-cancel-reason">{{ 'EA.CANCEL_REASON' | translate }}</label>
+      <textarea id="cw-cancel-reason" nz-input rows="3" [(ngModel)]="cancelReason"></textarea>
+    </ng-container>
+  </nz-modal>
+}

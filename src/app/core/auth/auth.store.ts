@@ -1,0 +1,393 @@
+import { computed, inject } from '@angular/core';
+import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
+import { I18nService, resolveInitialLanguage, SupportedLanguage } from '../i18n';
+import { UiPreferencesService } from '../theme/ui-preferences.service';
+
+export interface Tenant {
+  readonly id: string;
+  readonly name: string;
+  readonly jurisdiction: 'IT' | 'CH';
+  readonly currency: 'EUR' | 'CHF';
+  readonly vatNumber: string;
+  readonly sdiCode?: string;
+  readonly qrIban?: string;
+  readonly address: string;
+  readonly role?: string | null;
+  /** Permissions of the membership in this tenant (`deny:crm`, `crm.read`, `gl.*`). */
+  readonly permissions?: readonly string[];
+}
+
+export interface UserProfile {
+  readonly id: string;
+  readonly name: string;
+  readonly email: string;
+  readonly avatar?: string;
+  readonly role?: string | null;
+  readonly roles?: string[];
+  readonly permissions?: string[];
+  readonly is_platform_admin?: boolean;
+  readonly two_factor_enabled?: boolean;
+  readonly locale?: string;
+  readonly active_tenant?: {
+    readonly id: string;
+    readonly name: string;
+    readonly country?: string;
+    readonly role: string | null;
+  } | null;
+  readonly tenants?: readonly {
+    readonly id: string;
+    readonly name: string;
+    readonly country?: string;
+    readonly role: string | null;
+    readonly permissions?: readonly string[];
+  }[];
+}
+
+export interface AuthState {
+  readonly isAuthenticated: boolean;
+  readonly user: UserProfile | null;
+  readonly tenants: Tenant[];
+  readonly activeTenantId: string;
+  readonly activeJurisdiction: 'IT' | 'CH';
+  readonly activeCurrency: 'EUR' | 'CHF';
+  readonly activeLocale: SupportedLanguage;
+  readonly twoFactorSetupRequired: boolean;
+}
+
+export const DEFAULT_TENANTS: Tenant[] = [
+  {
+    id: 't-it-01',
+    name: 'Rossi Impianti S.r.l.',
+    jurisdiction: 'IT',
+    currency: 'EUR',
+    vatNumber: 'IT12345678901',
+    sdiCode: 'M5UXCR1',
+    address: 'Via Manzoni 45, 20121 Milano (MI), Italia',
+    role: 'owner',
+  },
+  {
+    id: 't-ch-02',
+    name: 'Helvetia Tech SA',
+    jurisdiction: 'CH',
+    currency: 'CHF',
+    vatNumber: 'CHE-114.892.451 IVA',
+    address: 'Via Nassa 12, 6900 Lugano (TI), Svizzera',
+    role: 'admin',
+  },
+];
+
+export const DEFAULT_USER: UserProfile = {
+  id: 'usr-001',
+  name: 'Marco Rossi',
+  email: 'm.rossi@rossiimpianti.it',
+  avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+  role: 'owner',
+  roles: ['owner', 'admin'],
+  permissions: ['*'],
+  active_tenant: {
+    id: 't-it-01',
+    name: 'Rossi Impianti S.r.l.',
+    country: 'IT',
+    role: 'owner',
+  },
+};
+
+function getInitialTenantId(): string {
+  if (typeof window !== 'undefined' && window.localStorage) {
+    const saved =
+      window.localStorage.getItem('ff_active_tenant_id') ||
+      window.localStorage.getItem('tenant_id') ||
+      window.localStorage.getItem('ff_tenant_id');
+    if (saved) {
+      return saved;
+    }
+  }
+  return 't-it-01';
+}
+
+/** Storage keys read by the HTTP interceptor and for fast synchronous startup hydration */
+export const USER_ID_STORAGE_KEY = 'ff_active_user_id';
+export const USER_PROFILE_STORAGE_KEY = 'ff_user_profile';
+export const AUTH_STATUS_STORAGE_KEY = 'ff_is_authenticated';
+
+function persistUser(user: UserProfile | null): void {
+  if (typeof window === 'undefined' || !window.localStorage) {
+    return;
+  }
+  if (user?.id) {
+    window.localStorage.setItem(USER_ID_STORAGE_KEY, String(user.id));
+    try {
+      window.localStorage.setItem(USER_PROFILE_STORAGE_KEY, JSON.stringify(user));
+      window.localStorage.setItem(AUTH_STATUS_STORAGE_KEY, 'true');
+    } catch {
+      // Storage quota or disabled
+    }
+  } else {
+    window.localStorage.removeItem(USER_ID_STORAGE_KEY);
+    window.localStorage.removeItem(USER_PROFILE_STORAGE_KEY);
+    window.localStorage.removeItem(AUTH_STATUS_STORAGE_KEY);
+  }
+}
+
+function persistUserId(user: UserProfile | null): void {
+  persistUser(user);
+}
+
+function getInitialUser(): UserProfile | null {
+  if (typeof window !== 'undefined' && window.localStorage) {
+    try {
+      const raw = window.localStorage.getItem(USER_PROFILE_STORAGE_KEY);
+      if (raw) {
+        return JSON.parse(raw) as UserProfile;
+      }
+    } catch {
+      // Storage unavailable or JSON error
+    }
+  }
+  return null;
+}
+
+function getInitialTenants(user: UserProfile | null): Tenant[] {
+  if (user?.tenants && user.tenants.length > 0) {
+    return user.tenants.map((t) => {
+      const isCh = t.country === 'CH';
+      return {
+        id: t.id,
+        name: t.name,
+        jurisdiction: isCh ? 'CH' : 'IT',
+        currency: isCh ? 'CHF' : 'EUR',
+        vatNumber: '',
+        address: '',
+        role: t.role,
+        permissions: t.permissions,
+      };
+    });
+  }
+  return DEFAULT_TENANTS;
+}
+
+function persistTenantId(tenantId: string | null): void {
+  if (typeof window === 'undefined' || !window.localStorage) {
+    return;
+  }
+  if (tenantId) {
+    window.localStorage.setItem('ff_active_tenant_id', tenantId);
+    window.localStorage.setItem('tenant_id', tenantId);
+  } else {
+    window.localStorage.removeItem('ff_active_tenant_id');
+    window.localStorage.removeItem('tenant_id');
+  }
+}
+
+function getInitialAuthState(): AuthState {
+  const user = getInitialUser();
+  const initialTenants = getInitialTenants(user);
+  const initialTenantId = getInitialTenantId();
+  const initialTenant =
+    initialTenants.find((t) => t.id === initialTenantId) ??
+    initialTenants[0] ??
+    DEFAULT_TENANTS[0];
+
+  const hasStoredSession =
+    typeof window !== 'undefined' && window.localStorage
+      ? window.localStorage.getItem(AUTH_STATUS_STORAGE_KEY) === 'true' ||
+        !!window.localStorage.getItem(USER_ID_STORAGE_KEY)
+      : false;
+
+  return {
+    isAuthenticated: !!user || hasStoredSession,
+    user,
+    tenants: initialTenants,
+    activeTenantId: initialTenant.id,
+    activeJurisdiction: initialTenant.jurisdiction,
+    activeCurrency: initialTenant.currency,
+    activeLocale: resolveInitialLanguage(),
+    twoFactorSetupRequired: false,
+  };
+}
+
+export const AuthStore = signalStore(
+  { providedIn: 'root' },
+  withState(() => getInitialAuthState()),
+  withComputed(({ tenants, activeTenantId, activeJurisdiction, user }, ui = inject(UiPreferencesService)) => ({
+    activeTenant: computed(
+      () => tenants().find((t) => t.id === activeTenantId()) ?? tenants()[0]
+    ),
+    activeRole: computed(() => {
+      const u = user();
+      return (
+        u?.active_tenant?.role ??
+        u?.role ??
+        (u?.roles && u.roles[0]) ??
+        tenants().find((t) => t.id === activeTenantId())?.role ??
+        'member'
+      );
+    }),
+    activeRoles: computed(() => {
+      const u = user();
+      if (u?.active_tenant?.role) {
+        return [u.active_tenant.role];
+      }
+      if (u?.roles && u.roles.length > 0) {
+        return u.roles;
+      }
+      if (u?.role) {
+        return [u.role];
+      }
+      const tenantRole = tenants().find((t) => t.id === activeTenantId())?.role;
+      return tenantRole ? [tenantRole] : ['member'];
+    }),
+    userPermissions: computed(() => {
+      const tenantPermissions = tenants().find((t) => t.id === activeTenantId())?.permissions;
+      return tenantPermissions ?? user()?.permissions ?? [];
+    }),
+    isItalianJurisdiction: computed(() => activeJurisdiction() === 'IT'),
+    isSwissJurisdiction: computed(() => activeJurisdiction() === 'CH'),
+    /** The theme in force; the preference itself lives in UiPreferencesService. */
+    isDarkMode: ui.isDark,
+    permissions: computed(() => user()?.permissions ?? []),
+    permissionsLoaded: computed(() => user()?.permissions !== undefined),
+  })),
+  withMethods((store, i18n = inject(I18nService), ui = inject(UiPreferencesService)) => ({
+    /** True when the signed-in user holds the permission in the active tenant (reactive in templates and computed). */
+    can(permission: string): boolean {
+      return store.userPermissions().includes(permission);
+    },
+    /** True when the user holds at least one of the permissions in the active tenant. */
+    canAny(permissions: readonly string[]): boolean {
+      const granted = store.userPermissions();
+      return permissions.some((p) => granted.includes(p));
+    },
+    login(tenantId?: string, user?: UserProfile | null): void {
+      const targetUser = user ?? DEFAULT_USER;
+      persistUserId(targetUser);
+
+      let targetTenants = store.tenants();
+      if (targetUser.tenants && targetUser.tenants.length > 0) {
+        targetTenants = targetUser.tenants.map((t) => {
+          const existing = store.tenants().find((et) => et.id === t.id);
+          const isCh = t.country === 'CH' || existing?.jurisdiction === 'CH';
+          return {
+            id: t.id,
+            name: t.name,
+            jurisdiction: isCh ? 'CH' : 'IT',
+            currency: isCh ? 'CHF' : 'EUR',
+            vatNumber: existing?.vatNumber ?? '',
+            sdiCode: existing?.sdiCode,
+            qrIban: existing?.qrIban,
+            address: existing?.address ?? '',
+            role: t.role,
+            permissions: t.permissions,
+          };
+        });
+      }
+
+      const activeId =
+        tenantId ||
+        targetUser.active_tenant?.id ||
+        (targetTenants[0]?.id ?? 't-it-01');
+
+      persistTenantId(activeId);
+
+      const tenant =
+        targetTenants.find((t) => t.id === activeId) ?? targetTenants[0] ?? DEFAULT_TENANTS[0];
+
+      patchState(store, {
+        isAuthenticated: true,
+        user: targetUser,
+        tenants: targetTenants,
+        activeTenantId: tenant.id,
+        activeJurisdiction: tenant.jurisdiction,
+        activeCurrency: tenant.currency,
+        twoFactorSetupRequired: false,
+      });
+    },
+    logout(): void {
+      persistUserId(null);
+      patchState(store, {
+        isAuthenticated: false,
+        user: null,
+        twoFactorSetupRequired: false,
+      });
+    },
+    setUser(user: UserProfile | null): void {
+      persistUserId(user);
+      patchState(store, {
+        user,
+        isAuthenticated: !!user,
+      });
+    },
+    updateProfile(user: UserProfile): void {
+      persistUser(user);
+      let targetTenants = store.tenants();
+      if (user.tenants && user.tenants.length > 0) {
+        targetTenants = user.tenants.map((t) => {
+          const existing = store.tenants().find((et) => et.id === t.id);
+          const isCh = t.country === 'CH' || existing?.jurisdiction === 'CH';
+          return {
+            id: t.id,
+            name: t.name,
+            jurisdiction: isCh ? 'CH' : 'IT',
+            currency: isCh ? 'CHF' : 'EUR',
+            vatNumber: existing?.vatNumber ?? '',
+            sdiCode: existing?.sdiCode,
+            qrIban: existing?.qrIban,
+            address: existing?.address ?? '',
+            role: t.role,
+            permissions: t.permissions,
+          };
+        });
+      }
+      patchState(store, {
+        user,
+        tenants: targetTenants,
+        isAuthenticated: true,
+      });
+    },
+    switchTenant(tenantId: string): void {
+      const tenant = store.tenants().find((t) => t.id === tenantId);
+      if (tenant) {
+        persistTenantId(tenant.id);
+        const currentUser = store.user();
+        const updatedUser: UserProfile | null = currentUser
+          ? {
+              ...currentUser,
+              active_tenant: {
+                id: tenant.id,
+                name: tenant.name,
+                country: tenant.jurisdiction,
+                role: tenant.role ?? currentUser.active_tenant?.role ?? null,
+              },
+            }
+          : null;
+
+        patchState(store, {
+          activeTenantId: tenant.id,
+          activeJurisdiction: tenant.jurisdiction,
+          activeCurrency: tenant.currency,
+          user: updatedUser,
+        });
+      }
+    },
+    setJurisdiction(jurisdiction: 'IT' | 'CH'): void {
+      const defaultCurrency = jurisdiction === 'IT' ? 'EUR' : 'CHF';
+      patchState(store, {
+        activeJurisdiction: jurisdiction,
+        activeCurrency: defaultCurrency,
+      });
+    },
+    setCurrency(activeCurrency: 'EUR' | 'CHF'): void {
+      patchState(store, { activeCurrency });
+    },
+    setLocale(activeLocale: SupportedLanguage): void {
+      patchState(store, { activeLocale });
+      void i18n.setLanguage(activeLocale);
+    },
+    setTwoFactorSetupRequired(required: boolean): void {
+      patchState(store, { twoFactorSetupRequired: required });
+    },
+    toggleTheme(): void {
+      ui.toggleTheme();
+    },
+  }))
+);

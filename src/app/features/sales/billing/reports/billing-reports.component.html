@@ -1,0 +1,129 @@
+<app-page-header [title]="'SC.REPORTS.TITLE' | translate" [subtitle]="'SC.REPORTS.SUBTITLE' | translate" />
+
+<nz-card>
+  <nz-tabs>
+    <nz-tab [nzTitle]="'SC.REPORTS.SALES_REGISTER' | translate">
+      <div class="toolbar">
+        <label for="reg-from">{{ 'SC.OVERVIEW.FROM' | translate }}</label>
+        <input nz-input id="reg-from" type="date" class="search" [(ngModel)]="from" />
+        <label for="reg-to">{{ 'SC.OVERVIEW.TO' | translate }}</label>
+        <input nz-input id="reg-to" type="date" class="search" [(ngModel)]="to" />
+        <nz-select
+          class="filter-select"
+          nzAllowClear
+          [nzPlaceHolder]="'SC.REPORTS.DOCUMENT_TYPE' | translate"
+          [attr.aria-label]="'SC.REPORTS.DOCUMENT_TYPE' | translate"
+          [(ngModel)]="documentType"
+        >
+          @for (t of documentTypes; track t) {
+            <nz-option [nzValue]="t" [nzLabel]="t"></nz-option>
+          }
+        </nz-select>
+        <button nz-button nzType="primary" type="button" [nzLoading]="loadingRegister()" (click)="loadRegister()">
+          <nz-icon nzType="search" /> {{ 'SC.REPORTS.RUN' | translate }}
+        </button>
+      </div>
+      @if (register(); as r) {
+        <nz-table appGridExport [nzScroll]="{ x: '760px' }" [nzData]="r.documents" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false" [nzLoading]="loadingRegister()" #gridTbl41>
+          <thead>
+            <tr>
+              <th [nzSortFn]="'invoice_number' | gridSort" [nzFilters]="'invoice_number' | gridFilterList: gridTbl41.nzData" [nzFilterFn]="'invoice_number' | gridFilterFn">{{ 'SC.COMMON.NUMBER' | translate }}</th>
+              <th [nzSortFn]="'date' | gridSort" [nzFilters]="'date' | gridFilterList: gridTbl41.nzData" [nzFilterFn]="'date' | gridFilterFn">{{ 'SC.COMMON.DATE' | translate }}</th>
+              <th [nzSortFn]="'document_type' | gridSort" [nzFilters]="'document_type' | gridFilterList: gridTbl41.nzData" [nzFilterFn]="'document_type' | gridFilterFn">{{ 'SC.REPORTS.DOCUMENT_TYPE' | translate }}</th>
+              <th [nzSortFn]="'customer_name' | gridSort" [nzFilters]="'customer_name' | gridFilterList: gridTbl41.nzData" [nzFilterFn]="'customer_name' | gridFilterFn">{{ 'SC.COMMON.CUSTOMER' | translate }}</th>
+              <th class="num" [nzSortFn]="'total_net' | gridSort" [nzFilters]="'total_net' | gridFilterList: gridTbl41.nzData" [nzFilterFn]="'total_net' | gridFilterFn">{{ 'SC.COMMON.NET' | translate }}</th>
+              <th class="num" [nzSortFn]="'total_tax' | gridSort" [nzFilters]="'total_tax' | gridFilterList: gridTbl41.nzData" [nzFilterFn]="'total_tax' | gridFilterFn">{{ 'SC.COMMON.TAX' | translate }}</th>
+              <th class="num" [nzSortFn]="'total_gross' | gridSort" [nzFilters]="'total_gross' | gridFilterList: gridTbl41.nzData" [nzFilterFn]="'total_gross' | gridFilterFn">{{ 'SC.COMMON.TOTAL' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (d of r.documents; track d.invoice_id) {
+              <tr>
+                <td>{{ d.invoice_number }}</td>
+                <td>{{ d.date }}</td>
+                <td>{{ d.document_type }}</td>
+                <td>{{ d.customer_name }}</td>
+                <td class="num">{{ d.total_net | money: d.currency }}</td>
+                <td class="num">{{ d.total_tax | money: d.currency }}</td>
+                <td class="num">{{ d.total_gross | money: d.currency }}</td>
+              </tr>
+            }
+          </tbody>
+          <tfoot>
+            @for (t of r.totals; track t.currency) {
+              <tr>
+                <td colspan="4"><strong>{{ 'SC.COMMON.TOTAL' | translate }} {{ t.currency }} ({{ t.documents }})</strong></td>
+                <td class="num"><strong>{{ t.total_net | money: t.currency }}</strong></td>
+                <td class="num"><strong>{{ t.total_tax | money: t.currency }}</strong></td>
+                <td class="num"><strong>{{ t.total_gross | money: t.currency }}</strong></td>
+              </tr>
+            }
+          </tfoot>
+        </nz-table>
+      }
+    </nz-tab>
+
+    <nz-tab [nzTitle]="'SC.REPORTS.RECEIVABLES_AGING' | translate">
+      <div class="toolbar">
+        <label for="aging-as-of">{{ 'SC.REPORTS.AS_OF' | translate }}</label>
+        <input nz-input id="aging-as-of" type="date" class="search" [(ngModel)]="asOf" />
+        <nz-select
+          class="filter-select"
+          nzShowSearch
+          nzAllowClear
+          [nzPlaceHolder]="'SC.COMMON.CUSTOMER' | translate"
+          [attr.aria-label]="'SC.COMMON.CUSTOMER' | translate"
+          [(ngModel)]="customerId"
+        >
+          @for (c of lookups.contacts(); track c.id) {
+            <nz-option [nzValue]="c.id" [nzLabel]="lookups.contactLabel(c)"></nz-option>
+          }
+        </nz-select>
+        <button nz-button nzType="primary" type="button" [nzLoading]="loadingAging()" (click)="loadAging()">
+          <nz-icon nzType="search" /> {{ 'SC.REPORTS.RUN' | translate }}
+        </button>
+      </div>
+      @if (aging(); as a) {
+        <nz-table appGridExport [nzScroll]="{ x: '760px' }" [nzData]="a.customers" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false" [nzLoading]="loadingAging()" #gridTbl42>
+          <thead>
+            <tr>
+              <th [nzSortFn]="'customer_name' | gridSort" [nzFilters]="'customer_name' | gridFilterList: gridTbl42.nzData" [nzFilterFn]="'customer_name' | gridFilterFn">{{ 'SC.COMMON.CUSTOMER' | translate }}</th>
+              <th class="num" [nzSortFn]="'current' | gridSort" [nzFilters]="'current' | gridFilterList: gridTbl42.nzData" [nzFilterFn]="'current' | gridFilterFn">{{ 'SC.REPORTS.CURRENT' | translate }}</th>
+              <th class="num" [nzSortFn]="'days_1_30' | gridSort" [nzFilters]="'days_1_30' | gridFilterList: gridTbl42.nzData" [nzFilterFn]="'days_1_30' | gridFilterFn">1-30</th>
+              <th class="num" [nzSortFn]="'days_31_60' | gridSort" [nzFilters]="'days_31_60' | gridFilterList: gridTbl42.nzData" [nzFilterFn]="'days_31_60' | gridFilterFn">31-60</th>
+              <th class="num" [nzSortFn]="'days_61_90' | gridSort" [nzFilters]="'days_61_90' | gridFilterList: gridTbl42.nzData" [nzFilterFn]="'days_61_90' | gridFilterFn">61-90</th>
+              <th class="num" [nzSortFn]="'over_90' | gridSort" [nzFilters]="'over_90' | gridFilterList: gridTbl42.nzData" [nzFilterFn]="'over_90' | gridFilterFn">&gt;90</th>
+              <th class="num" [nzSortFn]="'total_open' | gridSort" [nzFilters]="'total_open' | gridFilterList: gridTbl42.nzData" [nzFilterFn]="'total_open' | gridFilterFn">{{ 'SC.REPORTS.TOTAL_OPEN' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (c of a.customers; track c.customer_id + c.currency) {
+              <tr>
+                <td>{{ c.customer_name }}</td>
+                <td class="num">{{ c.current | money: c.currency }}</td>
+                <td class="num">{{ c.days_1_30 | money: c.currency }}</td>
+                <td class="num">{{ c.days_31_60 | money: c.currency }}</td>
+                <td class="num">{{ c.days_61_90 | money: c.currency }}</td>
+                <td class="num">{{ c.over_90 | money: c.currency }}</td>
+                <td class="num"><strong>{{ c.total_open | money: c.currency }}</strong></td>
+              </tr>
+            }
+          </tbody>
+          <tfoot>
+            @for (t of a.totals; track t.currency) {
+              <tr>
+                <td><strong>{{ 'SC.COMMON.TOTAL' | translate }} {{ t.currency }}</strong></td>
+                <td class="num">{{ t.current | money: t.currency }}</td>
+                <td class="num">{{ t.days_1_30 | money: t.currency }}</td>
+                <td class="num">{{ t.days_31_60 | money: t.currency }}</td>
+                <td class="num">{{ t.days_61_90 | money: t.currency }}</td>
+                <td class="num">{{ t.over_90 | money: t.currency }}</td>
+                <td class="num"><strong>{{ t.total_open | money: t.currency }}</strong></td>
+              </tr>
+            }
+          </tfoot>
+        </nz-table>
+      }
+    </nz-tab>
+  </nz-tabs>
+</nz-card>

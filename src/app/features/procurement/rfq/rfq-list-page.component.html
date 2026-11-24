@@ -1,0 +1,240 @@
+<div class="rfq-list-page">
+  <app-page-header
+    [title]="'RFQ.TITLE' | translate"
+    [subtitle]="'RFQ.SUBTITLE' | translate"
+  />
+
+  <div class="rfq-toolbar">
+    <div class="rfq-filters">
+      <div class="filter-item search-box">
+        <label class="sr-only" for="rfq-search-input">{{ 'RFQ.SEARCH_PLACEHOLDER' | translate }}</label>
+        <input
+          id="rfq-search-input"
+          nz-input
+          type="search"
+          [ngModel]="searchTerm()"
+          (ngModelChange)="onSearchChange($event)"
+          [placeholder]="'RFQ.SEARCH_PLACEHOLDER' | translate"
+        />
+      </div>
+
+      <div class="filter-item status-box">
+        <label class="sr-only" for="rfq-status-select">{{ 'RFQ.FILTER_STATUS' | translate }}</label>
+        <nz-select
+          id="rfq-status-select"
+          [ngModel]="statusSelection()"
+          (ngModelChange)="onStatusChange($event)"
+          [nzPlaceHolder]="'RFQ.FILTER_STATUS' | translate"
+          class="status-select"
+        >
+          @for (opt of statusOptions; track opt.labelKey) {
+            <nz-option [nzValue]="opt.value" [nzLabel]="opt.labelKey | translate" />
+          }
+        </nz-select>
+      </div>
+    </div>
+
+    <div class="rfq-actions">
+      <button
+        nz-button
+        type="button"
+        (click)="refresh()"
+        [nzLoading]="store.loadingList()"
+      >
+        {{ 'RFQ.REFRESH' | translate }}
+      </button>
+      <button
+        nz-button
+        nzType="primary"
+        type="button"
+        (click)="createNewRfq()"
+      >
+        {{ 'RFQ.NEW' | translate }}
+      </button>
+    </div>
+  </div>
+
+  @if (store.error()) {
+    <nz-alert
+      nzType="error"
+      nzShowIcon
+      [nzMessage]="'RFQ.LOAD_ERROR' | translate"
+      [nzDescription]="store.error() ?? ''"
+      class="rfq-alert"
+    />
+  }
+
+  <nz-table
+    #rfqTable
+    [nzData]="store.rfqs()"
+    [nzLoading]="store.loadingList()"
+    [nzFrontPagination]="false"
+    [nzTotal]="store.total()"
+    [nzPageIndex]="store.page()"
+    [nzPageSize]="store.perPage()"
+    [nzShowSizeChanger]="true"
+    (nzPageIndexChange)="onPageChange($event)"
+    (nzPageSizeChange)="onPageSizeChange($event)"
+    [nzScroll]="{ x: '1040px' }"
+  >
+    <thead>
+      <tr>
+        <th scope="col">{{ 'RFQ.COL_NUMBER' | translate }}</th>
+        <th scope="col">{{ 'RFQ.COL_TITLE' | translate }}</th>
+        <th scope="col">{{ 'RFQ.COL_STATUS' | translate }}</th>
+        <th scope="col">{{ 'RFQ.COL_DEADLINE' | translate }}</th>
+        <th scope="col">{{ 'RFQ.COL_RESPONSE_RATE' | translate }}</th>
+        <th scope="col">{{ 'RFQ.COL_CURRENCY' | translate }}</th>
+        <th scope="col" nzRight>{{ 'RFQ.COL_ACTIONS' | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of rfqTable.data; track row.id) {
+        <tr>
+          <td class="mono-cell">{{ row.rfq_number }}</td>
+          <td>
+            <a
+              [routerLink]="row.status === 'draft' ? ['/procurement/rfqs', row.id, 'edit'] : ['/procurement/rfqs', row.id, 'matrix']"
+              class="rfq-title-link"
+            >
+              {{ row.title }}
+            </a>
+          </td>
+          <td>
+            <nz-tag [nzColor]="statusTagColor(row.status)">
+              {{ statusLabelKey(row.status) | translate }}
+            </nz-tag>
+          </td>
+          <td>
+            <div class="deadline-cell">
+              <span>{{ row.submission_deadline | appDate: 'dateTime' }}</span>
+              <small class="countdown-label">{{ deadlineCountdown(row.submission_deadline) }}</small>
+            </div>
+          </td>
+          <td class="progress-cell">
+            <nz-progress
+              [nzPercent]="responsePercent(row)"
+              nzSize="small"
+              [nzShowInfo]="false"
+            />
+            <small class="progress-text">
+              {{
+                'RFQ.BIDS_RECEIVED_PROGRESS'
+                  | translate: { received: row.bids_received_count, invited: row.invited_count ?? 0 }
+              }}
+            </small>
+          </td>
+          <td>{{ row.currency_code }}</td>
+          <td nzRight>
+            <nz-space nzSize="small">
+              @if (row.status === 'draft') {
+                <a
+                  *nzSpaceItem
+                  nz-button
+                  nzSize="small"
+                  [routerLink]="['/procurement/rfqs', row.id, 'edit']"
+                >
+                  {{ 'RFQ.ACTION_EDIT' | translate }}
+                </a>
+                <button
+                  *nzSpaceItem
+                  nz-button
+                  nzSize="small"
+                  nzType="primary"
+                  type="button"
+                  [nzLoading]="store.busy()"
+                  (click)="publishRfq(row)"
+                >
+                  {{ 'RFQ.ACTION_PUBLISH' | translate }}
+                </button>
+              } @else {
+                <a
+                  *nzSpaceItem
+                  nz-button
+                  nzSize="small"
+                  nzType="primary"
+                  [routerLink]="['/procurement/rfqs', row.id, 'matrix']"
+                >
+                  {{ 'RFQ.ACTION_OPEN_MATRIX' | translate }}
+                </a>
+              }
+
+              @if (isExtendable(row.status)) {
+                <button
+                  *nzSpaceItem
+                  nz-button
+                  nzSize="small"
+                  type="button"
+                  (click)="openExtendModal(row)"
+                >
+                  {{ 'RFQ.ACTION_EXTEND_DEADLINE' | translate }}
+                </button>
+              }
+
+              @if (isCancellable(row.status)) {
+                <button
+                  *nzSpaceItem
+                  nz-button
+                  nzSize="small"
+                  nzDanger
+                  type="button"
+                  (click)="openCancelModal(row)"
+                >
+                  {{ 'RFQ.ACTION_CANCEL' | translate }}
+                </button>
+              }
+            </nz-space>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </nz-table>
+
+  @if (!store.loadingList() && store.rfqs().length === 0) {
+    <p class="rfq-empty-hint">{{ 'RFQ.EMPTY' | translate }}</p>
+  }
+
+  <nz-modal
+    [nzVisible]="extendModalVisible()"
+    [nzTitle]="'RFQ.EXTEND_MODAL_TITLE' | translate"
+    [nzOkLoading]="store.busy()"
+    (nzOnCancel)="closeExtendModal()"
+    (nzOnOk)="confirmExtendDeadline()"
+  >
+    <ng-container *nzModalContent>
+      <div class="modal-field">
+        <label for="extend-deadline-input">{{ 'RFQ.EXTEND_NEW_DEADLINE' | translate }}</label>
+        <input
+          id="extend-deadline-input"
+          nz-input
+          type="datetime-local"
+          [ngModel]="extendDeadlineValue()"
+          (ngModelChange)="extendDeadlineValue.set($event)"
+        />
+      </div>
+    </ng-container>
+  </nz-modal>
+
+  <nz-modal
+    [nzVisible]="cancelModalVisible()"
+    [nzTitle]="'RFQ.ACTION_CANCEL' | translate"
+    [nzOkDanger]="true"
+    [nzOkLoading]="store.busy()"
+    (nzOnCancel)="closeCancelModal()"
+    (nzOnOk)="confirmCancelRfq()"
+  >
+    <ng-container *nzModalContent>
+      <p>{{ 'RFQ.CANCEL_CONFIRM' | translate }}</p>
+      <div class="modal-field">
+        <label for="cancel-reason-input">{{ 'RFQ.CANCEL_REASON' | translate }}</label>
+        <textarea
+          id="cancel-reason-input"
+          nz-input
+          rows="3"
+          [ngModel]="cancelReason()"
+          (ngModelChange)="cancelReason.set($event)"
+        ></textarea>
+      </div>
+    </ng-container>
+  </nz-modal>
+</div>

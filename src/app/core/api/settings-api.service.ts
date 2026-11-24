@@ -1,0 +1,119 @@
+import { HttpClient } from '@angular/common/http';
+import { inject, Service } from '@angular/core';
+import { environment } from '@env';
+import { Observable } from 'rxjs';
+import { toHttpParams } from '../http/laravel-http.utils';
+import {
+  AccessOptions,
+  ApiResponse,
+  AuditLogResource,
+  BranchResource,
+  PaginatedResponse,
+  QueryFilterParams,
+  DocumentQuota,
+  DocumentTemplate,
+  ResetUserTwoFactorResponse,
+  SaveDocumentTemplatePayload,
+  RoleResource,
+  SaveTenantMemberPayload,
+  TenantPreferences,
+  TenantSettings,
+  TwoFactorPolicyResponse,
+  UpdateTenantSettingsPayload,
+  UpdateTwoFactorPolicyPayload,
+  UserResource,
+} from '../models';
+
+@Service()
+export class SettingsApiService {
+  private readonly http = inject(HttpClient);
+  private readonly base = `${environment.apiBaseUrl}/settings`;
+
+  getTenantSettings(): Observable<ApiResponse<TenantSettings>> {
+    return this.http.get<ApiResponse<TenantSettings>>(`${this.base}/tenant`);
+  }
+
+  updateTenantSettings(payload: UpdateTenantSettingsPayload): Observable<ApiResponse<TenantSettings>> {
+    return this.http.put<ApiResponse<TenantSettings>>(`${this.base}/tenant`, payload);
+  }
+
+  getBranches(params?: QueryFilterParams): Observable<PaginatedResponse<BranchResource>> {
+    return this.http.get<PaginatedResponse<BranchResource>>(`${this.base}/branches`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  syncExchangeRates(): Observable<ApiResponse<{ synced_count: number }>> {
+    return this.http.post<ApiResponse<{ synced_count: number }>>(`${this.base}/exchange-rates/sync`, {});
+  }
+
+  getTenantUsers(): Observable<ApiResponse<UserResource[]>> {
+    return this.http.get<ApiResponse<UserResource[]>>(`${this.base}/users`);
+  }
+
+  getAccessOptions(): Observable<ApiResponse<AccessOptions>> {
+    return this.http.get<ApiResponse<AccessOptions>>(`${this.base}/access-options`);
+  }
+
+  /** Gives an already registered user (`email`) access to the active tenant. */
+  addTenantUser(payload: SaveTenantMemberPayload): Observable<ApiResponse<UserResource>> {
+    return this.http.post<ApiResponse<UserResource>>(`${this.base}/users`, payload);
+  }
+
+  updateTenantUser(userId: string, payload: SaveTenantMemberPayload): Observable<ApiResponse<UserResource>> {
+    return this.http.put<ApiResponse<UserResource>>(`${this.base}/users/${userId}`, payload);
+  }
+
+  removeTenantUser(userId: string): Observable<ApiResponse<null>> {
+    return this.http.delete<ApiResponse<null>>(`${this.base}/users/${userId}`);
+  }
+
+  getSystemRoles(): Observable<ApiResponse<RoleResource[]>> {
+    return this.http.get<ApiResponse<RoleResource[]>>(`${this.base}/roles`);
+  }
+
+  getAuditLogs(params?: QueryFilterParams & { module?: string; action?: string }): Observable<PaginatedResponse<AuditLogResource>> {
+    return this.http.get<PaginatedResponse<AuditLogResource>>(`${this.base}/audit-logs`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  getTenantPreferences(): Observable<ApiResponse<TenantPreferences>> {
+    return this.http.get<ApiResponse<TenantPreferences>>(`${this.base}/preferences`);
+  }
+
+  updateTenantPreferences(group: string, payload: Record<string, unknown>): Observable<ApiResponse<TenantPreferences>> {
+    return this.http.put<ApiResponse<TenantPreferences>>(`${this.base}/preferences/${group}`, payload);
+  }
+
+  getTwoFactorPolicy(): Observable<ApiResponse<TwoFactorPolicyResponse>> {
+    return this.http.get<ApiResponse<TwoFactorPolicyResponse>>(`${this.base}/security/two-factor`);
+  }
+
+  updateTwoFactorPolicy(payload: UpdateTwoFactorPolicyPayload): Observable<ApiResponse<TwoFactorPolicyResponse>> {
+    return this.http.put<ApiResponse<TwoFactorPolicyResponse>>(`${this.base}/security/two-factor`, payload);
+  }
+
+  getDocumentTemplates(): Observable<ApiResponse<DocumentTemplate[]>> {
+    return this.http.get<ApiResponse<DocumentTemplate[]>>(`${this.base}/document-templates`);
+  }
+
+  saveDocumentTemplate(
+    type: string,
+    payload: SaveDocumentTemplatePayload,
+  ): Observable<ApiResponse<DocumentTemplate>> {
+    return this.http.put<ApiResponse<DocumentTemplate>>(`${this.base}/document-templates/${type}`, payload);
+  }
+
+  deleteDocumentTemplate(type: string): Observable<ApiResponse<null>> {
+    return this.http.delete<ApiResponse<null>>(`${this.base}/document-templates/${type}`);
+  }
+
+  getDocumentQuota(): Observable<ApiResponse<DocumentQuota>> {
+    return this.http.get<ApiResponse<DocumentQuota>>(`${this.base}/document-quota`);
+  }
+
+  resetUserTwoFactor(userId: string): Observable<ApiResponse<ResetUserTwoFactorResponse>> {
+    return this.http.post<ApiResponse<ResetUserTwoFactorResponse>>(`${this.base}/users/${userId}/two-factor/reset`, {});
+  }
+}

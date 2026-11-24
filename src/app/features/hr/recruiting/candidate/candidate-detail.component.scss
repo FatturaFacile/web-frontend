@@ -1,0 +1,106 @@
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+
+  .spacer {
+    flex: 1;
+  }
+}
+
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+
+  @media (max-width: 1100px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  &__left,
+  &__right {
+    background: #fff;
+    border-radius: 8px;
+    padding: 12px;
+  }
+}
+
+.section-title {
+  font-size: 15px;
+  margin: 16px 0 8px;
+}
+
+.pre {
+  white-space: pre-line;
+}
+
+.muted {
+  color: rgb(0 0 0 / 65%);
+}
+
+.chips {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.notes {
+  margin-top: 16px;
+}
+
+.scorecards {
+  list-style: none;
+  padding: 0;
+
+  &__item {
+    border-bottom: 1px solid #f0f0f0;
+    padding: 8px 0;
+  }
+
+  &__head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+}
+
+.history {
+  padding-inline-start: 20px;
+
+  li {
+    margin-bottom: 6px;
+  }
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  min-width: 180px;
+  padding: 4px 0;
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 6px 16px rgb(0 0 0 / 12%);
+
+  &__item {
+    text-align: start;
+    padding: 6px 12px;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    color: rgb(0 0 0 / 88%);
+
+    &:hover,
+    &:focus-visible {
+      background: #e6f4ff;
+      outline: 2px solid #1677ff;
+      outline-offset: -2px;
+    }
+  }
+}

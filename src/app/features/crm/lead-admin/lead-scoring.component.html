@@ -1,0 +1,126 @@
+<app-page-header
+  [title]="'CRM.LEAD_SCORING.TITLE' | translate"
+  [subtitle]="'CRM.LEAD_SCORING.SUBTITLE' | translate"
+/>
+
+<app-lead-settings-form />
+
+<div nz-row [nzGutter]="[16, 16]" class="block-top">
+  <div nz-col [nzXs]="24" [nzXl]="16">
+    <nz-card [nzTitle]="'CRM.LEAD_SCORING.RULES.TITLE' | translate" [nzExtra]="newTpl">
+      <ng-template #newTpl>
+        @if (!forbidden()) {
+          <button nz-button nzType="primary" type="button" (click)="openCreate()">
+            <nz-icon nzType="plus" /> {{ 'CRM.LEAD_SCORING.RULES.NEW' | translate }}
+          </button>
+        }
+      </ng-template>
+
+      @if (forbidden()) {
+        <nz-alert nzType="info" nzShowIcon [nzMessage]="'CRM.LEADS.FORBIDDEN' | translate" />
+      } @else {
+        @if (loadError()) {
+          <nz-alert
+            class="block"
+            nzType="error"
+            nzShowIcon
+            [nzMessage]="'CRM.LEAD_SCORING.RULES.LOAD_ERROR' | translate"
+            [nzAction]="retryTpl"
+          />
+          <ng-template #retryTpl>
+            <button nz-button nzSize="small" type="button" (click)="load()">
+              {{ 'COMMON.RETRY' | translate }}
+            </button>
+          </ng-template>
+        }
+        <nz-table
+          #table
+          [nzData]="rules()"
+          [nzLoading]="loading()"
+          [nzFrontPagination]="false"
+          nzSize="small"
+          [nzScroll]="{ x: '760px' }"
+        >
+          <thead>
+            <tr>
+              <th scope="col">{{ 'CRM.LEAD_SCORING.RULES.NAME' | translate }}</th>
+              <th scope="col">{{ 'CRM.LEAD_SCORING.RULES.CATEGORY' | translate }}</th>
+              <th scope="col">{{ 'CRM.LEAD_SCORING.RULES.CONDITION' | translate }}</th>
+              <th scope="col" class="num">{{ 'CRM.LEADS.DETAIL.POINTS' | translate }}</th>
+              <th scope="col">{{ 'CRM.LEAD_SOURCES.STATUS' | translate }}</th>
+              <th scope="col">
+                <span class="sr-only">{{ 'COMMON.ACTIONS' | translate }}</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of table.data; track r.id) {
+              <tr>
+                <td>
+                  <strong>{{ r.name }}</strong>
+                  <div class="sub-text">
+                    <code>{{ r.code }}</code>
+                  </div>
+                </td>
+                <td>{{ categoryLabel(r.category) }}</td>
+                <td>{{ target(r) }} {{ operatorLabel(r.operator) }} {{ value(r) }}</td>
+                <td class="num">{{ r.points > 0 ? '+' : '' }}{{ r.points }}</td>
+                <td>
+                  @if (r.is_active) {
+                    <nz-tag nzColor="green">{{ 'COMMON.ACTIVE' | translate }}</nz-tag>
+                  } @else {
+                    <nz-tag>{{ 'COMMON.INACTIVE' | translate }}</nz-tag>
+                  }
+                </td>
+                <td class="row-actions">
+                  <button
+                    nz-button
+                    nzType="text"
+                    nzSize="small"
+                    type="button"
+                    [disabled]="busyId() === r.id"
+                    (click)="toggle(r)"
+                  >
+                    {{
+                      r.is_active ? ('COMMON.DISABLE' | translate) : ('COMMON.ENABLE' | translate)
+                    }}
+                  </button>
+                  <button
+                    nz-button
+                    nzType="text"
+                    nzSize="small"
+                    type="button"
+                    [attr.aria-label]="('COMMON.EDIT' | translate) + ' ' + r.name"
+                    (click)="openEdit(r)"
+                  >
+                    <nz-icon nzType="edit" />
+                  </button>
+                  <button
+                    nz-button
+                    nzType="text"
+                    nzDanger
+                    nzSize="small"
+                    type="button"
+                    nz-popconfirm
+                    [nzPopconfirmTitle]="'CRM.LEAD_SCORING.RULES.CONFIRM_DELETE' | translate"
+                    [nzOkText]="'COMMON.DELETE' | translate"
+                    [nzCancelText]="'COMMON.CANCEL' | translate"
+                    [attr.aria-label]="('COMMON.DELETE' | translate) + ' ' + r.name"
+                    (nzOnConfirm)="remove(r)"
+                  >
+                    <nz-icon nzType="delete" />
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      }
+    </nz-card>
+  </div>
+  <div nz-col [nzXs]="24" [nzXl]="8">
+    <app-lead-score-preview />
+  </div>
+</div>
+
+<app-lead-scoring-rule-modal [(open)]="modalOpen" [rule]="editing()" (saved)="onSaved($event)" />

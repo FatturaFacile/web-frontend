@@ -1,0 +1,604 @@
+@if (trip(); as trip) {
+  <app-page-header [title]="('TRAVEL.TRIP_TITLE' | translate) + ' ' + trip.number" [subtitle]="trip.purpose">
+    <div class="header-actions">
+      <a nz-button routerLink="/travel">{{ 'TRAVEL.BACK_TO_LIST' | translate }}</a>
+    </div>
+  </app-page-header>
+
+  <nz-card class="main-card">
+    <div class="actions-bar">
+      <nz-tag [nzColor]="statusColors[trip.status]">{{ 'TRAVEL.STATUS_' + trip.status.toUpperCase() | translate }}</nz-tag>
+      @if (trip.status === 'draft') {
+        <button nz-button nzType="primary" [nzLoading]="busy()" (click)="submit()">{{ 'TRAVEL.ACTION_SUBMIT' | translate }}</button>
+      }
+      @if (trip.status === 'submitted') {
+        <button nz-button [nzLoading]="busy()" (click)="withdraw()">{{ 'TRAVEL.ACTION_WITHDRAW' | translate }}</button>
+      }
+      @if (canApprove()) {
+        <button nz-button nzType="primary" (click)="openApproveModal()">{{ 'TRAVEL.ACTION_APPROVE' | translate }}</button>
+        <button nz-button nzDanger (click)="openRejectModal()">{{ 'TRAVEL.ACTION_REJECT' | translate }}</button>
+      }
+      @if (trip.status === 'rejected') {
+        <button nz-button nzType="primary" [nzLoading]="busy()" (click)="reopen()">{{ 'TRAVEL.ACTION_REOPEN' | translate }}</button>
+      }
+      @if (trip.status === 'approved') {
+        <button nz-button nzType="primary" [nzLoading]="busy()" (click)="complete()">{{ 'TRAVEL.ACTION_COMPLETE' | translate }}</button>
+      }
+      @if (canRecordAdvance()) {
+        <button nz-button (click)="openAdvanceModal()">{{ 'TRAVEL.ACTION_ADVANCE_PAID' | translate }}</button>
+      }
+      @if (trip.status === 'completed' && isFinance()) {
+        <button
+          nz-button
+          nzType="primary"
+          nz-popconfirm
+          [nzPopconfirmTitle]="'TRAVEL.CONFIRM_RECONCILE' | translate"
+          [nzLoading]="busy()"
+          (nzOnConfirm)="reconcile()"
+        >
+          {{ 'TRAVEL.ACTION_RECONCILE' | translate }}
+        </button>
+      }
+    </div>
+
+    @if (trip.status === 'rejected' && trip.rejection_reason) {
+      <nz-alert nzType="error" nzShowIcon [nzMessage]="'TRAVEL.REJECTED_REASON' | translate" [nzDescription]="trip.rejection_reason" class="alert-spacing"></nz-alert>
+    }
+    @if (reconciliation(); as reconciliation) {
+      @if (reconciliation.pending_expenses > 0 && trip.status === 'completed') {
+        <nz-alert nzType="warning" nzShowIcon [nzMessage]="'TRAVEL.PENDING_EXPENSES_WARNING' | translate: { count: reconciliation.pending_expenses }" class="alert-spacing"></nz-alert>
+      }
+    }
+
+    <nz-tabs [(nzSelectedIndex)]="selectedTabIndex">
+      <!-- OVERVIEW AND REPORT -->
+      <nz-tab [nzTitle]="'TRAVEL.TAB_OVERVIEW' | translate">
+        <nz-descriptions nzBordered nzSize="small" [nzColumn]="2">
+          <nz-descriptions-item [nzTitle]="'TRAVEL.EMPLOYEE' | translate">{{ trip.employee?.name || '-' }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'TRAVEL.DESTINATION' | translate">{{ trip.destination_city }} ({{ trip.destination_country }})</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'TRAVEL.DATES' | translate">
+            {{ trip.start_date }} {{ trip.departure_time || '' }} &rarr; {{ trip.end_date }} {{ trip.return_time || '' }}
+          </nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'TRAVEL.RATE_JURISDICTION' | translate">{{ 'TRAVEL.JURISDICTION_' + trip.rate_jurisdiction | translate }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'TRAVEL.ESTIMATED_BUDGET' | translate">{{ trip.estimated_budget | money: trip.currency }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'TRAVEL.ADVANCE' | translate">
+            {{ trip.advance_amount | money: trip.currency }}
+            @if (trip.advance_paid_at) {
+              <nz-tag nzColor="green">{{ 'TRAVEL.ADVANCE_PAID_ON' | translate: { date: trip.advance_paid_at } }}</nz-tag>
+            }
+          </nz-descriptions-item>
+        </nz-descriptions>
+
+        @if (budget(); as budget) {
+          <h3 class="section-title">{{ 'TRAVEL.REPORT' | translate }}</h3>
+          <div class="summary-grid">
+            <nz-card>
+              <nz-statistic [nzTitle]="'TRAVEL.ESTIMATED_BUDGET' | translate" [nzValue]="budget.estimated + ' ' + budget.currency"></nz-statistic>
+            </nz-card>
+            <nz-card>
+              <nz-statistic [nzTitle]="'TRAVEL.BOOKED_ITINERARY' | translate" [nzValue]="budget.booked_itinerary + ' ' + budget.currency"></nz-statistic>
+            </nz-card>
+            <nz-card>
+              <nz-statistic [nzTitle]="'TRAVEL.ACTUAL_COST' | translate" [nzValue]="budget.actual + ' ' + budget.currency"></nz-statistic>
+            </nz-card>
+            <nz-card>
+              <nz-statistic
+                [nzTitle]="'TRAVEL.VARIANCE' | translate"
+                [nzValue]="budget.variance + ' ' + budget.currency"
+                [nzValueStyle]="{ color: budget.within_budget ? 'var(--ff-color-success)' : 'var(--ff-color-danger)' }"
+              ></nz-statistic>
+              @if (budget.utilization_percent !== null) {
+                <span class="text-muted">{{ 'TRAVEL.BUDGET_UTILIZATION' | translate: { percent: budget.utilization_percent } }}</span>
+              }
+            </nz-card>
+          </div>
+          @if (report()?.frozen) {
+            <nz-tag nzColor="purple">{{ 'TRAVEL.REPORT_FROZEN' | translate }}</nz-tag>
+          }
+        }
+      </nz-tab>
+
+      <!-- ITINERARY -->
+      <nz-tab [nzTitle]="'TRAVEL.TAB_ITINERARY' | translate">
+        @if (isWorking()) {
+          <div class="actions-bar">
+            <button nz-button nzType="primary" appIconAction="add" (click)="openLegModal()"></button>
+          </div>
+        }
+        <nz-table [nzData]="legs()" [nzShowPagination]="false" nzSize="small" [nzBordered]="true">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>{{ 'TRAVEL.LEG_TYPE' | translate }}</th>
+              <th>{{ 'TRAVEL.ROUTE' | translate }}</th>
+              <th>{{ 'TRAVEL.WHEN' | translate }}</th>
+              <th>{{ 'TRAVEL.PROVIDER' | translate }}</th>
+              <th>{{ 'TRAVEL.BOOKING_STATUS' | translate }}</th>
+              <th nzAlign="right">{{ 'TRAVEL.BOOKED_COST' | translate }}</th>
+              @if (isWorking()) {
+                <th nzAlign="center">{{ 'TRAVEL.ACTIONS' | translate }}</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (leg of legs(); track leg.id) {
+              <tr>
+                <td>{{ leg.sequence }}</td>
+                <td>{{ 'TRAVEL.LEG_' + leg.leg_type.toUpperCase() | translate }}</td>
+                <td>{{ leg.from_location || '-' }} &rarr; {{ leg.to_location }}</td>
+                <td>{{ leg.departs_at ? leg.departs_at.slice(0, 16).replace('T', ' ') : '-' }} &rarr; {{ leg.arrives_at ? leg.arrives_at.slice(0, 16).replace('T', ' ') : '-' }}</td>
+                <td>{{ leg.provider || '-' }} {{ leg.booking_reference || '' }}</td>
+                <td>
+                  <nz-tag [nzColor]="leg.booking_status === 'booked' ? 'success' : leg.booking_status === 'cancelled' ? 'default' : 'processing'">{{ 'TRAVEL.BOOKING_' + leg.booking_status.toUpperCase() | translate }}</nz-tag>
+                </td>
+                <td nzAlign="right">{{ leg.booked_cost | money: leg.currency }}</td>
+                @if (isWorking()) {
+                  <td nzAlign="center">
+                    <button nz-button nzSize="small" appIconAction="edit" (click)="openLegModal(leg)"></button>
+                    <button
+                      nz-button
+                      nzSize="small"
+                      nzDanger
+                      appIconAction="delete"
+                      nz-popconfirm
+                      [nzPopconfirmTitle]="'TRAVEL.CONFIRM_DELETE_LEG' | translate"
+                      (nzOnConfirm)="deleteLeg(leg)"
+                    ></button>
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+        <p class="balance-line">
+          <strong>{{ 'TRAVEL.BOOKED_ITINERARY' | translate }}:</strong> {{ totalBookedCost() | money: trip.currency }}
+        </p>
+      </nz-tab>
+
+      <!-- PER DIEM -->
+      <nz-tab [nzTitle]="'TRAVEL.TAB_PER_DIEM' | translate">
+        <p class="text-muted">{{ 'TRAVEL.PER_DIEM_HINT' | translate }}</p>
+        @if (isWorking()) {
+          <div class="actions-bar">
+            <button nz-button nzType="primary" [nzLoading]="busy()" (click)="calculatePerDiem()">{{ 'TRAVEL.CALCULATE_PER_DIEM' | translate }}</button>
+          </div>
+        }
+        <nz-table [nzData]="perDiemDays()" [nzShowPagination]="false" nzSize="small" [nzBordered]="true">
+          <thead>
+            <tr>
+              <th>{{ 'TRAVEL.DAY' | translate }}</th>
+              <th nzAlign="right">{{ 'TRAVEL.HOURS_AWAY' | translate }}</th>
+              <th nzAlign="right">{{ 'TRAVEL.DAY_FACTOR' | translate }}</th>
+              <th nzAlign="center">{{ 'TRAVEL.BREAKFAST_PROVIDED' | translate }}</th>
+              <th nzAlign="center">{{ 'TRAVEL.LUNCH_PROVIDED' | translate }}</th>
+              <th nzAlign="center">{{ 'TRAVEL.DINNER_PROVIDED' | translate }}</th>
+              <th nzAlign="center">{{ 'TRAVEL.LODGING_PROVIDED' | translate }}</th>
+              <th nzAlign="right">{{ 'TRAVEL.GROSS_AMOUNT' | translate }}</th>
+              <th nzAlign="right">{{ 'TRAVEL.DEDUCTION' | translate }}</th>
+              <th nzAlign="right">{{ 'TRAVEL.AMOUNT' | translate }}</th>
+              <th nzAlign="right">{{ 'TRAVEL.TAX_FREE' | translate }}</th>
+              <th nzAlign="right">{{ 'TRAVEL.TAXABLE' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (day of perDiemDays(); track day.id; let index = $index) {
+              <tr>
+                <td>{{ day.day }}</td>
+                <td nzAlign="right">{{ day.hours_away }}</td>
+                <td nzAlign="right">{{ day.day_factor }}</td>
+                <td nzAlign="center">
+                  <input type="checkbox" [attr.aria-label]="'TRAVEL.BREAKFAST_PROVIDED' | translate" [disabled]="!isWorking()" [checked]="mealChecked(index, 'breakfast_provided')" (change)="toggleMeal(index, 'breakfast_provided', $any($event.target).checked)" />
+                </td>
+                <td nzAlign="center">
+                  <input type="checkbox" [attr.aria-label]="'TRAVEL.LUNCH_PROVIDED' | translate" [disabled]="!isWorking()" [checked]="mealChecked(index, 'lunch_provided')" (change)="toggleMeal(index, 'lunch_provided', $any($event.target).checked)" />
+                </td>
+                <td nzAlign="center">
+                  <input type="checkbox" [attr.aria-label]="'TRAVEL.DINNER_PROVIDED' | translate" [disabled]="!isWorking()" [checked]="mealChecked(index, 'dinner_provided')" (change)="toggleMeal(index, 'dinner_provided', $any($event.target).checked)" />
+                </td>
+                <td nzAlign="center">
+                  <input type="checkbox" [attr.aria-label]="'TRAVEL.LODGING_PROVIDED' | translate" [disabled]="!isWorking()" [checked]="mealChecked(index, 'lodging_provided')" (change)="toggleMeal(index, 'lodging_provided', $any($event.target).checked)" />
+                </td>
+                <td nzAlign="right">{{ day.gross_amount | money: day.currency }}</td>
+                <td nzAlign="right">{{ day.deduction_amount | money: day.currency }}</td>
+                <td nzAlign="right"><strong>{{ day.amount | money: day.currency }}</strong></td>
+                <td nzAlign="right">{{ day.tax_free_amount | money: day.currency }}</td>
+                <td nzAlign="right">{{ day.taxable_amount | money: day.currency }}</td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+        @if (reconciliation(); as reconciliation) {
+          <p class="balance-line">
+            <strong>{{ 'TRAVEL.PER_DIEM_TOTAL' | translate }}:</strong> {{ reconciliation.per_diem_total | money: trip.currency }}
+            <span class="text-muted">({{ 'TRAVEL.TAXABLE' | translate }}: {{ reconciliation.per_diem_taxable_total | money: trip.currency }})</span>
+          </p>
+        }
+      </nz-tab>
+
+      <!-- MILEAGE -->
+      <nz-tab [nzTitle]="'TRAVEL.TAB_MILEAGE' | translate">
+        @if (isWorking()) {
+          <div class="actions-bar">
+            <button nz-button nzType="primary" appIconAction="add" (click)="openMileageModal()"></button>
+          </div>
+        }
+        <nz-table [nzData]="mileageClaims()" [nzShowPagination]="false" nzSize="small" [nzBordered]="true">
+          <thead>
+            <tr>
+              <th>{{ 'TRAVEL.TRAVEL_DATE' | translate }}</th>
+              <th>{{ 'TRAVEL.ROUTE' | translate }}</th>
+              <th>{{ 'TRAVEL.VEHICLE_TYPE' | translate }}</th>
+              <th nzAlign="right">{{ 'TRAVEL.DISTANCE_KM' | translate }}</th>
+              <th nzAlign="right">{{ 'TRAVEL.RATE_PER_KM' | translate }}</th>
+              <th nzAlign="right">{{ 'TRAVEL.AMOUNT' | translate }}</th>
+              @if (isWorking()) {
+                <th nzAlign="center">{{ 'TRAVEL.ACTIONS' | translate }}</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (claim of mileageClaims(); track claim.id) {
+              <tr>
+                <td>{{ claim.travel_date }}</td>
+                <td>
+                  {{ claim.from_location }} &rarr; {{ claim.to_location }}
+                  @if (claim.round_trip) {
+                    <nz-tag>{{ 'TRAVEL.ROUND_TRIP' | translate }}</nz-tag>
+                  }
+                </td>
+                <td>{{ 'TRAVEL.VEHICLE_' + claim.vehicle_type.toUpperCase() | translate }}</td>
+                <td nzAlign="right">{{ claim.distance_km }}</td>
+                <td nzAlign="right">{{ claim.rate_per_km }}</td>
+                <td nzAlign="right"><strong>{{ claim.amount | money: claim.currency }}</strong></td>
+                @if (isWorking()) {
+                  <td nzAlign="center">
+                    <button nz-button nzSize="small" appIconAction="edit" (click)="openMileageModal(claim)"></button>
+                    <button
+                      nz-button
+                      nzSize="small"
+                      nzDanger
+                      appIconAction="delete"
+                      nz-popconfirm
+                      [nzPopconfirmTitle]="'TRAVEL.CONFIRM_DELETE_CLAIM' | translate"
+                      (nzOnConfirm)="deleteMileage(claim)"
+                    ></button>
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+        @if (reconciliation(); as reconciliation) {
+          <p class="balance-line">
+            <strong>{{ 'TRAVEL.MILEAGE_TOTAL' | translate }}:</strong> {{ reconciliation.mileage_total | money: trip.currency }}
+          </p>
+        }
+      </nz-tab>
+
+      <!-- LINKED EXPENSES AND RECONCILIATION -->
+      <nz-tab [nzTitle]="'TRAVEL.TAB_RECONCILIATION' | translate">
+        @if (reconciliation(); as reconciliation) {
+          @if (isWorking()) {
+            <div class="actions-bar">
+              <button nz-button nzType="primary" (click)="openExpenseModal()">{{ 'TRAVEL.LINK_EXPENSE' | translate }}</button>
+            </div>
+          }
+          <nz-table [nzData]="reconciliation.expenses" [nzShowPagination]="false" nzSize="small" [nzBordered]="true">
+            <thead>
+              <tr>
+                <th>{{ 'TRAVEL.EXPENSE_NUMBER' | translate }}</th>
+                <th>{{ 'TRAVEL.EXPENSE_DATE' | translate }}</th>
+                <th>{{ 'TRAVEL.MERCHANT' | translate }}</th>
+                <th>{{ 'TRAVEL.STATUS' | translate }}</th>
+                <th nzAlign="right">{{ 'TRAVEL.AMOUNT' | translate }}</th>
+                <th>{{ 'TRAVEL.COUNTED' | translate }}</th>
+                @if (isWorking()) {
+                  <th nzAlign="center">{{ 'TRAVEL.ACTIONS' | translate }}</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (expense of reconciliation.expenses; track expense.id) {
+                <tr>
+                  <td>{{ expense.expense_number }}</td>
+                  <td>{{ expense.date }}</td>
+                  <td>{{ expense.merchant_name || '-' }}</td>
+                  <td>{{ expense.status }}</td>
+                  <td nzAlign="right">{{ expense.amount | money: expense.currency }}</td>
+                  <td>
+                    <nz-tag [nzColor]="expense.counted ? 'success' : 'default'">{{ (expense.counted ? 'TRAVEL.COUNTED_YES' : 'TRAVEL.COUNTED_NO') | translate }}</nz-tag>
+                  </td>
+                  @if (isWorking()) {
+                    <td nzAlign="center">
+                      <button
+                        nz-button
+                        nzSize="small"
+                        nzDanger
+                        appIconAction="delete"
+                        nz-popconfirm
+                        [nzPopconfirmTitle]="'TRAVEL.CONFIRM_UNLINK_EXPENSE' | translate"
+                        (nzOnConfirm)="unlinkExpense(expense.id)"
+                      ></button>
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </nz-table>
+
+          <h3 class="section-title">{{ 'TRAVEL.RECONCILIATION' | translate }}</h3>
+          <nz-descriptions nzBordered nzSize="small" [nzColumn]="1">
+            <nz-descriptions-item [nzTitle]="'TRAVEL.PER_DIEM_TOTAL' | translate">{{ reconciliation.per_diem_total | money: reconciliation.currency }}</nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'TRAVEL.MILEAGE_TOTAL' | translate">{{ reconciliation.mileage_total | money: reconciliation.currency }}</nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'TRAVEL.EXPENSES_TOTAL' | translate">{{ reconciliation.expenses_total | money: reconciliation.currency }}</nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'TRAVEL.TOTAL_DUE' | translate"><strong>{{ reconciliation.total_due | money: reconciliation.currency }}</strong></nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'TRAVEL.ADVANCE_PAID' | translate">{{ reconciliation.advance_paid | money: reconciliation.currency }}</nz-descriptions-item>
+          </nz-descriptions>
+          <p class="balance-line">
+            <nz-tag [nzColor]="directionColors[reconciliation.direction]">{{ 'TRAVEL.DIRECTION_' + reconciliation.direction.toUpperCase() | translate }}</nz-tag>
+            <strong>{{ reconciliation.balance_amount | money: reconciliation.currency }}</strong>
+          </p>
+        }
+      </nz-tab>
+    </nz-tabs>
+  </nz-card>
+}
+
+<!-- LEG MODAL -->
+<nz-modal appModalActions
+  [(nzVisible)]="legModalVisible"
+  [nzTitle]="'TRAVEL.LEG' | translate"
+  (nzOnCancel)="legModalVisible.set(false)"
+  (nzOnOk)="saveLeg()"
+  okAction="save"
+  [nzOkDisabled]="legForm.invalid"
+  [nzOkLoading]="busy()"
+  nzWidth="720px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="legForm" nzLayout="vertical">
+      <div class="form-row-2">
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="leg-type">{{ 'TRAVEL.LEG_TYPE' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(legForm, 'leg_type')">
+            <nz-select id="leg-type" formControlName="leg_type">
+              @for (type of legTypes; track type) {
+                <nz-option [nzValue]="type" [nzLabel]="'TRAVEL.LEG_' + type.toUpperCase() | translate"></nz-option>
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="leg-status">{{ 'TRAVEL.BOOKING_STATUS' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(legForm, 'booking_status')">
+            <nz-select id="leg-status" formControlName="booking_status">
+              @for (status of bookingStatuses; track status) {
+                <nz-option [nzValue]="status" [nzLabel]="'TRAVEL.BOOKING_' + status.toUpperCase() | translate"></nz-option>
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <div class="form-row-2">
+        <nz-form-item>
+          <nz-form-label nzFor="leg-from">{{ 'TRAVEL.FROM_LOCATION' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(legForm, 'from_location')">
+            <input nz-input id="leg-from" formControlName="from_location" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="leg-to">{{ 'TRAVEL.TO_LOCATION' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(legForm, 'to_location')">
+            <input nz-input id="leg-to" formControlName="to_location" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <div class="form-row-2">
+        <nz-form-item>
+          <nz-form-label nzFor="leg-departs">{{ 'TRAVEL.DEPARTS_AT' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(legForm, 'departs_at')">
+            <input nz-input id="leg-departs" type="datetime-local" formControlName="departs_at" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="leg-arrives">{{ 'TRAVEL.ARRIVES_AT' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(legForm, 'arrives_at')">
+            <input nz-input id="leg-arrives" type="datetime-local" formControlName="arrives_at" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      @if (legForm.hasError('hotelDates') && legForm.touched) {
+        <nz-alert nzType="warning" [nzMessage]="'TRAVEL.HOTEL_NEEDS_DATES' | translate" class="alert-spacing"></nz-alert>
+      }
+      <div class="form-row-2">
+        <nz-form-item>
+          <nz-form-label nzFor="leg-provider">{{ 'TRAVEL.PROVIDER' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(legForm, 'provider')">
+            <input nz-input id="leg-provider" formControlName="provider" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="leg-reference">{{ 'TRAVEL.BOOKING_REFERENCE' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(legForm, 'booking_reference')">
+            <input nz-input id="leg-reference" formControlName="booking_reference" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <nz-form-item>
+        <nz-form-label nzFor="leg-cost">{{ 'TRAVEL.BOOKED_COST' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(legForm, 'booked_cost')">
+          <input nz-input id="leg-cost" formControlName="booked_cost" inputmode="decimal" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="leg-notes">{{ 'TRAVEL.NOTES' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(legForm, 'notes')">
+          <input nz-input id="leg-notes" formControlName="notes" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- MILEAGE MODAL -->
+<nz-modal appModalActions
+  [(nzVisible)]="mileageModalVisible"
+  [nzTitle]="'TRAVEL.MILEAGE_CLAIM' | translate"
+  (nzOnCancel)="mileageModalVisible.set(false)"
+  (nzOnOk)="saveMileage()"
+  okAction="save"
+  [nzOkDisabled]="mileageForm.invalid"
+  [nzOkLoading]="busy()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="mileageForm" nzLayout="vertical">
+      <div class="form-row-2">
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="km-date">{{ 'TRAVEL.TRAVEL_DATE' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(mileageForm, 'travel_date')">
+            <input nz-input id="km-date" type="date" formControlName="travel_date" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="km-vehicle">{{ 'TRAVEL.VEHICLE_TYPE' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(mileageForm, 'vehicle_type')">
+            <nz-select id="km-vehicle" formControlName="vehicle_type">
+              @for (vehicle of vehicleTypes; track vehicle) {
+                <nz-option [nzValue]="vehicle" [nzLabel]="'TRAVEL.VEHICLE_' + vehicle.toUpperCase() | translate"></nz-option>
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <div class="form-row-2">
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="km-from">{{ 'TRAVEL.FROM_LOCATION' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(mileageForm, 'from_location')">
+            <input nz-input id="km-from" formControlName="from_location" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="km-to">{{ 'TRAVEL.TO_LOCATION' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(mileageForm, 'to_location')">
+            <input nz-input id="km-to" formControlName="to_location" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <div class="form-row-2">
+        <nz-form-item>
+          <nz-form-label nzRequired nzFor="km-distance">{{ 'TRAVEL.DISTANCE_KM' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorTip(mileageForm, 'distance_km')" [nzExtra]="'TRAVEL.DISTANCE_HINT' | translate">
+            <input nz-input id="km-distance" formControlName="distance_km" inputmode="decimal" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="km-round">{{ 'TRAVEL.ROUND_TRIP' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-switch id="km-round" formControlName="round_trip"></nz-switch>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <nz-form-item>
+        <nz-form-label nzFor="km-notes">{{ 'TRAVEL.NOTES' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(mileageForm, 'notes')">
+          <input nz-input id="km-notes" formControlName="notes" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- LINK EXPENSE MODAL -->
+<nz-modal appModalActions
+  [(nzVisible)]="expenseModalVisible"
+  [nzTitle]="'TRAVEL.LINK_EXPENSE' | translate"
+  (nzOnCancel)="expenseModalVisible.set(false)"
+  (nzOnOk)="linkExpense()"
+  okAction="confirm"
+  [nzOkDisabled]="expenseForm.invalid"
+  [nzOkLoading]="busy()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="expenseForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="link-expense">{{ 'TRAVEL.EXPENSE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(expenseForm, 'expense_id')" [nzExtra]="'TRAVEL.LINK_EXPENSE_HINT' | translate">
+          <nz-select id="link-expense" formControlName="expense_id" nzShowSearch>
+            @for (expense of linkableExpenses(); track expense.id) {
+              <nz-option
+                [nzValue]="expense.id"
+                [nzLabel]="(expense.expense_number || expense.id) + ' - ' + expense.date + ' - ' + expense.amount_gross + ' ' + expense.currency"
+              ></nz-option>
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- APPROVE MODAL -->
+<nz-modal appModalActions
+  [(nzVisible)]="approveModalVisible"
+  [nzTitle]="'TRAVEL.ACTION_APPROVE' | translate"
+  (nzOnCancel)="approveModalVisible.set(false)"
+  (nzOnOk)="approve()"
+  okAction="confirm"
+  [nzOkDisabled]="approveForm.invalid"
+  [nzOkLoading]="busy()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="approveForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzFor="approve-advance">{{ 'TRAVEL.ADVANCE' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(approveForm, 'advance_amount')" [nzExtra]="'TRAVEL.APPROVE_ADVANCE_HINT' | translate">
+          <input nz-input id="approve-advance" formControlName="advance_amount" inputmode="decimal" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- REJECT MODAL -->
+<nz-modal appModalActions
+  [(nzVisible)]="rejectModalVisible"
+  [nzTitle]="'TRAVEL.ACTION_REJECT' | translate"
+  (nzOnCancel)="rejectModalVisible.set(false)"
+  (nzOnOk)="reject()"
+  okAction="confirm"
+  [nzOkDisabled]="rejectForm.invalid"
+  [nzOkLoading]="busy()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="rejectForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="reject-reason">{{ 'TRAVEL.REJECTION_REASON' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(rejectForm, 'reason')">
+          <textarea nz-input id="reject-reason" formControlName="reason" rows="3"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- ADVANCE PAID MODAL -->
+<nz-modal appModalActions
+  [(nzVisible)]="advanceModalVisible"
+  [nzTitle]="'TRAVEL.ACTION_ADVANCE_PAID' | translate"
+  (nzOnCancel)="advanceModalVisible.set(false)"
+  (nzOnOk)="recordAdvance()"
+  okAction="confirm"
+  [nzOkDisabled]="advanceForm.invalid"
+  [nzOkLoading]="busy()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="advanceForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="advance-paid-at">{{ 'TRAVEL.ADVANCE_PAID_AT' | translate }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorTip(advanceForm, 'paid_at')">
+          <input nz-input id="advance-paid-at" type="date" formControlName="paid_at" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>

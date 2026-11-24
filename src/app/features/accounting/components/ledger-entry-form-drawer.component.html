@@ -1,0 +1,164 @@
+<nz-modal appModalActions
+  [nzVisible]="open()"
+  [nzTitle]="'accounting.form.title' | translate"
+  [nzWidth]="880"
+  [nzFooter]="null"
+  (nzOnCancel)="open.set(false)"
+>
+  <ng-container *nzModalContent>
+    <form nz-form nzLayout="vertical" [formGroup]="form" (ngSubmit)="submit()">
+      <nz-form-item>
+        <nz-form-label nzFor="fiscal_period_id">{{
+          "accounting.form.fiscalPeriod" | translate
+        }}</nz-form-label>
+        <nz-form-control>
+          <nz-select id="fiscal_period_id" formControlName="fiscal_period_id">
+            @for (period of openPeriods(); track period.id) {
+              <nz-option [nzValue]="period.id" [nzLabel]="period.name" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="date">{{
+          "accounting.form.date" | translate
+        }}</nz-form-label>
+        <nz-form-control [nzErrorTip]="'validation.dateRequired' | translate">
+          <nz-date-picker class="w-full" id="date" formControlName="date" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="description">{{
+          "accounting.form.description" | translate
+        }}</nz-form-label>
+        <nz-form-control
+          [nzErrorTip]="(form.controls.description.hasError('required') ? 'validation.descriptionRequired' : 'COMMON.VALIDATION.INVALID_VALUE') | translate"
+        >
+          <input
+            nz-input
+            id="description"
+            formControlName="description"
+            [placeholder]="'accounting.form.descriptionPlaceholder' | translate"
+          />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-control>
+          <!-- nz-checkbox renders its own input inside the label -->
+          <label for="ledger-entry-form-drawer-save-as-draft" nzId="ledger-entry-form-drawer-save-as-draft" nz-checkbox formControlName="save_as_draft">{{ "accounting.form.saveAsDraft" | translate }}</label>
+        </nz-form-control>
+      </nz-form-item>
+
+      @if (form.controls.save_as_draft.value) {
+        <nz-form-item>
+          <nz-form-label nzFor="auto_reverse_on">{{ "accounting.form.autoReverseOn" | translate }}</nz-form-label>
+          <nz-form-control
+            [nzValidateStatus]="isAutoReverseInvalid() ? 'error' : ''"
+            [nzErrorTip]="'accounting.errors.autoReverseAfterPosting' | translate"
+            [nzExtra]="'accounting.form.autoReverseHint' | translate"
+          >
+            <nz-date-picker
+              id="auto_reverse_on"
+              formControlName="auto_reverse_on"
+              nzFormat="yyyy-MM-dd"
+              nzAllowClear
+              [nzDisabledDate]="disableReverseDate"
+              class="w-full"
+            />
+          </nz-form-control>
+        </nz-form-item>
+      }
+
+      <!-- Dynamic Lines Section -->
+      <div class="lines-header">
+        <h4>{{ "accounting.form.linesTitle" | translate }}</h4>
+        <button nz-button nzType="dashed" nzSize="small" type="button" appIconAction="add" (click)="addLine()"></button>
+      </div>
+
+      <div formArrayName="lines" class="lines-container">
+        @for (line of linesArray.controls; track line) {
+          <div [formGroupName]="$index" class="line-row">
+            <div class="field-account">
+              <input
+                nz-input
+                [placeholder]="'accounting.form.accountIdPlaceholder' | translate"
+                formControlName="account_id"
+              />
+            </div>
+            <div class="field-amount">
+              <nz-input-number
+                formControlName="debit"
+                [nzPlaceHolder]="'accounting.form.debitPlaceholder' | translate"
+                [nzMin]="0"
+                class="w-full"
+              />
+            </div>
+            <div class="field-amount">
+              <nz-input-number
+                formControlName="credit"
+                [nzPlaceHolder]="'accounting.form.creditPlaceholder' | translate"
+                [nzMin]="0"
+                class="w-full"
+              />
+            </div>
+            <div class="field-date">
+              <input
+                nz-input
+                type="date"
+                [attr.aria-label]="'GL.COMPETENCE_START' | translate"
+                formControlName="competence_start_date"
+              />
+            </div>
+            <div class="field-date">
+              <input
+                nz-input
+                type="date"
+                [attr.aria-label]="'GL.COMPETENCE_END' | translate"
+                formControlName="competence_end_date"
+              />
+            </div>
+            <button
+              nz-button
+              nzType="text"
+              nzDanger
+              nzSize="small"
+              type="button"
+              appIconAction="delete"
+              (click)="removeLine($index)"
+              [disabled]="linesArray.length <= 2"
+              ></button>
+          </div>
+        }
+      </div>
+
+      <div class="totals-summary">
+        <div>
+          {{ "accounting.form.totalDebit" | translate }}: <strong>€ {{ totalDebit() }}</strong>
+        </div>
+        <div>
+          {{ "accounting.form.totalCredit" | translate }}: <strong>€ {{ totalCredit() }}</strong>
+        </div>
+        @if (totalDebit() !== totalCredit()) {
+          <div class="imbalance-warning">
+            {{ "accounting.errors.unbalancedEntry" | translate }}
+          </div>
+        }
+      </div>
+
+      <div class="footer-actions">
+        <button nz-button type="button" appIconAction="cancel" (click)="open.set(false)"></button>
+        <button
+          nz-button
+          nzType="primary"
+          type="submit"
+          appIconAction="save"
+          [nzLoading]="isSaving()"
+          [disabled]="form.invalid || totalDebit() !== totalCredit() || totalDebit() === 0"
+        ></button>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>

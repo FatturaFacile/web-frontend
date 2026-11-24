@@ -1,0 +1,371 @@
+import { HttpClient } from '@angular/common/http';
+import { inject, Service } from '@angular/core';
+import { environment } from '@env';
+import { Observable } from 'rxjs';
+import { toHttpParams } from '../http/laravel-http.utils';
+import { ApiResponse, EmployeeResource, LaravelPaginationMeta } from '../models';
+import {
+  AtsApplication,
+  AtsApplicationCard,
+  AtsApplicationPayload,
+  AtsBoard,
+  AtsEmailTemplate,
+  AtsEmailTemplatePayload,
+  AtsHirePayload,
+  AtsJobOpening,
+  AtsJobOpeningPayload,
+  AtsMovePayload,
+  AtsOffer,
+  AtsOfferPayload,
+  AtsScorecard,
+  AtsScorecardPayload,
+  AtsSettings,
+  AtsSettingsPayload,
+} from './hr-recruiting-ats.types';
+
+/** Fields the employee update endpoint accepts (everything else changes through lifecycle events). */
+export interface EmployeeUpdatePayload {
+  first_name?: string;
+  last_name?: string;
+  phone?: string | null;
+  personal_email?: string | null;
+}
+
+type Filters = Record<string, string | number | boolean | null | undefined | string[]>;
+/** Request body: field names mirror the Laravel FormRequest of the route. */
+type Payload = Record<string, unknown>;
+/** Generic resource returned by the API. */
+type Row = Record<string, unknown>;
+type ListResponse<T> = ApiResponse<T[]> & { meta?: LaravelPaginationMeta };
+
+/** Additional endpoints of the hr API not covered by the dedicated typed services. */
+@Service()
+export class HrExtraApiService {
+  private readonly http = inject(HttpClient);
+  private readonly base = environment.apiBaseUrl;
+
+  /** GET /hr/me */
+  getMe(filters?: Filters): Observable<ApiResponse<Row>> {
+    return this.http.get<ApiResponse<Row>>(`${this.base}/hr/me`, { params: filters ? toHttpParams(filters) : undefined });
+  }
+
+  /** PUT /hr/employees/{} */
+  updateEmployee(employeeId: string, payload: EmployeeUpdatePayload): Observable<ApiResponse<EmployeeResource>> {
+    return this.http.put<ApiResponse<EmployeeResource>>(`${this.base}/hr/employees/${employeeId}`, payload);
+  }
+
+  /** DELETE /hr/employees/{} */
+  deleteEmployee(employeeId: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/hr/employees/${employeeId}`);
+  }
+
+  /** GET /hr/offboarding-templates */
+  listOffboardingTemplates(filters?: Filters): Observable<ListResponse<Row>> {
+    return this.http.get<ListResponse<Row>>(`${this.base}/hr/offboarding-templates`, { params: filters ? toHttpParams(filters) : undefined });
+  }
+
+  /** GET /hr/offboarding-checklists */
+  listOffboardingChecklists(filters?: Filters): Observable<ListResponse<Row>> {
+    return this.http.get<ListResponse<Row>>(`${this.base}/hr/offboarding-checklists`, { params: filters ? toHttpParams(filters) : undefined });
+  }
+
+  /** GET /hr/exit-interviews */
+  listExitInterviews(filters?: Filters): Observable<ListResponse<Row>> {
+    return this.http.get<ListResponse<Row>>(`${this.base}/hr/exit-interviews`, { params: filters ? toHttpParams(filters) : undefined });
+  }
+
+  /** GET /hr/goal-cycles */
+  listGoalCycles(filters?: Filters): Observable<ListResponse<Row>> {
+    return this.http.get<ListResponse<Row>>(`${this.base}/hr/goal-cycles`, { params: filters ? toHttpParams(filters) : undefined });
+  }
+
+  /** GET /hr/teams */
+  listTeams(filters?: Filters): Observable<ListResponse<Row>> {
+    return this.http.get<ListResponse<Row>>(`${this.base}/hr/teams`, { params: filters ? toHttpParams(filters) : undefined });
+  }
+
+  /** GET /hr/goals */
+  listGoals(filters?: Filters): Observable<ListResponse<Row>> {
+    return this.http.get<ListResponse<Row>>(`${this.base}/hr/goals`, { params: filters ? toHttpParams(filters) : undefined });
+  }
+
+  /** GET /hr/goals/{}/check-ins */
+  listGoalCheckIns(goalId: string, filters?: Filters): Observable<ListResponse<Row>> {
+    return this.http.get<ListResponse<Row>>(`${this.base}/hr/goals/${goalId}/check-ins`, { params: filters ? toHttpParams(filters) : undefined });
+  }
+
+  /** GET /hr/analytics/headcount */
+  getAnalyticsHeadcount(filters?: Filters): Observable<ApiResponse<Row>> {
+    return this.http.get<ApiResponse<Row>>(`${this.base}/hr/analytics/headcount`, { params: filters ? toHttpParams(filters) : undefined });
+  }
+
+  /** GET /hr/analytics/turnover */
+  getAnalyticsTurnover(filters?: Filters): Observable<ApiResponse<Row>> {
+    return this.http.get<ApiResponse<Row>>(`${this.base}/hr/analytics/turnover`, { params: filters ? toHttpParams(filters) : undefined });
+  }
+
+  /** GET /hr/analytics/tenure */
+  getAnalyticsTenure(filters?: Filters): Observable<ApiResponse<Row>> {
+    return this.http.get<ApiResponse<Row>>(`${this.base}/hr/analytics/tenure`, { params: filters ? toHttpParams(filters) : undefined });
+  }
+
+  /** GET /hr/analytics/absenteeism */
+  getAnalyticsAbsenteeism(filters?: Filters): Observable<ApiResponse<Row>> {
+    return this.http.get<ApiResponse<Row>>(`${this.base}/hr/analytics/absenteeism`, { params: filters ? toHttpParams(filters) : undefined });
+  }
+
+  /** GET /hr/analytics/positions */
+  listAnalyticsPositions(filters?: Filters): Observable<ListResponse<Row>> {
+    return this.http.get<ListResponse<Row>>(`${this.base}/hr/analytics/positions`, { params: filters ? toHttpParams(filters) : undefined });
+  }
+
+  /** GET /hr/analytics/upcoming-expiries */
+  listAnalyticsUpcomingExpiries(filters?: Filters): Observable<ListResponse<Row>> {
+    return this.http.get<ListResponse<Row>>(`${this.base}/hr/analytics/upcoming-expiries`, { params: filters ? toHttpParams(filters) : undefined });
+  }
+
+  /** GET /payroll/wage-types */
+  listPayrollWageTypes(filters?: Filters): Observable<ListResponse<Row>> {
+    return this.http.get<ListResponse<Row>>(`${this.base}/payroll/wage-types`, { params: filters ? toHttpParams(filters) : undefined });
+  }
+
+  /** POST /payroll/wage-types */
+  createPayrollWageType(payload: Payload = {}): Observable<ApiResponse<Row>> {
+    return this.http.post<ApiResponse<Row>>(`${this.base}/payroll/wage-types`, payload);
+  }
+
+  /** PUT /payroll/wage-types/{} */
+  updatePayrollWageType(wageTypeId: string, payload: Payload = {}): Observable<ApiResponse<Row>> {
+    return this.http.put<ApiResponse<Row>>(`${this.base}/payroll/wage-types/${wageTypeId}`, payload);
+  }
+
+  /** GET /payroll/rate-sets */
+  listPayrollRateSets(filters?: Filters): Observable<ListResponse<Row>> {
+    return this.http.get<ListResponse<Row>>(`${this.base}/payroll/rate-sets`, { params: filters ? toHttpParams(filters) : undefined });
+  }
+
+  /** POST /payroll/rate-sets */
+  createPayrollRateSet(payload: Payload = {}): Observable<ApiResponse<Row>> {
+    return this.http.post<ApiResponse<Row>>(`${this.base}/payroll/rate-sets`, payload);
+  }
+
+  /** GET /payroll/withholding-tariffs */
+  listPayrollWithholdingTariffs(filters?: Filters): Observable<ListResponse<Row>> {
+    return this.http.get<ListResponse<Row>>(`${this.base}/payroll/withholding-tariffs`, { params: filters ? toHttpParams(filters) : undefined });
+  }
+
+  /** POST /payroll/withholding-tariffs */
+  createPayrollWithholdingTariff(payload: Payload = {}): Observable<ApiResponse<Row>> {
+    return this.http.post<ApiResponse<Row>>(`${this.base}/payroll/withholding-tariffs`, payload);
+  }
+
+  /** POST /payroll/withholding-tariffs/import */
+  importPayrollWithholdingTariff(payload: Payload = {}): Observable<ApiResponse<Row>> {
+    return this.http.post<ApiResponse<Row>>(`${this.base}/payroll/withholding-tariffs/import`, payload);
+  }
+
+  /** GET /payroll/employees/{}/profile */
+  getPayrollEmployeeProfile(employeeId: string, filters?: Filters): Observable<ApiResponse<Row>> {
+    return this.http.get<ApiResponse<Row>>(`${this.base}/payroll/employees/${employeeId}/profile`, { params: filters ? toHttpParams(filters) : undefined });
+  }
+
+  /** PUT /payroll/employees/{}/profile */
+  updatePayrollEmployeeProfile(employeeId: string, payload: Payload = {}): Observable<ApiResponse<Row>> {
+    return this.http.put<ApiResponse<Row>>(`${this.base}/payroll/employees/${employeeId}/profile`, payload);
+  }
+
+  /** GET /payroll/runs */
+  listPayrollRuns(filters?: Filters): Observable<ListResponse<Row>> {
+    return this.http.get<ListResponse<Row>>(`${this.base}/payroll/runs`, { params: filters ? toHttpParams(filters) : undefined });
+  }
+
+  /** POST /payroll/runs */
+  createPayrollRun(payload: Payload = {}): Observable<ApiResponse<Row>> {
+    return this.http.post<ApiResponse<Row>>(`${this.base}/payroll/runs`, payload);
+  }
+
+  /** GET /payroll/runs/{} */
+  getPayrollRun(runId: string, filters?: Filters): Observable<ApiResponse<Row>> {
+    return this.http.get<ApiResponse<Row>>(`${this.base}/payroll/runs/${runId}`, { params: filters ? toHttpParams(filters) : undefined });
+  }
+
+  /** PUT /payroll/runs/{} */
+  updatePayrollRun(runId: string, payload: Payload = {}): Observable<ApiResponse<Row>> {
+    return this.http.put<ApiResponse<Row>>(`${this.base}/payroll/runs/${runId}`, payload);
+  }
+
+  /** POST /payroll/runs/{}/calculate */
+  calculatePayrollRun(runId: string, payload: Payload = {}): Observable<ApiResponse<Row>> {
+    return this.http.post<ApiResponse<Row>>(`${this.base}/payroll/runs/${runId}/calculate`, payload);
+  }
+
+  /** POST /payroll/runs/{}/approve */
+  approvePayrollRun(runId: string, payload: Payload = {}): Observable<ApiResponse<Row>> {
+    return this.http.post<ApiResponse<Row>>(`${this.base}/payroll/runs/${runId}/approve`, payload);
+  }
+
+  /** POST /payroll/runs/{}/close */
+  closePayrollRun(runId: string, payload: Payload = {}): Observable<ApiResponse<Row>> {
+    return this.http.post<ApiResponse<Row>>(`${this.base}/payroll/runs/${runId}/close`, payload);
+  }
+
+  /** GET /payroll/runs/{}/payslips */
+  listPayrollRunPayslips(runId: string, filters?: Filters): Observable<ListResponse<Row>> {
+    return this.http.get<ListResponse<Row>>(`${this.base}/payroll/runs/${runId}/payslips`, { params: filters ? toHttpParams(filters) : undefined });
+  }
+
+  /** GET /payroll/payslips/{} */
+  getPayrollPayslip(payslipId: string, filters?: Filters): Observable<ApiResponse<Row>> {
+    return this.http.get<ApiResponse<Row>>(`${this.base}/payroll/payslips/${payslipId}`, { params: filters ? toHttpParams(filters) : undefined });
+  }
+
+  /** POST /payroll/declarations */
+  createPayrollDeclaration(payload: Payload = {}): Observable<ApiResponse<Row>> {
+    return this.http.post<ApiResponse<Row>>(`${this.base}/payroll/declarations`, payload);
+  }
+
+  /** GET /payroll/declarations/{} */
+  getPayrollDeclaration(declarationId: string, filters?: Filters): Observable<ApiResponse<Row>> {
+    return this.http.get<ApiResponse<Row>>(`${this.base}/payroll/declarations/${declarationId}`, { params: filters ? toHttpParams(filters) : undefined });
+  }
+
+  /** GET /payroll/declarations/{}/download */
+  getPayrollDeclarationDownload(declarationId: string, filters?: Filters): Observable<Blob> {
+    return this.http.get(`${this.base}/payroll/declarations/${declarationId}/download`, { params: filters ? toHttpParams(filters) : undefined, responseType: 'blob' });
+  }
+
+  /** GET /hr/recruiting/job-openings */
+  listRecruitingJobOpenings(filters?: Filters): Observable<ListResponse<AtsJobOpening>> {
+    return this.http.get<ListResponse<AtsJobOpening>>(`${this.base}/hr/recruiting/job-openings`, { params: filters ? toHttpParams(filters) : undefined });
+  }
+
+  /** POST /hr/recruiting/job-openings */
+  createRecruitingJobOpening(payload: AtsJobOpeningPayload): Observable<ApiResponse<AtsJobOpening>> {
+    return this.http.post<ApiResponse<AtsJobOpening>>(`${this.base}/hr/recruiting/job-openings`, payload);
+  }
+
+  /** GET /hr/recruiting/job-openings/{} */
+  getRecruitingJobOpening(jobOpeningId: string): Observable<ApiResponse<AtsJobOpening>> {
+    return this.http.get<ApiResponse<AtsJobOpening>>(`${this.base}/hr/recruiting/job-openings/${jobOpeningId}`);
+  }
+
+  /** PUT /hr/recruiting/job-openings/{} */
+  updateRecruitingJobOpening(jobOpeningId: string, payload: AtsJobOpeningPayload): Observable<ApiResponse<AtsJobOpening>> {
+    return this.http.put<ApiResponse<AtsJobOpening>>(`${this.base}/hr/recruiting/job-openings/${jobOpeningId}`, payload);
+  }
+
+  /** POST /hr/recruiting/job-openings/{}/publish (`internal_only` publishes without the careers page). */
+  publishRecruitingJobOpening(jobOpeningId: string, payload: Payload = {}): Observable<ApiResponse<AtsJobOpening>> {
+    return this.http.post<ApiResponse<AtsJobOpening>>(`${this.base}/hr/recruiting/job-openings/${jobOpeningId}/publish`, payload);
+  }
+
+  /** POST /hr/recruiting/job-openings/{}/close */
+  closeRecruitingJobOpening(jobOpeningId: string, payload: Payload = {}): Observable<ApiResponse<AtsJobOpening>> {
+    return this.http.post<ApiResponse<AtsJobOpening>>(`${this.base}/hr/recruiting/job-openings/${jobOpeningId}/close`, payload);
+  }
+
+  /** GET /hr/recruiting/job-openings/{}/board */
+  getRecruitingJobOpeningBoard(jobOpeningId: string, filters?: Filters): Observable<ApiResponse<AtsBoard>> {
+    return this.http.get<ApiResponse<AtsBoard>>(`${this.base}/hr/recruiting/job-openings/${jobOpeningId}/board`, { params: filters ? toHttpParams(filters) : undefined });
+  }
+
+  /** GET /hr/recruiting/applications */
+  listRecruitingApplications(filters?: Filters): Observable<ListResponse<AtsApplicationCard>> {
+    return this.http.get<ListResponse<AtsApplicationCard>>(`${this.base}/hr/recruiting/applications`, { params: filters ? toHttpParams(filters) : undefined });
+  }
+
+  /** POST /hr/recruiting/applications (multipart when a CV file is attached). */
+  createRecruitingApplication(payload: AtsApplicationPayload | FormData): Observable<ApiResponse<AtsApplication>> {
+    return this.http.post<ApiResponse<AtsApplication>>(`${this.base}/hr/recruiting/applications`, payload);
+  }
+
+  /** GET /hr/recruiting/applications/{} */
+  getRecruitingApplication(applicationId: string): Observable<ApiResponse<AtsApplication>> {
+    return this.http.get<ApiResponse<AtsApplication>>(`${this.base}/hr/recruiting/applications/${applicationId}`);
+  }
+
+  /** PATCH /hr/recruiting/applications/{} */
+  updateRecruitingApplication(applicationId: string, payload: { notes?: string | null; phone?: string | null }): Observable<ApiResponse<AtsApplication>> {
+    return this.http.patch<ApiResponse<AtsApplication>>(`${this.base}/hr/recruiting/applications/${applicationId}`, payload);
+  }
+
+  /** GET /hr/recruiting/applications/{}/cv */
+  getRecruitingApplicationCv(applicationId: string, filters?: Filters): Observable<Blob> {
+    return this.http.get(`${this.base}/hr/recruiting/applications/${applicationId}/cv`, { params: filters ? toHttpParams(filters) : undefined, responseType: 'blob' });
+  }
+
+  /** POST /hr/recruiting/applications/{}/reparse-cv */
+  reparseCvRecruitingApplication(applicationId: string): Observable<ApiResponse<AtsApplication>> {
+    return this.http.post<ApiResponse<AtsApplication>>(`${this.base}/hr/recruiting/applications/${applicationId}/reparse-cv`, {});
+  }
+
+  /** POST /hr/recruiting/applications/{}/move */
+  moveRecruitingApplication(applicationId: string, payload: AtsMovePayload): Observable<ApiResponse<AtsApplication>> {
+    return this.http.post<ApiResponse<AtsApplication>>(`${this.base}/hr/recruiting/applications/${applicationId}/move`, payload);
+  }
+
+  /** POST /hr/recruiting/applications/{}/extend-consent */
+  extendConsentRecruitingApplication(applicationId: string, payload: { months: number }): Observable<ApiResponse<AtsApplication>> {
+    return this.http.post<ApiResponse<AtsApplication>>(`${this.base}/hr/recruiting/applications/${applicationId}/extend-consent`, payload);
+  }
+
+  /** POST /hr/recruiting/applications/{}/anonymize */
+  anonymizeRecruitingApplication(applicationId: string): Observable<ApiResponse<AtsApplication>> {
+    return this.http.post<ApiResponse<AtsApplication>>(`${this.base}/hr/recruiting/applications/${applicationId}/anonymize`, {});
+  }
+
+  /** POST /hr/recruiting/applications/{}/hire */
+  hireRecruitingApplication(applicationId: string, payload: AtsHirePayload): Observable<ApiResponse<AtsApplication>> {
+    return this.http.post<ApiResponse<AtsApplication>>(`${this.base}/hr/recruiting/applications/${applicationId}/hire`, payload);
+  }
+
+  /** GET /hr/recruiting/applications/{}/scorecards */
+  listRecruitingApplicationScorecards(applicationId: string, filters?: Filters): Observable<ListResponse<AtsScorecard>> {
+    return this.http.get<ListResponse<AtsScorecard>>(`${this.base}/hr/recruiting/applications/${applicationId}/scorecards`, { params: filters ? toHttpParams(filters) : undefined });
+  }
+
+  /** POST /hr/recruiting/applications/{}/scorecards */
+  createRecruitingApplicationScorecard(applicationId: string, payload: AtsScorecardPayload): Observable<ApiResponse<AtsScorecard>> {
+    return this.http.post<ApiResponse<AtsScorecard>>(`${this.base}/hr/recruiting/applications/${applicationId}/scorecards`, payload);
+  }
+
+  /** GET /hr/recruiting/applications/{}/offer */
+  getRecruitingApplicationOffer(applicationId: string): Observable<ApiResponse<AtsOffer>> {
+    return this.http.get<ApiResponse<AtsOffer>>(`${this.base}/hr/recruiting/applications/${applicationId}/offer`);
+  }
+
+  /** POST /hr/recruiting/applications/{}/offer */
+  createRecruitingApplicationOffer(applicationId: string, payload: AtsOfferPayload): Observable<ApiResponse<AtsOffer>> {
+    return this.http.post<ApiResponse<AtsOffer>>(`${this.base}/hr/recruiting/applications/${applicationId}/offer`, payload);
+  }
+
+  /** POST /hr/recruiting/offers/{}/mark-signed */
+  markSignedRecruitingOffer(offerId: string, payload: { note?: string | null } = {}): Observable<ApiResponse<AtsOffer>> {
+    return this.http.post<ApiResponse<AtsOffer>>(`${this.base}/hr/recruiting/offers/${offerId}/mark-signed`, payload);
+  }
+
+  /** POST /hr/recruiting/offers/{}/decline */
+  declineRecruitingOffer(offerId: string, payload: { note?: string | null } = {}): Observable<ApiResponse<AtsOffer>> {
+    return this.http.post<ApiResponse<AtsOffer>>(`${this.base}/hr/recruiting/offers/${offerId}/decline`, payload);
+  }
+
+  /** GET /hr/recruiting/email-templates */
+  listRecruitingEmailTemplates(filters?: Filters): Observable<ListResponse<AtsEmailTemplate>> {
+    return this.http.get<ListResponse<AtsEmailTemplate>>(`${this.base}/hr/recruiting/email-templates`, { params: filters ? toHttpParams(filters) : undefined });
+  }
+
+  /** PUT /hr/recruiting/email-templates/{stage}/{locale} */
+  updateRecruitingEmailTemplate(stage: string, locale: string, payload: AtsEmailTemplatePayload): Observable<ApiResponse<AtsEmailTemplate>> {
+    return this.http.put<ApiResponse<AtsEmailTemplate>>(`${this.base}/hr/recruiting/email-templates/${stage}/${locale}`, payload);
+  }
+
+  /** GET /hr/recruiting/settings */
+  getRecruitingSettings(): Observable<ApiResponse<AtsSettings>> {
+    return this.http.get<ApiResponse<AtsSettings>>(`${this.base}/hr/recruiting/settings`);
+  }
+
+  /** PUT /hr/recruiting/settings */
+  saveRecruitingSettings(payload: AtsSettingsPayload): Observable<ApiResponse<AtsSettings>> {
+    return this.http.put<ApiResponse<AtsSettings>>(`${this.base}/hr/recruiting/settings`, payload);
+  }
+}

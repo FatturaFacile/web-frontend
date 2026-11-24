@@ -1,0 +1,183 @@
+<app-page-header [title]="'FSM.WO.TITLE' | translate" [subtitle]="'FSM.WO.SUBTITLE' | translate">
+  <div header-actions>
+    @if (canWrite()) {
+      <button nz-button nzType="primary" type="button" (click)="openCreate()">{{ 'FSM.WO.NEW' | translate }}</button>
+    }
+  </div>
+</app-page-header>
+
+@if (loadError()) {
+  <nz-alert class="fwo-alert" nzType="error" nzShowIcon [nzMessage]="'FSM.WO.LOAD_ERROR' | translate" />
+}
+
+<nz-card>
+  <div class="fwo-filters">
+    <label for="field-work-orders-ctl-1">
+      <span>{{ 'FSM.WO.STATUS' | translate }}</span>
+      <nz-select nzId="field-work-orders-ctl-1" nzAllowClear class="fwo-filter" [ngModel]="statusFilter() || null" (ngModelChange)="setStatus($event)" data-testid="status-filter">
+        @for (s of statuses; track s) {
+          <nz-option [nzValue]="s" [nzLabel]="'FSM.STATUS.' + s.toUpperCase() | translate" />
+        }
+      </nz-select>
+    </label>
+    <label for="field-work-orders-ctl-2">
+      <span>{{ 'FSM.WO.TYPE' | translate }}</span>
+      <nz-select nzId="field-work-orders-ctl-2" nzAllowClear class="fwo-filter" [ngModel]="typeFilter() || null" (ngModelChange)="setType($event)" data-testid="type-filter">
+        @for (t of types; track t) {
+          <nz-option [nzValue]="t" [nzLabel]="'FSM.TYPE.' + t.toUpperCase() | translate" />
+        }
+      </nz-select>
+    </label>
+  </div>
+
+  <nz-table nzSize="small" [nzData]="orders()" [nzLoading]="loading()" [nzShowPagination]="orders().length > 20" data-testid="wo-table">
+    <thead>
+      <tr>
+        <th>{{ 'FSM.WO.NUMBER' | translate }}</th>
+        <th>{{ 'FSM.WO.NAME' | translate }}</th>
+        <th>{{ 'FSM.WO.TYPE' | translate }}</th>
+        <th>{{ 'FSM.WO.PRIORITY' | translate }}</th>
+        <th>{{ 'FSM.WO.STATUS' | translate }}</th>
+        <th>{{ 'FSM.WO.SCHEDULED' | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (order of orders(); track order.id) {
+        <tr>
+          <td>
+            <a [routerLink]="['/field-service/work-orders', order.id]">{{ order.work_order_number }}</a>
+          </td>
+          <td>{{ order.title }}</td>
+          <td>{{ 'FSM.TYPE.' + order.work_order_type.toUpperCase() | translate }}</td>
+          <td>{{ 'FSM.PRIORITY.' + order.priority.toUpperCase() | translate }}</td>
+          <td>
+            <nz-tag [nzColor]="tagColors[order.status] ?? 'default'">{{ 'FSM.STATUS.' + order.status.toUpperCase() | translate }}</nz-tag>
+          </td>
+          <td>{{ order.scheduled_start ? order.scheduled_start.slice(0, 16).replace('T', ' ') : '-' }}</td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="6">{{ 'FSM.WO.EMPTY' | translate }}</td>
+        </tr>
+      }
+    </tbody>
+  </nz-table>
+</nz-card>
+
+<nz-modal
+  [nzVisible]="formOpen()"
+  [nzTitle]="'FSM.WO.NEW' | translate"
+  [nzOkText]="'COMMON.SAVE' | translate"
+  [nzCancelText]="'COMMON.CANCEL' | translate"
+  [nzOkLoading]="saving()"
+  [nzOkDisabled]="form.invalid"
+  [nzMaskClosable]="false"
+  nzWidth="820px"
+  (nzOnOk)="save()"
+  (nzOnCancel)="formOpen.set(false)"
+>
+  <ng-container *nzModalContent>
+    @if (formError()) {
+      <nz-alert class="fwo-alert" nzType="error" nzShowIcon [nzMessage]="formError()" />
+    }
+    <form nz-form nzLayout="vertical" [formGroup]="form">
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="fwo-type">{{ 'FSM.WO.TYPE' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select nzId="fwo-type" formControlName="work_order_type">
+            @for (t of types; track t) {
+              <nz-option [nzValue]="t" [nzLabel]="'FSM.TYPE.' + t.toUpperCase() | translate" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="fwo-customer">{{ 'FSM.WO.CUSTOMER' | translate }}</nz-form-label>
+        <nz-form-control>
+          <app-customer-select inputId="fwo-customer" formControlName="customer_id" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired nzFor="fwo-title">{{ 'FSM.WO.NAME' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input id="fwo-title" formControlName="title" maxlength="200" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="fwo-problem">{{ 'FSM.WO.PROBLEM' | translate }}</nz-form-label>
+        <nz-form-control>
+          <textarea nz-input id="fwo-problem" rows="3" formControlName="problem_description" maxlength="5000"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="fwo-priority">{{ 'FSM.WO.PRIORITY' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select nzId="fwo-priority" formControlName="priority">
+            @for (p of priorities; track p) {
+              <nz-option [nzValue]="p" [nzLabel]="'FSM.PRIORITY.' + p.toUpperCase() | translate" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="fwo-equipment">{{ 'FSM.WO.EQUIPMENT' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select nzId="fwo-equipment" nzAllowClear nzShowSearch formControlName="equipment_passport_id" [nzOptions]="equipmentOptions()" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="fwo-contract">{{ 'FSM.WO.CONTRACT' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select nzId="fwo-contract" nzAllowClear nzShowSearch formControlName="service_contract_id" [nzOptions]="contractOptions()" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="fwo-address">{{ 'FSM.WO.SITE_ADDRESS' | translate }}</nz-form-label>
+        <nz-form-control>
+          <input nz-input id="fwo-address" formControlName="site_address" maxlength="255" />
+        </nz-form-control>
+      </nz-form-item>
+      <div class="fwo-geo">
+        <nz-form-item>
+          <nz-form-label nzFor="fwo-lat">{{ 'FSM.WO.LATITUDE' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-input-number nzId="fwo-lat" formControlName="site_latitude" [nzMin]="-90" [nzMax]="90" [nzStep]="0.0001" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzFor="fwo-lng">{{ 'FSM.WO.LONGITUDE' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-input-number nzId="fwo-lng" formControlName="site_longitude" [nzMin]="-180" [nzMax]="180" [nzStep]="0.0001" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <nz-form-item>
+        <nz-form-label nzFor="fwo-skills">{{ 'FSM.WO.REQUIRED_SKILLS' | translate }}</nz-form-label>
+        <nz-form-control>
+          <nz-select nzId="fwo-skills" nzMode="tags" formControlName="required_skills" [nzTokenSeparators]="[',']" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <fieldset class="fwo-parts">
+        <legend>{{ 'FSM.WO.REQUIRED_PARTS' | translate }}</legend>
+        <div formArrayName="required_parts">
+          @for (part of parts.controls; track part; let i = $index) {
+            <div class="fwo-part" [formGroupName]="i">
+              <app-fsm-product-select formControlName="product_id" [placeholder]="'FSM.WO.PRODUCT' | translate" />
+              <nz-input-number formControlName="quantity" [nzMin]="0.01" [attr.aria-label]="'FSM.WO.QUANTITY' | translate" />
+              <button nz-button nzType="text" nzDanger type="button" (click)="removePart(i)">{{ 'COMMON.DELETE' | translate }}</button>
+            </div>
+          }
+        </div>
+        <button nz-button type="button" (click)="addPart()">{{ 'FSM.WO.ADD_PART' | translate }}</button>
+      </fieldset>
+
+      <nz-form-item>
+        <nz-form-label nzFor="fwo-notes">{{ 'FSM.WO.INTERNAL_NOTES' | translate }}</nz-form-label>
+        <nz-form-control>
+          <textarea nz-input id="fwo-notes" rows="2" formControlName="internal_notes" maxlength="5000"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>

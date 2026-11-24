@@ -1,0 +1,55 @@
+.redline-pickers {
+  display: flex;
+  gap: var(--space-4);
+  align-items: flex-end;
+  margin-bottom: var(--space-4);
+
+  nz-select {
+    min-width: 100px;
+  }
+}
+
+.redline-diff {
+  font-family: monospace;
+  border: 1px solid var(--ff-color-border);
+  border-radius: 4px;
+  max-height: 60vh;
+  overflow: auto;
+}
+
+.redline-line {
+  display: flex;
+  gap: var(--space-2);
+  padding: 0 var(--space-2);
+  white-space: pre-wrap;
+}
+
+.redline-added {
+  background: var(--ff-color-success-bg);
+}
+
+.redline-removed {
+  background: var(--ff-color-danger-bg);
+  text-decoration: line-through;
+}
+
+.redline-comments {
+  margin-top: var(--space-4);
+}
+
+.redline-comment {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  padding: var(--space-2) 0;
+}
+
+.redline-comment-resolved {
+  opacity: 0.6;
+}
+
+.redline-new-comment {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
