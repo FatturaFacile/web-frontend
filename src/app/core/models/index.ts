@@ -114,6 +114,7 @@ export * from './association-area.model';
 export * from './subscription-billing.model';
 export * from './general-ledger.model';
 export * from './general-ledger-prima-nota.model';
+export * from './treasury-banking.model';
 export * from './treasury-ops.model';
 export * from './eam-ops.model';
 export * from './project-control.model';
