@@ -228,6 +228,8 @@ describe('BudgetingVersionsComponent', () => {
       fiscal_year: 2029,
       year_start: null,
       version_type: 'budget',
+      granularity: 'monthly',
+      scenario_kind: null,
       currency: 'EUR',
       seasonal_weights: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3],
     });
@@ -450,11 +452,11 @@ describe('BudgetingVarianceComponent', () => {
     fixture.componentRef.setInput('versionId', 'bv-1');
     fixture.detectChanges();
 
-    expect(api.getVariance).toHaveBeenCalledWith('bv-1', 12, 'account');
+    expect(api.getVariance).toHaveBeenCalledWith('bv-1', 12, 'account', {});
     fixture.componentInstance.groupBy.set('cost_center');
     fixture.componentInstance.throughPeriod.set(3);
     fixture.componentInstance.load();
-    expect(api.getVariance).toHaveBeenLastCalledWith('bv-1', 3, 'cost_center');
+    expect(api.getVariance).toHaveBeenLastCalledWith('bv-1', 3, 'cost_center', {});
     expect(fixture.componentInstance.variance()?.totals.adverse).toBe('100.00');
   });
 });
@@ -469,6 +471,11 @@ describe('BudgetingVersionDetailComponent', () => {
     getLines: vi.fn(),
     getDrivers: vi.fn(),
     getVariance: vi.fn(),
+    getGrid: vi.fn(),
+    getDecomposition: vi.fn(),
+    getActualVolumes: vi.fn(),
+    getVersionAudit: vi.fn(),
+    getImports: vi.fn(),
   };
 
   beforeEach(() => {
@@ -481,6 +488,11 @@ describe('BudgetingVersionDetailComponent', () => {
     api.getLines.mockReturnValue(of({ data: [] }));
     api.getDrivers.mockReturnValue(of({ data: [] }));
     api.getVariance.mockReturnValue(of({ data: variance }));
+    api.getGrid.mockReturnValue(of({ data: { version_id: 'bv-1', granularity: 'monthly', slots: [], rows: [], totals: { total: '0.00', slots: {} } } }));
+    api.getDecomposition.mockReturnValue(of({ data: { version_id: 'bv-1', through_period: 12, group_by: 'account', rows: [], totals: { budget: '0', actual: '0', variance: '0', volume_variance: '0', price_variance: '0', undecomposed_variance: '0' } } }));
+    api.getActualVolumes.mockReturnValue(of({ data: [] }));
+    api.getVersionAudit.mockReturnValue(of({ data: [] }));
+    api.getImports.mockReturnValue(of({ data: [] }));
     configure(api, [{ provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({ id: 'bv-1' }) } } }]);
   });
 

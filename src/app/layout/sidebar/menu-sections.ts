@@ -2164,6 +2164,18 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             icon: 'fa-solid fa-file-invoice-dollar',
             module: 'budgeting',
           },
+          {
+            key: 'NAV.BUDGETING_SPEND_CONTROL',
+            route: '/budgeting/spend-control',
+            icon: 'fa-solid fa-lock',
+            module: 'budgeting',
+          },
+          {
+            key: 'NAV.BUDGETING_OVERRIDES',
+            route: '/budgeting/overrides',
+            icon: 'fa-solid fa-user-shield',
+            module: 'budgeting',
+          },
         ],
       },
       {

@@ -1,6 +1,9 @@
 /** Planning and budgeting (controlling). Mirrors the API FormRequests of the Budgeting module. */
 
-export type BudgetVersionType = 'budget' | 'forecast' | 'rolling_forecast';
+export type BudgetVersionType = 'budget' | 'revised' | 'forecast' | 'rolling_forecast' | 'scenario';
+export type BudgetScenarioKind = 'best_case' | 'worst_case' | 'custom';
+export type BudgetGranularity = 'monthly' | 'quarterly';
+export type BudgetTrafficLight = 'green' | 'amber' | 'red';
 export type BudgetVersionStatus = 'draft' | 'submitted' | 'approved' | 'locked';
 export type BudgetSpreadMethod = 'even' | 'seasonal' | 'percentage';
 export type BudgetLineSource = 'manual' | 'driver' | 'spread' | 'reforecast' | 'actual';
@@ -8,7 +11,9 @@ export type BudgetApprovalAction = 'submit' | 'approve' | 'reject' | 'lock';
 export type BudgetReforecastMode = 'keep_annual_target' | 'keep_remaining';
 export type BudgetVarianceGroup = 'account' | 'cost_center' | 'project' | 'period';
 
-export const BUDGET_VERSION_TYPES: readonly BudgetVersionType[] = ['budget', 'forecast', 'rolling_forecast'];
+export const BUDGET_VERSION_TYPES: readonly BudgetVersionType[] = ['budget', 'revised', 'forecast', 'rolling_forecast', 'scenario'];
+export const BUDGET_SCENARIO_KINDS: readonly BudgetScenarioKind[] = ['best_case', 'worst_case', 'custom'];
+export const BUDGET_GRANULARITIES: readonly BudgetGranularity[] = ['monthly', 'quarterly'];
 export const BUDGET_VERSION_STATUSES: readonly BudgetVersionStatus[] = ['draft', 'submitted', 'approved', 'locked'];
 export const BUDGET_SPREAD_METHODS: readonly BudgetSpreadMethod[] = ['even', 'seasonal', 'percentage'];
 export const BUDGET_REFORECAST_MODES: readonly BudgetReforecastMode[] = ['keep_annual_target', 'keep_remaining'];
@@ -37,6 +42,12 @@ export interface BudgetVersion {
   fiscal_year: number;
   year_start: string;
   version_type: BudgetVersionType;
+  scenario_kind?: BudgetScenarioKind | null;
+  granularity?: BudgetGranularity;
+  revision_number?: number;
+  revision_reason?: string | null;
+  rolling_horizon_months?: number | null;
+  is_formal?: boolean;
   status: BudgetVersionStatus;
   currency: string;
   base_version_id: string | null;
@@ -60,6 +71,8 @@ export interface BudgetVersionRequest {
   fiscal_year: number;
   year_start: string | null;
   version_type: BudgetVersionType;
+  scenario_kind?: BudgetScenarioKind | null;
+  granularity?: BudgetGranularity;
   currency: string;
   seasonal_weights: number[] | null;
 }
@@ -90,6 +103,8 @@ export interface BudgetPlanLine {
   project_id: string | null;
   period: number;
   amount: string;
+  quantity?: string | null;
+  unit_price?: string | null;
   source: BudgetLineSource;
   driver_id: string | null;
   notes: string | null;
@@ -157,6 +172,7 @@ export interface BudgetVarianceRow {
   variance_percent: string | null;
   is_favorable: boolean;
   status: 'over' | 'under' | 'on_budget';
+  traffic_light?: BudgetTrafficLight;
 }
 
 export interface BudgetVariance {
@@ -164,11 +180,12 @@ export interface BudgetVariance {
   through_period: number;
   group_by: BudgetVarianceGroup;
   rows: BudgetVarianceRow[];
+  thresholds?: { amber: string; red: string };
   totals: { budget: string; actual: string; variance: string; variance_percent: string | null; adverse: string; favorable: string };
 }
 
 export interface BudgetingDashboard {
-  versions: { total: number; by_status: Record<BudgetVersionStatus, number>; by_type: Record<BudgetVersionType, number> };
+  versions: { total: number; by_status: Record<BudgetVersionStatus, number>; by_type: Partial<Record<BudgetVersionType, number>> };
   pending_approval: { id: string; name: string; fiscal_year: number; submitted_at: string | null }[];
   selected_version: { id: string; name: string; fiscal_year: number; status: BudgetVersionStatus; version_type: BudgetVersionType; currency: string } | null;
   through_period: number;

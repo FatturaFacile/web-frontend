@@ -376,6 +376,24 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
       'member',
     ],
   },
+  // Spend rules, thresholds and actual volumes of the budget control: owners, administrators, accountants and members granted budgeting.control.manage.
+  budgeting_control: {
+    read: ANY_MEMBER,
+    write: FINANCE,
+    grants: {
+      read: ['budgeting.control.manage', 'budgeting.*'],
+      write: ['budgeting.control.manage', 'budgeting.*'],
+    },
+  },
+  // Deciding an override (deroga) is the CFO's call: owners, administrators and members granted budgeting.override.approve.
+  budgeting_override: {
+    read: ANY_MEMBER,
+    write: ['owner', 'admin'],
+    grants: {
+      read: ['budgeting.override.approve', 'budgeting.*'],
+      write: ['budgeting.override.approve', 'budgeting.*'],
+    },
+  },
   business_intelligence: {
     read: ANY_MEMBER,
     write: [

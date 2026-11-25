@@ -51,3 +51,29 @@
   gap: 4px;
   justify-content: flex-end;
 }
+
+.grid-scroll {
+  overflow-x: auto;
+}
+
+.grid-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 13px;
+
+  th,
+  td {
+    padding: 4px 6px;
+    border-bottom: 1px solid var(--ff-color-border, #f0f0f0);
+  }
+}
+
+.cell-input {
+  min-width: 84px;
+  text-align: right;
+}
+
+.detail-grid {
+  display: grid;
+  gap: 8px;
+}
