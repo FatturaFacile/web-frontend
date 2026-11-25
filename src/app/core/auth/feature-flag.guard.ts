@@ -59,6 +59,7 @@ export const PREMATURE_OPEN_ISSUE_MODULES: Readonly<
   electronic_signature: { issue: 211, routePrefix: '/signatures' },
   tender_management: { issue: 415, routePrefix: '/tender-management' },
   intercompany: { issue: 291, routePrefix: '/intercompany' },
+  gdo_trade_terms: { issue: 477, routePrefix: '/gdo-trade-terms' },
 };
 
 /**

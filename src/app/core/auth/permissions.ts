@@ -228,6 +228,30 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
       write: ['expense_management.settle', 'expense_management.*'],
     },
   },
+  // GDO trade terms (Mod 231): finance and sales roles read the contracts, rebates and margins; owners, administrators,
+  // accountants and sales managers keep them. Running and reversing the accrual and settling is the `settle` ability, the
+  // API reserves it to finance (a member can be granted gdo_trade_terms.settle).
+  gdo_trade_terms: {
+    read: [...FINANCE_READERS, 'sales', 'sales_manager'],
+    write: [...FINANCE, 'sales_manager'],
+    grants: {
+      read: [
+        'gdo_trade_terms.read',
+        'gdo_trade_terms.write',
+        'gdo_trade_terms.settle',
+        'gdo_trade_terms.*',
+      ],
+      write: ['gdo_trade_terms.write', 'gdo_trade_terms.settle', 'gdo_trade_terms.*'],
+    },
+  },
+  gdo_trade_terms_finance: {
+    read: FINANCE_READERS,
+    write: FINANCE,
+    grants: {
+      read: ['gdo_trade_terms.settle', 'gdo_trade_terms.*'],
+      write: ['gdo_trade_terms.settle', 'gdo_trade_terms.*'],
+    },
+  },
   configurator: {
     read: ANY_MEMBER,
     write: ['owner', 'admin', 'accountant', 'sales', 'sales_manager'],
