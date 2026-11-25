@@ -1526,6 +1526,37 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         ],
       },
       {
+        key: 'NAV.CUSTOMER_SATISFACTION',
+        icon: 'fa-solid fa-face-smile',
+        module: 'customer_satisfaction',
+        children: [
+          {
+            key: 'NAV.CUSTOMER_SATISFACTION_DASHBOARD',
+            route: '/customer-satisfaction/dashboard',
+            icon: 'fa-solid fa-chart-line',
+            module: 'customer_satisfaction',
+          },
+          {
+            key: 'NAV.CUSTOMER_SATISFACTION_RECOVERY',
+            route: '/customer-satisfaction/recovery',
+            icon: 'fa-solid fa-life-ring',
+            module: 'customer_satisfaction',
+          },
+          {
+            key: 'NAV.CUSTOMER_SATISFACTION_TEMPLATES',
+            route: '/customer-satisfaction/templates',
+            icon: 'fa-solid fa-clipboard-list',
+            module: 'customer_satisfaction',
+          },
+          {
+            key: 'NAV.CUSTOMER_SATISFACTION_DISPATCHES',
+            route: '/customer-satisfaction/dispatches',
+            icon: 'fa-solid fa-paper-plane',
+            module: 'customer_satisfaction',
+          },
+        ],
+      },
+      {
         key: 'NAV.TRAVEL',
         icon: 'fa-solid fa-plane-departure',
         route: '/travel',
