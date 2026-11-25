@@ -68,3 +68,54 @@ export const VERSION_STATUS_COLORS: Readonly<Record<BudgetVersionStatus, string>
   approved: 'green',
   locked: 'blue',
 };
+
+/** Colours of the traffic light tags of the variance. */
+export const TRAFFIC_LIGHT_COLORS: Readonly<Record<'green' | 'amber' | 'red', string>> = {
+  green: 'green',
+  amber: 'orange',
+  red: 'red',
+};
+
+/** Colours of the outcome of a spend control. */
+export const SPEND_OUTCOME_COLORS: Readonly<Record<string, string>> = {
+  ok: 'green',
+  warning: 'orange',
+  overridden: 'blue',
+  blocked: 'red',
+};
+
+/** Colours of the status of an override request. */
+export const OVERRIDE_STATUS_COLORS: Readonly<Record<string, string>> = {
+  pending: 'orange',
+  approved: 'green',
+  rejected: 'red',
+  cancelled: 'default',
+  consumed: 'blue',
+};
+
+/** A UUID typed in a project field: empty is allowed. */
+export const OPTIONAL_UUID_PATTERN = /^$|^[0-9a-fA-F-]{36}$/;
+
+/** The key of the translation of an enum value, e.g. `BUDGETING_CONTROL.MODE_HARD_BLOCK`. */
+export function enumKey(prefix: string, value: string): string {
+  return `${prefix}_${value.toUpperCase()}`;
+}
+
+/** Whether a version in this state can be rejected: a formal budget (original or revised) is never reopened once approved. */
+export function canRejectVersion(status: string, formal: boolean): boolean {
+  return status === 'submitted' || (status === 'approved' && !formal);
+}
+
+/** Width in percent of a bar for an amount against the largest amount of the chart (never below 1% for a non-zero amount). */
+export function barWidth(amount: string | number, max: number): number {
+  const value = Math.abs(Number(amount));
+  if (!Number.isFinite(value) || max <= 0 || value === 0) {
+    return 0;
+  }
+  return Math.max(1, Math.min(100, Math.round((value / max) * 100)));
+}
+
+/** The first day of the month typed as `YYYY-MM` from a date. */
+export function monthOf(date: string | null | undefined): string | null {
+  return date && /^\d{4}-\d{2}/.test(date) ? date.slice(0, 7) : null;
+}

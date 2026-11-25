@@ -75,6 +75,7 @@ export * from './platform.model';
 export * from './planning.model';
 export * from './analytical-accounting.model';
 export * from './budgeting.model';
+export * from './budgeting-control.model';
 export * from './controlling.model';
 export * from './credit-management.model';
 export * from './shift-planning.model';

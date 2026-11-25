@@ -14,11 +14,15 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
+  BUDGET_GRANULARITIES,
   BUDGET_REFORECAST_MODES,
+  BUDGET_SCENARIO_KINDS,
   BUDGET_VERSION_STATUSES,
   BUDGET_VERSION_TYPES,
   BudgetingApiService,
+  BudgetGranularity,
   BudgetReforecastMode,
+  BudgetScenarioKind,
   BudgetVersion,
   BudgetVersionStatus,
   BudgetVersionType,
@@ -149,6 +153,30 @@ function weightsValidator(control: AbstractControl): ValidationErrors | null {
               <nz-form-control><input nz-input id="version-currency" formControlName="currency" maxlength="3" /></nz-form-control>
             </nz-form-item>
           </div>
+          <div class="form-row">
+            <nz-form-item>
+              <nz-form-label nzRequired>{{ 'BUDGETING_CONTROL.GRANULARITY' | translate }}</nz-form-label>
+              <nz-form-control>
+                <nz-select formControlName="granularity">
+                  @for (value of granularities; track value) {
+                    <nz-option [nzValue]="value" [nzLabel]="('BUDGETING_CONTROL.GRANULARITY_' + value.toUpperCase()) | translate"></nz-option>
+                  }
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+            @if (createForm.controls.version_type.value === 'scenario') {
+              <nz-form-item>
+                <nz-form-label nzRequired>{{ 'BUDGETING_CONTROL.SCENARIO_KIND' | translate }}</nz-form-label>
+                <nz-form-control>
+                  <nz-select formControlName="scenario_kind">
+                    @for (value of scenarioKinds; track value) {
+                      <nz-option [nzValue]="value" [nzLabel]="('BUDGETING_CONTROL.SCENARIO_' + value.toUpperCase()) | translate"></nz-option>
+                    }
+                  </nz-select>
+                </nz-form-control>
+              </nz-form-item>
+            }
+          </div>
           <nz-form-item>
             <nz-form-label nzFor="version-weights">{{ 'BUDGETING.SEASONAL_WEIGHTS' | translate }}</nz-form-label>
             <nz-form-control [nzExtra]="'BUDGETING.SEASONAL_WEIGHTS_HINT' | translate" [nzErrorTip]="'BUDGETING.SEASONAL_WEIGHTS_INVALID' | translate">
@@ -224,6 +252,8 @@ export class BudgetingVersionsComponent implements OnInit {
   readonly statuses = BUDGET_VERSION_STATUSES;
   readonly types = BUDGET_VERSION_TYPES;
   readonly modes = BUDGET_REFORECAST_MODES;
+  readonly granularities = BUDGET_GRANULARITIES;
+  readonly scenarioKinds = BUDGET_SCENARIO_KINDS;
   readonly versions = signal<BudgetVersion[]>([]);
   readonly loading = signal(false);
   readonly fiscalYear = signal<number | null>(null);
@@ -239,6 +269,8 @@ export class BudgetingVersionsComponent implements OnInit {
     fiscal_year: [new Date().getFullYear() + 1, [Validators.required, Validators.min(2000), Validators.max(2100)]],
     year_start: [''],
     version_type: ['budget' as BudgetVersionType, [Validators.required]],
+    granularity: ['monthly' as BudgetGranularity, [Validators.required]],
+    scenario_kind: ['best_case' as BudgetScenarioKind],
     currency: ['EUR', [Validators.required, Validators.minLength(3), Validators.maxLength(3)]],
     seasonal_weights: ['', [weightsValidator]],
     description: [''],
@@ -279,7 +311,7 @@ export class BudgetingVersionsComponent implements OnInit {
   }
 
   openCreate(): void {
-    this.createForm.reset({ name: '', fiscal_year: new Date().getFullYear() + 1, year_start: '', version_type: 'budget', currency: 'EUR', seasonal_weights: '', description: '' });
+    this.createForm.reset({ name: '', fiscal_year: new Date().getFullYear() + 1, year_start: '', version_type: 'budget', granularity: 'monthly', scenario_kind: 'best_case', currency: 'EUR', seasonal_weights: '', description: '' });
     this.createVisible.set(true);
   }
 
@@ -292,6 +324,8 @@ export class BudgetingVersionsComponent implements OnInit {
         fiscal_year: value.fiscal_year,
         year_start: blankToNull(value.year_start),
         version_type: value.version_type,
+        granularity: value.granularity,
+        scenario_kind: value.version_type === 'scenario' ? value.scenario_kind : null,
         currency: value.currency.toUpperCase(),
         seasonal_weights: parseWeights(value.seasonal_weights),
       })

@@ -67,6 +67,8 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/controlling/budgets',
   '/budgeting',
   '/budgeting/versions',
+  '/budgeting/spend-control',
+  '/budgeting/overrides',
   '/business-intelligence',
   '/business-intelligence/explorer',
   '/business-intelligence/library',
