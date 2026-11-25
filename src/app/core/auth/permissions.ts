@@ -252,6 +252,30 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
       write: ['gdo_trade_terms.settle', 'gdo_trade_terms.*'],
     },
   },
+  // Industrial laundries and linen / workwear rental (Mod 177): finance, sales and warehouse roles read; finance, sales
+  // managers and the warehouse and production staff of the laundry write. Consolidating the monthly bill is the `bill`
+  // ability, the API reserves it to finance (a member can be granted industrial_laundry.bill).
+  industrial_laundry: {
+    read: [...FINANCE_READERS, 'sales', 'sales_manager', 'warehouse', 'production'],
+    write: [...FINANCE, 'sales_manager', 'warehouse', 'production'],
+    grants: {
+      read: [
+        'industrial_laundry.read',
+        'industrial_laundry.write',
+        'industrial_laundry.bill',
+        'industrial_laundry.*',
+      ],
+      write: ['industrial_laundry.write', 'industrial_laundry.bill', 'industrial_laundry.*'],
+    },
+  },
+  industrial_laundry_finance: {
+    read: FINANCE_READERS,
+    write: FINANCE,
+    grants: {
+      read: ['industrial_laundry.bill', 'industrial_laundry.*'],
+      write: ['industrial_laundry.bill', 'industrial_laundry.*'],
+    },
+  },
   configurator: {
     read: ANY_MEMBER,
     write: ['owner', 'admin', 'accountant', 'sales', 'sales_manager'],
