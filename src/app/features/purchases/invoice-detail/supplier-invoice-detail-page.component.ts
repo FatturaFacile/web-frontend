@@ -110,6 +110,14 @@ import { SupplierInvoiceDetailStore } from './supplier-invoice-detail.store';
           <nz-descriptions-item [nzTitle]="'srm.invoice.field.stampDuty' | translate">
             {{ invoice.stamp_duty_amount | money: invoice.currency }}
           </nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="'srm.invoice.field.splitPayment' | translate">
+            @if (splitPayment(invoice.split_payment_tax_amount)) {
+              <nz-tag nzColor="purple">{{ 'srm.invoice.splitPaymentTag' | translate }}</nz-tag>
+              {{ invoice.split_payment_tax_amount | money: invoice.currency }}
+            } @else {
+              {{ 'srm.invoice.no' | translate }}
+            }
+          </nz-descriptions-item>
           <nz-descriptions-item [nzTitle]="'srm.invoice.field.currency' | translate">
             {{ invoice.currency }}
             @if (invoice.exchange_rate && invoice.exchange_rate !== '1.000000') {
@@ -317,6 +325,10 @@ export class SupplierInvoiceDetailPageComponent {
 
   protected approvalColor(status: string | null | undefined): string {
     return approvalStatusColor(status);
+  }
+
+  protected splitPayment(amount: string | null | undefined): boolean {
+    return Number(amount ?? 0) > 0;
   }
 
   protected isBlocked(value: boolean | string): boolean {

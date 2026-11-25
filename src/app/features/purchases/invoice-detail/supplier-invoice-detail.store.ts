@@ -13,6 +13,8 @@ export interface SupplierInvoiceDetail extends SupplierInvoice {
   withholding_tax_amount?: string | null;
   stamp_duty_amount?: string | null;
   exchange_rate?: string | null;
+  /** VAT paid by the buyer to the tax authority (split payment): not owed to the supplier. */
+  split_payment_tax_amount?: string | null;
 }
 
 export interface SupplierInvoiceDetailState {
@@ -49,7 +51,10 @@ export const SupplierInvoiceDetailStore = signalStore(
       }
       const total = Number(current.total_amount);
       const paid = Number(current.total_paid ?? 0);
-      return Number.isFinite(total) && Number.isFinite(paid) ? Math.max(0, total - paid) : null;
+      const withheld = Number(current.withholding_tax_amount ?? 0);
+      const split = Number(current.split_payment_tax_amount ?? 0);
+      const parts = [total, paid, withheld, split];
+      return parts.every(Number.isFinite) ? Math.max(0, total - withheld - split - paid) : null;
     }),
   })),
   withMethods(
