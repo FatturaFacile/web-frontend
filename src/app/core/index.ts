@@ -134,6 +134,7 @@ export * from './api/resource-planning-api.service';
 export * from './api/payables-api.service';
 export * from './api/agent-commissions-api.service';
 export * from './api/expense-management-api.service';
+export * from './api/gdo-trade-terms-api.service';
 export * from './api/debt-collection-api.service';
 export * from './api/electronic-signature-api.service';
 export * from './api/receivables-api.service';

@@ -645,6 +645,20 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'gdo-trade-terms',
+    canActivate: [
+      authGuard,
+      menuEnabledGuard,
+      featureFlagGuard('gdo_trade_terms'),
+      moduleGuard('gdo_trade_terms'),
+    ],
+    data: { breadcrumb: 'NAV.GDO_TRADE_TERMS', title: 'PAGE_TITLE.GDO_TRADE_TERMS_DASHBOARD' },
+    loadChildren: () =>
+      import('./features/gdo-trade-terms/gdo-trade-terms.routes').then(
+        (m) => m.GDO_TRADE_TERMS_ROUTES,
+      ),
+  },
+  {
     path: 'signatures',
     canActivate: [
       authGuard,

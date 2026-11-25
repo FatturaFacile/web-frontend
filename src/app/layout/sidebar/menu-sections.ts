@@ -1317,6 +1317,61 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         ],
       },
       {
+        key: 'NAV.GDO_TRADE_TERMS',
+        icon: 'fa-solid fa-store',
+        module: 'gdo_trade_terms',
+        children: [
+          {
+            key: 'NAV.GDO_TRADE_TERMS_DASHBOARD',
+            route: '/gdo-trade-terms',
+            icon: 'fa-solid fa-gauge-high',
+            module: 'gdo_trade_terms',
+          },
+          {
+            key: 'NAV.GDO_TRADE_TERMS_CONTRACTS',
+            route: '/gdo-trade-terms/contracts',
+            icon: 'fa-solid fa-file-contract',
+            module: 'gdo_trade_terms',
+          },
+          {
+            key: 'NAV.GDO_TRADE_TERMS_PROMOTIONS',
+            route: '/gdo-trade-terms/promotions',
+            icon: 'fa-solid fa-bullhorn',
+            module: 'gdo_trade_terms',
+          },
+          {
+            key: 'NAV.GDO_TRADE_TERMS_SIMULATOR',
+            route: '/gdo-trade-terms/simulator',
+            icon: 'fa-solid fa-chart-line',
+            module: 'gdo_trade_terms',
+          },
+          {
+            key: 'NAV.GDO_TRADE_TERMS_MARGIN',
+            route: '/gdo-trade-terms/margin',
+            icon: 'fa-solid fa-percent',
+            module: 'gdo_trade_terms',
+          },
+          {
+            key: 'NAV.GDO_TRADE_TERMS_ACCRUALS',
+            route: '/gdo-trade-terms/accruals',
+            icon: 'fa-solid fa-calendar-check',
+            module: 'gdo_trade_terms',
+          },
+          {
+            key: 'NAV.GDO_TRADE_TERMS_SETTLEMENTS',
+            route: '/gdo-trade-terms/settlements',
+            icon: 'fa-solid fa-scale-balanced',
+            module: 'gdo_trade_terms',
+          },
+          {
+            key: 'NAV.GDO_TRADE_TERMS_DELIVERY_POINTS',
+            route: '/gdo-trade-terms/delivery-points',
+            icon: 'fa-solid fa-location-dot',
+            module: 'gdo_trade_terms',
+          },
+        ],
+      },
+      {
         key: 'NAV.TRAVEL',
         icon: 'fa-solid fa-plane-departure',
         route: '/travel',
