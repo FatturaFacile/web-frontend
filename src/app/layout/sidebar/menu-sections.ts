@@ -561,6 +561,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         module: 'treasury',
       },
       {
+        key: 'NAV.LIQUIDITY_PLANNING',
+        icon: 'fa-solid fa-droplet',
+        route: '/liquidity-planning',
+        module: 'liquidity_planning',
+      },
+      {
         key: 'AI_FORECAST.NAV',
         icon: 'fa-solid fa-chart-line',
         route: '/ai-forecasting',

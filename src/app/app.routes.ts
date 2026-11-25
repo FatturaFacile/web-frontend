@@ -489,6 +489,15 @@ export const routes: Routes = [
       import('./features/receivables/receivables.routes').then((m) => m.RECEIVABLES_ROUTES),
   },
   {
+    path: 'liquidity-planning',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'NAV.LIQUIDITY_PLANNING', title: 'PAGE_TITLE.LIQUIDITY_PLANNING' },
+    loadChildren: () =>
+      import('./features/liquidity-planning/liquidity-planning.routes').then(
+        (m) => m.LIQUIDITY_PLANNING_ROUTES,
+      ),
+  },
+  {
     path: 'payables',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.PAYABLES', title: 'PAGE_TITLE.PAYABLES_ITEMS' },
