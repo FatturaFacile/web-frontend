@@ -244,6 +244,15 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
       write: ['gdo_trade_terms.write', 'gdo_trade_terms.settle', 'gdo_trade_terms.*'],
     },
   },
+  // Statutory financial statements (Mod 167): finance roles prepare, validate and file the dossier; auditors read it.
+  statutory_financials: {
+    read: FINANCE_READERS,
+    write: FINANCE,
+    grants: {
+      read: ['statutory_financials.read', 'statutory_financials.write', 'statutory_financials.*'],
+      write: ['statutory_financials.write', 'statutory_financials.*'],
+    },
+  },
   gdo_trade_terms_finance: {
     read: FINANCE_READERS,
     write: FINANCE,
