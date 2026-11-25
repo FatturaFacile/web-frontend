@@ -128,6 +128,32 @@ export const routes: Routes = [
     loadChildren: () => import('./features/crm/crm.routes').then((m) => m.CRM_ROUTES),
   },
   {
+    path: 'sales/corporate-conventions',
+    canActivate: [
+      authGuard,
+      menuEnabledGuard,
+      featureFlagGuard('corporate_conventions'),
+      moduleGuard('corporate_conventions'),
+    ],
+    data: {
+      breadcrumb: 'NAV.CORPORATE_CONVENTIONS',
+      title: 'PAGE_TITLE.CORPORATE_CONVENTIONS',
+    },
+    loadChildren: () =>
+      import('./features/corporate-conventions/corporate-conventions.routes').then(
+        (m) => m.CORPORATE_CONVENTIONS_ROUTES,
+      ),
+  },
+  {
+    // Public landing page of a convention (Mod 358): no auth guard, the slug selects the convention, no application shell.
+    path: 'convenzioni/:slug',
+    data: { publicPage: true, title: 'corporateConventions.landing.title' },
+    loadComponent: () =>
+      import('./features/corporate-conventions/convention-landing.component').then(
+        (m) => m.ConventionLandingComponent,
+      ),
+  },
+  {
     path: 'sales',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'BREADCRUMB.VENDITE_AND_FATTURAZIONE', title: 'PAGE_TITLE.VENDITE' },

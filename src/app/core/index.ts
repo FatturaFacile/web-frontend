@@ -139,6 +139,7 @@ export * from './api/statutory-financials-api.service';
 export * from './api/passenger-transport-api.service';
 export * from './api/customer-satisfaction-api.service';
 export * from './api/franchise-network-api.service';
+export * from './api/corporate-conventions-api.service';
 export * from './api/debt-collection-api.service';
 export * from './api/electronic-signature-api.service';
 export * from './api/tender-management-api.service';
