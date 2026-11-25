@@ -16,6 +16,7 @@ import { NzSwitchModule } from 'ng-zorro-antd/switch';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { EditorLine, LineSelectionMode, QuoteLineType } from './cpq-quotes.models';
 import { isPriced } from './cpq-quotes.utils';
+import { SendForSignatureButtonComponent } from '../e-signature/send-for-signature-button.component';
 import { QuoteEditorStore } from './quote-editor.store';
 
 /**
@@ -28,6 +29,7 @@ import { QuoteEditorStore } from './quote-editor.store';
   selector: 'app-quote-editor',
   providers: [QuoteEditorStore],
   imports: [
+    SendForSignatureButtonComponent,
     RadioControlDirective,
     CdkDrag,
     CdkDragHandle,
@@ -96,6 +98,18 @@ import { QuoteEditorStore } from './quote-editor.store';
                 >
                   {{ 'CPQ_QUOTES.APPROVE_AND_ISSUE' | translate }}
                 </button>
+              }
+              @if (store.quote(); as signable) {
+                @if (signable.status === 'sent' || signable.status === 'viewed' || signable.status === 'negotiating') {
+                  <app-send-for-signature-button
+                    signableType="quote"
+                    [signableId]="signable.id"
+                    [label]="signable.quote_number"
+                    [amount]="signable.totals.gross"
+                    [currency]="signable.currency"
+                    [disabled]="store.dirty()"
+                  ></app-send-for-signature-button>
+                }
               }
               <nz-switch
                 [ngModel]="usePin()"

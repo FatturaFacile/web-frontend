@@ -19,6 +19,7 @@ import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   AuthStore,
+  SignatureRequestService,
   DmsAiSettingsResource,
   DmsApiService,
   DmsApprovalTemplateResource,
@@ -112,6 +113,7 @@ export class DmsComponent implements OnInit {
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly dmsApi = inject(DmsApiService);
   private readonly message = inject(NzMessageService);
+  private readonly signatures = inject(SignatureRequestService);
   protected readonly authStore = inject(AuthStore);
 
   // Active tab index (0: Documents, 1: Folders, 2: Retention, 3: AI & Tags)
@@ -602,6 +604,16 @@ export class DmsComponent implements OnInit {
 
   protected showOcrText(job: DmsOcrJobResource): void {
     this.ocrTextJob.set(this.ocrTextJob()?.id === job.id ? null : job);
+  }
+
+  protected sendForSignature(doc: DmsDocumentResource): void {
+    this.signatures.open({
+      signableType: 'document',
+      signableId: doc.id,
+      label: doc.title,
+      amount: null,
+      currency: null,
+    });
   }
 
   protected openApprovalModal(doc: DmsDocumentResource): void {

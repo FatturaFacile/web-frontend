@@ -122,6 +122,10 @@ export interface ResourceAction {
   printLabel?: boolean;
   /** Academy product tour anchor: rendered as `data-tour` on the action button. */
   tour?: string;
+  /** Opens the send-for-signature wizard for the row instead of calling the API (`path` is then ignored). */
+  signable?: 'quote' | 'purchase_order' | 'employment_contract' | 'document';
+  /** Row fields that name the document and carry its gross amount and currency, for the wizard. */
+  signableFields?: { label?: string; amount?: string; currency?: string };
 }
 
 export interface ResourceListConfig {
