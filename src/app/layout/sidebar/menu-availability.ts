@@ -221,6 +221,8 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/agent-commissions/statements',
   '/agent-commissions/exports',
   '/agent-commissions/settings',
+  '/signatures',
+  '/signatures/settings',
   '/marketing-automation',
   '/marketing-automation/dashboard',
   '/marketing-automation/segments',

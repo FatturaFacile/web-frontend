@@ -17,6 +17,7 @@ import { ContextualHelpDrawerComponent } from './features/academy/contextual-hel
 import { ToastHostComponent } from '@shared/ui/toast/toast-host.component';
 import { GlobalSearchComponent } from '@shared/components/global-search/global-search.component';
 import { CopilotDrawerComponent } from '@features/copilot/copilot-drawer.component';
+import { SignatureRequestHostComponent } from './features/e-signature/signature-request-host.component';
 // Only used inside a @defer block of the template: the compiler moves it into a lazy chunk.
 import { TwoFactorSetupModalComponent } from './features/auth/components/two-factor-setup-modal/two-factor-setup-modal.component';
 
@@ -48,6 +49,7 @@ function isPublicPage(root: ActivatedRouteSnapshot): boolean {
     ToastHostComponent,
     SpotlightTourOverlayComponent,
     ContextualHelpDrawerComponent,
+    SignatureRequestHostComponent,
     TranslatePipe,
   ],
   templateUrl: './app.component.html',

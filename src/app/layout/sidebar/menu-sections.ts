@@ -1128,6 +1128,25 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         module: 'intrastat',
       },
       {
+        key: 'NAV.SIGNATURES',
+        icon: 'fa-solid fa-file-signature',
+        module: 'electronic_signature',
+        children: [
+          {
+            key: 'NAV.SIGNATURES_CENTER',
+            route: '/signatures',
+            icon: 'fa-solid fa-signature',
+            module: 'electronic_signature',
+          },
+          {
+            key: 'NAV.SIGNATURES_SETTINGS',
+            route: '/signatures/settings',
+            icon: 'fa-solid fa-sliders',
+            module: 'electronic_signature_configure',
+          },
+        ],
+      },
+      {
         key: 'NAV.DOCUMENT_TRUST',
         icon: 'fa-solid fa-shield-halved',
         route: '/document-trust',

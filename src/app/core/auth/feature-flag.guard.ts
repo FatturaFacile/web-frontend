@@ -54,6 +54,7 @@ export const PREMATURE_OPEN_ISSUE_MODULES: Readonly<
   leave_management: { issue: 174, routePrefix: '/leave-management' },
   agent_commissions: { issue: 338, routePrefix: '/agent-commissions' },
   marketing_automation: { issue: 401, routePrefix: '/marketing-automation' },
+  electronic_signature: { issue: 211, routePrefix: '/signatures' },
 };
 
 /**

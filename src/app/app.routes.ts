@@ -599,6 +599,18 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'signatures',
+    canActivate: [
+      authGuard,
+      menuEnabledGuard,
+      featureFlagGuard('electronic_signature'),
+      moduleGuard('electronic_signature'),
+    ],
+    data: { breadcrumb: 'NAV.SIGNATURES', title: 'PAGE_TITLE.SIGNATURES_CENTER' },
+    loadChildren: () =>
+      import('./features/e-signature/e-signature.routes').then((m) => m.E_SIGNATURE_ROUTES),
+  },
+  {
     path: 'marketing-automation',
     canActivate: [
       authGuard,
@@ -1010,6 +1022,22 @@ export const routes: Routes = [
       import('./features/proposal-portal/proposal-portal.component').then(
         (m) => m.ProposalPortalComponent,
       ),
+  },
+  {
+    // Public signer portal (electronic signatures): no auth guard, the unguessable token is the credential, no shell.
+    path: 'sign/:token',
+    data: { publicPage: true, title: 'PAGE_TITLE.SIGNATURES_PORTAL' },
+    loadComponent: () =>
+      import('./features/e-signature/public-signing.component').then(
+        (m) => m.PublicSigningComponent,
+      ),
+  },
+  {
+    // Public verification of a signed document: anybody holding the file or its code may check it.
+    path: 'verify-signature',
+    data: { publicPage: true, title: 'PAGE_TITLE.SIGNATURES_VERIFY' },
+    loadComponent: () =>
+      import('./features/e-signature/public-verify.component').then((m) => m.PublicVerifyComponent),
   },
   {
     // Public careers portal (Recruiting & ATS): no auth guard, embeddable.
