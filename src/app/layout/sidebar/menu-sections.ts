@@ -1317,6 +1317,31 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         ],
       },
       {
+        key: 'NAV.TENDER_MANAGEMENT',
+        icon: 'fa-solid fa-gavel',
+        module: 'tender_management',
+        children: [
+          {
+            key: 'NAV.TENDER_MANAGEMENT_PIPELINE',
+            route: '/tender-management',
+            icon: 'fa-solid fa-table-columns',
+            module: 'tender_management',
+          },
+          {
+            key: 'NAV.TENDER_MANAGEMENT_VAULT',
+            route: '/tender-management/vault',
+            icon: 'fa-solid fa-vault',
+            module: 'tender_management',
+          },
+          {
+            key: 'NAV.TENDER_MANAGEMENT_BENCHMARKS',
+            route: '/tender-management/benchmarks',
+            icon: 'fa-solid fa-chart-line',
+            module: 'tender_management',
+          },
+        ],
+      },
+      {
         key: 'NAV.TRAVEL',
         icon: 'fa-solid fa-plane-departure',
         route: '/travel',

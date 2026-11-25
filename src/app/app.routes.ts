@@ -657,6 +657,20 @@ export const routes: Routes = [
       import('./features/e-signature/e-signature.routes').then((m) => m.E_SIGNATURE_ROUTES),
   },
   {
+    path: 'tender-management',
+    canActivate: [
+      authGuard,
+      menuEnabledGuard,
+      featureFlagGuard('tender_management'),
+      moduleGuard('tender_management'),
+    ],
+    data: { breadcrumb: 'NAV.TENDER_MANAGEMENT', title: 'PAGE_TITLE.TENDER_MANAGEMENT_PIPELINE' },
+    loadChildren: () =>
+      import('./features/tender-management/tender-management.routes').then(
+        (m) => m.TENDER_MANAGEMENT_ROUTES,
+      ),
+  },
+  {
     path: 'marketing-automation',
     canActivate: [
       authGuard,
