@@ -206,3 +206,4 @@ export * from './api/liquidity-planning-api.service';
 export * from './api/intercompany-api.service';
 export * from './api/industrial-laundry-api.service';
 export * from './api/van-selling-api.service';
+export * from './api/sales-bounded-context-api.service';

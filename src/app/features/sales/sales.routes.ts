@@ -94,4 +94,15 @@ export const SALES_ROUTES: Routes = [
         (m) => m.RecurringContractsListComponent
       ),
   },
+  {
+    path: 'omnichannel-pipeline',
+    data: {
+      breadcrumb: 'BREADCRUMB.OMNICHANNEL_PIPELINE',
+      title: 'PAGE_TITLE.OMNICHANNEL_PIPELINE',
+    },
+    loadComponent: () =>
+      import('./omnichannel-cockpit/sales-bounded-context-cockpit.component').then(
+        (m) => m.SalesBoundedContextCockpitComponent
+      ),
+  },
 ];
