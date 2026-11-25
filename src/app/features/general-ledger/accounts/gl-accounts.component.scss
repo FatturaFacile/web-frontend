@@ -1,33 +1,135 @@
-:host {
-  display: block;
-}
-
-.toolbar {
+.coa-page {
   display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.coa-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
   flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-3);
-  margin-bottom: var(--space-4);
+  gap: 12px;
 }
 
-.spacer {
-  flex: 1;
+.coa-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
 }
 
-.search-input {
-  max-width: 260px;
+.coa-subtitle {
+  margin: 4px 0 0;
+  color: rgba(0, 0, 0, 0.55);
 }
 
-.type-filter {
+.coa-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.filter-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.filter-search {
+  min-width: 240px;
+  flex: 1 1 240px;
+}
+
+.filter-select {
   min-width: 180px;
 }
 
-.checks {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-5);
+.tree-split {
+  display: grid;
+  grid-template-columns: minmax(320px, 1fr) minmax(360px, 1.2fr);
+  gap: 16px;
+  align-items: start;
 }
 
-nz-alert {
-  margin-bottom: var(--space-3);
+.tree-pane {
+  max-height: 70vh;
+  overflow: auto;
+}
+
+.tree-node-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tree-node-selected {
+  font-weight: 600;
+}
+
+.tree-code {
+  font-family: monospace;
+  color: #1677ff;
+}
+
+.inspector-breadcrumbs {
+  margin-bottom: 12px;
+}
+
+.inspector-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.inspector-desc {
+  margin: 4px 0 0;
+  color: rgba(0, 0, 0, 0.65);
+}
+
+.inspector-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.inspector-alert,
+.modal-alert {
+  margin-bottom: 12px;
+}
+
+.mapping-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.table-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 16px;
+}
+
+.switches-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+@media (max-width: 960px) {
+  .tree-split,
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
 }

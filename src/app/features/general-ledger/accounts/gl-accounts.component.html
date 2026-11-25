@@ -1,165 +1,550 @@
-<nz-card>
-  <div class="toolbar">
-    <input
-      class="search-input"
-      nz-input
-      type="search"
-      [attr.aria-label]="'GL.SEARCH' | translate"
-      [placeholder]="'GL.SEARCH' | translate"
-      [(ngModel)]="search"
-      (ngModelChange)="onSearch()"
-    />
-    <nz-select
-      class="type-filter"
-      nzAllowClear
-      [attr.aria-label]="'GL.ACCOUNT_TYPE' | translate"
-      [nzPlaceHolder]="'GL.ACCOUNT_TYPE' | translate"
-      [(ngModel)]="typeFilter"
-      (ngModelChange)="load()"
-    >
-      @for (type of accountTypes; track type) {
-        <nz-option [nzValue]="type" [nzLabel]="'GL.ACCOUNT_TYPE_' + type.toUpperCase() | translate" />
-      }
-    </nz-select>
-    <span class="spacer"></span>
-    @if (canWrite && templates().length > 0) {
-      <nz-select
-        class="type-filter"
-        [attr.aria-label]="'GL.TEMPLATE_SELECT' | translate"
-        [nzPlaceHolder]="'GL.TEMPLATE_SELECT' | translate"
-        [(ngModel)]="selectedTemplate"
-      >
-        @for (template of templates(); track template.key) {
-          <nz-option [nzValue]="template.key" [nzLabel]="template.name + ' (' + template.accounts + ')'" />
-        }
-      </nz-select>
-      <button
-        nz-button
-        type="button"
-        nz-popconfirm
-        [nzPopconfirmTitle]="'GL.TEMPLATE_IMPORT_CONFIRM' | translate"
-        (nzOnConfirm)="importTemplate()"
-        [disabled]="!selectedTemplate || importing()"
-        [nzLoading]="importing()"
-      >
-        {{ 'GL.TEMPLATE_IMPORT' | translate }}
+<div class="coa-page">
+  <div class="coa-header">
+    <div>
+      <h2 class="coa-title">{{ copy('page_title', 'Chart of Accounts') }}</h2>
+      <p class="coa-subtitle">{{ copy('page_subtitle', 'Swiss KMU/Käfer & Italian Civil Code/OIC') }}</p>
+    </div>
+    <div class="coa-actions">
+      <button nz-button nzType="default" (click)="openProvisionModal()" [nzLoading]="store.provisioning()">
+        <span nz-icon nzType="thunderbolt"></span>
+        {{ copy('provision_button', 'Provision Template') }}
       </button>
-    }
-    @if (canWrite) {
-      <button nz-button nzType="primary" type="button" (click)="openModal(null)" appIconAction="create"></button>
-    }
+
+      <button nz-button nz-dropdown [nzDropdownMenu]="exportMenu" [nzLoading]="store.exporting()">
+        <span nz-icon nzType="download"></span>
+        Export
+        <span nz-icon nzType="down"></span>
+      </button>
+      <nz-dropdown-menu #exportMenu="nzDropdownMenu">
+        <ul nz-menu>
+          <li nz-menu-item>
+            <button type="button" nz-button nzType="text" (click)="exportAs('xlsx')">{{ copy('export_xlsx', 'Excel (.xlsx)') }}</button>
+          </li>
+          <li nz-menu-item>
+            <button type="button" nz-button nzType="text" (click)="exportAs('csv')">{{ copy('export_csv', 'CSV (.csv)') }}</button>
+          </li>
+          <li nz-menu-item>
+            <button type="button" nz-button nzType="text" (click)="exportAs('xml')">{{ copy('export_xml', 'XML (.xml)') }}</button>
+          </li>
+        </ul>
+      </nz-dropdown-menu>
+
+      <button nz-button nzType="primary" (click)="openCreate()">
+        <span nz-icon nzType="plus"></span>
+        {{ copy('new_account', 'New Account') }}
+      </button>
+    </div>
   </div>
 
-  @if (importResult(); as result) {
-    <nz-alert
-      class="import-result"
-      nzType="success"
-      nzShowIcon
-      nzCloseable
-      [nzMessage]="
-        ('GL.TEMPLATE_IMPORT_DONE' | translate) +
-        ': ' +
-        ('GL.TEMPLATE_CREATED' | translate) +
-        ' ' +
-        result.created +
-        ', ' +
-        ('GL.TEMPLATE_SKIPPED' | translate) +
-        ' ' +
-        result.skipped
-      "
-      (nzOnClose)="importResult.set(null)"
-    />
-  }
+  <nz-card class="coa-filters" [nzBordered]="true">
+    <div class="filter-row">
+      <input
+        nz-input
+        class="filter-search"
+        [ngModel]="store.searchFilter()"
+        (ngModelChange)="onSearchChange($event)"
+        [placeholder]="copy('search_placeholder', 'Search code / name')"
+      />
+      <nz-select
+        class="filter-select"
+        nzAllowClear
+        [ngModel]="store.templateFilter()"
+        (ngModelChange)="onTemplateFilterChange($event)"
+        nzPlaceHolder="Standard"
+      >
+        @for (tpl of store.templates(); track tpl.key) {
+          <nz-option [nzValue]="tpl.key" [nzLabel]="tpl.name"></nz-option>
+        }
+      </nz-select>
+      <nz-select
+        class="filter-select"
+        nzAllowClear
+        [ngModel]="store.typeFilter()"
+        (ngModelChange)="onTypeFilterChange($event)"
+        nzPlaceHolder="Type"
+      >
+        @for (t of accountTypeOptions; track t) {
+          <nz-option [nzValue]="t" [nzLabel]="t"></nz-option>
+        }
+      </nz-select>
+      <nz-select
+        class="filter-select"
+        nzAllowClear
+        [ngModel]="store.activeFilter()"
+        (ngModelChange)="onActiveFilterChange($event)"
+        nzPlaceHolder="Status"
+      >
+        <nz-option nzValue="true" nzLabel="Active"></nz-option>
+        <nz-option nzValue="false" nzLabel="Inactive"></nz-option>
+      </nz-select>
+    </div>
+  </nz-card>
 
-  <app-base-table [grid]="grid" [columns]="columns()" [actionsTemplate]="actionsTpl" [exportFileName]="'gl-accounts'" />
+  <nz-tabset [(nzSelectedIndex)]="activeTab">
+    <!-- Tab 1: Unlimited Hierarchy Tree + Inspector -->
+    <nz-tab [nzTitle]="copy('tab_tree', 'Hierarchy Tree')">
+      <div class="tree-split">
+        <nz-card class="tree-pane" [nzLoading]="store.treeLoading()">
+          @if (nzTreeNodes().length > 0) {
+            <nz-tree
+              [nzData]="nzTreeNodes()"
+              [nzShowLine]="true"
+              (nzClick)="onTreeNodeClick($event)"
+              [nzTreeTemplate]="treeNodeTpl"
+            ></nz-tree>
+            <ng-template #treeNodeTpl let-node>
+              <span class="tree-node-row" [class.tree-node-selected]="store.selectedNode()?.id === node.origin?.id">
+                <span class="tree-code">{{ node.origin?.account_code }}</span>
+                <span class="tree-name">{{ node.origin?.account_name }}</span>
+                @if (node.origin?.is_postable) {
+                  <nz-tag nzColor="green">Postable</nz-tag>
+                } @else {
+                  <nz-tag nzColor="blue">Group</nz-tag>
+                }
+                @if (!node.origin?.is_active) {
+                  <nz-tag nzColor="default">Inactive</nz-tag>
+                }
+              </span>
+            </ng-template>
+          } @else {
+            <nz-empty></nz-empty>
+          }
+        </nz-card>
 
-  <ng-template #codeTpl let-account>{{ account.account_code }}</ng-template>
-  <ng-template #typeTpl let-account>{{ 'GL.ACCOUNT_TYPE_' + account.account_type.toUpperCase() | translate }}</ng-template>
-  <ng-template #balanceTpl let-account>{{ 'GL.NORMAL_' + account.normal_balance.toUpperCase() | translate }}</ng-template>
-  <ng-template #statusTpl let-account>
-    <nz-tag [nzColor]="account.is_active ? 'green' : 'default'">{{ (account.is_active ? 'GL.ACTIVE' : 'GL.INACTIVE') | translate }}</nz-tag>
-  </ng-template>
-  <ng-template #actionsTpl let-account>
-    @if (canWrite) {
-      <button nz-button nzSize="small" type="button" (click)="openModal(account)" appIconAction="edit"></button>
-      <button
-        nz-button
+        <nz-card class="inspector-pane">
+          @if (store.selectedNode(); as node) {
+            @if (store.selectedBreadcrumbs().length > 0) {
+              <nz-breadcrumb class="inspector-breadcrumbs">
+                @for (bc of store.selectedBreadcrumbs(); track bc.id) {
+                  <nz-breadcrumb-item>{{ bc.account_code }} {{ bc.account_name }}</nz-breadcrumb-item>
+                }
+              </nz-breadcrumb>
+            }
+
+            <div class="inspector-header">
+              <div>
+                <h3>{{ node.account_code }} — {{ node.account_name }}</h3>
+                @if (node.description) {
+                  <p class="inspector-desc">{{ node.description }}</p>
+                }
+              </div>
+              <div class="inspector-actions">
+                <button nz-button nzSize="small" (click)="openEdit(node)">Edit</button>
+                <button nz-button nzSize="small" (click)="openCreate(node.id)">+ Sub-account</button>
+                <button nz-button nzSize="small" (click)="openMoveModal(node)">Move</button>
+                <button nz-button nzSize="small" (click)="openCreateMapping(node.id)">+ Mapping</button>
+                <button
+                  nz-button
+                  nzSize="small"
+                  nzDanger
+                  nz-popconfirm
+                  nzPopconfirmTitle="Delete this account?"
+                  (nzOnConfirm)="deleteAccount(node.id)"
+                  [disabled]="store.selectedHasPostings()"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+
+            @if (store.selectedHasPostings()) {
+              <nz-alert
+                nzType="info"
+                nzShowIcon
+                nzMessage="Historical postings present: deletion, code, type and normal balance are locked."
+                class="inspector-alert"
+              ></nz-alert>
+            }
+
+            <nz-descriptions nzBordered [nzColumn]="2" nzSize="small">
+              <nz-descriptions-item nzTitle="Type">{{ node.account_type }}</nz-descriptions-item>
+              <nz-descriptions-item nzTitle="Normal Balance">{{ node.normal_balance }}</nz-descriptions-item>
+              <nz-descriptions-item nzTitle="Level / Path">L{{ node.level }} ({{ node.hierarchy_path }})</nz-descriptions-item>
+              <nz-descriptions-item nzTitle="Standard / Statutory">{{ node.template_code || '-' }} / {{ node.statutory_code || '-' }}</nz-descriptions-item>
+              <nz-descriptions-item nzTitle="Default VAT Code">{{ node.vat_code || '-' }}</nz-descriptions-item>
+              <nz-descriptions-item nzTitle="Default Cost Center">{{ node.default_cost_center_code || '-' }}</nz-descriptions-item>
+              <nz-descriptions-item nzTitle="Open Items">{{ node.open_items_enabled ? 'Enabled' : 'Disabled' }}</nz-descriptions-item>
+              <nz-descriptions-item nzTitle="Allowed Currencies">
+                @for (cur of node.allowed_currencies; track cur) {
+                  <nz-tag>{{ cur }}</nz-tag>
+                }
+                @if (node.allowed_currencies.length === 0) {
+                  <span>All</span>
+                }
+              </nz-descriptions-item>
+            </nz-descriptions>
+          } @else {
+            <nz-empty nzNotFoundContent="Select an account in the tree to inspect properties and mappings"></nz-empty>
+          }
+        </nz-card>
+      </div>
+    </nz-tab>
+
+    <!-- Tab 2: Analytical Flat List -->
+    <nz-tab [nzTitle]="copy('tab_table', 'Analytical List')">
+      <nz-table
+        [nzData]="store.accounts()"
+        [nzLoading]="store.loading()"
+        [nzPageSize]="25"
         nzSize="small"
-        nzDanger
-        type="button"
-        nz-popconfirm
-        [nzPopconfirmTitle]="'GL.CONFIRM_DELETE' | translate"
-        (nzOnConfirm)="remove(account)"
-        appIconAction="delete"
-      ></button>
-    }
-  </ng-template>
-</nz-card>
+      >
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Side</th>
+            <th>Standard</th>
+            <th>Postable</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (acc of store.accounts(); track acc.id) {
+            <tr>
+              <td><code>{{ acc.account_code }}</code></td>
+              <td>{{ acc.account_name || acc.name }}</td>
+              <td>{{ acc.account_type }}</td>
+              <td><nz-tag [nzColor]="acc.normal_balance === 'debit' ? 'blue' : 'purple'">{{ acc.normal_balance }}</nz-tag></td>
+              <td>{{ $any(acc).template_code || '-' }}</td>
+              <td>
+                <nz-tag [nzColor]="acc.allows_manual_posting ? 'green' : 'default'">
+                  {{ acc.allows_manual_posting ? 'Postable' : 'Group' }}
+                </nz-tag>
+              </td>
+              <td>
+                <nz-tag [nzColor]="acc.is_active ? 'green' : 'red'">
+                  {{ acc.is_active ? 'Active' : 'Inactive' }}
+                </nz-tag>
+              </td>
+              <td class="table-actions">
+                <button type="button" nz-button nzType="link" nzSize="small" (click)="openEdit(acc)">Edit</button>
+                <button type="button" nz-button nzType="link" nzSize="small" nzDanger nz-popconfirm nzPopconfirmTitle="Delete?" (nzOnConfirm)="deleteAccount(acc.id)">Delete</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
 
-<nz-modal appModalActions
-  [nzVisible]="modalOpen()"
-  [nzTitle]="'GL.ACCOUNT_FORM' | translate"
-  [nzOkLoading]="saving()"
+    <!-- Tab 3: Multi-Standard Mapping Matrix & Tree -->
+    <nz-tab [nzTitle]="copy('tab_mappings', 'Mapping Matrix & Tree')">
+      <div class="mapping-toolbar">
+        <div class="filter-row">
+          <nz-select
+            class="filter-select"
+            nzAllowClear
+            [ngModel]="mappingSourceFilter()"
+            (ngModelChange)="mappingSourceFilter.set($event ?? ''); filterMappings()"
+            nzPlaceHolder="Source Standard"
+          >
+            @for (std of store.availableStandards(); track std) {
+              <nz-option [nzValue]="std" [nzLabel]="std"></nz-option>
+            }
+          </nz-select>
+          <nz-select
+            class="filter-select"
+            nzAllowClear
+            [ngModel]="mappingTargetFilter()"
+            (ngModelChange)="mappingTargetFilter.set($event ?? ''); filterMappings()"
+            nzPlaceHolder="Target Standard"
+          >
+            @for (std of store.availableStandards(); track std) {
+              <nz-option [nzValue]="std" [nzLabel]="std"></nz-option>
+            }
+          </nz-select>
+        </div>
+        <div class="coa-actions">
+          <button nz-button (click)="seedDefaultMappings()" [nzLoading]="store.provisioning()">
+            Seed Default KMU &lt;-&gt; OIC Mappings
+          </button>
+          <button nz-button nzType="primary" (click)="openCreateMapping()">
+            + New Mapping
+          </button>
+        </div>
+      </div>
+
+      <nz-table [nzData]="store.mappings()" [nzLoading]="store.mappingsLoading()" [nzPageSize]="25" nzSize="small">
+        <thead>
+          <tr>
+            <th>Source Standard</th>
+            <th>Source Account</th>
+            <th>Target Standard</th>
+            <th>Target Code &amp; Name</th>
+            <th>Type</th>
+            <th>Allocation</th>
+            <th>Direction</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (m of store.mappings(); track m.id) {
+            <tr>
+              <td><nz-tag>{{ m.source_standard }}</nz-tag></td>
+              <td><code>{{ m.source_account_code }}</code> {{ m.source_account_name }}</td>
+              <td><nz-tag nzColor="geekblue">{{ m.target_standard }}</nz-tag></td>
+              <td><code>{{ m.target_account_code }}</code> {{ m.target_account_name }}</td>
+              <td>{{ m.mapping_type }}</td>
+              <td>{{ m.allocation_percentage }}%</td>
+              <td>
+                <nz-tag [nzColor]="m.is_bidirectional ? 'cyan' : 'default'">
+                  {{ m.is_bidirectional ? 'Bidirectional' : 'One-way' }}
+                </nz-tag>
+              </td>
+              <td class="table-actions">
+                <button type="button" nz-button nzType="link" nzSize="small" (click)="openEditMapping(m)">Edit</button>
+                <button type="button" nz-button nzType="link" nzSize="small" nzDanger nz-popconfirm nzPopconfirmTitle="Delete mapping?" (nzOnConfirm)="deleteMapping(m.id)">Delete</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+  </nz-tabset>
+</div>
+
+<!-- Account Create/Edit Modal -->
+<nz-modal
+  [(nzVisible)]="accountModalOpen"
+  [nzTitle]="editingAccountId() ? 'Edit Account' : 'New Account'"
+  (nzOnCancel)="accountModalOpen.set(false)"
   (nzOnOk)="save()"
-  (nzOnCancel)="modalOpen.set(false)"
-  okAction="save"
+  [nzOkLoading]="store.saving()"
+  nzWidth="720px"
 >
   <ng-container *nzModalContent>
-    @for (message of formErrors(); track message) {
-      <nz-alert nzType="error" nzShowIcon [nzMessage]="message" />
+    @if (balanceCoherenceWarning()) {
+      <nz-alert
+        nzType="warning"
+        nzShowIcon
+        nzMessage="Normal balance differs from standard convention for this account type."
+        class="modal-alert"
+      ></nz-alert>
     }
-    <form nz-form nzLayout="vertical" [formGroup]="form">
+    <form nz-form [formGroup]="form" nzLayout="vertical">
+      <div class="form-grid">
+        <nz-form-item>
+          <nz-form-label nzRequired>Account Code</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="account_code" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzRequired>Name</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="name" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzRequired>Account Type</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="account_type">
+              @for (t of accountTypeOptions; track t) {
+                <nz-option [nzValue]="t" [nzLabel]="t"></nz-option>
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzRequired>Normal Balance</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="normal_balance">
+              <nz-option nzValue="debit" nzLabel="Debit (Dare)"></nz-option>
+              <nz-option nzValue="credit" nzLabel="Credit (Avere)"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label>Parent Account</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="parent_account_id" nzAllowClear nzShowSearch>
+              @for (acc of store.accounts(); track acc.id) {
+                <nz-option [nzValue]="acc.id" [nzLabel]="acc.account_code + ' — ' + (acc.account_name || acc.name)"></nz-option>
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label>Statutory Code</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="statutory_code" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label>Default VAT Code</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="vat_code_id" nzAllowClear nzShowSearch>
+              @for (v of store.vatCodes(); track v.id) {
+                <nz-option [nzValue]="v.id" [nzLabel]="v.code + (v.name ? ' — ' + v.name : '')"></nz-option>
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label>Default Cost Center</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="default_cost_center_id" nzAllowClear nzShowSearch>
+              @for (cc of store.costCenters(); track cc.id) {
+                <nz-option [nzValue]="cc.id" [nzLabel]="cc.code + ' — ' + cc.name"></nz-option>
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
       <nz-form-item>
-        <nz-form-label nzRequired nzFor="acc-code">{{ 'GL.COL_CODE' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="form.controls.account_code.errors?.['serverError'] ?? ('GL.REQUIRED' | translate)">
-          <input id="acc-code" nz-input formControlName="account_code" maxlength="50" />
-        </nz-form-control>
-      </nz-form-item>
-      <nz-form-item>
-        <nz-form-label nzRequired nzFor="acc-name">{{ 'GL.COL_NAME' | translate }}</nz-form-label>
-        <nz-form-control [nzErrorTip]="form.controls.name.errors?.['serverError'] ?? ('GL.REQUIRED' | translate)">
-          <input id="acc-name" nz-input formControlName="name" maxlength="255" />
-        </nz-form-control>
-      </nz-form-item>
-      <nz-form-item>
-        <nz-form-label nzRequired nzFor="acc-type">{{ 'GL.ACCOUNT_TYPE' | translate }}</nz-form-label>
+        <nz-form-label>Allowed Currencies</nz-form-label>
         <nz-form-control>
-          <nz-select id="acc-type" formControlName="account_type">
-            @for (type of accountTypes; track type) {
-              <nz-option [nzValue]="type" [nzLabel]="'GL.ACCOUNT_TYPE_' + type.toUpperCase() | translate" />
+          <nz-select formControlName="allowed_currencies" nzMode="tags">
+            @for (c of currencyOptions; track c) {
+              <nz-option [nzValue]="c" [nzLabel]="c"></nz-option>
             }
           </nz-select>
         </nz-form-control>
       </nz-form-item>
+
       <nz-form-item>
-        <nz-form-label nzRequired nzFor="acc-balance">{{ 'GL.NORMAL_BALANCE' | translate }}</nz-form-label>
+        <nz-form-label>Description</nz-form-label>
         <nz-form-control>
-          <nz-select id="acc-balance" formControlName="normal_balance">
-            <nz-option nzValue="debit" [nzLabel]="'GL.NORMAL_DEBIT' | translate" />
-            <nz-option nzValue="credit" [nzLabel]="'GL.NORMAL_CREDIT' | translate" />
-          </nz-select>
+          <textarea nz-input formControlName="description" rows="2"></textarea>
         </nz-form-control>
       </nz-form-item>
-      <nz-form-item>
-        <nz-form-label nzFor="acc-currency">{{ 'GL.FX_CURRENCY' | translate }}</nz-form-label>
-        <nz-form-control>
-          <input id="acc-currency" nz-input formControlName="currency" maxlength="3" />
-        </nz-form-control>
-      </nz-form-item>
-      <nz-form-item>
-        <nz-form-label nzFor="acc-reporting">{{ 'GL.REPORTING_CLASS' | translate }}</nz-form-label>
-        <nz-form-control>
-          <nz-select id="acc-reporting" formControlName="reporting_class" nzAllowClear>
-            @for (reportingClass of reportingClasses; track reportingClass) {
-              <nz-option [nzValue]="reportingClass" [nzLabel]="'GL.REPORTING_' + reportingClass.toUpperCase() | translate" />
-            }
-          </nz-select>
-        </nz-form-control>
-      </nz-form-item>
-      <div class="checks">
-        <label for="gl-accounts-allows-manual-posting" nzId="gl-accounts-allows-manual-posting" nz-checkbox formControlName="allows_manual_posting">{{ 'GL.ALLOWS_MANUAL_POSTING' | translate }}</label>
-        <label for="gl-accounts-is-cost-center-mandatory" nzId="gl-accounts-is-cost-center-mandatory" nz-checkbox formControlName="is_cost_center_mandatory">{{ 'GL.COST_CENTER_MANDATORY' | translate }}</label>
-        <label for="gl-accounts-is-active" nzId="gl-accounts-is-active" nz-checkbox formControlName="is_active">{{ 'GL.ACTIVE' | translate }}</label>
+
+      <div class="switches-row">
+        <span nz-checkbox formControlName="is_postable">Postable (Operational)</span>
+        <span nz-checkbox formControlName="open_items_enabled">Open Item Management</span>
+        <span nz-checkbox formControlName="is_active">Active</span>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- Move Parent Modal -->
+<nz-modal
+  [(nzVisible)]="moveModalOpen"
+  nzTitle="Move Account in Hierarchy"
+  (nzOnCancel)="moveModalOpen.set(false)"
+  (nzOnOk)="confirmMove()"
+  [nzOkLoading]="store.saving()"
+>
+  <ng-container *nzModalContent>
+    <nz-select
+      style="width: 100%"
+      nzAllowClear
+      nzShowSearch
+      [ngModel]="moveTargetParentId()"
+      (ngModelChange)="moveTargetParentId.set($event)"
+      nzPlaceHolder="Root (Top-level)"
+    >
+      @for (acc of store.accounts(); track acc.id) {
+        @if (acc.id !== movingAccount()?.id) {
+          <nz-option [nzValue]="acc.id" [nzLabel]="acc.account_code + ' — ' + (acc.account_name || acc.name)"></nz-option>
+        }
+      }
+    </nz-select>
+  </ng-container>
+</nz-modal>
+
+<!-- 1-Click Template Provisioning Modal -->
+<nz-modal
+  [(nzVisible)]="provisionModalOpen"
+  [nzTitle]="copy('provision_title', '1-Click Template Provisioning')"
+  (nzOnCancel)="provisionModalOpen.set(false)"
+  (nzOnOk)="confirmProvision()"
+  [nzOkLoading]="store.provisioning()"
+>
+  <ng-container *nzModalContent>
+    <nz-select
+      style="width: 100%; margin-bottom: 12px"
+      [ngModel]="selectedTemplateKey()"
+      (ngModelChange)="selectedTemplateKey.set($event)"
+    >
+      @for (tpl of store.templates(); track tpl.key) {
+        <nz-option [nzValue]="tpl.key" [nzLabel]="tpl.name + ' (' + tpl.country + ' / ' + tpl.currency + ')'"></nz-option>
+      }
+    </nz-select>
+    <span nz-checkbox [ngModel]="includeDefaultMappings()" (ngModelChange)="includeDefaultMappings.set($event)">
+      {{ copy('include_mappings_label', 'Include default KMU <-> OIC mappings') }}
+    </span>
+  </ng-container>
+</nz-modal>
+
+<!-- Mapping Create/Edit Modal -->
+<nz-modal
+  [(nzVisible)]="mappingModalOpen"
+  [nzTitle]="editingMappingId() ? 'Edit Mapping' : 'New Cross-Standard Mapping'"
+  (nzOnCancel)="mappingModalOpen.set(false)"
+  (nzOnOk)="saveMapping()"
+  [nzOkLoading]="store.saving()"
+  nzWidth="640px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="mappingForm" nzLayout="vertical">
+      <div class="form-grid">
+        <nz-form-item>
+          <nz-form-label nzRequired>Source Account</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="source_account_id" nzShowSearch>
+              @for (acc of store.accounts(); track acc.id) {
+                <nz-option [nzValue]="acc.id" [nzLabel]="acc.account_code + ' — ' + (acc.account_name || acc.name)"></nz-option>
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzRequired>Target Standard</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="target_standard">
+              @for (std of store.availableStandards(); track std) {
+                <nz-option [nzValue]="std" [nzLabel]="std"></nz-option>
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label>Internal Target Account (Optional)</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="target_account_id" nzAllowClear nzShowSearch (ngModelChange)="onTargetAccountPicked($event)">
+              @for (acc of store.accounts(); track acc.id) {
+                <nz-option [nzValue]="acc.id" [nzLabel]="acc.account_code + ' — ' + (acc.account_name || acc.name)"></nz-option>
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzRequired>Target Account Code</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="target_account_code" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzRequired>Target Account Name</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="target_account_name" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label>Mapping Type</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="mapping_type">
+              <nz-option nzValue="direct" nzLabel="Direct"></nz-option>
+              <nz-option nzValue="split" nzLabel="Split"></nz-option>
+              <nz-option nzValue="aggregation" nzLabel="Aggregation"></nz-option>
+              <nz-option nzValue="reclassification" nzLabel="Reclassification"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label>Allocation %</nz-form-label>
+          <nz-form-control>
+            <nz-input-number formControlName="allocation_percentage" [nzMin]="0.01" [nzMax]="100" style="width: 100%"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <div class="switches-row">
+        <span nz-checkbox formControlName="is_bidirectional">Bidirectional</span>
+        <span nz-checkbox formControlName="is_active">Active</span>
       </div>
     </form>
   </ng-container>
