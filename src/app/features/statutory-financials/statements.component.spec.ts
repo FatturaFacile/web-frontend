@@ -112,7 +112,8 @@ describe('StatementsComponent', () => {
     const text = (fixture.nativeElement as HTMLElement).textContent as string;
 
     expect(text).toContain('statutoryFinancials.section.hiddenReserves');
-    expect(text).toContain("1'052.50");
+    // The fixture is rounded to whole francs (quadrature scale 0), so the FER equity shows without cents.
+    expect(text).toContain("1'053");
     expect(text).toContain('statutoryFinancials.hidden.required');
   });
 

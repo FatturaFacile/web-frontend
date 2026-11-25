@@ -33,7 +33,7 @@ describe('PreviewComponent', () => {
 
   it('shows the taxonomy element of each row in monospace next to the amounts', async () => {
     const root = await render();
-    const row = root.querySelector('tbody tr') as HTMLElement;
+    const row = root.querySelector('tbody tr.ant-table-row') as HTMLElement;
 
     expect(row.querySelector('.mono')?.textContent).toBe('itcc-ci:TotaleAttivo');
     expect(row.textContent).toContain('Totale attivo');

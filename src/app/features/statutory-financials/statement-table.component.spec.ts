@@ -45,7 +45,7 @@ describe('StatementTableComponent', () => {
 
   it('indents the lines by level and bolds the totals', () => {
     const root = render();
-    const rows = Array.from(root.querySelectorAll('tbody tr'));
+    const rows = Array.from(root.querySelectorAll('tbody tr.ant-table-row'));
 
     expect(rows).toHaveLength(3);
     const labelOf = (row: Element) => row.querySelector('.line-label') as HTMLElement;
@@ -57,7 +57,7 @@ describe('StatementTableComponent', () => {
 
   it('highlights the rounding lines with a tag', () => {
     const root = render();
-    const rows = Array.from(root.querySelectorAll('tbody tr'));
+    const rows = Array.from(root.querySelectorAll('tbody tr.ant-table-row'));
 
     expect(rows[2]?.classList.contains('rounding-row')).toBe(true);
     expect(rows[2]?.textContent).toContain('statutoryFinancials.statement.roundingTag');
@@ -66,7 +66,7 @@ describe('StatementTableComponent', () => {
 
   it('shows the current and comparative columns formatted for Italy', () => {
     const root = render({ jurisdiction: 'IT', scale: 2 });
-    const first = root.querySelector('tbody tr') as HTMLElement;
+    const first = root.querySelector('tbody tr.ant-table-row') as HTMLElement;
 
     expect(root.querySelectorAll('thead th')).toHaveLength(3);
     expect(first.textContent).toContain('1.234.567,50');
@@ -97,7 +97,7 @@ describe('StatementTableComponent', () => {
     (root.querySelector('button.toggle') as HTMLButtonElement).click();
     fixture.detectChanges();
 
-    expect(root.querySelectorAll('tbody tr')).toHaveLength(1);
+    expect(root.querySelectorAll('tbody tr.ant-table-row')).toHaveLength(1);
     expect(root.querySelector('button.toggle')?.getAttribute('aria-expanded')).toBe('false');
   });
 });

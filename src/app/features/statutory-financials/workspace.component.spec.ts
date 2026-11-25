@@ -27,6 +27,8 @@ describe('WorkspaceComponent', () => {
     api['getDossier']?.mockReturnValue(of(wrap(dossier('d-1', { status, ...extra }))));
     const fixture = TestBed.createComponent(WorkspaceComponent);
     fixture.detectChanges();
+    // The store loads with promises, which whenStable does not track: wait until the dossier is in.
+    await vi.waitFor(() => expect(TestBed.inject(WorkspaceStore).dossier()).not.toBeNull());
     await fixture.whenStable();
     fixture.detectChanges();
     return fixture;
