@@ -613,6 +613,20 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'debt-collection',
+    canActivate: [
+      authGuard,
+      menuEnabledGuard,
+      featureFlagGuard('debt_collection'),
+      moduleGuard('debt_collection'),
+    ],
+    data: { breadcrumb: 'debtCollection.nav.title', title: 'debtCollection.title' },
+    loadChildren: () =>
+      import('./features/debt-collection/debt-collection.routes').then(
+        (m) => m.DEBT_COLLECTION_ROUTES,
+      ),
+  },
+  {
     path: 'marketing-automation',
     canActivate: [
       authGuard,

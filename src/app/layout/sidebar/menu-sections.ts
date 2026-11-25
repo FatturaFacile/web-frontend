@@ -1666,6 +1666,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         ],
       },
       {
+        key: 'debtCollection.nav.title',
+        icon: 'fa-solid fa-bell',
+        route: '/debt-collection',
+        module: 'debt_collection',
+      },
+      {
         key: 'NAV.PAYABLES',
         icon: 'fa-solid fa-file-invoice-dollar',
         module: 'payables',

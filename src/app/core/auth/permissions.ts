@@ -249,6 +249,16 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
       write: ['agent_commissions.write', 'agent_commissions.settle', 'agent_commissions.*'],
     },
   },
+  // Dunning and debt collection (Mod 014): finance and sales managers read the proposals and the notices; sending, the
+  // legal escalation (Betreibung dossier, messa in mora) and the settings are write abilities.
+  debt_collection: {
+    read: [...FINANCE_READERS, 'sales_manager'],
+    write: FINANCE,
+    grants: {
+      read: ['debt_collection.read', 'debt_collection.write', 'debt_collection.escalate', 'debt_collection.*'],
+      write: ['debt_collection.write', 'debt_collection.escalate', 'debt_collection.*'],
+    },
+  },
   agent_commissions_settle: {
     read: FINANCE,
     write: FINANCE,

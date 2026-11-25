@@ -147,3 +147,4 @@ export * from './expense-management.model';
 export * from './receivables.model';
 export * from './leave-management.model';
 export * from './marketing-automation.model';
+export * from './debt-collection.model';
