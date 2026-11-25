@@ -102,6 +102,15 @@ export interface MesPhase {
     completed_quantity: string;
     scrapped_quantity: string;
   };
+  engineering_drawing?: {
+    revision_id: string;
+    revision_code: string;
+    lifecycle_state: string;
+    is_obsolete: boolean;
+    obsolete_watermark: boolean;
+    watermark_label: string | null;
+    technical_file_ref: string | null;
+  } | null;
   open_interval: MesOpenInterval | null;
   times: MesTimes;
   declared: { good_quantity: string; scrap_quantity: string };

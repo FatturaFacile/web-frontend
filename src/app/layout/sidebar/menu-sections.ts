@@ -1874,6 +1874,24 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             icon: 'fa-solid fa-layer-group',
             module: 'plm',
           },
+          {
+            key: 'NAV.PLM_CAD_IMPORT',
+            route: '/plm/cad-import',
+            icon: 'fa-solid fa-cubes',
+            module: 'plm',
+          },
+          {
+            key: 'NAV.PLM_BOM_DIFF',
+            route: '/plm/bom-diff',
+            icon: 'fa-solid fa-code-compare',
+            module: 'plm',
+          },
+          {
+            key: 'NAV.PLM_WHERE_USED',
+            route: '/plm/where-used',
+            icon: 'fa-solid fa-sitemap',
+            module: 'plm',
+          },
         ],
       },
       {

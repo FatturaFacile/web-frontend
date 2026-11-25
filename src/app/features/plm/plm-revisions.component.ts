@@ -3,6 +3,7 @@ import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } 
 import { RouterLink } from '@angular/router';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
+import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -13,11 +14,21 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { catchError, of } from 'rxjs';
-import { PLM_REVISION_STATUSES, PlmApiService, PlmItemRevision, PlmOption, PlmRevisionStatus, TranslateService } from '@core';
+import {
+  PLM_REVISION_STATUSES,
+  PlmApiService,
+  PlmItemRevision,
+  PlmOption,
+  PlmRevisionStatus,
+  PlmViewerManifest,
+  TranslateService,
+} from '@core';
 import { IconActionDirective, ModalActionsDirective, PageHeaderComponent, TranslatePipe } from '@shared';
+import { PlmCadViewerComponent } from './plm-cad-viewer.component';
+import { PlmCompliancePanelComponent } from './plm-compliance-panel.component';
 import { apiErrorText, blankToNull, REVISION_STATUS_COLORS } from './plm.util';
 
-/** Revisions of the manufacturing items: the first one is released directly, later ones through a change order. */
+/** Revisions of manufacturing items with 3D STEP/STL & PDF viewer and CE/UKCA/OMacch compliance dossier. */
 @Component({
   selector: 'app-plm-revisions',
   styleUrl: './plm.scss',
@@ -29,8 +40,11 @@ import { apiErrorText, blankToNull, REVISION_STATUS_COLORS } from './plm.util';
     ModalActionsDirective,
     PageHeaderComponent,
     TranslatePipe,
+    PlmCadViewerComponent,
+    PlmCompliancePanelComponent,
     NzButtonModule,
     NzCardModule,
+    NzDrawerModule,
     NzEmptyModule,
     NzFormModule,
     NzInputModule,
@@ -73,11 +87,16 @@ import { apiErrorText, blankToNull, REVISION_STATUS_COLORS } from './plm.util';
               <td>{{ row.revision }}</td>
               <td>
                 <nz-tag [nzColor]="statusColor(row.status)">{{ ('PLM.REV_' + row.status.toUpperCase()) | translate }}</nz-tag>
+                @if (row.mes_drawing_obsolete_watermark) {
+                  <nz-tag nzColor="red">{{ 'PLM.WATERMARK_OBSOLETE' | translate }}</nz-tag>
+                }
               </td>
               <td>{{ row.change_summary }}</td>
               <td>{{ row.effective_from ?? '' }}</td>
               <td>
                 <div class="row-actions">
+                  <button nz-button nzType="text" type="button" (click)="openViewer(row)">{{ 'PLM.VIEWER_3D_TAB' | translate }}</button>
+                  <button nz-button nzType="text" type="button" (click)="openCompliance(row)">{{ 'PLM.COMPLIANCE_TITLE' | translate }}</button>
                   @if (row.status === 'draft') {
                     <button nz-button nzType="text" appIconAction="edit" (click)="openModal(row)"></button>
                     <button nz-button nzType="text" (click)="release(row)">{{ 'PLM.RELEASE' | translate }}</button>
@@ -129,6 +148,20 @@ import { apiErrorText, blankToNull, REVISION_STATUS_COLORS } from './plm.util';
         </form>
       </ng-container>
     </nz-modal>
+
+    <nz-drawer [nzVisible]="viewerManifest() !== null" [nzWidth]="760" [nzTitle]="'PLM.VIEWER_TITLE' | translate" (nzOnClose)="viewerManifest.set(null)">
+      <ng-container *nzDrawerContent>
+        <app-plm-cad-viewer [manifest]="viewerManifest()"></app-plm-cad-viewer>
+      </ng-container>
+    </nz-drawer>
+
+    <nz-drawer [nzVisible]="complianceRevisionId() !== null" [nzWidth]="720" [nzTitle]="'PLM.COMPLIANCE_TITLE' | translate" (nzOnClose)="complianceRevisionId.set(null)">
+      <ng-container *nzDrawerContent>
+        @if (complianceRevisionId(); as revId) {
+          <app-plm-compliance-panel [revisionId]="revId"></app-plm-compliance-panel>
+        }
+      </ng-container>
+    </nz-drawer>
   `,
 })
 export class PlmRevisionsComponent implements OnInit {
@@ -144,6 +177,8 @@ export class PlmRevisionsComponent implements OnInit {
   readonly modalVisible = signal(false);
   readonly editing = signal<PlmItemRevision | null>(null);
   readonly statusFilter = signal<PlmRevisionStatus | null>(null);
+  readonly viewerManifest = signal<PlmViewerManifest | null>(null);
+  readonly complianceRevisionId = signal<string | null>(null);
 
   readonly form = this.fb.group({
     mfg_item_id: ['', [Validators.required]],
@@ -182,6 +217,17 @@ export class PlmRevisionsComponent implements OnInit {
     this.editing.set(revision);
     this.form.reset({ mfg_item_id: revision?.mfg_item_id ?? '', revision: revision?.revision ?? '', effective_from: revision?.effective_from ?? '', change_summary: revision?.change_summary ?? '' });
     this.modalVisible.set(true);
+  }
+
+  openViewer(revision: PlmItemRevision): void {
+    this.api.getViewerManifest(revision.id).subscribe({
+      next: (res) => this.viewerManifest.set(res.data),
+      error: (err: unknown) => this.fail(err),
+    });
+  }
+
+  openCompliance(revision: PlmItemRevision): void {
+    this.complianceRevisionId.set(revision.id);
   }
 
   save(): void {

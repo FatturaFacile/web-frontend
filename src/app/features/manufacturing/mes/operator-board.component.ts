@@ -320,6 +320,17 @@ const STATUS_COLORS: Record<MesPhaseStatus, string> = {
                 ></nz-statistic>
               </div>
 
+              @if (phase.engineering_drawing; as drawing) {
+                <nz-alert
+                  data-testid="mes-engineering-drawing"
+                  [nzType]="drawing.is_obsolete ? 'error' : 'info'"
+                  nzShowIcon
+                  [nzMessage]="drawing.is_obsolete ? ('PLM.WATERMARK_OBSOLETE' | translate) : ('PLM.MES_DRAWING_TITLE' | translate)"
+                  [nzDescription]="(drawing.is_obsolete ? ('PLM.WATERMARK_WARNING' | translate) + ' — ' : '') + 'Rev. ' + drawing.revision_code + (drawing.technical_file_ref ? ' · ' + drawing.technical_file_ref : '')"
+                  style="margin-bottom: 16px"
+                ></nz-alert>
+              }
+
               <div class="actions" role="toolbar" [attr.aria-label]="'MFG_MES.ACTIONS' | translate">
                 <button
                   nz-button
