@@ -90,6 +90,15 @@ export const PROCUREMENT_ORDERS_PAGE: ResourcePageConfig = {
           visible: whenIn('status', 'pending_approval'),
         }),
         act('POST', 'RES.A.send_order', '/procurement/purchase-orders/{id}/send', { confirm: true, visible: whenIn('status', 'approved') }),
+        {
+          key: 'send_for_signature',
+          labelKey: 'signatures.action.sendForSignature',
+          method: 'POST',
+          path: '/signatures',
+          signable: 'purchase_order',
+          signableFields: { label: 'po_number', amount: 'total_amount', currency: 'currency' },
+          visible: whenIn('status', 'approved', 'sent', 'confirmed'),
+        },
         act('POST', 'RES.A.goods_receipt', '/procurement/purchase-orders/{orderId}/goods-receipt', {
           fields: RECEIPT_FIELDS,
           showResult: true,

@@ -145,6 +145,7 @@ export * from './gap-views.model';
 export * from './payables.model';
 export * from './agent-commissions.model';
 export * from './expense-management.model';
+export * from './electronic-signature.model';
 export * from './receivables.model';
 export * from './leave-management.model';
 export * from './marketing-automation.model';

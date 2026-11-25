@@ -1,7 +1,13 @@
 import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { PermissionsService, ResourceApiService, ResourceRow, unwrapResponse } from '@core';
+import {
+  PermissionsService,
+  ResourceApiService,
+  ResourceRow,
+  SignatureRequestService,
+  unwrapResponse,
+} from '@core';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzIconModule } from 'ng-zorro-antd/icon';
@@ -64,6 +70,7 @@ export class ResourcePanelComponent implements OnInit {
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);
   private readonly permissions = inject(PermissionsService);
+  private readonly signatures = inject(SignatureRequestService);
   protected readonly labels = inject(ResourceLabelsService);
 
   readonly config = input.required<ResourcePanelConfig>();
@@ -205,6 +212,10 @@ export class ResourcePanelComponent implements OnInit {
   }
 
   protected run(action: ResourceAction, row: ResourceRow | null = null): void {
+    if (action.signable && row) {
+      this.requestSignature(action, row);
+      return;
+    }
     if (action.fields && action.fields.length > 0) {
       this.form.set({ action, row: row ?? (action.prefill ? this.reportRecord() : null) });
       return;
@@ -221,6 +232,21 @@ export class ResourcePanelComponent implements OnInit {
       return;
     }
     execute();
+  }
+
+  private requestSignature(action: ResourceAction, row: ResourceRow): void {
+    const fields = action.signableFields ?? {};
+    const text = (key: string | undefined): string | null => {
+      const value = key ? getByPath(row, key) : null;
+      return typeof value === 'string' || typeof value === 'number' ? String(value) : null;
+    };
+    this.signatures.open({
+      signableType: action.signable!,
+      signableId: String(row['id']),
+      label: text(fields.label),
+      amount: text(fields.amount),
+      currency: text(fields.currency),
+    });
   }
 
   private reportRecord(): ResourceRow | null {

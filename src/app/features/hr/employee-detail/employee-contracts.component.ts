@@ -1,5 +1,10 @@
 import { Component, computed, inject, input, signal } from '@angular/core';
-import { EmploymentContractResource, HrEmployeeApiService, PermissionsService } from '@core';
+import {
+  EmploymentContractResource,
+  HrEmployeeApiService,
+  PermissionsService,
+  SignatureRequestService,
+} from '@core';
 import { ModalActionsDirective, TranslatePipe } from '@shared';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzModalModule } from 'ng-zorro-antd/modal';
@@ -40,6 +45,7 @@ export class EmployeeContractsComponent {
 
   private readonly api = inject(HrEmployeeApiService);
   private readonly permissions = inject(PermissionsService);
+  private readonly signatures = inject(SignatureRequestService);
 
   protected readonly componentsOf = signal<EmploymentContractResource | null>(null);
   private readonly canWrite = computed(() => this.permissions.canWrite('hr'));
@@ -53,7 +59,10 @@ export class EmployeeContractsComponent {
       create: (payload) => this.api.createContract(employeeId, payload as never),
       update: (id, payload) => this.api.updateContract(id, payload as never),
       isReadonly: (row) => row['is_active'] !== true,
-      rowActions: [{ labelKey: 'hrmEmp.salaryComponents', run: (row) => this.componentsOf.set(row as never) }],
+      rowActions: [
+        { labelKey: 'hrmEmp.salaryComponents', run: (row) => this.componentsOf.set(row as never) },
+        { labelKey: 'signatures.action.sendForSignature', run: (row) => this.sendForSignature(row) },
+      ],
       fields: [
         { key: 'contract_number', labelKey: 'hrmEmp.contractNumber', type: 'text', createOnly: true, maxLength: 60 },
         {
@@ -120,4 +129,16 @@ export class EmployeeContractsComponent {
       ],
     };
   });
+
+  /** Opens the signature wizard for a contract; employment contracts need a qualified signature by default. */
+  private sendForSignature(row: Row): void {
+    const number = row['contract_number'];
+    this.signatures.open({
+      signableType: 'employment_contract',
+      signableId: row.id,
+      label: typeof number === 'string' ? number : null,
+      amount: null,
+      currency: null,
+    });
+  }
 }

@@ -115,6 +115,34 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
     read: ANY_MEMBER,
     write: ['owner', 'admin', 'sales', 'sales_manager'],
   },
+  // Electronic signatures (FES / FEA / FEQ): every member follows and starts the signature of a document they can see;
+  // the provider credentials and the compliance rules are the `configure` ability of owners and administrators.
+  electronic_signature: {
+    read: ANY_MEMBER,
+    write: [
+      'owner',
+      'admin',
+      'accountant',
+      'sales',
+      'sales_manager',
+      'purchasing',
+      'procurement_manager',
+      'hr',
+      'member',
+    ],
+    grants: {
+      read: ['electronic_signature.read', 'electronic_signature.write', 'electronic_signature.*'],
+      write: ['electronic_signature.write', 'electronic_signature.*'],
+    },
+  },
+  electronic_signature_configure: {
+    read: MANAGERS,
+    write: MANAGERS,
+    grants: {
+      read: ['electronic_signature.configure', 'electronic_signature.*'],
+      write: ['electronic_signature.configure', 'electronic_signature.*'],
+    },
+  },
   payroll: {
     read: MANAGERS,
     write: MANAGERS,

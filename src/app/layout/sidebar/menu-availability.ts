@@ -226,6 +226,8 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/expense-management/workbench',
   '/expense-management/cards',
   '/expense-management/violations',
+  '/signatures',
+  '/signatures/settings',
   '/marketing-automation',
   '/marketing-automation/dashboard',
   '/marketing-automation/segments',
