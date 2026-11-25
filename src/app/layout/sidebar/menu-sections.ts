@@ -1618,6 +1618,31 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         ],
       },
       {
+        key: 'NAV.CORPORATE_CONVENTIONS',
+        icon: 'fa-solid fa-handshake',
+        module: 'corporate_conventions',
+        children: [
+          {
+            key: 'NAV.CORPORATE_CONVENTIONS_DASHBOARD',
+            route: '/sales/corporate-conventions/dashboard',
+            icon: 'fa-solid fa-chart-line',
+            module: 'corporate_conventions',
+          },
+          {
+            key: 'NAV.CORPORATE_CONVENTIONS_LIST',
+            route: '/sales/corporate-conventions',
+            icon: 'fa-solid fa-building-user',
+            module: 'corporate_conventions',
+          },
+          {
+            key: 'NAV.CORPORATE_CONVENTIONS_BILLING',
+            route: '/sales/corporate-conventions/billing-reconciliation',
+            icon: 'fa-solid fa-file-invoice-dollar',
+            module: 'corporate_conventions',
+          },
+        ],
+      },
+      {
         key: 'NAV.TRAVEL',
         icon: 'fa-solid fa-plane-departure',
         route: '/travel',

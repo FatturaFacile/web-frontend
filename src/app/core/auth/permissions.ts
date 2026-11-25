@@ -381,6 +381,30 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
       write: ['franchise_network.portal', 'franchise_network.*'],
     },
   },
+  // Corporate conventions (Mod 358): finance and sales roles read and write the conventions, the till and the welfare vouchers.
+  // Invoicing the employer quota and settling welfare vouchers is the `bill` ability, the API reserves it to finance (a member can
+  // be granted corporate_conventions.bill).
+  corporate_conventions: {
+    read: [...FINANCE_READERS, 'sales', 'sales_manager'],
+    write: [...FINANCE, 'sales', 'sales_manager'],
+    grants: {
+      read: [
+        'corporate_conventions.read',
+        'corporate_conventions.write',
+        'corporate_conventions.bill',
+        'corporate_conventions.*',
+      ],
+      write: ['corporate_conventions.write', 'corporate_conventions.bill', 'corporate_conventions.*'],
+    },
+  },
+  corporate_conventions_finance: {
+    read: FINANCE_READERS,
+    write: FINANCE,
+    grants: {
+      read: ['corporate_conventions.bill', 'corporate_conventions.*'],
+      write: ['corporate_conventions.bill', 'corporate_conventions.*'],
+    },
+  },
   configurator: {
     read: ANY_MEMBER,
     write: ['owner', 'admin', 'accountant', 'sales', 'sales_manager'],
