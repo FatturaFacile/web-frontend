@@ -424,6 +424,15 @@ export const routes: Routes = [
       import('./features/configurator/configurator.routes').then((m) => m.CONFIGURATOR_ROUTES),
   },
   {
+    path: 'cpq-configurator',
+    canActivate: [authGuard, menuEnabledGuard, moduleGuard('cpq_configurator')],
+    data: { breadcrumb: 'CPQ_CONFIGURATOR.NAV', title: 'CPQ_CONFIGURATOR.TITLE' },
+    loadChildren: () =>
+      import('./features/cpq-configurator/cpq-configurator.routes').then(
+        (m) => m.CPQ_CONFIGURATOR_ROUTES,
+      ),
+  },
+  {
     path: 'privacy-governance',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'PRIVACY.NAV.TITLE', title: 'PRIVACY.NAV.TITLE' },
