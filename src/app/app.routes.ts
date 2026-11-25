@@ -707,6 +707,23 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'franchise-network',
+    canActivate: [
+      authGuard,
+      menuEnabledGuard,
+      featureFlagGuard('franchise_network'),
+      moduleGuard('franchise_network'),
+    ],
+    data: {
+      breadcrumb: 'NAV.FRANCHISE_NETWORK',
+      title: 'PAGE_TITLE.FRANCHISE_NETWORK_COMMAND',
+    },
+    loadChildren: () =>
+      import('./features/franchise-network/franchise-network.routes').then(
+        (m) => m.FRANCHISE_NETWORK_ROUTES,
+      ),
+  },
+  {
     path: 'signatures',
     canActivate: [
       authGuard,

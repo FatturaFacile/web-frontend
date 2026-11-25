@@ -312,6 +312,53 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
       write: ['passenger_transport.bill', 'passenger_transport.*'],
     },
   },
+  // Franchise network governance (Mod 244): every member reads; the franchise director governs the network (agreements, formulas,
+  // pushes, billing), the area manager runs the store audits, the franchisee owner and manager use the portal of their own store.
+  franchise_network: {
+    read: ANY_MEMBER,
+    write: [...FINANCE, 'franchise_director', 'area_manager', 'franchisee_owner', 'franchisee_manager'],
+    grants: {
+      read: [
+        'franchise_network.read',
+        'franchise_network.write',
+        'franchise_network.manage',
+        'franchise_network.audit',
+        'franchise_network.portal',
+        'franchise_network.*',
+      ],
+      write: [
+        'franchise_network.write',
+        'franchise_network.manage',
+        'franchise_network.audit',
+        'franchise_network.portal',
+        'franchise_network.*',
+      ],
+    },
+  },
+  franchise_network_manage: {
+    read: ['owner', 'admin', 'franchise_director'],
+    write: ['owner', 'admin', 'franchise_director'],
+    grants: {
+      read: ['franchise_network.manage', 'franchise_network.*'],
+      write: ['franchise_network.manage', 'franchise_network.*'],
+    },
+  },
+  franchise_network_audit: {
+    read: ['owner', 'admin', 'franchise_director', 'area_manager'],
+    write: ['owner', 'admin', 'franchise_director', 'area_manager'],
+    grants: {
+      read: ['franchise_network.audit', 'franchise_network.manage', 'franchise_network.*'],
+      write: ['franchise_network.audit', 'franchise_network.manage', 'franchise_network.*'],
+    },
+  },
+  franchise_network_portal: {
+    read: ANY_MEMBER,
+    write: ['owner', 'admin', 'franchisee_owner', 'franchisee_manager'],
+    grants: {
+      read: ['franchise_network.portal', 'franchise_network.*'],
+      write: ['franchise_network.portal', 'franchise_network.*'],
+    },
+  },
   configurator: {
     read: ANY_MEMBER,
     write: ['owner', 'admin', 'accountant', 'sales', 'sales_manager'],

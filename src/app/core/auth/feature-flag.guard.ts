@@ -63,6 +63,7 @@ export const PREMATURE_OPEN_ISSUE_MODULES: Readonly<
   industrial_laundry: { issue: 423, routePrefix: '/industrial-laundry' },
   statutory_financials: { issue: 413, routePrefix: '/statutory-financials' },
   passenger_transport: { issue: 422, routePrefix: '/passenger-transport' },
+  franchise_network: { issue: 490, routePrefix: '/franchise-network' },
 };
 
 /**

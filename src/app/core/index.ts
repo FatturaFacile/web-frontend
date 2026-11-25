@@ -137,6 +137,7 @@ export * from './api/expense-management-api.service';
 export * from './api/gdo-trade-terms-api.service';
 export * from './api/statutory-financials-api.service';
 export * from './api/passenger-transport-api.service';
+export * from './api/franchise-network-api.service';
 export * from './api/debt-collection-api.service';
 export * from './api/electronic-signature-api.service';
 export * from './api/tender-management-api.service';
