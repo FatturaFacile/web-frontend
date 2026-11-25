@@ -707,6 +707,21 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'van-selling',
+    canActivate: [
+      authGuard,
+      menuEnabledGuard,
+      featureFlagGuard('van_sales_and_field_force'),
+      moduleGuard('van_sales_and_field_force'),
+    ],
+    data: {
+      breadcrumb: 'NAV.VAN_SELLING',
+      title: 'PAGE_TITLE.VAN_SELLING',
+    },
+    loadChildren: () =>
+      import('./features/van-selling/van-selling.routes').then((m) => m.VAN_SELLING_ROUTES),
+  },
+  {
     path: 'signatures',
     canActivate: [
       authGuard,

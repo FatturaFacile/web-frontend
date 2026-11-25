@@ -401,6 +401,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             icon: 'fa-solid fa-warehouse',
             permission: LOGISTICS_PERMISSIONS.view,
           },
+          {
+            key: 'NAV.VAN_SELLING',
+            route: '/van-selling',
+            icon: 'fa-solid fa-truck-fast',
+            module: 'van_sales_and_field_force',
+          },
         ],
       },
       {
