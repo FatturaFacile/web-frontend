@@ -9,6 +9,7 @@ import {
   ExmApprovePayload,
   ExmBalance,
   ExmCardAccount,
+  ExmCardImportPayload,
   ExmCardFilters,
   ExmCardTransaction,
   ExmEnvelope,
@@ -29,7 +30,7 @@ import {
   ExmReportDetail,
   ExmReportFilters,
   ExmReportPayload,
-  ExmReportTotals,
+  ExmTotalsResult,
   ExmViolationFilters,
   ExmViolationRow,
 } from '../models';
@@ -72,28 +73,23 @@ export class ExpenseManagementApiService {
 
   // --- Lines, mileage, per diem ---
 
-  addLine(reportId: string, payload: ExmLinePayload): Envelope<ExmLineResult> {
-    return this.http.post<ExmEnvelope<ExmLineResult>>(
-      `${this.base}/reports/${reportId}/lines`,
-      payload,
-    );
+  addLine(reportId: string, payload: ExmLinePayload): Observable<ExmLineResult> {
+    return this.http.post<ExmLineResult>(`${this.base}/reports/${reportId}/lines`, payload);
   }
 
-  updateLine(reportId: string, lineId: string, payload: ExmLinePayload): Envelope<ExmLineResult> {
-    return this.http.put<ExmEnvelope<ExmLineResult>>(
+  updateLine(reportId: string, lineId: string, payload: ExmLinePayload): Observable<ExmLineResult> {
+    return this.http.put<ExmLineResult>(
       `${this.base}/reports/${reportId}/lines/${lineId}`,
       payload,
     );
   }
 
-  removeLine(reportId: string, lineId: string): Envelope<{ report_totals: ExmReportTotals }> {
-    return this.http.delete<ExmEnvelope<{ report_totals: ExmReportTotals }>>(
-      `${this.base}/reports/${reportId}/lines/${lineId}`,
-    );
+  removeLine(reportId: string, lineId: string): Observable<ExmTotalsResult> {
+    return this.http.delete<ExmTotalsResult>(`${this.base}/reports/${reportId}/lines/${lineId}`);
   }
 
-  addMileageClaim(reportId: string, payload: ExmMileagePayload): Envelope<ExmLineResult> {
-    return this.http.post<ExmEnvelope<ExmLineResult>>(
+  addMileageClaim(reportId: string, payload: ExmMileagePayload): Observable<ExmLineResult> {
+    return this.http.post<ExmLineResult>(
       `${this.base}/reports/${reportId}/mileage-claims`,
       payload,
     );
@@ -151,6 +147,10 @@ export class ExpenseManagementApiService {
     );
   }
 
+  startReview(id: string): Envelope<ExmReport> {
+    return this.http.post<ExmEnvelope<ExmReport>>(`${this.base}/reports/${id}/start-review`, {});
+  }
+
   cancel(id: string): Envelope<ExmReport> {
     return this.http.post<ExmEnvelope<ExmReport>>(`${this.base}/reports/${id}/cancel`, {});
   }
@@ -195,6 +195,13 @@ export class ExpenseManagementApiService {
 
   listCardAccounts(): Envelope<ExmCardAccount[]> {
     return this.http.get<ExmEnvelope<ExmCardAccount[]>>(`${this.base}/card-accounts`);
+  }
+
+  importCardTransactions(payload: ExmCardImportPayload): Envelope<ExmCardTransaction[]> {
+    return this.http.post<ExmEnvelope<ExmCardTransaction[]>>(
+      `${this.base}/card-transactions/import`,
+      payload,
+    );
   }
 
   listCardTransactions(filters: ExmCardFilters = {}): Observable<ExmPage<ExmCardTransaction>> {

@@ -38,6 +38,7 @@ describe('ReportDetailStore', () => {
       exportPayout: vi.fn(() => of(wrap({}))),
       confirmReimbursement: vi.fn(() => of(wrap({}))),
       cancel: vi.fn(() => of(wrap({}))),
+      startReview: vi.fn(() => of(wrap(report('1', { status: 'under_review' })))),
       downloadPayout: vi.fn(() => of(new Blob(['<xml/>']))),
     };
     TestBed.configureTestingModule({
@@ -107,6 +108,7 @@ describe('ReportDetailStore', () => {
     await store.reject('No receipt');
     await store.exportPayout('pain001', '2028-02-01');
     await store.confirmReimbursement();
+    await store.startReview();
     await store.cancel();
 
     expect(api['submit']).toHaveBeenCalledWith('1');
@@ -117,6 +119,7 @@ describe('ReportDetailStore', () => {
       execution_date: '2028-02-01',
     });
     expect(api['confirmReimbursement']).toHaveBeenCalledWith('1');
+    expect(api['startReview']).toHaveBeenCalledWith('1');
     expect(api['cancel']).toHaveBeenCalledWith('1');
   });
 

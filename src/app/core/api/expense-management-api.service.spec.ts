@@ -121,3 +121,31 @@ describe('ExpenseManagementApiService', () => {
       .flush({ success: true, message: 'ok', data: {} });
   });
 });
+
+describe('ExpenseManagementApiService review and import', () => {
+  const base = `${environment.apiBaseUrl}/expense-management`;
+
+  it('starts the review and imports a card statement', () => {
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting(), ExpenseManagementApiService],
+    });
+    const service = TestBed.inject(ExpenseManagementApiService);
+    const http = TestBed.inject(HttpTestingController);
+
+    service.startReview('r-1').subscribe();
+    http
+      .expectOne(`${base}/reports/r-1/start-review`)
+      .flush({ success: true, message: 'ok', data: {} });
+
+    service
+      .importCardTransactions({
+        card_account_id: 'c-1',
+        transactions: [{ merchant_name: 'Hotel', transaction_date: '2028-01-10', amount: '10.00' }],
+      })
+      .subscribe();
+    const request = http.expectOne(`${base}/card-transactions/import`);
+    expect(request.request.body.card_account_id).toBe('c-1');
+    request.flush({ success: true, message: 'ok', data: [] });
+    http.verify();
+  });
+});

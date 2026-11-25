@@ -120,6 +120,16 @@ type Dialog = 'approve' | 'reject' | 'payout' | null;
                 {{ 'expenseManagement.action.submit' | translate }}
               </button>
             }
+            @if (store.canStartReview()) {
+              <button
+                nz-button
+                type="button"
+                [disabled]="store.busy()"
+                (click)="run(store.startReview(), 'reviewStarted')"
+              >
+                {{ 'expenseManagement.action.startReview' | translate }}
+              </button>
+            }
             @if (store.canDecide()) {
               <button
                 nz-button

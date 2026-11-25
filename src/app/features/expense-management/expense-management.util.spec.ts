@@ -5,6 +5,7 @@ import {
   canConfirmReimbursement,
   canDecide,
   canExport,
+  canStartReview,
   canSubmit,
   currentMonth,
   defaultCalculationSource,
@@ -13,6 +14,7 @@ import {
   fiscalNotices,
   isEditable,
   isPositive,
+  parseCardCsv,
   problemOf,
   reconciliationColor,
   severityColor,
@@ -124,5 +126,48 @@ describe('expense management util', () => {
 
     expect(start.endsWith('-01')).toBe(true);
     expect(end >= start).toBe(true);
+  });
+});
+
+describe('card statement import', () => {
+  it('reads the rows of a CSV with a comma or a semicolon', () => {
+    const comma = parseCardCsv(
+      'external_id,merchant_name,transaction_date,amount,currency\nA1,Hotel,2028-01-10,120.50,EUR\n',
+    );
+    expect(comma).toEqual([
+      {
+        external_id: 'A1',
+        merchant_name: 'Hotel',
+        transaction_date: '2028-01-10',
+        posting_date: null,
+        amount: '120.50',
+        currency: 'EUR',
+      },
+    ]);
+
+    const semicolon = parseCardCsv(
+      'merchant_name;transaction_date;amount\n"Taxi";2028-01-11;"15,40"',
+    );
+    expect(semicolon[0].amount).toBe('15.40');
+    expect(semicolon[0].external_id).toBeNull();
+  });
+
+  it('skips the rows without a merchant, a date or a valid amount', () => {
+    const rows = parseCardCsv(
+      'merchant_name,transaction_date,amount\n,2028-01-10,10\nBar,,10\nBar,2028-01-10,abc\nBar,2028-01-10,5',
+    );
+
+    expect(rows).toHaveLength(1);
+    expect(parseCardCsv('merchant_name')).toEqual([]);
+  });
+
+  it('lets an approver start the review of a submitted report only', () => {
+    const approver = { approve: true, update: false, submit: false, settle: false };
+
+    expect(canStartReview(report('1', { status: 'submitted', abilities: approver }))).toBe(true);
+    expect(canStartReview(report('1', { status: 'under_review', abilities: approver }))).toBe(
+      false,
+    );
+    expect(canStartReview(report('1', { status: 'submitted' }))).toBe(false);
   });
 });
