@@ -10,29 +10,47 @@ export const PURCHASES_ROUTES: Routes = [
   {
     path: 'sdi-inbox',
     data: { breadcrumb: 'BREADCRUMB.CICLO_PASSIVO_SDI', title: 'PAGE_TITLE.CICLO_PASSIVO_SDI' },
-    loadComponent: () =>
-      import('./purchases.component').then((m) => m.PurchasesComponent),
+    loadComponent: () => import('./purchases.component').then((m) => m.PurchasesComponent),
   },
   {
     path: 'sdi-documents',
     data: { breadcrumb: 'NAV.SDI_INBOX_DOCUMENTS', title: 'NAV.SDI_INBOX_DOCUMENTS' },
-    loadComponent: () => import('../sdi-cockpit/sdi-inbox.component').then((m) => m.SdiInboxComponent),
+    loadComponent: () =>
+      import('../sdi-cockpit/sdi-inbox.component').then((m) => m.SdiInboxComponent),
   },
   {
     path: 'qr-scanner',
-    data: { breadcrumb: 'BREADCRUMB.SCANNER_QR_AND_PAIN_001', title: 'PAGE_TITLE.SCANNER_QR_PAIN_001' },
-    loadComponent: () =>
-      import('./purchases.component').then((m) => m.PurchasesComponent),
+    data: {
+      breadcrumb: 'BREADCRUMB.SCANNER_QR_AND_PAIN_001',
+      title: 'PAGE_TITLE.SCANNER_QR_PAIN_001',
+    },
+    loadComponent: () => import('./purchases.component').then((m) => m.PurchasesComponent),
   },
   {
     path: 'orders',
-    data: { breadcrumb: 'BREADCRUMB.ORDINI_DI_ACQUISTO', title: 'PAGE_TITLE.ORDINI_DI_ACQUISTO', page: PURCHASE_ORDERS_PAGE },
+    data: {
+      breadcrumb: 'BREADCRUMB.ORDINI_DI_ACQUISTO',
+      title: 'PAGE_TITLE.ORDINI_DI_ACQUISTO',
+      page: PURCHASE_ORDERS_PAGE,
+    },
     loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
   },
   {
     path: 'invoices',
-    data: { breadcrumb: 'BREADCRUMB.FATTURE_FORNITORI', title: 'PAGE_TITLE.FATTURE_FORNITORI', page: PURCHASE_INVOICES_PAGE },
+    data: {
+      breadcrumb: 'BREADCRUMB.FATTURE_FORNITORI',
+      title: 'PAGE_TITLE.FATTURE_FORNITORI',
+      page: PURCHASE_INVOICES_PAGE,
+    },
     loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
+  },
+  {
+    path: 'invoices/:id',
+    data: { breadcrumb: 'srm.invoice.title', title: 'srm.invoice.title' },
+    loadComponent: () =>
+      import('./invoice-detail/supplier-invoice-detail-page.component').then(
+        (m) => m.SupplierInvoiceDetailPageComponent,
+      ),
   },
   {
     path: 'expenses',

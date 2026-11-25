@@ -1,7 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { DocumentFlow, SrmDashboard, SupplierRating } from '@domain/procurement/srm.models';
+import { DocumentFlow, SrmDashboard, SupplierRatingPage } from '@domain/procurement/srm.models';
 import { environment } from '@env';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { TEST_API_BASE_URL } from '../../../testing/api';
@@ -48,13 +48,41 @@ describe('SrmApiService', () => {
     req.flush({ data: {} });
   });
 
-  it('loads the ranking and defaults to an empty list', () => {
-    let ratings: SupplierRating[] | undefined;
-    api.scorecards().subscribe((r) => (ratings = r));
+  it('loads one server-side page of the ranking with filters, sort and page', () => {
+    let page: SupplierRatingPage | undefined;
+    api
+      .scorecards({
+        search: 'alfa',
+        tier: 'A',
+        sort: 'on_time_delivery_rate',
+        direction: 'asc',
+        page: 2,
+        per_page: 10,
+      })
+      .subscribe((p) => (page = p));
 
-    http.expectOne((r) => r.url === `${base}/srm/scorecards`).flush({ data: null });
+    const req = http.expectOne((r) => r.url === `${base}/srm/scorecards`);
+    expect(req.request.params.get('search')).toBe('alfa');
+    expect(req.request.params.get('tier')).toBe('A');
+    expect(req.request.params.get('sort')).toBe('on_time_delivery_rate');
+    expect(req.request.params.get('direction')).toBe('asc');
+    expect(req.request.params.get('page')).toBe('2');
+    expect(req.request.params.get('per_page')).toBe('10');
+    req.flush({ data: [{ supplier_id: 's-1' }], meta: { current_page: 2, total: 11 } });
 
-    expect(ratings).toEqual([]);
+    expect(page?.data).toHaveLength(1);
+    expect(page?.meta.total).toBe(11);
+  });
+
+  it('defaults a missing ranking page to an empty list', () => {
+    let page: SupplierRatingPage | undefined;
+    api.scorecards().subscribe((p) => (page = p));
+
+    http
+      .expectOne((r) => r.url === `${base}/srm/scorecards`)
+      .flush({ data: null, meta: { total: 0 } });
+
+    expect(page?.data).toEqual([]);
   });
 
   it('loads the composite scorecard of one supplier', () => {

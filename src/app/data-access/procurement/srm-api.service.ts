@@ -7,7 +7,9 @@ import {
   DocumentFlowEntryType,
   SrmDashboard,
   SrmPeriod,
+  SrmScorecardQuery,
   SupplierRating,
+  SupplierRatingPage,
 } from '@domain/procurement/srm.models';
 import { environment } from '@env';
 import { map, Observable } from 'rxjs';
@@ -26,12 +28,13 @@ export class SrmApiService {
       .pipe(map((res) => res.data));
   }
 
-  scorecards(period: SrmPeriod = {}): Observable<SupplierRating[]> {
+  /** One server-side page of the ranking; filtering, sorting and paging happen in the API. */
+  scorecards(query: SrmScorecardQuery = {}): Observable<SupplierRatingPage> {
     return this.http
-      .get<ApiResponse<SupplierRating[]>>(`${this.base}/srm/scorecards`, {
-        params: toHttpParams({ ...period }),
+      .get<SupplierRatingPage>(`${this.base}/srm/scorecards`, {
+        params: toHttpParams({ ...query }),
       })
-      .pipe(map((res) => res.data ?? []));
+      .pipe(map((res) => ({ data: res.data ?? [], meta: res.meta })));
   }
 
   supplierScorecard(supplierId: string, period: SrmPeriod = {}): Observable<SupplierRating> {

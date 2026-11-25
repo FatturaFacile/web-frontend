@@ -243,9 +243,6 @@ export class DocumentFlowPanelComponent {
   }
 
   protected link(node: DocumentFlowNode): string[] | null {
-    if (node.type === 'supplier_invoice') {
-      return node.run_id ? ['/procurement/invoice-matching', node.run_id] : ['/purchases/invoices'];
-    }
     return documentLink(node);
   }
 

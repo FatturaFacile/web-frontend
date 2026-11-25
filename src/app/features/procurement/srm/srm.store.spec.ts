@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { SrmApiService } from '@data-access/procurement/srm-api.service';
-import { DocumentFlow, SrmDashboard, SupplierRating } from '@domain/procurement/srm.models';
+import { DocumentFlow, SrmDashboard, SupplierRatingPage } from '@domain/procurement/srm.models';
 import { of, throwError } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 import { SrmStore } from './srm.store';
@@ -36,13 +36,24 @@ describe('SrmStore', () => {
     expect(store.loading()).toBe(false);
   });
 
-  it('keeps the scorecard ranking', () => {
-    const ranking = [{ supplier_id: 's-1', tier: 'A' }] as SupplierRating[];
-    const store = setup({ scorecards: vi.fn(() => of(ranking)) });
+  it('keeps the scorecard page and its meta', () => {
+    const page = {
+      data: [{ supplier_id: 's-1', tier: 'A' }],
+      meta: { current_page: 1, per_page: 20, total: 1, last_page: 1, from: 1, to: 1 },
+    } as SupplierRatingPage;
+    const scorecards = vi.fn(() => of(page));
+    const store = setup({ scorecards });
 
-    store.loadScorecards();
+    store.loadScorecards({ page: 1, per_page: 20, sort: 'name', direction: 'asc' });
 
-    expect(store.scorecards()).toEqual(ranking);
+    expect(scorecards).toHaveBeenCalledWith({
+      page: 1,
+      per_page: 20,
+      sort: 'name',
+      direction: 'asc',
+    });
+    expect(store.scorecards()).toEqual(page.data);
+    expect(store.scorecardsMeta()?.total).toBe(1);
   });
 
   it('replaces the previous document flow and reloads with the requested document', () => {

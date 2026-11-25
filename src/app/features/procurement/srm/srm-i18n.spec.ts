@@ -11,10 +11,16 @@ import {
   SEEDED_LANGUAGES,
   seededDictionaries,
 } from '../../../../testing/seeded-dictionaries';
+import {
+  APPROVAL_STATUSES,
+  KNOWN_DOCUMENT_TYPES,
+  PAYMENT_STATUSES,
+} from '../../purchases/invoice-detail/supplier-invoice-detail.helpers';
 import { KNOWN_FLOW_STATUSES } from './srm.helpers';
 
 const FEATURE_DIR = __dirname;
 const PROCUREMENT_DIR = join(__dirname, '..');
+const INVOICE_DETAIL_DIR = join(__dirname, '..', '..', 'purchases', 'invoice-detail');
 const MENU_FILE = join(__dirname, '..', '..', '..', 'layout', 'sidebar', 'menu-sections.ts');
 
 const QUALIFICATION_STATUSES = [
@@ -51,6 +57,9 @@ function dynamicKeys(): string[] {
     ...KNOWN_FLOW_STATUSES.map((status) => `srm.flow.status.${status}`),
     ...QUALIFICATION_STATUSES.map((status) => `srm.qualification.${status}`),
     ...INVOICE_MATCH_STATUSES.map((status) => `invoiceMatching.status.${status}`),
+    ...PAYMENT_STATUSES.map((status) => `srm.invoice.payment.${status}`),
+    ...APPROVAL_STATUSES.map((status) => `srm.invoice.approval.${status}`),
+    ...KNOWN_DOCUMENT_TYPES.map((code) => `srm.invoice.documentType.${code}`),
   ];
 }
 
@@ -60,9 +69,11 @@ function collectedKeys(): string[] {
   const pattern = /srm\.[A-Za-z0-9_.]+|(?:NAV|PAGE_TITLE)\.PROCUREMENT_SRM[A-Z_]*/g;
 
   const files = [
-    ...readdirSync(FEATURE_DIR)
-      .filter((file) => file.endsWith('.ts') && !file.endsWith('.spec.ts'))
-      .map((file) => join(FEATURE_DIR, file)),
+    ...[FEATURE_DIR, INVOICE_DETAIL_DIR].flatMap((dir) =>
+      readdirSync(dir)
+        .filter((file) => file.endsWith('.ts') && !file.endsWith('.spec.ts'))
+        .map((file) => join(dir, file)),
+    ),
     join(PROCUREMENT_DIR, 'procurement.routes.ts'),
     MENU_FILE,
   ];
@@ -88,6 +99,8 @@ describe('Purchasing and SRM translations', () => {
     expect(keys).toContain('srm.flow.relation.matched_by');
     expect(keys).toContain('srm.flow.status.blocked_discrepancy');
     expect(keys).toContain('srm.component.rfq_responsiveness_rate');
+    expect(keys).toContain('srm.invoice.field.withholding');
+    expect(keys).toContain('srm.invoice.documentType.TD04');
     expect(keys.length).toBeGreaterThan(100);
   });
 
