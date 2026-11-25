@@ -1,6 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import {
   ExmCalculationSource,
+  ExmCardImportRow,
   ExmDecimal,
   ExmJurisdiction,
   ExmProblem,
@@ -137,6 +138,11 @@ export function canDecide(report: Pick<ExmReport, 'status' | 'abilities'>): bool
   );
 }
 
+/** An approver takes a submitted report into review before deciding. */
+export function canStartReview(report: Pick<ExmReport, 'status' | 'abilities'>): boolean {
+  return report.abilities.approve && report.status === 'submitted';
+}
+
 export function canExport(report: Pick<ExmReport, 'status' | 'abilities'>): boolean {
   return report.abilities.settle && report.status === 'approved';
 }
@@ -207,4 +213,61 @@ export function currentMonth(): { start: string; end: string } {
   const start = new Date(Date.UTC(now.getFullYear(), now.getMonth(), 1));
   const end = new Date(Date.UTC(now.getFullYear(), now.getMonth() + 1, 0));
   return { start: start.toISOString().slice(0, 10), end: end.toISOString().slice(0, 10) };
+}
+
+// --- Card statement import ---
+
+const CARD_CSV_COLUMNS = [
+  'external_id',
+  'merchant_name',
+  'transaction_date',
+  'posting_date',
+  'amount',
+  'currency',
+] as const;
+
+/**
+ * Reads the lines of a card statement from CSV text. The first line is the header with the column names
+ * (`external_id`, `merchant_name`, `transaction_date`, `posting_date`, `amount`, `currency`); the separator is a comma
+ * or a semicolon. Rows without a merchant, a date or an amount are skipped.
+ */
+export function parseCardCsv(text: string): ExmCardImportRow[] {
+  const lines = text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line !== '');
+  if (lines.length < 2) {
+    return [];
+  }
+  const separator = lines[0].includes(';') ? ';' : ',';
+  const header = lines[0].split(separator).map((name) => name.trim().toLowerCase());
+  const rows: ExmCardImportRow[] = [];
+
+  for (const line of lines.slice(1)) {
+    const cells = line.split(separator).map((cell) => cell.trim().replace(/^"|"$/g, ''));
+    const row: Record<string, string> = {};
+    for (const column of CARD_CSV_COLUMNS) {
+      const index = header.indexOf(column);
+      row[column] = index >= 0 ? (cells[index] ?? '') : '';
+    }
+    const amount = row['amount'].replace(',', '.');
+    if (
+      !row['merchant_name'] ||
+      !row['transaction_date'] ||
+      !Number.isFinite(Number(amount)) ||
+      amount === ''
+    ) {
+      continue;
+    }
+    rows.push({
+      external_id: row['external_id'] || null,
+      merchant_name: row['merchant_name'],
+      transaction_date: row['transaction_date'],
+      posting_date: row['posting_date'] || null,
+      amount,
+      currency: row['currency'] || null,
+    });
+  }
+
+  return rows;
 }

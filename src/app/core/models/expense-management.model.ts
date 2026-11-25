@@ -76,6 +76,8 @@ export const EXM_ERROR_CODES = [
   'period_invalid',
   'category_not_found',
   'amount_exceeds_transaction',
+  'debtor_account_missing',
+  'approved_amount_exceeds',
 ] as const;
 
 /** Expense category codes (`expenseManagement.category.<code>`). */
@@ -101,6 +103,9 @@ export const EXM_AUDIT_ACTIONS = [
   'mileage_added',
   'per_diem_added',
   'per_diem_removed',
+  'review_started',
+  'card_matched',
+  'card_unmatched',
   'submitted',
   'approved',
   'rejected',
@@ -295,9 +300,28 @@ export interface ExmLinePayload {
   receipt_id?: string | null;
 }
 
-/** What a line mutation answers: the line and the recalculated totals of its report. */
-export interface ExmLineResult extends ExmLine {
-  report_totals: ExmReportTotals;
+/** What a line mutation answers: the line in `data`, the recalculated totals of its report in `meta`. */
+export interface ExmLineResult extends ExmEnvelope<ExmLine> {
+  meta?: { report_totals?: ExmReportTotals };
+}
+
+/** What the removal of a line answers: the recalculated totals of its report in `meta`. */
+export interface ExmTotalsResult extends ExmEnvelope<null> {
+  meta?: { report_totals?: ExmReportTotals };
+}
+
+export interface ExmCardImportRow {
+  external_id?: string | null;
+  merchant_name: string;
+  transaction_date: string;
+  posting_date?: string | null;
+  amount: ExmDecimal;
+  currency?: string | null;
+}
+
+export interface ExmCardImportPayload {
+  card_account_id: string;
+  transactions: ExmCardImportRow[];
 }
 
 export interface ExmMileagePayload {

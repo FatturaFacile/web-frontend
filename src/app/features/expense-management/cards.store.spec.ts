@@ -63,6 +63,7 @@ describe('CardsStore', () => {
           }),
         ),
       ),
+      importCardTransactions: vi.fn(() => of(wrap([]))),
       reconcileCardTransaction: vi.fn(() => of(wrap(transaction('tx-1', { status: 'matched' })))),
     };
     TestBed.configureTestingModule({
@@ -137,5 +138,32 @@ describe('CardsStore', () => {
 
     expect(outcome.errorKey).toBe('expenseManagement.error.amount_exceeds_transaction');
     expect(store.busy()).toBe(false);
+  });
+});
+
+describe('CardsStore import', () => {
+  it('imports the rows of a statement for a card and reloads the transactions', async () => {
+    const api = {
+      listCardAccounts: vi.fn(() => of(wrap([]))),
+      listReports: vi.fn(() => of({ ...wrap([]), meta: pageMeta })),
+      listCardTransactions: vi.fn(() => of({ ...wrap([]), meta: pageMeta })),
+      importCardTransactions: vi.fn(() => of(wrap([]))),
+    };
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [CardsStore, { provide: ExpenseManagementApiService, useValue: api }],
+    });
+    const store = TestBed.inject(CardsStore);
+    await store.init();
+
+    const rows = [{ merchant_name: 'Hotel', transaction_date: '2028-01-10', amount: '120.00' }];
+    const outcome = await store.importStatement('card-1', rows);
+
+    expect(outcome.ok).toBe(true);
+    expect(api.importCardTransactions).toHaveBeenCalledWith({
+      card_account_id: 'card-1',
+      transactions: rows,
+    });
+    expect(api.listCardTransactions).toHaveBeenCalledTimes(2);
   });
 });

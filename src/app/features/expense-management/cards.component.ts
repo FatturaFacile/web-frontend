@@ -13,12 +13,14 @@ import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
   EXM_RECONCILIATION_STATUSES,
+  ExmCardImportRow,
   ExmCardTransaction,
   ExmLine,
   ExmReconcileAction,
@@ -27,7 +29,7 @@ import {
 } from '@core';
 import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
 import { CardMatchSelection, CardsStore, remainingAfter } from './cards.store';
-import { ExmOutcome, reconciliationColor, toNumber } from './expense-management.util';
+import { ExmOutcome, parseCardCsv, reconciliationColor, toNumber } from './expense-management.util';
 
 /**
  * Corporate card reconciliation (Mod 075): the transactions of the card statements on the left, the card expense lines
@@ -45,6 +47,7 @@ import { ExmOutcome, reconciliationColor, toNumber } from './expense-management.
     NzCheckboxModule,
     NzEmptyModule,
     NzInputModule,
+    NzModalModule,
     NzSelectModule,
     NzSpinModule,
     NzTableModule,
@@ -91,7 +94,46 @@ import { ExmOutcome, reconciliationColor, toNumber } from './expense-management.
           }
         </nz-select>
       </label>
+      <button nz-button type="button" (click)="openImport()">
+        {{ 'expenseManagement.action.importStatement' | translate }}
+      </button>
     </div>
+
+    <nz-modal
+      [nzVisible]="importing()"
+      [nzTitle]="'expenseManagement.cards.importTitle' | translate"
+      [nzOkText]="'expenseManagement.action.import' | translate"
+      [nzCancelText]="'expenseManagement.action.cancel' | translate"
+      [nzOkLoading]="store.busy()"
+      [nzOkDisabled]="!importAccount() || importRows().length === 0"
+      (nzOnOk)="runImport()"
+      (nzOnCancel)="importing.set(false)"
+    >
+      <ng-container *nzModalContent>
+        @if (importError(); as error) {
+          <nz-alert nzType="error" nzShowIcon [nzMessage]="error | translate"></nz-alert>
+        }
+        <p>{{ 'expenseManagement.cards.importHint' | translate }}</p>
+        <label for="exm-import-account">{{ 'expenseManagement.field.card' | translate }}</label>
+        <nz-select
+          nzId="exm-import-account"
+          [ngModel]="importAccount()"
+          (ngModelChange)="importAccount.set($event)"
+        >
+          @for (account of store.accounts(); track account.id) {
+            <nz-option
+              [nzValue]="account.id"
+              [nzLabel]="account.holder_name + ' ·· ' + account.card_last4"
+            ></nz-option>
+          }
+        </nz-select>
+        <label for="exm-import-file">{{ 'expenseManagement.cards.csvFile' | translate }}</label>
+        <input id="exm-import-file" type="file" accept=".csv,text/csv" (change)="readCsv($event)" />
+        <p class="muted">
+          {{ 'expenseManagement.cards.importRows' | translate: { count: importRows().length } }}
+        </p>
+      </ng-container>
+    </nz-modal>
 
     @if (store.error(); as error) {
       <nz-alert
@@ -386,6 +428,10 @@ export class CardsComponent implements OnInit {
   /** Lines picked for a split, with the part of the transaction each covers. */
   protected readonly chosen = signal<Record<string, number>>({});
   protected readonly splitting = signal(false);
+  protected readonly importing = signal(false);
+  protected readonly importAccount = signal<string | null>(null);
+  protected readonly importRows = signal<ExmCardImportRow[]>([]);
+  protected readonly importError = signal<string | null>(null);
 
   protected readonly selections = computed<CardMatchSelection[]>(() => {
     const parts = this.chosen();
@@ -458,6 +504,31 @@ export class CardsComponent implements OnInit {
       this.store.act(transaction, action),
       action === 'unmatch' ? 'unmatched' : action,
     );
+  }
+
+  protected openImport(): void {
+    this.importError.set(null);
+    this.importRows.set([]);
+    this.importing.set(true);
+  }
+
+  protected async readCsv(event: Event): Promise<void> {
+    const file = (event.target as HTMLInputElement).files?.item(0);
+    this.importRows.set(file ? parseCardCsv(await file.text()) : []);
+  }
+
+  protected async runImport(): Promise<void> {
+    const account = this.importAccount();
+    if (!account) {
+      return;
+    }
+    const outcome = await this.store.importStatement(account, this.importRows());
+    if (outcome.ok) {
+      this.importing.set(false);
+      this.message.success(this.i18n.instant('expenseManagement.message.card.imported'));
+    } else {
+      this.importError.set(outcome.errorKey);
+    }
   }
 
   private async finish(pending: Promise<ExmOutcome>, done: string): Promise<void> {

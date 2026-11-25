@@ -4,6 +4,7 @@ import { firstValueFrom } from 'rxjs';
 import {
   ExmCardAccount,
   ExmCardFilters,
+  ExmCardImportRow,
   ExmCardTransaction,
   ExmDecimal,
   ExmLine,
@@ -141,6 +142,27 @@ export const CardsStore = signalStore(
                 expense_line_id: selection.line.id,
                 amount: selection.amount,
               })),
+            }),
+          );
+          patchState(store, { busy: false });
+          await load(store.filters());
+          return EXM_OK;
+        } catch (error) {
+          patchState(store, { busy: false });
+          return failureOf(error);
+        }
+      },
+      /** Imports the lines of a card statement (finance only) and reloads the transactions. */
+      async importStatement(
+        cardAccountId: string,
+        transactions: readonly ExmCardImportRow[],
+      ): Promise<ExmOutcome> {
+        patchState(store, { busy: true });
+        try {
+          await firstValueFrom(
+            api.importCardTransactions({
+              card_account_id: cardAccountId,
+              transactions: [...transactions],
             }),
           );
           patchState(store, { busy: false });

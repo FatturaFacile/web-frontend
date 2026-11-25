@@ -17,6 +17,7 @@ import {
   canCancel,
   canConfirmReimbursement,
   canDecide,
+  canStartReview,
   canExport,
   canSubmit,
   EXM_OK,
@@ -57,6 +58,10 @@ export const ReportDetailStore = signalStore(
     canSubmit: computed(() => {
       const current = report();
       return current !== null && canSubmit(current);
+    }),
+    canStartReview: computed(() => {
+      const current = report();
+      return current !== null && canStartReview(current);
     }),
     canDecide: computed(() => {
       const current = report();
@@ -167,6 +172,9 @@ export const ReportDetailStore = signalStore(
       },
       confirmReimbursement(): Promise<ExmOutcome> {
         return write(() => firstValueFrom(api.confirmReimbursement(store.report()?.id ?? '')));
+      },
+      startReview(): Promise<ExmOutcome> {
+        return write(() => firstValueFrom(api.startReview(store.report()?.id ?? '')));
       },
       cancel(): Promise<ExmOutcome> {
         return write(() => firstValueFrom(api.cancel(store.report()?.id ?? '')));
