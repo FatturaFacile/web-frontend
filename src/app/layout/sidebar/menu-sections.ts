@@ -680,6 +680,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         ],
       },
       {
+        key: 'statutoryFinancials.nav.title',
+        icon: 'fa-solid fa-file-invoice',
+        route: '/statutory-financials',
+        module: 'statutory_financials',
+      },
+      {
         key: 'NAV.INTERCOMPANY',
         icon: 'fa-solid fa-diagram-project',
         module: 'intercompany',

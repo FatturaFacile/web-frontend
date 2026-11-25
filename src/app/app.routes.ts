@@ -676,6 +676,20 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'statutory-financials',
+    canActivate: [
+      authGuard,
+      menuEnabledGuard,
+      featureFlagGuard('statutory_financials'),
+      moduleGuard('statutory_financials'),
+    ],
+    data: { breadcrumb: 'statutoryFinancials.nav.title', title: 'statutoryFinancials.title' },
+    loadChildren: () =>
+      import('./features/statutory-financials/statutory-financials.routes').then(
+        (m) => m.STATUTORY_FINANCIALS_ROUTES,
+      ),
+  },
+  {
     path: 'signatures',
     canActivate: [
       authGuard,

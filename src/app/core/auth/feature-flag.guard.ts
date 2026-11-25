@@ -61,6 +61,7 @@ export const PREMATURE_OPEN_ISSUE_MODULES: Readonly<
   intercompany: { issue: 291, routePrefix: '/intercompany' },
   gdo_trade_terms: { issue: 477, routePrefix: '/gdo-trade-terms' },
   industrial_laundry: { issue: 423, routePrefix: '/industrial-laundry' },
+  statutory_financials: { issue: 413, routePrefix: '/statutory-financials' },
 };
 
 /**

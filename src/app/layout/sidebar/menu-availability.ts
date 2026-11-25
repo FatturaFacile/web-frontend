@@ -231,6 +231,7 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/tender-management',
   '/tender-management/vault',
   '/tender-management/benchmarks',
+  '/statutory-financials',
   '/gdo-trade-terms',
   '/gdo-trade-terms/contracts',
   '/gdo-trade-terms/promotions',
