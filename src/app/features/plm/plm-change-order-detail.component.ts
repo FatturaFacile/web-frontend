@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
@@ -11,15 +12,38 @@ import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
-import { PlmApiService, PlmChangeOrder, PlmDecision, TranslateService } from '@core';
+import {
+  PLM_APPROVAL_DEPARTMENTS,
+  PlmApiService,
+  PlmApprovalDepartment,
+  PlmChangeOrder,
+  PlmDecision,
+  PlmDepartmentSignoff,
+  TranslateService,
+} from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
 import { APPROVAL_STATUS_COLORS, apiErrorText, CHANGE_STATUS_COLORS } from './plm.util';
 
-/** One change order: reason, approval flow, affected items and bills of material, and the actions of each status. */
+/** One change order: reason, 4-department approvals matrix, stock disposition cutover, and ECN execution. */
 @Component({
   selector: 'app-plm-change-order-detail',
   styleUrl: './plm.scss',
-  imports: [FormsModule, RouterLink, PageHeaderComponent, TranslatePipe, NzButtonModule, NzCardModule, NzDescriptionsModule, NzEmptyModule, NzInputModule, NzModalModule, NzPopconfirmModule, NzTableModule, NzTagModule],
+  imports: [
+    FormsModule,
+    RouterLink,
+    PageHeaderComponent,
+    TranslatePipe,
+    NzAlertModule,
+    NzButtonModule,
+    NzCardModule,
+    NzDescriptionsModule,
+    NzEmptyModule,
+    NzInputModule,
+    NzModalModule,
+    NzPopconfirmModule,
+    NzTableModule,
+    NzTagModule,
+  ],
   template: `
     @if (order(); as current) {
       <app-page-header [title]="current.code + ' - ' + current.title" [subtitle]="'PLM.DETAIL_SUBTITLE' | translate">
@@ -34,11 +58,21 @@ import { APPROVAL_STATUS_COLORS, apiErrorText, CHANGE_STATUS_COLORS } from './pl
         }
         @if (current.status === 'approved') {
           <button nz-button nzType="primary" nz-popconfirm [nzPopconfirmTitle]="'PLM.IMPLEMENT_CONFIRM' | translate" (nzOnConfirm)="implement()">{{ 'PLM.IMPLEMENT' | translate }}</button>
+          <button nz-button nzType="primary" (click)="executeCutover()">{{ 'PLM.EXECUTE_CUTOVER' | translate }}</button>
         }
         @if (current.status === 'draft' || current.status === 'in_review' || current.status === 'approved') {
           <button nz-button nz-popconfirm [nzPopconfirmTitle]="'PLM.CANCEL_CONFIRM' | translate" (nzOnConfirm)="cancel()">{{ 'PLM.CANCEL' | translate }}</button>
         }
       </app-page-header>
+
+      @if (current.is_safety_immediate_cutover) {
+        <nz-alert
+          nzType="error"
+          nzShowIcon
+          [nzMessage]="'PLM.SAFETY_CUTOVER_BANNER' | translate"
+          style="margin-bottom: 16px"
+        ></nz-alert>
+      }
 
       <nz-card class="main-card">
         <nz-descriptions nzSize="small" [nzColumn]="3">
@@ -49,11 +83,43 @@ import { APPROVAL_STATUS_COLORS, apiErrorText, CHANGE_STATUS_COLORS } from './pl
           <nz-descriptions-item [nzTitle]="'PLM.PRIORITY' | translate">{{ ('PLM.PRIORITY_' + current.priority.toUpperCase()) | translate }}</nz-descriptions-item>
           <nz-descriptions-item [nzTitle]="'PLM.EFFECTIVE_DATE' | translate">{{ current.effective_date ?? '' }}</nz-descriptions-item>
           <nz-descriptions-item [nzTitle]="'PLM.IMPLEMENTED_AT' | translate">{{ current.implemented_at ?? '' }}</nz-descriptions-item>
+          @if (current.ecn_number) {
+            <nz-descriptions-item [nzTitle]="'PLM.ECN_NUMBER' | translate">{{ current.ecn_number }}</nz-descriptions-item>
+          }
           <nz-descriptions-item [nzTitle]="'PLM.REASON' | translate" [nzSpan]="3">{{ current.reason }}</nz-descriptions-item>
           @if (current.rejection_reason) {
             <nz-descriptions-item [nzTitle]="'PLM.REJECTION_REASON' | translate" [nzSpan]="3">{{ current.rejection_reason }}</nz-descriptions-item>
           }
         </nz-descriptions>
+      </nz-card>
+
+      <nz-card class="main-card" [nzTitle]="'PLM.DEPT_APPROVAL_MATRIX' | translate">
+        <nz-table [nzData]="departmentRows(current)" nzSize="small" [nzShowPagination]="false">
+          <thead>
+            <tr>
+              <th>{{ 'PLM.APPROVER' | translate }}</th>
+              <th>{{ 'PLM.STATUS' | translate }}</th>
+              <th>{{ 'PLM.SIGN_OFF_HASH' | translate }}</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (dept of departmentRows(current); track dept.department) {
+              <tr>
+                <td>{{ ('PLM.DEPT_' + dept.department.toUpperCase()) | translate }}</td>
+                <td>
+                  <nz-tag [nzColor]="approvalColor(dept.status)">{{ ('PLM.APPROVAL_' + dept.status.toUpperCase()) | translate }}</nz-tag>
+                </td>
+                <td><code>{{ dept.sign_off_hash ?? '-' }}</code></td>
+                <td>
+                  @if (current.status === 'draft' || current.status === 'in_review') {
+                    <button nz-button nzSize="small" type="button" (click)="signoffDepartment(dept.department, 'approve')">{{ 'PLM.APPROVE' | translate }}</button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
       </nz-card>
 
       <nz-card class="main-card" [nzTitle]="'PLM.APPROVAL_FLOW' | translate">
@@ -172,6 +238,20 @@ export class PlmChangeOrderDetailComponent implements OnInit {
     return APPROVAL_STATUS_COLORS[status] ?? 'default';
   }
 
+  departmentRows(current: PlmChangeOrder): PlmDepartmentSignoff[] {
+    const matrix = current.approvals_matrix_json ?? {};
+    return PLM_APPROVAL_DEPARTMENTS.map(
+      (department) =>
+        matrix[department] ?? {
+          department,
+          status: 'pending',
+          actor_id: null,
+          decided_at: null,
+          sign_off_hash: null,
+        },
+    );
+  }
+
   load(): void {
     this.api.getChangeOrder(this.orderId).subscribe({ next: (response) => this.order.set(response.data), error: (error: unknown) => this.fail(error) });
   }
@@ -186,6 +266,14 @@ export class PlmChangeOrderDetailComponent implements OnInit {
 
   implement(): void {
     this.run(this.api.implementChangeOrder(this.orderId), 'PLM.IMPLEMENTED');
+  }
+
+  executeCutover(): void {
+    this.run(this.api.executeCutover(this.orderId), 'PLM.CUTOVER_DONE');
+  }
+
+  signoffDepartment(department: PlmApprovalDepartment, decision: PlmDecision): void {
+    this.run(this.api.recordDepartmentSignoff(this.orderId, { department, decision }), 'PLM.SIGNOFF_RECORDED');
   }
 
   remove(): void {

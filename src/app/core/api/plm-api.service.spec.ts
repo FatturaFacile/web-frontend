@@ -81,4 +81,33 @@ describe('PlmApiService', () => {
     const req = httpMock.expectOne((r) => r.url.endsWith('/plm/revisions/rev-1') && r.method === 'GET');
     req.flush({ data: { id: 'rev-1' } });
   });
+
+  it('calls Mod 168 endpoints for dictionary, department sign-off, cutover, CAD import, where-used, bom-diff, compliance and viewer manifest', () => {
+    service.getDictionary('it-CH').subscribe();
+    httpMock.expectOne((r) => r.url.endsWith('/plm/dictionary') && r.params.get('locale') === 'it-CH').flush({ data: {} });
+
+    service.recordDepartmentSignoff('co-1', { department: 'Quality', decision: 'approve' }).subscribe();
+    httpMock.expectOne((r) => r.url.endsWith('/plm/change-orders/co-1/department-signoff') && r.method === 'POST').flush({ data: {} });
+
+    service.executeCutover('co-1', { force_immediate_safety_cutover: true }).subscribe();
+    httpMock.expectOne((r) => r.url.endsWith('/plm/change-orders/co-1/execute-cutover') && r.method === 'POST').flush({ data: {} });
+
+    service.importCadBom({ cad_source_system: 'SolidWorks', product_code: 'FG-1', raw_payload: '<bom/>' }).subscribe();
+    httpMock.expectOne((r) => r.url.endsWith('/plm/cad-imports') && r.method === 'POST').flush({ data: {} });
+
+    service.commitCadImport('cad-1').subscribe();
+    httpMock.expectOne((r) => r.url.endsWith('/plm/cad-imports/cad-1/commit') && r.method === 'POST').flush({ data: {} });
+
+    service.getWhereUsedImpact('it-1').subscribe();
+    httpMock.expectOne((r) => r.url.endsWith('/plm/where-used/it-1') && r.method === 'GET').flush({ data: {} });
+
+    service.getBomDiffAndCostRollup({ from_bom_id: 'b-1', to_bom_id: 'b-2' }).subscribe();
+    httpMock.expectOne((r) => r.url.endsWith('/plm/bom-diff') && r.params.get('from_bom_id') === 'b-1').flush({ data: {} });
+
+    service.getRevisionCompliance('rv-1').subscribe();
+    httpMock.expectOne((r) => r.url.endsWith('/plm/revisions/rv-1/compliance') && r.method === 'GET').flush({ data: {} });
+
+    service.getViewerManifest('rv-1').subscribe();
+    httpMock.expectOne((r) => r.url.endsWith('/plm/revisions/rv-1/viewer-manifest') && r.method === 'GET').flush({ data: {} });
+  });
 });

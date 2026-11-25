@@ -10,6 +10,10 @@ import { PlmApiService, PlmChangeOrder, PlmItemRevision, SettingsApiService, Tra
 import { PlmChangeOrderDetailComponent } from './plm-change-order-detail.component';
 import { PlmChangeOrdersComponent } from './plm-change-orders.component';
 import { PlmRevisionsComponent } from './plm-revisions.component';
+import { PlmBomDiffComponent } from './plm-bom-diff.component';
+import { PlmCadImportComponent } from './plm-cad-import.component';
+import { PlmCadViewerComponent } from './plm-cad-viewer.component';
+import { PlmWhereUsedComponent } from './plm-where-used.component';
 import { apiErrorText, blankToNull } from './plm.util';
 
 const order: PlmChangeOrder = {
@@ -228,5 +232,89 @@ describe('PlmRevisionsComponent', () => {
     component.obsolete(revision);
     expect(api.obsoleteRevision).toHaveBeenCalledWith('rv-1');
     expect(messageSpy.success).toHaveBeenCalledWith('PLM.MADE_OBSOLETE');
+  });
+});
+
+describe('PlmMod168Components', () => {
+  it('renders the obsolete watermark in PlmCadViewerComponent when is_obsolete is true', () => {
+    configure({});
+    const fixture = TestBed.createComponent(PlmCadViewerComponent);
+    fixture.componentRef.setInput('manifest', {
+      revision_id: 'rv-1',
+      item_code: 'PUMP-01',
+      item_name: 'Pump',
+      revision_code: 'A',
+      lifecycle_state: 'ObsoleteBlocked',
+      is_obsolete: true,
+      obsolete_watermark: true,
+      watermark_label: 'SUPERATO / OBSOLETO',
+      technical_file_ref: 'TF-001',
+      attachments: [{ id: 'a1', filename: 'pump.step', format: 'STEP' }],
+      ebom_parts: [],
+    });
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).querySelector('[data-testid="obsolete-watermark-banner"]')).not.toBeNull();
+    expect((fixture.nativeElement as HTMLElement).querySelector('[data-testid="viewer-3d-watermark"]')).not.toBeNull();
+  });
+
+  it('compares two BOMs in PlmBomDiffComponent and displays cost rollup', () => {
+    const api = {
+      getBomOptions: vi.fn().mockReturnValue(of([{ id: 'b-1', label: 'BOM-1 (A)' }, { id: 'b-2', label: 'BOM-1 (B)' }])),
+      getBomDiffAndCostRollup: vi.fn().mockReturnValue(of({
+        data: {
+          from_bom_id: 'b-1', to_bom_id: 'b-2', from_label: 'A', to_label: 'B',
+          nodes: [], added: [], removed: [], modified: [],
+          summary: { added: 1, removed: 0, modified: 1, unchanged: 2 },
+          cost_rollup: { before_total_cost: '20.0000', after_total_cost: '55.0000', cost_delta: '35.0000', cost_delta_percentage: '175.00' },
+        },
+      })),
+    };
+    configure(api);
+    const fixture = TestBed.createComponent(PlmBomDiffComponent);
+    fixture.detectChanges();
+    fixture.componentInstance.fromBomId.set('b-1');
+    fixture.componentInstance.toBomId.set('b-2');
+    fixture.componentInstance.compare();
+
+    expect(api.getBomDiffAndCostRollup).toHaveBeenCalledWith({ from_bom_id: 'b-1', to_bom_id: 'b-2' });
+    expect(fixture.componentInstance.diff()?.cost_rollup.cost_delta).toBe('35.0000');
+  });
+
+  it('analyzes multi-level Where-Used impact in PlmWhereUsedComponent', () => {
+    const api = {
+      getItemOptions: vi.fn().mockReturnValue(of([{ id: 'it-1', label: 'BRG-1 - Bearing' }])),
+      getWhereUsedImpact: vi.fn().mockReturnValue(of({
+        data: {
+          item_id: 'it-1', item_code: 'BRG-1', item_name: 'Bearing', date: '2027-06-15',
+          parents: [], top_level: [], open_purchase_orders: [], open_production_orders: [], warehouse_stock_lots: [],
+        },
+      })),
+    };
+    configure(api);
+    const fixture = TestBed.createComponent(PlmWhereUsedComponent);
+    fixture.detectChanges();
+    fixture.componentInstance.itemId.set('it-1');
+    fixture.componentInstance.analyze();
+
+    expect(api.getWhereUsedImpact).toHaveBeenCalledWith('it-1');
+    expect(fixture.componentInstance.impact()?.item_code).toBe('BRG-1');
+  });
+
+  it('imports and commits a CAD BOM in PlmCadImportComponent', () => {
+    const api = {
+      importCadBom: vi.fn().mockReturnValue(of({ data: { id: 'cad-1', session_code: 'CAD-1', status: 'Parsed', new_parts_to_create_count: 1 } })),
+      commitCadImport: vi.fn().mockReturnValue(of({ data: { id: 'cad-1', session_code: 'CAD-1', status: 'Committed', new_parts_to_create_count: 1 } })),
+    };
+    configure(api);
+    const fixture = TestBed.createComponent(PlmCadImportComponent);
+    fixture.detectChanges();
+    fixture.componentInstance.form.patchValue({ product_code: 'FG-1', raw_payload: '<bom/>' });
+    fixture.componentInstance.runImport();
+    expect(api.importCadBom).toHaveBeenCalled();
+
+    fixture.componentInstance.commit();
+    expect(api.commitCadImport).toHaveBeenCalledWith('cad-1');
+    expect(fixture.componentInstance.session()?.status).toBe('Committed');
   });
 });
