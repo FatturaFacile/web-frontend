@@ -2,7 +2,14 @@ import { DatePipe } from '@angular/common';
 import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { I18nService, OpenItem, ResourceApiService, ResourceRow } from '@core';
+import {
+  I18nService,
+  isFeatureFlagEnabled,
+  OpenItem,
+  PermissionsService,
+  ResourceApiService,
+  ResourceRow,
+} from '@core';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzCollapseModule } from 'ng-zorro-antd/collapse';
@@ -19,6 +26,7 @@ import { Customer360HierarchyComponent } from './customer-360/customer-360-hiera
 import { Customer360InteractionsComponent } from './customer-360/customer-360-interactions.component';
 import { Customer360LifecycleComponent } from './customer-360/customer-360-lifecycle.component';
 import { Customer360PersonsComponent } from './customer-360/customer-360-persons.component';
+import { CustomerDunningComponent } from '../../debt-collection/customer-dunning.component';
 import { EntityAuditTimelineComponent } from '../../security/audit-trail/entity-audit-timeline.component';
 
 interface TimelineEntry {
@@ -45,6 +53,7 @@ interface TimelineEntry {
     NzTimelineModule,
     PageHeaderComponent,
     EntityAuditTimelineComponent,
+    CustomerDunningComponent,
     Customer360AddressesComponent,
     Customer360ConsentsComponent,
     Customer360HierarchyComponent,
@@ -98,7 +107,9 @@ interface TimelineEntry {
             <span>{{ item.date }}</span>
             <span>{{ label('CRM.CUSTOMER360.DUE_DATE') }}: {{ item.due_date }}</span>
             @if (item.days_overdue) {
-              <nz-tag nzColor="red">{{ item.days_overdue }} {{ label('CRM.CUSTOMER360.DAYS_OVERDUE') }}</nz-tag>
+              <nz-tag nzColor="red"
+                >{{ item.days_overdue }} {{ label('CRM.CUSTOMER360.DAYS_OVERDUE') }}</nz-tag
+              >
             }
             <span>{{ item.balance }} {{ item.currency }}</span>
           </div>
@@ -139,7 +150,12 @@ interface TimelineEntry {
         <app-customer-360-interactions [contactId]="id" />
       </nz-card>
 
-      @if (quotesList().length || ordersList().length || deliveryNotesList().length || invoicesList().length) {
+      @if (
+        quotesList().length ||
+        ordersList().length ||
+        deliveryNotesList().length ||
+        invoicesList().length
+      ) {
         <nz-card [nzTitle]="label('CRM.CUSTOMER360.COMMERCIAL_ACTIVITY')" class="c360-card">
           @for (inv of invoicesList(); track inv['id']) {
             <div class="c360-row">
@@ -247,6 +263,12 @@ interface TimelineEntry {
         </nz-collapse>
       </nz-card>
 
+      @if (showDunning) {
+        <nz-card [nzTitle]="label('debtCollection.customer.tab')" class="c360-card">
+          <app-customer-dunning [customerId]="id" />
+        </nz-card>
+      }
+
       <nz-card class="c360-card">
         <app-entity-audit-timeline entityType="Contact" [entityId]="id" />
       </nz-card>
@@ -268,6 +290,10 @@ interface TimelineEntry {
 export class Customer360Component {
   private readonly api = inject(ResourceApiService);
   private readonly i18n = inject(I18nService);
+  /** The dunning section shows to members who may read the module, once the module is released. */
+  protected readonly showDunning =
+    inject(PermissionsService).canRead('debt_collection') &&
+    isFeatureFlagEnabled('debt_collection');
   private readonly destroyRef = inject(DestroyRef);
   protected readonly id = inject(ActivatedRoute).snapshot.paramMap.get('id') ?? '';
 
@@ -286,7 +312,9 @@ export class Customer360Component {
   protected readonly assets = signal<ResourceRow[]>([]);
   protected readonly history = signal<Record<string, TimelineEntry[]>>({});
 
-  protected readonly openItems = computed(() => (this.receivables()['open_items'] ?? []) as OpenItem[]);
+  protected readonly openItems = computed(
+    () => (this.receivables()['open_items'] ?? []) as OpenItem[],
+  );
   protected readonly name = computed(() => this.str(this.contact()['name']) || '…');
   protected readonly taxId = computed(() => {
     const c = this.contact();

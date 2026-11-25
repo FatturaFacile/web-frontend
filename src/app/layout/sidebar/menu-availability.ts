@@ -270,6 +270,7 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/payables/aging',
   '/payables/batches',
   '/receivables',
+  '/debt-collection',
   '/receivables/credit',
   '/receivables/items',
   '/receivables/ledger',
