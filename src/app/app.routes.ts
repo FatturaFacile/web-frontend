@@ -690,6 +690,23 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'passenger-transport',
+    canActivate: [
+      authGuard,
+      menuEnabledGuard,
+      featureFlagGuard('passenger_transport'),
+      moduleGuard('passenger_transport'),
+    ],
+    data: {
+      breadcrumb: 'NAV.PASSENGER_TRANSPORT',
+      title: 'PAGE_TITLE.PASSENGER_TRANSPORT_DISPATCH',
+    },
+    loadChildren: () =>
+      import('./features/passenger-transport/passenger-transport.routes').then(
+        (m) => m.PASSENGER_TRANSPORT_ROUTES,
+      ),
+  },
+  {
     path: 'signatures',
     canActivate: [
       authGuard,

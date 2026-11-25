@@ -136,6 +136,7 @@ export * from './api/agent-commissions-api.service';
 export * from './api/expense-management-api.service';
 export * from './api/gdo-trade-terms-api.service';
 export * from './api/statutory-financials-api.service';
+export * from './api/passenger-transport-api.service';
 export * from './api/debt-collection-api.service';
 export * from './api/electronic-signature-api.service';
 export * from './api/tender-management-api.service';
@@ -182,7 +183,14 @@ export * from './api/quality-api.service';
 export * from './api/quality-extra-api.service';
 export * from './api/collaboration-api.service';
 export * from './api/webhooks-api.service';
-export type { ExtraListResponse, ExtraObject, ExtraParams, ExtraPayload, ExtraRecord, ExtraUploadFields } from './api/extra-api.types';
+export type {
+  ExtraListResponse,
+  ExtraObject,
+  ExtraParams,
+  ExtraPayload,
+  ExtraRecord,
+  ExtraUploadFields,
+} from './api/extra-api.types';
 export * from './api/attachments-api.service';
 export * from './api/service-reports-api.service';
 export * from './api/logistics-api.service';

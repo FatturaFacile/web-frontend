@@ -1483,6 +1483,43 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         ],
       },
       {
+        key: 'NAV.PASSENGER_TRANSPORT',
+        icon: 'fa-solid fa-van-shuttle',
+        module: 'passenger_transport',
+        children: [
+          {
+            key: 'NAV.PASSENGER_TRANSPORT_DISPATCH',
+            route: '/passenger-transport/dispatch',
+            icon: 'fa-solid fa-timeline',
+            module: 'passenger_transport',
+          },
+          {
+            key: 'NAV.PASSENGER_TRANSPORT_BOOKINGS',
+            route: '/passenger-transport/bookings',
+            icon: 'fa-solid fa-calendar-check',
+            module: 'passenger_transport',
+          },
+          {
+            key: 'NAV.PASSENGER_TRANSPORT_FLEET',
+            route: '/passenger-transport/fleet',
+            icon: 'fa-solid fa-bus',
+            module: 'passenger_transport',
+          },
+          {
+            key: 'NAV.PASSENGER_TRANSPORT_TACHOGRAPH',
+            route: '/passenger-transport/tachograph',
+            icon: 'fa-solid fa-id-card-clip',
+            module: 'passenger_transport',
+          },
+          {
+            key: 'NAV.PASSENGER_TRANSPORT_CONTRACTS_BILLING',
+            route: '/passenger-transport/contracts-billing',
+            icon: 'fa-solid fa-file-invoice-dollar',
+            module: 'passenger_transport',
+          },
+        ],
+      },
+      {
         key: 'NAV.TRAVEL',
         icon: 'fa-solid fa-plane-departure',
         route: '/travel',

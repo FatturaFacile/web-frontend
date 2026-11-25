@@ -218,7 +218,10 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
   tender_management: {
     read: FINANCE_READERS,
     write: FINANCE,
-    grants: { read: ['tender_management.read', 'tender_management.*'], write: ['tender_management.write', 'tender_management.*'] },
+    grants: {
+      read: ['tender_management.read', 'tender_management.*'],
+      write: ['tender_management.write', 'tender_management.*'],
+    },
   },
   expense_management_finance: {
     read: FINANCE_READERS,
@@ -283,6 +286,30 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
     grants: {
       read: ['industrial_laundry.bill', 'industrial_laundry.*'],
       write: ['industrial_laundry.bill', 'industrial_laundry.*'],
+    },
+  },
+  // Passenger transport (Mod 176): finance, dispatchers and operations managers read and write bookings, dispatch, fleet, driver
+  // compliance, the tachograph archive, service sheets and contracts; sales roles read. Invoicing (single and month-end) is the
+  // `bill` ability, the API reserves it to finance (a member can be granted passenger_transport.bill).
+  passenger_transport: {
+    read: [...FINANCE_READERS, 'dispatcher', 'operations_manager', 'sales', 'sales_manager'],
+    write: [...FINANCE, 'dispatcher', 'operations_manager'],
+    grants: {
+      read: [
+        'passenger_transport.read',
+        'passenger_transport.write',
+        'passenger_transport.bill',
+        'passenger_transport.*',
+      ],
+      write: ['passenger_transport.write', 'passenger_transport.bill', 'passenger_transport.*'],
+    },
+  },
+  passenger_transport_finance: {
+    read: FINANCE_READERS,
+    write: FINANCE,
+    grants: {
+      read: ['passenger_transport.bill', 'passenger_transport.*'],
+      write: ['passenger_transport.bill', 'passenger_transport.*'],
     },
   },
   configurator: {
@@ -369,7 +396,12 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
     read: [...FINANCE_READERS, 'sales_manager'],
     write: FINANCE,
     grants: {
-      read: ['debt_collection.read', 'debt_collection.write', 'debt_collection.escalate', 'debt_collection.*'],
+      read: [
+        'debt_collection.read',
+        'debt_collection.write',
+        'debt_collection.escalate',
+        'debt_collection.*',
+      ],
       write: ['debt_collection.write', 'debt_collection.escalate', 'debt_collection.*'],
     },
   },

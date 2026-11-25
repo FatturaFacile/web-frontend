@@ -148,6 +148,7 @@ export * from './agent-commissions.model';
 export * from './expense-management.model';
 export * from './gdo-trade-terms.model';
 export * from './statutory-financials.model';
+export * from './passenger-transport.model';
 export * from './electronic-signature.model';
 export * from './tender-management.model';
 export * from './receivables.model';
