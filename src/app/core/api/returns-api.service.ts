@@ -3,6 +3,17 @@ import { inject, Service } from '@angular/core';
 import { environment } from '@env';
 import { Observable } from 'rxjs';
 import {
+  AdvanceReplacement,
+  AdvanceReplacementCreateRequest,
+  CreditNoteFiscalCheckResult,
+  CustomerReturn,
+  CustomerReturnCreateRequest,
+  IssuedReturnCreditNote,
+  RefurbishedItem,
+  ReturnEligibilityRequest,
+  ReturnEligibilityResult,
+  ReturnGradingCreateRequest,
+  ReturnGradingInspection,
   ReturnsClaimFilters,
   ReturnsReasonCode,
   ReturnsReasonCodeRequest,
@@ -14,6 +25,7 @@ import {
   ReturnsRmaRequest,
   ReturnsRmaResolveRequest,
   ReturnsSettings,
+  ReturnShippingLabel,
   ReturnsSource,
   ReturnsSummary,
   ReturnsSupplierReturn,
@@ -26,6 +38,7 @@ import {
   ReturnsWarrantyFilters,
   ReturnsWarrantyRequest,
   ReturnsWarrantyValidity,
+  ReverseLogisticsConfig,
 } from '../models';
 
 /** Returns and warranty (RMA): customer returns, warranty registry and claims, supplier returns, settings, summary. */
@@ -195,6 +208,86 @@ export class ReturnsApiService {
 
   cancelSupplierReturn(id: string): Observable<ReturnsResponse<ReturnsSupplierReturn>> {
     return this.http.post<ReturnsResponse<ReturnsSupplierReturn>>(`${this.base}/supplier-returns/${id}/cancel`, {});
+  }
+
+  // Mod 232: Reverse Logistics, Advance Replacements, Grading/B-Stock & Credit Note Fiscal Control
+  getReverseLogisticsConfig(): Observable<ReturnsResponse<ReverseLogisticsConfig>> {
+    return this.http.get<ReturnsResponse<ReverseLogisticsConfig>>(`${this.base}/reverse-logistics/config`);
+  }
+
+  checkEligibility(payload: ReturnEligibilityRequest): Observable<ReturnsResponse<ReturnEligibilityResult>> {
+    return this.http.post<ReturnsResponse<ReturnEligibilityResult>>(`${this.base}/eligibility-check`, payload);
+  }
+
+  getCustomerReturns(filters?: { status?: string; channel?: string; search?: string; per_page?: number }): Observable<ReturnsResponse<CustomerReturn[]>> {
+    return this.http.get<ReturnsResponse<CustomerReturn[]>>(`${this.base}/customer-returns`, { params: this.params(filters) });
+  }
+
+  createCustomerReturn(payload: CustomerReturnCreateRequest): Observable<ReturnsResponse<CustomerReturn>> {
+    return this.http.post<ReturnsResponse<CustomerReturn>>(`${this.base}/customer-returns`, payload);
+  }
+
+  getCustomerReturn(id: string): Observable<ReturnsResponse<CustomerReturn>> {
+    return this.http.get<ReturnsResponse<CustomerReturn>>(`${this.base}/customer-returns/${id}`);
+  }
+
+  approveCustomerReturn(id: string, warehouseId?: string | null): Observable<ReturnsResponse<CustomerReturn>> {
+    return this.http.post<ReturnsResponse<CustomerReturn>>(`${this.base}/customer-returns/${id}/approve`, { warehouse_id: warehouseId ?? null });
+  }
+
+  receiveCustomerReturn(id: string, payload: ReturnsRmaReceiveRequest = {}): Observable<ReturnsResponse<CustomerReturn>> {
+    return this.http.post<ReturnsResponse<CustomerReturn>>(`${this.base}/customer-returns/${id}/receive`, payload);
+  }
+
+  getReturnLabel(id: string): Observable<ReturnsResponse<ReturnShippingLabel>> {
+    return this.http.get<ReturnsResponse<ReturnShippingLabel>>(`${this.base}/customer-returns/${id}/label`);
+  }
+
+  getAdvanceReplacements(filters?: { status?: string; per_page?: number }): Observable<ReturnsResponse<AdvanceReplacement[]>> {
+    return this.http.get<ReturnsResponse<AdvanceReplacement[]>>(`${this.base}/advance-replacements`, { params: this.params(filters) });
+  }
+
+  createAdvanceReplacement(payload: AdvanceReplacementCreateRequest): Observable<ReturnsResponse<AdvanceReplacement>> {
+    return this.http.post<ReturnsResponse<AdvanceReplacement>>(`${this.base}/advance-replacements`, payload);
+  }
+
+  receiveDefectiveReplacement(id: string, notes?: string | null): Observable<ReturnsResponse<AdvanceReplacement>> {
+    return this.http.post<ReturnsResponse<AdvanceReplacement>>(`${this.base}/advance-replacements/${id}/receive-defective`, { notes: notes ?? null });
+  }
+
+  billOverdueReplacement(id: string, force = false): Observable<ReturnsResponse<AdvanceReplacement>> {
+    return this.http.post<ReturnsResponse<AdvanceReplacement>>(`${this.base}/advance-replacements/${id}/bill-overdue`, { force });
+  }
+
+  scanOverdueReplacements(): Observable<ReturnsResponse<{ billed_count: number }>> {
+    return this.http.post<ReturnsResponse<{ billed_count: number }>>(`${this.base}/advance-replacements/scan-overdue`, {});
+  }
+
+  getGradingInspections(filters?: { grade?: string; per_page?: number }): Observable<ReturnsResponse<ReturnGradingInspection[]>> {
+    return this.http.get<ReturnsResponse<ReturnGradingInspection[]>>(`${this.base}/grading-inspections`, { params: this.params(filters) });
+  }
+
+  createGradingInspection(payload: ReturnGradingCreateRequest): Observable<ReturnsResponse<ReturnGradingInspection>> {
+    return this.http.post<ReturnsResponse<ReturnGradingInspection>>(`${this.base}/grading-inspections`, payload);
+  }
+
+  getRefurbishedItems(filters?: { grade?: string; per_page?: number }): Observable<ReturnsResponse<RefurbishedItem[]>> {
+    return this.http.get<ReturnsResponse<RefurbishedItem[]>>(`${this.base}/refurbished-items`, { params: this.params(filters) });
+  }
+
+  completeRefurbishedWorkOrder(id: string, payload: { work_order_status?: string; refurbishment_cost?: number; suggested_sale_price?: number; notes?: string | null }): Observable<ReturnsResponse<RefurbishedItem>> {
+    return this.http.post<ReturnsResponse<RefurbishedItem>>(`${this.base}/refurbished-items/${id}/complete-work-order`, payload);
+  }
+
+  checkCreditNoteFiscal(customerReturnId: string, creditNoteDate?: string | null): Observable<ReturnsResponse<CreditNoteFiscalCheckResult>> {
+    return this.http.post<ReturnsResponse<CreditNoteFiscalCheckResult>>(`${this.base}/credit-note-check`, {
+      customer_return_id: customerReturnId,
+      credit_note_date: creditNoteDate ?? null,
+    });
+  }
+
+  issueReturnCreditNote(payload: { customer_return_id: string; date?: string | null; apply_n2_2?: boolean; notes?: string | null }): Observable<ReturnsResponse<IssuedReturnCreditNote>> {
+    return this.http.post<ReturnsResponse<IssuedReturnCreditNote>>(`${this.base}/credit-notes`, payload);
   }
 
   private params(values?: object): HttpParams {
