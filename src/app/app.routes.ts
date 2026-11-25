@@ -707,6 +707,23 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'customer-satisfaction',
+    canActivate: [
+      authGuard,
+      menuEnabledGuard,
+      featureFlagGuard('customer_satisfaction'),
+      moduleGuard('customer_satisfaction'),
+    ],
+    data: {
+      breadcrumb: 'NAV.CUSTOMER_SATISFACTION',
+      title: 'PAGE_TITLE.CUSTOMER_SATISFACTION_DASHBOARD',
+    },
+    loadChildren: () =>
+      import('./features/customer-satisfaction/customer-satisfaction.routes').then(
+        (m) => m.CUSTOMER_SATISFACTION_ROUTES,
+      ),
+  },
+  {
     path: 'signatures',
     canActivate: [
       authGuard,
@@ -1146,6 +1163,15 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/association-enrolment/association-enrolment.component').then(
         (m) => m.AssociationEnrolmentComponent,
+      ),
+  },
+  {
+    // Public customer satisfaction survey (Mod 245): no auth guard, the unguessable token is the credential, no application shell.
+    path: 'survey/:token',
+    data: { publicPage: true, title: 'PAGE_TITLE.CUSTOMER_SATISFACTION_SURVEY' },
+    loadComponent: () =>
+      import('./features/customer-satisfaction/public-survey.component').then(
+        (m) => m.PublicSurveyComponent,
       ),
   },
   {

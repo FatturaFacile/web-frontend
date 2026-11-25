@@ -304,6 +304,28 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
       write: ['passenger_transport.write', 'passenger_transport.bill', 'passenger_transport.*'],
     },
   },
+  // Customer satisfaction (Mod 245): finance, sales, service and quality roles read the surveys and the ISO 9001 analytics; owners,
+  // administrators, accountants, sales, operations and support managers write (templates, recovery cases, reports).
+  customer_satisfaction: {
+    read: [
+      ...FINANCE_READERS,
+      'sales',
+      'sales_manager',
+      'operations_manager',
+      'support_manager',
+      'dispatcher',
+      'technician',
+    ],
+    write: [...FINANCE, 'sales_manager', 'operations_manager', 'support_manager'],
+    grants: {
+      read: [
+        'customer_satisfaction.read',
+        'customer_satisfaction.write',
+        'customer_satisfaction.*',
+      ],
+      write: ['customer_satisfaction.write', 'customer_satisfaction.*'],
+    },
+  },
   passenger_transport_finance: {
     read: FINANCE_READERS,
     write: FINANCE,
