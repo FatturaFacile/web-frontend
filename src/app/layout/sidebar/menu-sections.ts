@@ -1781,6 +1781,30 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             icon: 'fa-solid fa-sliders',
             module: 'returns',
           },
+          {
+            key: 'NAV.RETURNS_PORTAL',
+            route: '/returns/portal',
+            icon: 'fa-solid fa-laptop-file',
+            module: 'returns',
+          },
+          {
+            key: 'NAV.RETURNS_ADVANCE_REPLACEMENTS',
+            route: '/returns/advance-replacements',
+            icon: 'fa-solid fa-arrows-left-right',
+            module: 'returns',
+          },
+          {
+            key: 'NAV.RETURNS_GRADING_BENCH',
+            route: '/returns/grading-bench',
+            icon: 'fa-solid fa-magnifying-glass-chart',
+            module: 'returns',
+          },
+          {
+            key: 'NAV.RETURNS_CREDIT_NOTES',
+            route: '/returns/credit-notes',
+            icon: 'fa-solid fa-file-invoice-dollar',
+            module: 'returns',
+          },
         ],
       },
       {

@@ -356,3 +356,292 @@ export interface ReturnsSummary {
   ageing: { bucket: ReturnsAgeingBucket; count: number }[];
   by_status: Record<RmaStatus, number>;
 }
+
+// Mod 232: Reverse Logistics, Advance Replacements, Grading/B-Stock & Credit Note VAT Control
+export type CustomerReturnChannel = 'backoffice' | 'portal_b2b' | 'portal_b2c';
+export type AdvanceReplacementStatus = 'pending_defective_return' | 'defective_received' | 'overdue_billed' | 'cancelled';
+export type AdvanceReplacementUnitType = 'new' | 'refurbished';
+export type ReturnGrade = 'grade_a' | 'grade_b' | 'grade_c' | 'scrap_or_supplier';
+export type ReturnGradingDisposition = 'restock_primary' | 'convert_b_stock' | 'return_to_supplier' | 'scrap';
+export type RefurbishedWorkOrderStatus = 'pending_reconditioning' | 'in_progress' | 'completed';
+
+export interface ReverseLogisticsConfig {
+  settings: {
+    return_window_days: number;
+    warranty_window_days: number;
+    default_restocking_fee_percent: string;
+    advance_replacement_sla_days: number;
+    outlet_devaluation_grade_b_percent: string;
+    outlet_devaluation_grade_c_percent: string;
+  };
+  reason_codes: { code: string; label: string; is_defect: boolean }[];
+  grades: { code: ReturnGrade; label: string; default_disposition: ReturnGradingDisposition; default_devaluation_percent: string }[];
+  tax_rules: {
+    it_art26_summary: string;
+    it_art26_n2_2_explanation: string;
+    ch_art41_summary: string;
+  };
+}
+
+export interface ReturnEligibilityRequest {
+  contact_id: string;
+  invoice_id?: string | null;
+  delivery_note_id?: string | null;
+  reason_code: string;
+  requested_on?: string | null;
+  restocking_fee_percent?: number | null;
+  lines: { invoice_item_id?: string | null; delivery_note_item_id?: string | null; product_id?: string | null; quantity: number }[];
+}
+
+export interface ReturnEligibilityResult {
+  eligible: boolean;
+  within_return_window: boolean;
+  within_warranty_window: boolean;
+  return_window_days: number;
+  warranty_window_days: number;
+  days_since_purchase: number;
+  source_date: string;
+  is_defect_reason: boolean;
+  restocking_fee_applicable: boolean;
+  restocking_fee_percent: string;
+  restocking_fee_amount: string;
+  gross_return_amount: string;
+  net_refundable_amount: string;
+}
+
+export interface ReturnShippingLabel {
+  rma_number: string;
+  rma_barcode: string;
+  barcode_format: string;
+  carrier: string;
+  tracking_number: string;
+  generated_at: string;
+}
+
+export interface CustomerReturnLine {
+  id: string;
+  invoice_item_id: string | null;
+  delivery_note_item_id: string | null;
+  sales_order_item_id: string | null;
+  product_id: string;
+  description: string;
+  quantity: string;
+  quantity_received: string;
+  quantity_inspected: string;
+  unit_price: string;
+  tax_rate: string;
+  serial_number: string | null;
+  lot_number: string | null;
+  reason_code: string | null;
+  grade: ReturnGrade | null;
+  disposition: ReturnGradingDisposition | null;
+  photo_urls: string[];
+  inspection_notes: string | null;
+  stock_movement_id: string | null;
+}
+
+export interface CustomerReturn {
+  id: string;
+  rma_number: string;
+  rma_barcode: string;
+  return_tracking_number: string | null;
+  carrier: string | null;
+  status: RmaStatus;
+  channel: CustomerReturnChannel;
+  contact_id: string;
+  customer_name: string;
+  invoice_id: string | null;
+  invoice_number: string | null;
+  invoice_date: string | null;
+  delivery_note_id: string | null;
+  delivery_note_number: string | null;
+  sales_order_id: string | null;
+  warehouse_id: string | null;
+  reason_code: string;
+  requested_on: string;
+  within_return_window: boolean;
+  within_warranty_window: boolean;
+  window_overridden: boolean;
+  days_since_purchase: number;
+  restocking_fee_applicable: boolean;
+  restocking_fee_percent: string;
+  restocking_fee_amount: string;
+  gross_return_amount: string;
+  net_refundable_amount: string;
+  photo_urls: string[];
+  customer_notes: string | null;
+  internal_notes: string | null;
+  resolution_type: string | null;
+  credit_note_id: string | null;
+  credit_note_reference: string | null;
+  lines: CustomerReturnLine[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CustomerReturnCreateRequest {
+  contact_id: string;
+  invoice_id?: string | null;
+  delivery_note_id?: string | null;
+  sales_order_id?: string | null;
+  reason_code: string;
+  channel?: CustomerReturnChannel;
+  requested_on?: string | null;
+  override_window?: boolean;
+  restocking_fee_percent?: number | null;
+  photo_urls?: string[];
+  customer_notes?: string | null;
+  lines: {
+    invoice_item_id?: string | null;
+    delivery_note_item_id?: string | null;
+    product_id?: string | null;
+    quantity: number;
+    serial_number?: string | null;
+  }[];
+}
+
+export interface AdvanceReplacement {
+  id: string;
+  replacement_number: string;
+  customer_return_id: string | null;
+  rma_id: string | null;
+  contact_id: string;
+  customer_name: string;
+  original_invoice_id: string | null;
+  faulty_product_id: string;
+  faulty_product_name: string | null;
+  faulty_serial_number: string | null;
+  replacement_product_id: string;
+  replacement_product_name: string | null;
+  replacement_serial_number: string | null;
+  replacement_unit_type: AdvanceReplacementUnitType;
+  refurbished_item_id: string | null;
+  quantity: string;
+  warehouse_id: string | null;
+  status: AdvanceReplacementStatus;
+  is_overdue: boolean;
+  shipped_on: string;
+  sla_days: number;
+  return_due_on: string;
+  defective_received_at: string | null;
+  penalty_amount: string;
+  currency: string;
+  penalty_invoice_id: string | null;
+  penalty_invoice_number: string | null;
+  billed_at: string | null;
+  notes: string | null;
+  created_at: string;
+}
+
+export interface AdvanceReplacementCreateRequest {
+  customer_return_id?: string | null;
+  contact_id: string;
+  faulty_product_id: string;
+  faulty_serial_number?: string | null;
+  replacement_product_id?: string | null;
+  replacement_serial_number?: string | null;
+  replacement_unit_type?: AdvanceReplacementUnitType;
+  refurbished_item_id?: string | null;
+  quantity?: number;
+  warehouse_id?: string | null;
+  sla_days?: number;
+  penalty_amount?: number | null;
+  notes?: string | null;
+}
+
+export interface ReturnGradingInspection {
+  id: string;
+  inspection_number: string;
+  customer_return_id: string | null;
+  customer_return_line_id: string | null;
+  product_id: string;
+  product_name: string | null;
+  product_sku: string | null;
+  serial_number: string | null;
+  quantity_inspected: string;
+  grade: ReturnGrade;
+  disposition: ReturnGradingDisposition;
+  checklist: Record<string, boolean>;
+  photo_urls: string[];
+  original_unit_cost: string;
+  devaluation_percent: string;
+  revalued_unit_cost: string;
+  target_warehouse_id: string | null;
+  supplier_id: string | null;
+  supplier_return_id: string | null;
+  refurbished_item_id: string | null;
+  refurbished_sku: string | null;
+  inspector_notes: string | null;
+  inspected_at: string;
+}
+
+export interface ReturnGradingCreateRequest {
+  customer_return_id?: string | null;
+  customer_return_line_id?: string | null;
+  product_id: string;
+  serial_number?: string | null;
+  quantity_inspected: number;
+  grade: ReturnGrade;
+  disposition: ReturnGradingDisposition;
+  checklist?: Record<string, boolean>;
+  photo_urls: string[];
+  devaluation_percent?: number | null;
+  refurbishment_cost?: number | null;
+  target_warehouse_id?: string | null;
+  supplier_id?: string | null;
+  inspector_notes?: string | null;
+}
+
+export interface RefurbishedItem {
+  id: string;
+  refurbished_sku: string;
+  original_product_id: string;
+  original_product_name: string | null;
+  original_product_sku: string | null;
+  grade: ReturnGrade;
+  serial_number: string | null;
+  quantity: string;
+  original_cost: string;
+  devaluation_percent: string;
+  refurbishment_cost: string;
+  new_unit_cost: string;
+  suggested_sale_price: string;
+  warehouse_id: string | null;
+  work_order_status: RefurbishedWorkOrderStatus;
+  work_order_steps: Record<string, boolean>;
+  is_available: boolean;
+  notes: string | null;
+  created_at: string;
+}
+
+export interface CreditNoteFiscalCheckResult {
+  customer_return_id: string;
+  rma_number: string;
+  jurisdiction: string;
+  original_invoice_id: string;
+  original_invoice_number: string;
+  original_invoice_date: string;
+  credit_note_date: string;
+  days_elapsed: number;
+  art26_one_year_exceeded: boolean;
+  is_commercial_agreement: boolean;
+  vat_recoverable: boolean;
+  proposed_document_type: string;
+  proposed_natura: string | null;
+  proposed_tax_rate: string | null;
+  warning_code: string | null;
+  warning_message: string | null;
+  dati_fatture_collegate: { id_documento: string; data: string; rma_number: string };
+  totals: { net: string; vat: string; gross: string };
+}
+
+export interface IssuedReturnCreditNote {
+  credit_note_id: string;
+  invoice_number: string;
+  document_type: string | null;
+  vat_nature: string | null;
+  total_net: string;
+  total_tax: string;
+  total_gross: string;
+  customer_return_id: string;
+}
