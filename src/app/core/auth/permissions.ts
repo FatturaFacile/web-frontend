@@ -205,6 +205,12 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
   // Expense and travel management (Mod 075): every member files their own reports, the API decides who approves.
   // The corporate card reconciliation is the finance ability.
   expense_management: { read: ANY_MEMBER, write: ANY_MEMBER },
+  // Tender management (Mod 169): bids, vault documents and offers are commercial and finance work.
+  tender_management: {
+    read: FINANCE_READERS,
+    write: FINANCE,
+    grants: { read: ['tender_management.read', 'tender_management.*'], write: ['tender_management.write', 'tender_management.*'] },
+  },
   expense_management_finance: {
     read: FINANCE_READERS,
     write: FINANCE,
