@@ -2,17 +2,19 @@ import { DecimalPipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  computed,
+  DestroyRef,
   inject,
   OnInit,
   signal,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import {
   SUPPLIER_RATING_COMPONENTS,
   SupplierRating,
   SupplierRatingComponentKey,
+  SupplierRatingSortField,
   SupplierTier,
 } from '@domain/procurement/srm.models';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
@@ -24,15 +26,20 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzProgressModule } from 'ng-zorro-antd/progress';
 import { NzSelectModule } from 'ng-zorro-antd/select';
-import { NzTableModule } from 'ng-zorro-antd/table';
+import { NzTableModule, NzTableQueryParams } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
+import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 import { ratingComponentKey, scoreStatus, tierColor, toNumber } from './srm.helpers';
 import { SrmStore } from './srm.store';
 
 const TIERS: readonly SupplierTier[] = ['A', 'B', 'C', 'D'];
+const DEFAULT_PAGE_SIZE = 20;
 
-/** Supplier scorecards: composite 0-100 rating, A-D tier and the five weighted components per supplier. */
+/**
+ * Supplier scorecards: composite 0-100 rating, A-D tier and the five weighted components per supplier.
+ * Search, tier filter, sorting and paging are executed by the API (`/procurement/srm/scorecards`).
+ */
 @Component({
   selector: 'app-supplier-scorecards-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -75,16 +82,17 @@ const TIERS: readonly SupplierTier[] = ['A', 'B', 'C', 'D'];
         nz-input
         type="search"
         [ngModel]="search()"
-        (ngModelChange)="search.set($event)"
+        (ngModelChange)="onSearch($event)"
         [placeholder]="'srm.scorecards.search' | translate"
         data-testid="scorecard-search"
       />
       <nz-select
         [ngModel]="tierFilter()"
-        (ngModelChange)="tierFilter.set($event)"
+        (ngModelChange)="onTier($event)"
         [nzPlaceHolder]="'srm.scorecards.allTiers' | translate"
         nzAllowClear
         class="tier-select"
+        data-testid="scorecard-tier"
       >
         @for (tier of tiers; track tier) {
           <nz-option [nzValue]="tier" [nzLabel]="'srm.tier.' + tier | translate" />
@@ -103,21 +111,31 @@ const TIERS: readonly SupplierTier[] = ['A', 'B', 'C', 'D'];
 
     <nz-table
       #table
-      [nzData]="rows()"
+      [nzData]="store.scorecards()"
       [nzLoading]="store.loading()"
-      [nzPageSize]="20"
+      [nzFrontPagination]="false"
+      [nzTotal]="store.scorecardsMeta()?.total ?? 0"
+      [nzPageIndex]="pageIndex()"
+      [nzPageSize]="pageSize()"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="[10, 20, 50, 100]"
       [nzNoResult]="noResult"
+      (nzQueryParams)="onQuery($event)"
       nzSize="small"
       data-testid="scorecard-table"
     >
       <thead>
         <tr>
-          <th [nzSortFn]="byName">{{ 'srm.scorecards.col.supplier' | translate }}</th>
+          <th nzColumnKey="name" [nzSortFn]="true" [nzSortOrder]="sortOrder('name')">
+            {{ 'srm.scorecards.col.supplier' | translate }}
+          </th>
           <th>{{ 'srm.scorecards.col.qualification' | translate }}</th>
           @for (component of components; track component) {
-            <th [nzSortFn]="sortBy(component)">{{ componentLabel(component) | translate }}</th>
+            <th [nzColumnKey]="component" [nzSortFn]="true" [nzSortOrder]="sortOrder(component)">
+              {{ componentLabel(component) | translate }}
+            </th>
           }
-          <th [nzSortFn]="byScore" nzSortOrder="descend">
+          <th nzColumnKey="score" [nzSortFn]="true" [nzSortOrder]="sortOrder('score')">
             {{ 'srm.scorecards.col.score' | translate }}
           </th>
           <th>{{ 'srm.scorecards.col.tier' | translate }}</th>
@@ -200,55 +218,100 @@ const TIERS: readonly SupplierTier[] = ['A', 'B', 'C', 'D'];
 })
 export class SupplierScorecardsPageComponent implements OnInit {
   protected readonly store = inject(SrmStore);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly search$ = new Subject<string>();
+
   protected readonly tiers = TIERS;
   protected readonly components = SUPPLIER_RATING_COMPONENTS;
   protected readonly range = signal<Date[]>([new Date(new Date().getFullYear(), 0, 1), new Date()]);
   protected readonly search = signal('');
   protected readonly tierFilter = signal<SupplierTier | null>(null);
+  protected readonly pageIndex = signal(1);
+  protected readonly pageSize = signal(DEFAULT_PAGE_SIZE);
+  protected readonly sort = signal<{ field: SupplierRatingSortField; direction: 'asc' | 'desc' }>({
+    field: 'score',
+    direction: 'desc',
+  });
   protected readonly highlighted = signal<string | null>(
     inject(ActivatedRoute).snapshot.queryParamMap.get('supplier'),
   );
 
-  protected readonly rows = computed<SupplierRating[]>(() => {
-    const term = this.search().trim().toLowerCase();
-    const tier = this.tierFilter();
-    return this.store
-      .scorecards()
-      .filter(
-        (row) =>
-          (term === '' || row.supplier_name.toLowerCase().includes(term)) &&
-          (!tier || row.tier === tier),
-      );
-  });
-
-  protected readonly byName = (a: SupplierRating, b: SupplierRating): number =>
-    a.supplier_name.localeCompare(b.supplier_name);
-  protected readonly byScore = (a: SupplierRating, b: SupplierRating): number =>
-    (toNumber(a.score) ?? -1) - (toNumber(b.score) ?? -1);
-
   protected toNumber = toNumber;
 
   ngOnInit(): void {
+    this.search$
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.pageIndex.set(1);
+        this.reload();
+      });
     this.reload();
   }
 
   protected reload(): void {
     const [from, to] = this.range();
-    this.store.loadScorecards({ from: iso(from), to: iso(to) });
+    const search = this.search().trim();
+    this.store.loadScorecards({
+      from: iso(from),
+      to: iso(to),
+      search: search === '' ? undefined : search,
+      tier: this.tierFilter() ?? undefined,
+      sort: this.sort().field,
+      direction: this.sort().direction,
+      page: this.pageIndex(),
+      per_page: this.pageSize(),
+    });
   }
 
   protected onRange(range: Date[] | null): void {
     if (range && range.length === 2) {
       this.range.set(range);
+      this.pageIndex.set(1);
       this.reload();
     }
   }
 
-  protected sortBy(
-    component: SupplierRatingComponentKey,
-  ): (a: SupplierRating, b: SupplierRating) => number {
-    return (a, b) =>
-      (toNumber(a.components[component]) ?? -1) - (toNumber(b.components[component]) ?? -1);
+  protected onSearch(term: string): void {
+    this.search.set(term);
+    this.search$.next(term.trim());
+  }
+
+  protected onTier(tier: SupplierTier | null): void {
+    this.tierFilter.set(tier);
+    this.pageIndex.set(1);
+    this.reload();
+  }
+
+  /** Page, page size and sort changes of the table; they re-query the API instead of sorting in the browser. */
+  protected onQuery(params: NzTableQueryParams): void {
+    const active = params.sort.find((entry) => entry.value !== null);
+    const next: { field: SupplierRatingSortField; direction: 'asc' | 'desc' } = active
+      ? {
+          field: active.key as SupplierRatingSortField,
+          direction: active.value === 'ascend' ? 'asc' : 'desc',
+        }
+      : { field: 'score', direction: 'desc' };
+
+    const sortChanged =
+      next.field !== this.sort().field || next.direction !== this.sort().direction;
+    const sizeChanged = params.pageSize !== this.pageSize();
+
+    if (!sortChanged && !sizeChanged && params.pageIndex === this.pageIndex()) {
+      return;
+    }
+
+    this.sort.set(next);
+    this.pageSize.set(params.pageSize);
+    this.pageIndex.set(sortChanged || sizeChanged ? 1 : params.pageIndex);
+    this.reload();
+  }
+
+  protected sortOrder(field: SupplierRatingSortField): 'ascend' | 'descend' | null {
+    const current = this.sort();
+    if (current.field !== field) {
+      return null;
+    }
+    return current.direction === 'asc' ? 'ascend' : 'descend';
   }
 
   protected componentLabel(component: SupplierRatingComponentKey): string {

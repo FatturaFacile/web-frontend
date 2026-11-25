@@ -4,7 +4,9 @@ import {
   DocumentFlow,
   DocumentFlowEntryType,
   SrmDashboard,
+  SrmPageMeta,
   SrmPeriod,
+  SrmScorecardQuery,
   SupplierRating,
 } from '@domain/procurement/srm.models';
 import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
@@ -14,6 +16,7 @@ import { extractApiErrorMessage } from '../requisitions/pr-status.helpers';
 export interface SrmState {
   dashboard: SrmDashboard | null;
   scorecards: SupplierRating[];
+  scorecardsMeta: SrmPageMeta | null;
   flow: DocumentFlow | null;
   loading: boolean;
   error: string | null;
@@ -22,6 +25,7 @@ export interface SrmState {
 const initialState: SrmState = {
   dashboard: null,
   scorecards: [],
+  scorecardsMeta: null,
   flow: null,
   loading: false,
   error: null,
@@ -51,15 +55,15 @@ export const SrmStore = signalStore(
           .subscribe();
       },
 
-      loadScorecards(period: SrmPeriod = {}): void {
+      loadScorecards(query: SrmScorecardQuery = {}): void {
         begin();
         api
-          .scorecards(period)
+          .scorecards(query)
           .pipe(
-            tap((scorecards) => patchState(store, { scorecards })),
+            tap((page) => patchState(store, { scorecards: page.data, scorecardsMeta: page.meta })),
             catchError((err: unknown) => {
               fail(err);
-              return of([]);
+              return of(null);
             }),
             finalize(() => patchState(store, { loading: false })),
           )

@@ -160,3 +160,30 @@ export interface SrmPeriod {
   from?: string;
   to?: string;
 }
+
+export type SupplierRatingSortField = 'score' | 'name' | SupplierRatingComponentKey;
+
+/** Period, filters, sorting and page of the supplier rating ranking. */
+export interface SrmScorecardQuery extends SrmPeriod {
+  search?: string;
+  tier?: SupplierTier;
+  sort?: SupplierRatingSortField;
+  direction?: 'asc' | 'desc';
+  page?: number;
+  per_page?: number;
+}
+
+export interface SrmPageMeta {
+  current_page: number;
+  per_page: number;
+  total: number;
+  last_page: number;
+  from: number | null;
+  to: number | null;
+}
+
+/** One page of the supplier rating ranking. */
+export interface SupplierRatingPage {
+  data: SupplierRating[];
+  meta: SrmPageMeta;
+}

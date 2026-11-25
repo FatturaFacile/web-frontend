@@ -165,7 +165,7 @@ export function documentLink(node: Pick<DocumentFlowNode, 'type' | 'id'>): strin
     case 'purchase_return':
       return ['/procurement/returns', node.id];
     case 'supplier_invoice':
-      return ['/purchases/invoices'];
+      return ['/purchases/invoices', node.id];
     default:
       return null;
   }

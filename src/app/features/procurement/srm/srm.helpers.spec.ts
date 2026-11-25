@@ -71,6 +71,9 @@ describe('srm helpers', () => {
       'c-1',
       'balance',
     ]);
-    expect(documentLink({ type: 'supplier_invoice', id: 'i-1' })).toEqual(['/purchases/invoices']);
+    expect(documentLink({ type: 'supplier_invoice', id: 'i-1' })).toEqual([
+      '/purchases/invoices',
+      'i-1',
+    ]);
   });
 });
