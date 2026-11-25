@@ -33,6 +33,23 @@ export const TREASURY_OPERATIONS_ROUTES: Routes = [
         loadComponent: () => import('./iso20022/tr-payment-run.component').then((m) => m.TrPaymentRunComponent),
       },
       {
+        path: 'payment-flows',
+        loadComponent: () => import('./banking/tr-payment-flows.component').then((m) => m.TrPaymentFlowsComponent),
+      },
+      {
+        path: 'f24',
+        loadComponent: () => import('./banking/tr-f24.component').then((m) => m.TrF24Component),
+      },
+      {
+        path: 'statement-hub',
+        loadComponent: () => import('./banking/tr-statement-hub.component').then((m) => m.TrStatementHubComponent),
+      },
+      {
+        path: 'smart-reconciliation',
+        loadComponent: () =>
+          import('./banking/tr-smart-reconciliation.component').then((m) => m.TrSmartReconciliationComponent),
+      },
+      {
         path: 'reconciliation-rules',
         loadComponent: () => import('./rules/tr-reconciliation-rules.component').then((m) => m.TrReconciliationRulesComponent),
       },
