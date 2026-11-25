@@ -1,0 +1,171 @@
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  margin-bottom: 16px;
+
+  .spacer {
+    flex: 1;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  min-width: 160px;
+  gap: 4px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  .actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.main-card {
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.feedback {
+  margin-bottom: 12px;
+}
+
+.num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.muted {
+  color: var(--ant-color-text-secondary, #6b7280);
+  display: block;
+}
+
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.kpi-value {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.tiers {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(90px, 1fr)) auto;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+/* Benchmark bars: the store against the median of its cluster, the network average and the top quartile. */
+.bench-row {
+  margin-bottom: 20px;
+}
+
+.bench-bar {
+  display: grid;
+  grid-template-columns: minmax(130px, 220px) 1fr minmax(80px, 120px);
+  align-items: center;
+  gap: 8px;
+  margin: 3px 0;
+
+  .track {
+    background: var(--ant-color-fill-tertiary, #f0f0f0);
+    border-radius: 4px;
+    height: 12px;
+    overflow: hidden;
+  }
+
+  .fill {
+    display: block;
+    height: 100%;
+    border-radius: 4px;
+  }
+
+  .own {
+    background: #1677ff;
+  }
+
+  .median {
+    background: #13c2c2;
+  }
+
+  .average {
+    background: #8c8c8c;
+  }
+
+  .top {
+    background: #52c41a;
+  }
+}
+
+/* Audit checklist: touch targets sized for a tablet in the store. */
+.criterion {
+  border: 1px solid var(--ant-color-border-secondary, #f0f0f0);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+
+  .scores {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 8px 0;
+  }
+
+  .score-button {
+    min-width: 48px;
+    min-height: 48px;
+  }
+}
+
+.photos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+
+  figure {
+    margin: 0;
+    width: 140px;
+
+    img {
+      width: 140px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 6px;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .toolbar .field {
+    min-width: 100%;
+  }
+
+  .bench-bar {
+    grid-template-columns: 1fr;
+  }
+}

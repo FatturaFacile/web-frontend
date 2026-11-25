@@ -1495,6 +1495,61 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         ],
       },
       {
+        key: 'NAV.FRANCHISE_NETWORK',
+        icon: 'fa-solid fa-store',
+        module: 'franchise_network',
+        children: [
+          {
+            key: 'NAV.FRANCHISE_NETWORK_COMMAND',
+            route: '/franchise-network/command',
+            icon: 'fa-solid fa-gauge-high',
+            module: 'franchise_network',
+          },
+          {
+            key: 'NAV.FRANCHISE_NETWORK_STORES',
+            route: '/franchise-network/stores',
+            icon: 'fa-solid fa-shop',
+            module: 'franchise_network',
+          },
+          {
+            key: 'NAV.FRANCHISE_NETWORK_AGREEMENTS',
+            route: '/franchise-network/agreements',
+            icon: 'fa-solid fa-file-contract',
+            module: 'franchise_network',
+          },
+          {
+            key: 'NAV.FRANCHISE_NETWORK_FORMULAS',
+            route: '/franchise-network/formulas',
+            icon: 'fa-solid fa-percent',
+            module: 'franchise_network',
+          },
+          {
+            key: 'NAV.FRANCHISE_NETWORK_PUSHES',
+            route: '/franchise-network/pushes',
+            icon: 'fa-solid fa-cloud-arrow-up',
+            module: 'franchise_network',
+          },
+          {
+            key: 'NAV.FRANCHISE_NETWORK_BILLING',
+            route: '/franchise-network/billing',
+            icon: 'fa-solid fa-file-invoice-dollar',
+            module: 'franchise_network',
+          },
+          {
+            key: 'NAV.FRANCHISE_NETWORK_AUDITS',
+            route: '/franchise-network/audits',
+            icon: 'fa-solid fa-clipboard-check',
+            module: 'franchise_network',
+          },
+          {
+            key: 'NAV.FRANCHISE_NETWORK_PORTAL',
+            route: '/franchise-network/portal',
+            icon: 'fa-solid fa-handshake',
+            module: 'franchise_network',
+          },
+        ],
+      },
+      {
         key: 'NAV.PASSENGER_TRANSPORT',
         icon: 'fa-solid fa-van-shuttle',
         module: 'passenger_transport',
