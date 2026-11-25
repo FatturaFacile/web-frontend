@@ -659,6 +659,23 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'industrial-laundry',
+    canActivate: [
+      authGuard,
+      menuEnabledGuard,
+      featureFlagGuard('industrial_laundry'),
+      moduleGuard('industrial_laundry'),
+    ],
+    data: {
+      breadcrumb: 'NAV.INDUSTRIAL_LAUNDRY',
+      title: 'PAGE_TITLE.INDUSTRIAL_LAUNDRY_PAR_STOCK',
+    },
+    loadChildren: () =>
+      import('./features/industrial-laundry/industrial-laundry.routes').then(
+        (m) => m.INDUSTRIAL_LAUNDRY_ROUTES,
+      ),
+  },
+  {
     path: 'signatures',
     canActivate: [
       authGuard,

@@ -1434,6 +1434,49 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         ],
       },
       {
+        key: 'NAV.INDUSTRIAL_LAUNDRY',
+        icon: 'fa-solid fa-shirt',
+        module: 'industrial_laundry',
+        children: [
+          {
+            key: 'NAV.INDUSTRIAL_LAUNDRY_PAR_STOCK',
+            route: '/industrial-laundry',
+            icon: 'fa-solid fa-boxes-stacked',
+            module: 'industrial_laundry',
+          },
+          {
+            key: 'NAV.INDUSTRIAL_LAUNDRY_LOCKERS',
+            route: '/industrial-laundry/lockers',
+            icon: 'fa-solid fa-user-lock',
+            module: 'industrial_laundry',
+          },
+          {
+            key: 'NAV.INDUSTRIAL_LAUNDRY_PPE',
+            route: '/industrial-laundry/ppe',
+            icon: 'fa-solid fa-helmet-safety',
+            module: 'industrial_laundry',
+          },
+          {
+            key: 'NAV.INDUSTRIAL_LAUNDRY_DORMANT',
+            route: '/industrial-laundry/dormant',
+            icon: 'fa-solid fa-hourglass-half',
+            module: 'industrial_laundry',
+          },
+          {
+            key: 'NAV.INDUSTRIAL_LAUNDRY_RABC',
+            route: '/industrial-laundry/rabc',
+            icon: 'fa-solid fa-biohazard',
+            module: 'industrial_laundry',
+          },
+          {
+            key: 'NAV.INDUSTRIAL_LAUNDRY_BILLING',
+            route: '/industrial-laundry/billing',
+            icon: 'fa-solid fa-file-invoice-dollar',
+            module: 'industrial_laundry',
+          },
+        ],
+      },
+      {
         key: 'NAV.TRAVEL',
         icon: 'fa-solid fa-plane-departure',
         route: '/travel',

@@ -1,0 +1,91 @@
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  margin-bottom: 16px;
+
+  .spacer {
+    flex: 1;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  min-width: 160px;
+  gap: 4px;
+
+  &.wide {
+    min-width: 260px;
+  }
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px 16px;
+  margin-bottom: 12px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.main-card {
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.card-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+
+  h3 {
+    margin: 0;
+  }
+}
+
+.feedback {
+  margin-bottom: 12px;
+}
+
+.num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.reads-box {
+  width: 100%;
+  font-family: monospace;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.mono {
+  font-family: monospace;
+  font-size: 12px;
+}
+
+.hint {
+  color: rgba(0, 0, 0, 0.55);
+  font-size: 12px;
+}
+
+.totals {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 8px 16px;
+  margin-top: 12px;
+}
