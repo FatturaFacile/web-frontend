@@ -20,8 +20,21 @@ export const IC_ANOMALY_FILTERS: readonly Exclude<IcAnomalyType, 'none'>[] = [
   'tax',
   'missing_counterpart',
 ];
-export const IC_MATCH_STATUSES: readonly IcMatchStatus[] = ['unmatched', 'matched', 'disputed', 'written_off', 'adjusted'];
-export const IC_LINK_STATUSES: readonly IcLinkStatus[] = ['pending', 'drafted', 'confirmed', 'reversed', 'failed', 'skipped'];
+export const IC_MATCH_STATUSES: readonly IcMatchStatus[] = [
+  'unmatched',
+  'matched',
+  'disputed',
+  'written_off',
+  'adjusted',
+];
+export const IC_LINK_STATUSES: readonly IcLinkStatus[] = [
+  'pending',
+  'drafted',
+  'confirmed',
+  'reversed',
+  'failed',
+  'skipped',
+];
 export const IC_PAYMENT_STATUSES: readonly IcPaymentStatus[] = ['unpaid', 'partial', 'paid'];
 export const IC_ELIMINATION_TYPES: readonly IcEliminationType[] = [
   'intercompany_balance',
@@ -55,7 +68,13 @@ export interface IcOutcome {
   status: number | null;
 }
 
-export const IC_OK: IcOutcome = { ok: true, errorKey: null, detail: null, errors: {}, status: null };
+export const IC_OK: IcOutcome = {
+  ok: true,
+  errorKey: null,
+  detail: null,
+  errors: {},
+  status: null,
+};
 
 export function icErrorKey(code: string): string {
   return `intercompany.error.${code}`;
@@ -91,7 +110,8 @@ export function failureOf(error: unknown): IcOutcome {
     return { ok: false, errorKey: icErrorKey('generic'), detail: null, errors: {}, status: null };
   }
   const body: unknown = error.error;
-  const problem: IcProblem | null = body !== null && typeof body === 'object' ? (body as IcProblem) : null;
+  const problem: IcProblem | null =
+    body !== null && typeof body === 'object' ? (body as IcProblem) : null;
   const errors = problem?.errors ?? {};
   const first = Object.values(errors).flat()[0] ?? problem?.message ?? null;
   return {
@@ -248,7 +268,9 @@ export function packageFileName(standard: IcStandard, runId: string, format: str
 }
 
 /** Runs a write and turns its failure into an outcome; the value is null when it failed. */
-export async function attempt<T>(call: () => Promise<T>): Promise<{ outcome: IcOutcome; value: T | null }> {
+export async function attempt<T>(
+  call: () => Promise<T>,
+): Promise<{ outcome: IcOutcome; value: T | null }> {
   try {
     return { outcome: IC_OK, value: await call() };
   } catch (error) {

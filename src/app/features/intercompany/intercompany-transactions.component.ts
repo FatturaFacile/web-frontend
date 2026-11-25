@@ -8,7 +8,13 @@ import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
-import { IcLinkStatus, IcNettingRun, IcPaymentStatus, IcTransaction, PermissionsService } from '@core';
+import {
+  IcLinkStatus,
+  IcNettingRun,
+  IcPaymentStatus,
+  IcTransaction,
+  PermissionsService,
+} from '@core';
 import { MoneyPipe, TranslatePipe } from '@shared';
 import { IntercompanyContextStore } from './intercompany-context.store';
 import { IntercompanyNotifier } from './intercompany-notifier.service';
@@ -48,38 +54,74 @@ import {
   template: `
     @if (store.summary(); as summary) {
       <div class="kpis">
-        <nz-card nzSize="small"><strong>{{ summary.total }}</strong><br />{{ 'intercompany.transactions.kpiTotal' | translate }}</nz-card>
-        <nz-card nzSize="small"><strong>{{ summary.drafted }}</strong><br />{{ 'intercompany.enum.linkStatus.drafted' | translate }}</nz-card>
-        <nz-card nzSize="small"><strong>{{ summary.confirmed }}</strong><br />{{ 'intercompany.enum.linkStatus.confirmed' | translate }}</nz-card>
-        <nz-card nzSize="small"><strong>{{ summary.failed }}</strong><br />{{ 'intercompany.enum.linkStatus.failed' | translate }}</nz-card>
-        <nz-card nzSize="small"><strong>{{ summary.unpaid }}</strong><br />{{ 'intercompany.enum.paymentStatus.unpaid' | translate }}</nz-card>
+        <nz-card nzSize="small"
+          ><strong>{{ summary.total }}</strong
+          ><br />{{ 'intercompany.transactions.kpiTotal' | translate }}</nz-card
+        >
+        <nz-card nzSize="small"
+          ><strong>{{ summary.drafted }}</strong
+          ><br />{{ 'intercompany.enum.linkStatus.drafted' | translate }}</nz-card
+        >
+        <nz-card nzSize="small"
+          ><strong>{{ summary.confirmed }}</strong
+          ><br />{{ 'intercompany.enum.linkStatus.confirmed' | translate }}</nz-card
+        >
+        <nz-card nzSize="small"
+          ><strong>{{ summary.failed }}</strong
+          ><br />{{ 'intercompany.enum.linkStatus.failed' | translate }}</nz-card
+        >
+        <nz-card nzSize="small"
+          ><strong>{{ summary.unpaid }}</strong
+          ><br />{{ 'intercompany.enum.paymentStatus.unpaid' | translate }}</nz-card
+        >
         @for (entry of currencyTotals(summary.amount_by_currency); track entry[0]) {
-          <nz-card nzSize="small"><strong>{{ entry[1] | money: entry[0] }}</strong><br />{{ entry[0] }}</nz-card>
+          <nz-card nzSize="small"
+            ><strong>{{ entry[1] | money: entry[0] }}</strong
+            ><br />{{ entry[0] }}</nz-card
+          >
         }
       </div>
     }
 
     <div class="toolbar">
       <label for="ic-tx-status">{{ 'intercompany.transactions.status' | translate }}</label>
-      <nz-select id="ic-tx-status" class="select-sm" nzAllowClear [ngModel]="store.filters().status" (ngModelChange)="filter({ status: $event })">
+      <nz-select
+        id="ic-tx-status"
+        class="select-sm"
+        nzAllowClear
+        [ngModel]="store.filters().status"
+        (ngModelChange)="filter({ status: $event })"
+      >
         @for (status of statuses; track status) {
           <nz-option [nzValue]="status" [nzLabel]="enumKey('linkStatus', status) | translate" />
         }
       </nz-select>
       <label for="ic-tx-pay">{{ 'intercompany.transactions.paymentStatus' | translate }}</label>
-      <nz-select id="ic-tx-pay" class="select-sm" nzAllowClear [ngModel]="store.filters().payment_status" (ngModelChange)="filter({ payment_status: $event })">
+      <nz-select
+        id="ic-tx-pay"
+        class="select-sm"
+        nzAllowClear
+        [ngModel]="store.filters().payment_status"
+        (ngModelChange)="filter({ payment_status: $event })"
+      >
         @for (status of paymentStatuses; track status) {
           <nz-option [nzValue]="status" [nzLabel]="enumKey('paymentStatus', status) | translate" />
         }
       </nz-select>
       <span class="spacer"></span>
       @if (canWrite) {
-        <button nz-button type="button" [nzLoading]="store.loading()" (click)="scan()">{{ 'intercompany.transactions.scan' | translate }}</button>
+        <button nz-button type="button" [nzLoading]="store.loading()" (click)="scan()">
+          {{ 'intercompany.transactions.scan' | translate }}
+        </button>
       }
     </div>
     @if (store.lastScan(); as scanned) {
       <p class="muted">
-        {{ 'intercompany.transactions.scanResult' | translate: { created: scanned.created, skipped: scanned.skipped, failed: scanned.failed } }}
+        {{
+          'intercompany.transactions.scanResult'
+            | translate
+              : { created: scanned.created, skipped: scanned.skipped, failed: scanned.failed }
+        }}
       </p>
     }
 
@@ -111,8 +153,13 @@ import {
         @for (row of table.data; track row.id) {
           <tr>
             <td>
-              <a href="javascript:void(0)" (click)="store.openDetail(row.id)">{{ row.source_document_number }}</a>
-              <br /><span class="muted">{{ enumKey('documentType', row.document_type) | translate }} - {{ row.document_date }}</span>
+              <a href="javascript:void(0)" (click)="store.openDetail(row.id)">{{
+                row.source_document_number
+              }}</a>
+              <br /><span class="muted"
+                >{{ enumKey('documentType', row.document_type) | translate }} -
+                {{ row.document_date }}</span
+              >
             </td>
             <td>{{ row.source_tenant_name }}</td>
             <td>
@@ -126,13 +173,17 @@ import {
             </td>
             <td class="num">{{ row.gross_amount | money: row.currency }}</td>
             <td>
-              <nz-tag [nzColor]="statusColor(row.status)">{{ enumKey('linkStatus', row.status) | translate }}</nz-tag>
+              <nz-tag [nzColor]="statusColor(row.status)">{{
+                enumKey('linkStatus', row.status) | translate
+              }}</nz-tag>
               @if (row.error_message) {
                 <br /><span class="muted">{{ row.error_message }}</span>
               }
             </td>
             <td>
-              <nz-tag [nzColor]="payColor(row.payment_status)">{{ enumKey('paymentStatus', row.payment_status) | translate }}</nz-tag>
+              <nz-tag [nzColor]="payColor(row.payment_status)">{{
+                enumKey('paymentStatus', row.payment_status) | translate
+              }}</nz-tag>
             </td>
             <td class="num">
               @if (hasVariance(row.paid_variance)) {
@@ -143,21 +194,49 @@ import {
             </td>
             <td>
               @if (canWrite) {
-                @if (row.status === 'pending' || row.status === 'failed' || row.status === 'skipped') {
-                  <button nz-button nzSize="small" type="button" [disabled]="busy(row)" (click)="mirror(row)">
+                @if (
+                  row.status === 'pending' || row.status === 'failed' || row.status === 'skipped'
+                ) {
+                  <button
+                    nz-button
+                    nzSize="small"
+                    type="button"
+                    [disabled]="busy(row)"
+                    (click)="mirror(row)"
+                  >
                     {{ 'intercompany.transactions.createMirror' | translate }}
                   </button>
                 }
                 @if (row.status === 'drafted') {
-                  <button nz-button nzSize="small" nzType="primary" type="button" [disabled]="busy(row)" (click)="confirm(row)">
+                  <button
+                    nz-button
+                    nzSize="small"
+                    nzType="primary"
+                    type="button"
+                    [disabled]="busy(row)"
+                    (click)="confirm(row)"
+                  >
                     {{ 'intercompany.transactions.confirm' | translate }}
                   </button>
                 }
                 @if (row.status === 'drafted' || row.status === 'confirmed') {
-                  <button nz-button nzSize="small" type="button" [disabled]="busy(row)" (click)="syncPayment(row)">
+                  <button
+                    nz-button
+                    nzSize="small"
+                    type="button"
+                    [disabled]="busy(row)"
+                    (click)="syncPayment(row)"
+                  >
                     {{ 'intercompany.transactions.syncPayment' | translate }}
                   </button>
-                  <button nz-button nzSize="small" nzDanger type="button" [disabled]="busy(row)" (click)="askReverse(row)">
+                  <button
+                    nz-button
+                    nzSize="small"
+                    nzDanger
+                    type="button"
+                    [disabled]="busy(row)"
+                    (click)="askReverse(row)"
+                  >
                     {{ 'intercompany.transactions.reverse' | translate }}
                   </button>
                 }
@@ -197,10 +276,19 @@ import {
           </button>
         </form>
       }
-      <nz-table #netting nzSize="small" [nzData]="store.nettingRuns()" [nzShowPagination]="false" [nzScroll]="{ x: '900px' }">
+      <nz-table
+        #netting
+        nzSize="small"
+        [nzData]="store.nettingRuns()"
+        [nzShowPagination]="false"
+        [nzScroll]="{ x: '900px' }"
+      >
         <thead>
           <tr>
-            <th>{{ 'intercompany.transactions.entityA' | translate }} / {{ 'intercompany.transactions.entityB' | translate }}</th>
+            <th>
+              {{ 'intercompany.transactions.entityA' | translate }} /
+              {{ 'intercompany.transactions.entityB' | translate }}
+            </th>
             <th>{{ 'intercompany.transactions.asOf' | translate }}</th>
             <th class="num">{{ 'intercompany.transactions.receivableTotal' | translate }}</th>
             <th class="num">{{ 'intercompany.transactions.payableTotal' | translate }}</th>
@@ -214,21 +302,37 @@ import {
         <tbody>
           @for (run of netting.data; track run.id) {
             <tr>
-              <td>{{ ctx.memberName(run.entity_a_tenant_id) }} / {{ ctx.memberName(run.entity_b_tenant_id) }}</td>
+              <td>
+                {{ ctx.memberName(run.entity_a_tenant_id) }} /
+                {{ ctx.memberName(run.entity_b_tenant_id) }}
+              </td>
               <td>{{ run.as_of_date }}</td>
               <td class="num">{{ run.receivable_total | money: run.currency }}</td>
               <td class="num">{{ run.payable_total | money: run.currency }}</td>
               <td class="num">{{ run.net_amount | money: run.currency }}</td>
               <td>{{ 'intercompany.transactions.direction.' + run.net_direction | translate }}</td>
               <td class="num">{{ run.fx_variance | money: run.currency }}</td>
-              <td><nz-tag [nzColor]="netColor(run.status)">{{ enumKey('nettingStatus', run.status) | translate }}</nz-tag></td>
+              <td>
+                <nz-tag [nzColor]="netColor(run.status)">{{
+                  enumKey('nettingStatus', run.status) | translate
+                }}</nz-tag>
+              </td>
               <td>
                 @if (canWrite && run.status === 'draft') {
-                  <button nz-button nzSize="small" nzType="primary" type="button" nz-popconfirm
-                    [nzPopconfirmTitle]="'intercompany.transactions.confirmNetting' | translate" (nzOnConfirm)="confirmNetting(run)">
+                  <button
+                    nz-button
+                    nzSize="small"
+                    nzType="primary"
+                    type="button"
+                    nz-popconfirm
+                    [nzPopconfirmTitle]="'intercompany.transactions.confirmNetting' | translate"
+                    (nzOnConfirm)="confirmNetting(run)"
+                  >
                     {{ 'intercompany.transactions.confirm' | translate }}
                   </button>
-                  <button nz-button nzSize="small" type="button" (click)="askCancelNetting(run)">{{ 'intercompany.common.cancel' | translate }}</button>
+                  <button nz-button nzSize="small" type="button" (click)="askCancelNetting(run)">
+                    {{ 'intercompany.common.cancel' | translate }}
+                  </button>
                 }
               </td>
             </tr>
@@ -247,9 +351,13 @@ import {
         @if (store.detail(); as detail) {
           <p>
             <strong>{{ detail.source_document_number }}</strong> ({{ detail.source_tenant_name }}) →
-            <strong>{{ detail.mirror_document_number ?? '-' }}</strong> ({{ detail.mirror_tenant_name }})
+            <strong>{{ detail.mirror_document_number ?? '-' }}</strong> ({{
+              detail.mirror_tenant_name
+            }})
           </p>
-          <p class="muted">{{ 'intercompany.transactions.pairId' | translate }}: {{ detail.pair_id }}</p>
+          <p class="muted">
+            {{ 'intercompany.transactions.pairId' | translate }}: {{ detail.pair_id }}
+          </p>
           <h4>{{ 'intercompany.transactions.syncLog' | translate }}</h4>
           <ul>
             @for (event of detail.events ?? []; track event.id) {
@@ -268,8 +376,16 @@ import {
       </ng-container>
     </nz-drawer>
 
-    <app-intercompany-reason-dialog [(open)]="reverseOpen" titleKey="intercompany.transactions.reverse" (confirmed)="reverse($event.reason)" />
-    <app-intercompany-reason-dialog [(open)]="cancelOpen" titleKey="intercompany.transactions.cancelNetting" (confirmed)="cancelNetting($event.reason)" />
+    <app-intercompany-reason-dialog
+      [(open)]="reverseOpen"
+      titleKey="intercompany.transactions.reverse"
+      (confirmed)="reverse($event.reason)"
+    />
+    <app-intercompany-reason-dialog
+      [(open)]="cancelOpen"
+      titleKey="intercompany.transactions.cancelNetting"
+      (confirmed)="cancelNetting($event.reason)"
+    />
   `,
 })
 export class IntercompanyTransactionsComponent {
@@ -322,7 +438,11 @@ export class IntercompanyTransactionsComponent {
   protected filter(change: Record<string, unknown>, resetPage = true): void {
     const groupId = this.ctx.groupId();
     if (groupId !== null) {
-      void this.store.load(groupId, { ...this.store.filters(), ...(resetPage ? { page: 1 } : {}), ...change });
+      void this.store.load(groupId, {
+        ...this.store.filters(),
+        ...(resetPage ? { page: 1 } : {}),
+        ...change,
+      });
     }
   }
 
@@ -342,7 +462,10 @@ export class IntercompanyTransactionsComponent {
   }
 
   protected async syncPayment(row: IcTransaction): Promise<void> {
-    this.notifier.report(await this.store.syncPayment(row.id), 'intercompany.transactions.syncDone');
+    this.notifier.report(
+      await this.store.syncPayment(row.id),
+      'intercompany.transactions.syncDone',
+    );
   }
 
   protected askReverse(row: IcTransaction): void {
@@ -353,19 +476,28 @@ export class IntercompanyTransactionsComponent {
   protected async reverse(reason: string): Promise<void> {
     const row = this.pending as IcTransaction | null;
     if (row !== null) {
-      this.notifier.report(await this.store.reverse(row.id, reason), 'intercompany.transactions.reverseDone');
+      this.notifier.report(
+        await this.store.reverse(row.id, reason),
+        'intercompany.transactions.reverseDone',
+      );
     }
   }
 
   protected async proposeNetting(): Promise<void> {
     const groupId = this.ctx.groupId();
     if (groupId !== null && this.nettingForm.valid) {
-      this.notifier.report(await this.store.proposeNetting(groupId, this.nettingForm.getRawValue()), 'intercompany.transactions.nettingProposed');
+      this.notifier.report(
+        await this.store.proposeNetting(groupId, this.nettingForm.getRawValue()),
+        'intercompany.transactions.nettingProposed',
+      );
     }
   }
 
   protected async confirmNetting(run: IcNettingRun): Promise<void> {
-    this.notifier.report(await this.store.confirmNetting(run.id), 'intercompany.transactions.nettingConfirmed');
+    this.notifier.report(
+      await this.store.confirmNetting(run.id),
+      'intercompany.transactions.nettingConfirmed',
+    );
   }
 
   protected askCancelNetting(run: IcNettingRun): void {

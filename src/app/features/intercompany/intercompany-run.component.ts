@@ -16,7 +16,14 @@ import { IntercompanyContextStore } from './intercompany-context.store';
 import { IntercompanyNotifier } from './intercompany-notifier.service';
 import { IntercompanyReasonDialogComponent } from './intercompany-reason-dialog.component';
 import { IntercompanyRunStore } from './intercompany-run.store';
-import { enumKey, IC_ELIMINATION_TYPES, IC_MODULE, IC_RUN_STEPS, isNonZero, runStatusColor } from './intercompany.util';
+import {
+  enumKey,
+  IC_ELIMINATION_TYPES,
+  IC_MODULE,
+  IC_RUN_STEPS,
+  isNonZero,
+  runStatusColor,
+} from './intercompany.util';
 
 /**
  * The guided consolidation run: scope and tree validation, translation and NCI, the elimination ledger, review, then lock
@@ -45,12 +52,24 @@ import { enumKey, IC_ELIMINATION_TYPES, IC_MODULE, IC_RUN_STEPS, isNonZero, runS
     @if (canWrite) {
       <div class="toolbar">
         <label for="ic-run-period">{{ 'intercompany.run.newRun' | translate }}</label>
-        <nz-select id="ic-run-period" class="select-md" nzShowSearch [ngModel]="periodId()" (ngModelChange)="periodId.set($event)">
+        <nz-select
+          id="ic-run-period"
+          class="select-md"
+          nzShowSearch
+          [ngModel]="periodId()"
+          (ngModelChange)="periodId.set($event)"
+        >
           @for (period of periods.periods(); track period.id) {
             <nz-option [nzValue]="period.id" [nzLabel]="period.label" />
           }
         </nz-select>
-        <button nz-button type="button" [disabled]="!periodId()" [nzLoading]="store.busy()" (click)="start()">
+        <button
+          nz-button
+          type="button"
+          [disabled]="!periodId()"
+          [nzLoading]="store.busy()"
+          (click)="start()"
+        >
           {{ 'intercompany.run.start' | translate }}
         </button>
       </div>
@@ -60,14 +79,23 @@ import { enumKey, IC_ELIMINATION_TYPES, IC_MODULE, IC_RUN_STEPS, isNonZero, runS
       <nz-alert nzType="info" nzShowIcon [nzMessage]="'intercompany.run.noRun' | translate" />
     } @else if (store.workflow(); as workflow) {
       <div class="toolbar">
-        <nz-tag [nzColor]="statusColor(workflow.status)">{{ enumKey('runStatus', workflow.status) | translate }}</nz-tag>
-        <span class="muted">{{ 'intercompany.run.version' | translate }} {{ workflow.version }}</span>
+        <nz-tag [nzColor]="statusColor(workflow.status)">{{
+          enumKey('runStatus', workflow.status) | translate
+        }}</nz-tag>
+        <span class="muted"
+          >{{ 'intercompany.run.version' | translate }} {{ workflow.version }}</span
+        >
       </div>
       @if (store.error(); as key) {
         <nz-alert nzType="error" nzShowIcon [nzMessage]="key | translate" class="section" />
       }
 
-      <nz-steps [nzCurrent]="store.step()" nzSize="small" (nzIndexChange)="store.goTo($event)" class="section">
+      <nz-steps
+        [nzCurrent]="store.step()"
+        nzSize="small"
+        (nzIndexChange)="store.goTo($event)"
+        class="section"
+      >
         @for (step of steps; track step) {
           <nz-step [nzTitle]="'intercompany.run.step.' + step | translate" />
         }
@@ -81,7 +109,10 @@ import { enumKey, IC_ELIMINATION_TYPES, IC_MODULE, IC_RUN_STEPS, isNonZero, runS
               <nz-alert
                 [nzType]="scope.ready ? 'success' : 'warning'"
                 nzShowIcon
-                [nzMessage]="(scope.ready ? 'intercompany.run.scopeReady' : 'intercompany.run.scopeNotReady') | translate"
+                [nzMessage]="
+                  (scope.ready ? 'intercompany.run.scopeReady' : 'intercompany.run.scopeNotReady')
+                    | translate
+                "
               />
               <nz-table #checks nzSize="small" [nzData]="scope.checks" [nzShowPagination]="false">
                 <thead>
@@ -97,7 +128,12 @@ import { enumKey, IC_ELIMINATION_TYPES, IC_MODULE, IC_RUN_STEPS, isNonZero, runS
                     <tr>
                       <td>{{ 'intercompany.run.checks.' + check.code | translate }}</td>
                       <td>{{ ctx.memberName(check.entity_tenant_id) }}</td>
-                      <td><nz-tag [nzColor]="check.passed ? 'green' : 'red'">{{ (check.passed ? 'intercompany.run.passed' : 'intercompany.run.failed') | translate }}</nz-tag></td>
+                      <td>
+                        <nz-tag [nzColor]="check.passed ? 'green' : 'red'">{{
+                          (check.passed ? 'intercompany.run.passed' : 'intercompany.run.failed')
+                            | translate
+                        }}</nz-tag>
+                      </td>
                       <td>{{ check.detail ?? '' }}</td>
                     </tr>
                   }
@@ -105,20 +141,37 @@ import { enumKey, IC_ELIMINATION_TYPES, IC_MODULE, IC_RUN_STEPS, isNonZero, runS
               </nz-table>
             }
             <div class="toolbar">
-              <button nz-button type="button" (click)="store.revalidateScope(runId())">{{ 'intercompany.run.revalidate' | translate }}</button>
+              <button nz-button type="button" (click)="store.revalidateScope(runId())">
+                {{ 'intercompany.run.revalidate' | translate }}
+              </button>
               @if (canWrite && store.canAdvanceTo()('calculating')) {
-                <button nz-button nzType="primary" type="button" [disabled]="!store.scope()?.ready" [nzLoading]="store.busy()" (click)="advance('calculating')">
+                <button
+                  nz-button
+                  nzType="primary"
+                  type="button"
+                  [disabled]="!store.scope()?.ready"
+                  [nzLoading]="store.busy()"
+                  (click)="advance('calculating')"
+                >
                   {{ 'intercompany.run.advanceCalculating' | translate }}
                 </button>
               }
-              <button nz-button type="button" (click)="store.goTo(1)">{{ 'intercompany.common.next' | translate }}</button>
+              <button nz-button type="button" (click)="store.goTo(1)">
+                {{ 'intercompany.common.next' | translate }}
+              </button>
             </div>
           </nz-card>
         }
         @case (1) {
           <nz-card [nzTitle]="'intercompany.run.step.translation' | translate">
             @if (ctx.run(); as run) {
-              <nz-table #members nzSize="small" [nzData]="run.members" [nzShowPagination]="false" [nzScroll]="{ x: '760px' }">
+              <nz-table
+                #members
+                nzSize="small"
+                [nzData]="run.members"
+                [nzShowPagination]="false"
+                [nzScroll]="{ x: '760px' }"
+              >
                 <thead>
                   <tr>
                     <th>{{ 'intercompany.structure.entity' | translate }}</th>
@@ -136,7 +189,11 @@ import { enumKey, IC_ELIMINATION_TYPES, IC_MODULE, IC_RUN_STEPS, isNonZero, runS
                     <tr>
                       <td>{{ member.name }}</td>
                       <td>{{ member.currency }}</td>
-                      <td>{{ enumKey('consolidationMethod', member.consolidation_method) | translate }}</td>
+                      <td>
+                        {{
+                          enumKey('consolidationMethod', member.consolidation_method) | translate
+                        }}
+                      </td>
                       <td class="num">{{ member.effective_ownership }}</td>
                       <td class="num">{{ member.consolidation_share }}</td>
                       <td class="num">{{ rateOf(member.tenant_id, 'closing') }}</td>
@@ -152,7 +209,13 @@ import { enumKey, IC_ELIMINATION_TYPES, IC_MODULE, IC_RUN_STEPS, isNonZero, runS
             }
             @if (store.nci(); as nci) {
               <h4>{{ 'intercompany.run.nciBreakdown' | translate }}</h4>
-              <nz-table #nciRows nzSize="small" [nzData]="nci.rows" [nzShowPagination]="false" [nzScroll]="{ x: '720px' }">
+              <nz-table
+                #nciRows
+                nzSize="small"
+                [nzData]="nci.rows"
+                [nzShowPagination]="false"
+                [nzScroll]="{ x: '720px' }"
+              >
                 <thead>
                   <tr>
                     <th>{{ 'intercompany.structure.entity' | translate }}</th>
@@ -183,8 +246,12 @@ import { enumKey, IC_ELIMINATION_TYPES, IC_MODULE, IC_RUN_STEPS, isNonZero, runS
               </nz-table>
             }
             <div class="toolbar">
-              <button nz-button type="button" (click)="store.goTo(0)">{{ 'intercompany.common.back' | translate }}</button>
-              <button nz-button type="button" (click)="store.goTo(2)">{{ 'intercompany.common.next' | translate }}</button>
+              <button nz-button type="button" (click)="store.goTo(0)">
+                {{ 'intercompany.common.back' | translate }}
+              </button>
+              <button nz-button type="button" (click)="store.goTo(2)">
+                {{ 'intercompany.common.next' | translate }}
+              </button>
             </div>
           </nz-card>
         }
@@ -192,14 +259,28 @@ import { enumKey, IC_ELIMINATION_TYPES, IC_MODULE, IC_RUN_STEPS, isNonZero, runS
           <nz-card [nzTitle]="'intercompany.run.step.eliminations' | translate">
             <div class="toolbar">
               <label for="ic-elim-type">{{ 'intercompany.run.eliminationType' | translate }}</label>
-              <nz-select id="ic-elim-type" class="select-md" nzAllowClear [ngModel]="store.ledgerType() || null" (ngModelChange)="filterLedger($event)">
+              <nz-select
+                id="ic-elim-type"
+                class="select-md"
+                nzAllowClear
+                [ngModel]="store.ledgerType() || null"
+                (ngModelChange)="filterLedger($event)"
+              >
                 @for (type of eliminationTypes; track type) {
-                  <nz-option [nzValue]="type" [nzLabel]="enumKey('eliminationType', type) | translate" />
+                  <nz-option
+                    [nzValue]="type"
+                    [nzLabel]="enumKey('eliminationType', type) | translate"
+                  />
                 }
               </nz-select>
             </div>
             @if (store.ledger(); as ledger) {
-              <nz-table #totals nzSize="small" [nzData]="totalsOf(ledger.totals_by_type)" [nzShowPagination]="false">
+              <nz-table
+                #totals
+                nzSize="small"
+                [nzData]="totalsOf(ledger.totals_by_type)"
+                [nzShowPagination]="false"
+              >
                 <thead>
                   <tr>
                     <th>{{ 'intercompany.run.eliminationType' | translate }}</th>
@@ -218,7 +299,13 @@ import { enumKey, IC_ELIMINATION_TYPES, IC_MODULE, IC_RUN_STEPS, isNonZero, runS
               <nz-collapse>
                 @for (entry of ledger.entries; track entry.adjustment_id) {
                   <nz-collapse-panel [nzHeader]="entryHeader(entry)">
-                    <nz-table #lines nzSize="small" [nzData]="entry.lines" [nzShowPagination]="false" [nzScroll]="{ x: '820px' }">
+                    <nz-table
+                      #lines
+                      nzSize="small"
+                      [nzData]="entry.lines"
+                      [nzShowPagination]="false"
+                      [nzScroll]="{ x: '820px' }"
+                    >
                       <thead>
                         <tr>
                           <th>{{ 'intercompany.run.account' | translate }}</th>
@@ -236,8 +323,12 @@ import { enumKey, IC_ELIMINATION_TYPES, IC_MODULE, IC_RUN_STEPS, isNonZero, runS
                             <td>{{ ctx.memberName(line.entity_tenant_id) }}</td>
                             <td class="num">{{ line.debit | money: ledger.currency }}</td>
                             <td class="num">{{ line.credit | money: ledger.currency }}</td>
-                            <td class="num">{{ line.pre_elimination_amount | money: ledger.currency }}</td>
-                            <td class="num">{{ line.post_elimination_amount | money: ledger.currency }}</td>
+                            <td class="num">
+                              {{ line.pre_elimination_amount | money: ledger.currency }}
+                            </td>
+                            <td class="num">
+                              {{ line.post_elimination_amount | money: ledger.currency }}
+                            </td>
                           </tr>
                         }
                       </tbody>
@@ -249,13 +340,23 @@ import { enumKey, IC_ELIMINATION_TYPES, IC_MODULE, IC_RUN_STEPS, isNonZero, runS
               </nz-collapse>
             }
             <div class="toolbar">
-              <button nz-button type="button" (click)="store.goTo(1)">{{ 'intercompany.common.back' | translate }}</button>
+              <button nz-button type="button" (click)="store.goTo(1)">
+                {{ 'intercompany.common.back' | translate }}
+              </button>
               @if (canWrite && store.canAdvanceTo()('review')) {
-                <button nz-button nzType="primary" type="button" [nzLoading]="store.busy()" (click)="advance('review')">
+                <button
+                  nz-button
+                  nzType="primary"
+                  type="button"
+                  [nzLoading]="store.busy()"
+                  (click)="advance('review')"
+                >
                   {{ 'intercompany.run.advanceReview' | translate }}
                 </button>
               }
-              <button nz-button type="button" (click)="store.goTo(3)">{{ 'intercompany.common.next' | translate }}</button>
+              <button nz-button type="button" (click)="store.goTo(3)">
+                {{ 'intercompany.common.next' | translate }}
+              </button>
             </div>
           </nz-card>
         }
@@ -263,21 +364,40 @@ import { enumKey, IC_ELIMINATION_TYPES, IC_MODULE, IC_RUN_STEPS, isNonZero, runS
           <nz-card [nzTitle]="'intercompany.run.step.review' | translate">
             @if (ctx.run(); as run) {
               <div class="kpis">
-                <nz-card nzSize="small"><strong>{{ run.totals.adjustment_count ?? 0 }}</strong><br />{{ 'intercompany.run.adjustments' | translate }}</nz-card>
-                <nz-card nzSize="small"><strong>{{ run.totals.warning_count ?? 0 }}</strong><br />{{ 'intercompany.run.warnings' | translate }}</nz-card>
+                <nz-card nzSize="small"
+                  ><strong>{{ run.totals.adjustment_count ?? 0 }}</strong
+                  ><br />{{ 'intercompany.run.adjustments' | translate }}</nz-card
+                >
+                <nz-card nzSize="small"
+                  ><strong>{{ run.totals.warning_count ?? 0 }}</strong
+                  ><br />{{ 'intercompany.run.warnings' | translate }}</nz-card
+                >
                 <nz-card nzSize="small">
                   <nz-tag [nzColor]="run.totals.balance_sheet_is_balanced ? 'green' : 'red'">
-                    {{ (run.totals.balance_sheet_is_balanced ? 'intercompany.run.balanced' : 'intercompany.run.unbalanced') | translate }}
+                    {{
+                      (run.totals.balance_sheet_is_balanced
+                        ? 'intercompany.run.balanced'
+                        : 'intercompany.run.unbalanced'
+                      ) | translate
+                    }}
                   </nz-tag>
                 </nz-card>
               </div>
             }
             @if (store.failedChecks().length > 0) {
-              <nz-alert nzType="warning" nzShowIcon [nzMessage]="'intercompany.run.scopeNotReady' | translate" />
+              <nz-alert
+                nzType="warning"
+                nzShowIcon
+                [nzMessage]="'intercompany.run.scopeNotReady' | translate"
+              />
             }
             <div class="toolbar">
-              <button nz-button type="button" (click)="store.goTo(2)">{{ 'intercompany.common.back' | translate }}</button>
-              <button nz-button type="button" (click)="store.goTo(4)">{{ 'intercompany.common.next' | translate }}</button>
+              <button nz-button type="button" (click)="store.goTo(2)">
+                {{ 'intercompany.common.back' | translate }}
+              </button>
+              <button nz-button type="button" (click)="store.goTo(4)">
+                {{ 'intercompany.common.next' | translate }}
+              </button>
             </div>
           </nz-card>
         }
@@ -286,13 +406,30 @@ import { enumKey, IC_ELIMINATION_TYPES, IC_MODULE, IC_RUN_STEPS, isNonZero, runS
             <div class="toolbar">
               @if (canWrite) {
                 @if (store.canAdvanceTo()('locked')) {
-                  <button nz-button nzType="primary" type="button" [nzLoading]="store.busy()" (click)="advance('locked')">{{ 'intercompany.run.lock' | translate }}</button>
+                  <button
+                    nz-button
+                    nzType="primary"
+                    type="button"
+                    [nzLoading]="store.busy()"
+                    (click)="advance('locked')"
+                  >
+                    {{ 'intercompany.run.lock' | translate }}
+                  </button>
                 }
                 @if (store.canAdvanceTo()('posted')) {
-                  <button nz-button type="button" [nzLoading]="store.busy()" (click)="advance('posted')">{{ 'intercompany.run.post' | translate }}</button>
+                  <button
+                    nz-button
+                    type="button"
+                    [nzLoading]="store.busy()"
+                    (click)="advance('posted')"
+                  >
+                    {{ 'intercompany.run.post' | translate }}
+                  </button>
                 }
                 @if (store.closed()) {
-                  <button nz-button nzDanger type="button" (click)="reopenOpen.set(true)">{{ 'intercompany.run.reopen' | translate }}</button>
+                  <button nz-button nzDanger type="button" (click)="reopenOpen.set(true)">
+                    {{ 'intercompany.run.reopen' | translate }}
+                  </button>
                 }
               }
             </div>
@@ -301,7 +438,10 @@ import { enumKey, IC_ELIMINATION_TYPES, IC_MODULE, IC_RUN_STEPS, isNonZero, runS
               @for (entry of store.history(); track entry.id) {
                 <nz-timeline-item>
                   {{ entry.created_at }}:
-                  {{ entry.from_status ? (enumKey('runStatus', entry.from_status) | translate) : '-' }} →
+                  {{
+                    entry.from_status ? (enumKey('runStatus', entry.from_status) | translate) : '-'
+                  }}
+                  →
                   {{ enumKey('runStatus', entry.to_status) | translate }}
                   ({{ 'intercompany.run.action.' + entry.action | translate }})
                   @if (entry.reason) {
@@ -313,14 +453,21 @@ import { enumKey, IC_ELIMINATION_TYPES, IC_MODULE, IC_RUN_STEPS, isNonZero, runS
               }
             </nz-timeline>
             <div class="toolbar">
-              <button nz-button type="button" (click)="store.goTo(3)">{{ 'intercompany.common.back' | translate }}</button>
+              <button nz-button type="button" (click)="store.goTo(3)">
+                {{ 'intercompany.common.back' | translate }}
+              </button>
             </div>
           </nz-card>
         }
       }
     }
 
-    <app-intercompany-reason-dialog [(open)]="reopenOpen" titleKey="intercompany.run.reopen" [minLength]="10" (confirmed)="reopen($event.reason)" />
+    <app-intercompany-reason-dialog
+      [(open)]="reopenOpen"
+      titleKey="intercompany.run.reopen"
+      [minLength]="10"
+      (confirmed)="reopen($event.reason)"
+    />
   `,
 })
 export class IntercompanyRunComponent implements OnInit {
@@ -359,7 +506,9 @@ export class IntercompanyRunComponent implements OnInit {
   }
 
   protected totalsOf(totals: Partial<Record<string, string>>): [string, string][] {
-    return Object.entries(totals).filter((entry): entry is [string, string] => entry[1] !== undefined && isNonZero(entry[1]));
+    return Object.entries(totals).filter(
+      (entry): entry is [string, string] => entry[1] !== undefined && isNonZero(entry[1]),
+    );
   }
 
   protected entryHeader(entry: IcEliminationEntry): string {
@@ -384,13 +533,20 @@ export class IntercompanyRunComponent implements OnInit {
   }
 
   protected async advance(to: 'calculating' | 'review' | 'locked' | 'posted'): Promise<void> {
-    if (this.notifier.report(await this.store.advance(this.runId(), to), 'intercompany.run.advanced')) {
+    if (
+      this.notifier.report(await this.store.advance(this.runId(), to), 'intercompany.run.advanced')
+    ) {
       await this.ctx.refreshRuns();
     }
   }
 
   protected async reopen(reason: string): Promise<void> {
-    if (this.notifier.report(await this.store.reopen(this.runId(), reason), 'intercompany.run.reopened')) {
+    if (
+      this.notifier.report(
+        await this.store.reopen(this.runId(), reason),
+        'intercompany.run.reopened',
+      )
+    ) {
       await this.ctx.refreshRuns();
     }
   }

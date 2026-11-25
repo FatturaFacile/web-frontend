@@ -10,7 +10,15 @@ import { IntercompanyContextStore } from './intercompany-context.store';
 @Component({
   selector: 'app-intercompany-shell',
   styleUrl: './intercompany.scss',
-  imports: [FormsModule, NzAlertModule, NzSelectModule, RouterLink, RouterLinkActive, RouterOutlet, TranslatePipe],
+  imports: [
+    FormsModule,
+    NzAlertModule,
+    NzSelectModule,
+    RouterLink,
+    RouterLinkActive,
+    RouterOutlet,
+    TranslatePipe,
+  ],
   template: `
     <div class="toolbar">
       <label for="ic-group">{{ 'intercompany.common.group' | translate }}</label>
@@ -22,7 +30,10 @@ import { IntercompanyContextStore } from './intercompany-context.store';
         [nzPlaceHolder]="'intercompany.common.group' | translate"
       >
         @for (group of ctx.groups(); track group.id) {
-          <nz-option [nzValue]="group.id" [nzLabel]="group.name + ' (' + group.group_currency + ')'" />
+          <nz-option
+            [nzValue]="group.id"
+            [nzLabel]="group.name + ' (' + group.group_currency + ')'"
+          />
         }
       </nz-select>
       <label for="ic-run">{{ 'intercompany.common.run' | translate }}</label>
@@ -39,7 +50,9 @@ import { IntercompanyContextStore } from './intercompany-context.store';
         }
       </nz-select>
       <span class="spacer"></span>
-      <a class="muted" routerLink="/general-ledger/consolidation">{{ 'intercompany.common.openLedgerConsolidation' | translate }}</a>
+      <a class="muted" routerLink="/general-ledger/consolidation">{{
+        'intercompany.common.openLedgerConsolidation' | translate
+      }}</a>
     </div>
 
     <nav class="toolbar" [attr.aria-label]="'NAV.INTERCOMPANY' | translate">

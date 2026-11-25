@@ -1,9 +1,7 @@
 import { Component, effect, inject, untracked } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
-import { NzRadioModule } from 'ng-zorro-antd/radio';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
@@ -19,18 +17,35 @@ import { enumKey, IC_MODULE, IC_STANDARDS } from './intercompany.util';
   selector: 'app-intercompany-statements',
   styleUrl: './intercompany.scss',
   providers: [IntercompanyStatementsStore],
-  imports: [FormsModule, NzAlertModule, NzButtonModule, NzCardModule, NzRadioModule, NzTableModule, NzTabsModule, NzTagModule, MoneyPipe, TranslatePipe],
+  imports: [
+    NzAlertModule,
+    NzButtonModule,
+    NzCardModule,
+    NzTableModule,
+    NzTabsModule,
+    NzTagModule,
+    MoneyPipe,
+    TranslatePipe,
+  ],
   template: `
     @if (!ctx.runId()) {
       <nz-alert nzType="info" nzShowIcon [nzMessage]="'intercompany.run.noRun' | translate" />
     } @else {
       <div class="toolbar">
         <span id="ic-standard-label">{{ 'intercompany.statements.standard' | translate }}</span>
-        <nz-radio-group [ngModel]="store.standard()" (ngModelChange)="changeStandard($event)" aria-labelledby="ic-standard-label">
+        <div role="group" aria-labelledby="ic-standard-label">
           @for (standard of standards; track standard) {
-            <label nz-radio-button [nzValue]="standard">{{ enumKey('standard', standard) | translate }}</label>
+            <button
+              nz-button
+              type="button"
+              [nzType]="store.standard() === standard ? 'primary' : 'default'"
+              [attr.aria-pressed]="store.standard() === standard"
+              (click)="changeStandard(standard)"
+            >
+              {{ enumKey('standard', standard) | translate }}
+            </button>
           }
-        </nz-radio-group>
+        </div>
       </div>
 
       @if (store.error(); as key) {
@@ -38,13 +53,21 @@ import { enumKey, IC_MODULE, IC_STANDARDS } from './intercompany.util';
       }
 
       @if (store.statements(); as statements) {
-        <p class="muted">{{ statements.period_start }} - {{ statements.period_end }} ({{ statements.currency }})</p>
+        <p class="muted">
+          {{ statements.period_start }} - {{ statements.period_end }} ({{ statements.currency }})
+        </p>
         <nz-tabs [nzSelectedIndex]="tabIndex()" (nzSelectedIndexChange)="selectTab($event)">
           <nz-tab [nzTitle]="'intercompany.statements.balanceSheet' | translate">
             @if (statements.balance_sheet; as sheet) {
               @for (section of sheet.sections; track section.code) {
                 <h4>{{ section.label_key | translate }}</h4>
-                <nz-table #lines nzSize="small" [nzData]="section.lines" [nzShowPagination]="false" [nzScroll]="{ x: '640px' }">
+                <nz-table
+                  #lines
+                  nzSize="small"
+                  [nzData]="section.lines"
+                  [nzShowPagination]="false"
+                  [nzScroll]="{ x: '640px' }"
+                >
                   <thead>
                     <tr>
                       <th>{{ 'intercompany.statements.account' | translate }}</th>
@@ -77,7 +100,13 @@ import { enumKey, IC_MODULE, IC_STANDARDS } from './intercompany.util';
             @if (statements.income_statement; as sheet) {
               @for (section of sheet.sections; track section.code) {
                 <h4>{{ section.label_key | translate }}</h4>
-                <nz-table #lines nzSize="small" [nzData]="section.lines" [nzShowPagination]="false" [nzScroll]="{ x: '640px' }">
+                <nz-table
+                  #lines
+                  nzSize="small"
+                  [nzData]="section.lines"
+                  [nzShowPagination]="false"
+                  [nzScroll]="{ x: '640px' }"
+                >
                   <thead>
                     <tr>
                       <th>{{ 'intercompany.statements.account' | translate }}</th>
@@ -116,16 +145,40 @@ import { enumKey, IC_MODULE, IC_STANDARDS } from './intercompany.util';
                   </tr>
                 </thead>
                 <tbody>
-                  <tr><td>{{ 'intercompany.statements.openingCash' | translate }}</td><td class="num">{{ flow.opening_cash | money: statements.currency }}</td></tr>
+                  <tr>
+                    <td>{{ 'intercompany.statements.openingCash' | translate }}</td>
+                    <td class="num">{{ flow.opening_cash | money: statements.currency }}</td>
+                  </tr>
                   @for (line of flowLines.data; track line.code) {
-                    <tr><td>{{ line.label_key | translate }}</td><td class="num">{{ line.amount | money: statements.currency }}</td></tr>
+                    <tr>
+                      <td>{{ line.label_key | translate }}</td>
+                      <td class="num">{{ line.amount | money: statements.currency }}</td>
+                    </tr>
                   }
-                  <tr><td>{{ 'intercompany.statements.operating' | translate }}</td><td class="num">{{ flow.operating | money: statements.currency }}</td></tr>
-                  <tr><td>{{ 'intercompany.statements.investing' | translate }}</td><td class="num">{{ flow.investing | money: statements.currency }}</td></tr>
-                  <tr><td>{{ 'intercompany.statements.financing' | translate }}</td><td class="num">{{ flow.financing | money: statements.currency }}</td></tr>
-                  <tr><td>{{ 'intercompany.statements.fxEffect' | translate }}</td><td class="num">{{ flow.fx_effect | money: statements.currency }}</td></tr>
-                  <tr class="total-row"><td>{{ 'intercompany.statements.netChange' | translate }}</td><td class="num">{{ flow.net_change | money: statements.currency }}</td></tr>
-                  <tr class="total-row"><td>{{ 'intercompany.statements.closingCash' | translate }}</td><td class="num">{{ flow.closing_cash | money: statements.currency }}</td></tr>
+                  <tr>
+                    <td>{{ 'intercompany.statements.operating' | translate }}</td>
+                    <td class="num">{{ flow.operating | money: statements.currency }}</td>
+                  </tr>
+                  <tr>
+                    <td>{{ 'intercompany.statements.investing' | translate }}</td>
+                    <td class="num">{{ flow.investing | money: statements.currency }}</td>
+                  </tr>
+                  <tr>
+                    <td>{{ 'intercompany.statements.financing' | translate }}</td>
+                    <td class="num">{{ flow.financing | money: statements.currency }}</td>
+                  </tr>
+                  <tr>
+                    <td>{{ 'intercompany.statements.fxEffect' | translate }}</td>
+                    <td class="num">{{ flow.fx_effect | money: statements.currency }}</td>
+                  </tr>
+                  <tr class="total-row">
+                    <td>{{ 'intercompany.statements.netChange' | translate }}</td>
+                    <td class="num">{{ flow.net_change | money: statements.currency }}</td>
+                  </tr>
+                  <tr class="total-row">
+                    <td>{{ 'intercompany.statements.closingCash' | translate }}</td>
+                    <td class="num">{{ flow.closing_cash | money: statements.currency }}</td>
+                  </tr>
                 </tbody>
               </nz-table>
             }
@@ -143,7 +196,13 @@ import { enumKey, IC_MODULE, IC_STANDARDS } from './intercompany.util';
 
       @if (store.shareholdings(); as holdings) {
         <nz-card [nzTitle]="'intercompany.statements.shareholdings' | translate" class="section">
-          <nz-table #holdingRows nzSize="small" [nzData]="holdings.rows" [nzShowPagination]="false" [nzScroll]="{ x: '760px' }">
+          <nz-table
+            #holdingRows
+            nzSize="small"
+            [nzData]="holdings.rows"
+            [nzShowPagination]="false"
+            [nzScroll]="{ x: '760px' }"
+          >
             <thead>
               <tr>
                 <th>{{ 'intercompany.structure.entity' | translate }}</th>
@@ -163,7 +222,9 @@ import { enumKey, IC_MODULE, IC_STANDARDS } from './intercompany.util';
                   <td class="num">{{ row.direct_percentage }}</td>
                   <td class="num">{{ row.effective_percentage }}</td>
                   <td class="num">{{ row.voting_percentage }}</td>
-                  <td>{{ enumKey('consolidationMethod', row.consolidation_method) | translate }}</td>
+                  <td>
+                    {{ enumKey('consolidationMethod', row.consolidation_method) | translate }}
+                  </td>
                   <td>{{ row.currency }}</td>
                 </tr>
               }
@@ -174,7 +235,13 @@ import { enumKey, IC_MODULE, IC_STANDARDS } from './intercompany.util';
 
       @if (store.nci(); as nci) {
         <nz-card [nzTitle]="'intercompany.statements.nciSchedule' | translate" class="section">
-          <nz-table #nciRows nzSize="small" [nzData]="nci.rows" [nzShowPagination]="false" [nzScroll]="{ x: '760px' }">
+          <nz-table
+            #nciRows
+            nzSize="small"
+            [nzData]="nci.rows"
+            [nzShowPagination]="false"
+            [nzScroll]="{ x: '760px' }"
+          >
             <thead>
               <tr>
                 <th>{{ 'intercompany.structure.entity' | translate }}</th>
@@ -212,7 +279,13 @@ import { enumKey, IC_MODULE, IC_STANDARDS } from './intercompany.util';
       <nz-card [nzTitle]="'intercompany.package.title' | translate" class="section">
         <p class="muted">{{ 'intercompany.package.hint' | translate }}</p>
         @if (canWrite) {
-          <button nz-button nzType="primary" type="button" [nzLoading]="store.generating()" (click)="generate()">
+          <button
+            nz-button
+            nzType="primary"
+            type="button"
+            [nzLoading]="store.generating()"
+            (click)="generate()"
+          >
             {{ 'intercompany.package.generate' | translate }}
           </button>
         }
@@ -236,10 +309,14 @@ import { enumKey, IC_MODULE, IC_STANDARDS } from './intercompany.util';
                     <nz-tag>{{ 'intercompany.package.section.' + section | translate }}</nz-tag>
                   }
                 </td>
-                <td><code>{{ item.checksum.slice(0, 12) }}</code></td>
+                <td>
+                  <code>{{ item.checksum.slice(0, 12) }}</code>
+                </td>
                 <td>
                   @for (format of formats; track format) {
-                    <button nz-button nzSize="small" type="button" (click)="download(item, format)">{{ format.toUpperCase() }}</button>
+                    <button nz-button nzSize="small" type="button" (click)="download(item, format)">
+                      {{ format.toUpperCase() }}
+                    </button>
                   }
                 </td>
               </tr>
@@ -259,7 +336,11 @@ export class IntercompanyStatementsComponent {
   protected readonly enumKey = enumKey;
   protected readonly standards: readonly IcStandard[] = IC_STANDARDS;
   protected readonly formats: readonly IcPackageFormat[] = ['xlsx', 'csv', 'json'];
-  private readonly tabs: readonly IcStatementTab[] = ['balance_sheet', 'income_statement', 'cash_flow'];
+  private readonly tabs: readonly IcStatementTab[] = [
+    'balance_sheet',
+    'income_statement',
+    'cash_flow',
+  ];
 
   constructor() {
     effect(() => {

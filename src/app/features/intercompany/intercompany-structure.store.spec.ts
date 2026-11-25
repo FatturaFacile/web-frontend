@@ -40,12 +40,23 @@ describe('IntercompanyStructureStore', () => {
       getPartyLinks: vi.fn(() => ok([])),
       getPeriodRates: vi.fn(() => ok([RATE])),
       saveSettings: vi.fn(() => ok({ ...SETTINGS, mirror_mode: 'confirmed' })),
-      createPartyLink: vi.fn(() => ok({ id: 'l1', group_id: 'g1', entity_tenant_id: 'a', counterparty_tenant_id: 'b', contact_id: 'c', role: 'customer' })),
+      createPartyLink: vi.fn(() =>
+        ok({
+          id: 'l1',
+          group_id: 'g1',
+          entity_tenant_id: 'a',
+          counterparty_tenant_id: 'b',
+          contact_id: 'c',
+          role: 'customer',
+        }),
+      ),
       deletePartyLink: vi.fn(() => ok(null)),
       savePeriodRate: vi.fn(() => ok({ ...RATE, id: 'r2', rate: '0.9400' })),
       deletePeriodRate: vi.fn(() => ok(null)),
     };
-    TestBed.configureTestingModule({ providers: [IntercompanyStructureStore, { provide: IntercompanyApiService, useValue: api }] });
+    TestBed.configureTestingModule({
+      providers: [IntercompanyStructureStore, { provide: IntercompanyApiService, useValue: api }],
+    });
     store = TestBed.inject(IntercompanyStructureStore);
   });
 
@@ -76,7 +87,13 @@ describe('IntercompanyStructureStore', () => {
 
   it('returns the validation errors of a refused write', async () => {
     api['saveSettings'].mockReturnValue(
-      throwError(() => new HttpErrorResponse({ status: 422, error: { errors: { amount_tolerance: ['Invalid.'] } } })),
+      throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 422,
+            error: { errors: { amount_tolerance: ['Invalid.'] } },
+          }),
+      ),
     );
 
     const outcome = await store.saveSettings('g1', { ...SETTINGS });
@@ -86,7 +103,12 @@ describe('IntercompanyStructureStore', () => {
   });
 
   it('adds and removes a counterpart contact', async () => {
-    await store.addPartyLink('g1', { entity_tenant_id: 'a', counterparty_tenant_id: 'b', contact_id: 'c', role: 'customer' });
+    await store.addPartyLink('g1', {
+      entity_tenant_id: 'a',
+      counterparty_tenant_id: 'b',
+      contact_id: 'c',
+      role: 'customer',
+    });
     expect(store.partyLinks()).toHaveLength(1);
 
     await store.removePartyLink('l1');
@@ -97,7 +119,12 @@ describe('IntercompanyStructureStore', () => {
     await store.load('g1');
     api['savePeriodRate'].mockReturnValue(ok({ ...RATE, id: 'r9', rate: '0.9500' }));
 
-    await store.saveRate('g1', { currency: 'EUR', rate_type: 'closing', period_end: '2026-12-31', rate: '0.9500' });
+    await store.saveRate('g1', {
+      currency: 'EUR',
+      rate_type: 'closing',
+      period_end: '2026-12-31',
+      rate: '0.9500',
+    });
 
     expect(store.rates()).toHaveLength(1);
     expect(store.rates()[0].rate).toBe('0.9500');

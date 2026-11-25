@@ -38,7 +38,13 @@ import { enumKey, IC_MODULE, IC_STANDARDS } from './intercompany.util';
   template: `
     <nz-card [nzTitle]="'intercompany.structure.ownership' | translate" class="section">
       <p class="muted">{{ 'intercompany.structure.ownershipHint' | translate }}</p>
-      <nz-table #members nzSize="small" [nzData]="ctx.members()" [nzShowPagination]="false" [nzScroll]="{ x: '720px' }">
+      <nz-table
+        #members
+        nzSize="small"
+        [nzData]="ctx.members()"
+        [nzShowPagination]="false"
+        [nzScroll]="{ x: '720px' }"
+      >
         <thead>
           <tr>
             <th>{{ 'intercompany.structure.entity' | translate }}</th>
@@ -66,7 +72,9 @@ import { enumKey, IC_MODULE, IC_STANDARDS } from './intercompany.util';
         </tbody>
       </nz-table>
       @if (ctx.groupId(); as groupId) {
-        <a [routerLink]="['/general-ledger/consolidation', groupId]">{{ 'intercompany.structure.editInLedger' | translate }}</a>
+        <a [routerLink]="['/general-ledger/consolidation', groupId]">{{
+          'intercompany.structure.editInLedger' | translate
+        }}</a>
       }
     </nz-card>
 
@@ -74,7 +82,9 @@ import { enumKey, IC_MODULE, IC_STANDARDS } from './intercompany.util';
       <form [formGroup]="settingsForm" (ngSubmit)="saveSettings()">
         <div class="form-row">
           <div>
-            <label for="ic-mirror-mode">{{ 'intercompany.structure.mirrorMode' | translate }}</label>
+            <label for="ic-mirror-mode">{{
+              'intercompany.structure.mirrorMode' | translate
+            }}</label>
             <nz-select id="ic-mirror-mode" formControlName="mirror_mode" class="select-sm">
               @for (mode of mirrorModes; track mode) {
                 <nz-option [nzValue]="mode" [nzLabel]="enumKey('mirrorMode', mode) | translate" />
@@ -82,29 +92,58 @@ import { enumKey, IC_MODULE, IC_STANDARDS } from './intercompany.util';
             </nz-select>
           </div>
           <div>
-            <label for="ic-standard">{{ 'intercompany.structure.defaultStandard' | translate }}</label>
+            <label for="ic-standard">{{
+              'intercompany.structure.defaultStandard' | translate
+            }}</label>
             <nz-select id="ic-standard" formControlName="default_standard" class="select-sm">
               @for (standard of standards; track standard) {
-                <nz-option [nzValue]="standard" [nzLabel]="enumKey('standard', standard) | translate" />
+                <nz-option
+                  [nzValue]="standard"
+                  [nzLabel]="enumKey('standard', standard) | translate"
+                />
               }
             </nz-select>
           </div>
           <div>
-            <label for="ic-amount-tol">{{ 'intercompany.structure.amountTolerance' | translate }}</label>
-            <input id="ic-amount-tol" nz-input formControlName="amount_tolerance" inputmode="decimal" />
+            <label for="ic-amount-tol">{{
+              'intercompany.structure.amountTolerance' | translate
+            }}</label>
+            <input
+              id="ic-amount-tol"
+              nz-input
+              formControlName="amount_tolerance"
+              inputmode="decimal"
+            />
           </div>
           <div>
-            <label for="ic-date-tol">{{ 'intercompany.structure.dateTolerance' | translate }}</label>
-            <input id="ic-date-tol" nz-input type="number" min="0" formControlName="date_tolerance_days" />
+            <label for="ic-date-tol">{{
+              'intercompany.structure.dateTolerance' | translate
+            }}</label>
+            <input
+              id="ic-date-tol"
+              nz-input
+              type="number"
+              min="0"
+              formControlName="date_tolerance_days"
+            />
           </div>
         </div>
         <div class="toolbar">
-          <nz-switch formControlName="auto_mirror" /> <span>{{ 'intercompany.structure.autoMirror' | translate }}</span>
-          <nz-switch formControlName="sync_payments" /> <span>{{ 'intercompany.structure.syncPayments' | translate }}</span>
-          <nz-switch formControlName="netting_enabled" /> <span>{{ 'intercompany.structure.nettingEnabled' | translate }}</span>
+          <nz-switch formControlName="auto_mirror" />
+          <span>{{ 'intercompany.structure.autoMirror' | translate }}</span>
+          <nz-switch formControlName="sync_payments" />
+          <span>{{ 'intercompany.structure.syncPayments' | translate }}</span>
+          <nz-switch formControlName="netting_enabled" />
+          <span>{{ 'intercompany.structure.nettingEnabled' | translate }}</span>
           <span class="spacer"></span>
           @if (canWrite) {
-            <button nz-button nzType="primary" type="submit" [disabled]="settingsForm.invalid" [nzLoading]="store.saving()">
+            <button
+              nz-button
+              nzType="primary"
+              type="submit"
+              [disabled]="settingsForm.invalid"
+              [nzLoading]="store.saving()"
+            >
               {{ 'intercompany.common.save' | translate }}
             </button>
           }
@@ -180,7 +219,9 @@ import { enumKey, IC_MODULE, IC_STANDARDS } from './intercompany.util';
             <label for="ic-link-contact">{{ 'intercompany.structure.contact' | translate }}</label>
             <input id="ic-link-contact" nz-input formControlName="contact_id" />
           </div>
-          <button nz-button nzType="primary" type="submit" [disabled]="linkForm.invalid">{{ 'intercompany.common.add' | translate }}</button>
+          <button nz-button nzType="primary" type="submit" [disabled]="linkForm.invalid">
+            {{ 'intercompany.common.add' | translate }}
+          </button>
         </form>
       }
     </nz-card>
@@ -189,7 +230,13 @@ import { enumKey, IC_MODULE, IC_STANDARDS } from './intercompany.util';
       <p class="muted">{{ 'intercompany.structure.periodRatesHint' | translate }}</p>
       <div class="toolbar">
         <label for="ic-rate-filter">{{ 'intercompany.structure.rateType' | translate }}</label>
-        <nz-select id="ic-rate-filter" class="select-sm" nzAllowClear [ngModel]="store.rateFilters().rate_type" (ngModelChange)="filterRates($event)">
+        <nz-select
+          id="ic-rate-filter"
+          class="select-sm"
+          nzAllowClear
+          [ngModel]="store.rateFilters().rate_type"
+          (ngModelChange)="filterRates($event)"
+        >
           @for (type of rateTypes; track type) {
             <nz-option [nzValue]="type" [nzLabel]="enumKey('rateType', type) | translate" />
           }
@@ -234,7 +281,9 @@ import { enumKey, IC_MODULE, IC_STANDARDS } from './intercompany.util';
       @if (canWrite) {
         <form [formGroup]="rateForm" (ngSubmit)="saveRate()" class="form-row">
           <div>
-            <label for="ic-rate-currency">{{ 'intercompany.structure.currency' | translate }}</label>
+            <label for="ic-rate-currency">{{
+              'intercompany.structure.currency' | translate
+            }}</label>
             <input id="ic-rate-currency" nz-input formControlName="currency" maxlength="3" />
           </div>
           <div>
@@ -253,7 +302,9 @@ import { enumKey, IC_MODULE, IC_STANDARDS } from './intercompany.util';
             <label for="ic-rate-value">{{ 'intercompany.structure.rate' | translate }}</label>
             <input id="ic-rate-value" nz-input formControlName="rate" inputmode="decimal" />
           </div>
-          <button nz-button nzType="primary" type="submit" [disabled]="rateForm.invalid">{{ 'intercompany.common.save' | translate }}</button>
+          <button nz-button nzType="primary" type="submit" [disabled]="rateForm.invalid">
+            {{ 'intercompany.common.save' | translate }}
+          </button>
         </form>
       }
     </nz-card>
@@ -321,7 +372,11 @@ export class IntercompanyStructureComponent {
 
   protected async addLink(): Promise<void> {
     const groupId = this.ctx.groupId();
-    if (groupId !== null && this.linkForm.valid && this.notifier.report(await this.store.addPartyLink(groupId, this.linkForm.getRawValue()))) {
+    if (
+      groupId !== null &&
+      this.linkForm.valid &&
+      this.notifier.report(await this.store.addPartyLink(groupId, this.linkForm.getRawValue()))
+    ) {
       this.linkForm.patchValue({ contact_id: '' });
     }
   }
@@ -336,7 +391,9 @@ export class IntercompanyStructureComponent {
       return;
     }
     const value = this.rateForm.getRawValue();
-    this.notifier.report(await this.store.saveRate(groupId, { ...value, currency: value.currency.toUpperCase() }));
+    this.notifier.report(
+      await this.store.saveRate(groupId, { ...value, currency: value.currency.toUpperCase() }),
+    );
   }
 
   protected async removeRate(id: string): Promise<void> {

@@ -46,8 +46,11 @@ export const IntercompanyTransactionsStore = signalStore(
   withMethods((store, api = inject(IntercompanyApiService)) => {
     const replace = (updated: IcTransaction): void => {
       patchState(store, {
-        transactions: store.transactions().map((row) => (row.id === updated.id ? { ...row, ...updated } : row)),
-        detail: store.detail()?.id === updated.id ? { ...store.detail(), ...updated } : store.detail(),
+        transactions: store
+          .transactions()
+          .map((row) => (row.id === updated.id ? { ...row, ...updated } : row)),
+        detail:
+          store.detail()?.id === updated.id ? { ...store.detail(), ...updated } : store.detail(),
       });
     };
 
@@ -64,7 +67,9 @@ export const IntercompanyTransactionsStore = signalStore(
     const methods = {
       async load(groupId: string, filters: IcTransactionFilters = store.filters()): Promise<void> {
         patchState(store, { loading: true, error: null, filters });
-        const { outcome, value } = await attempt(() => firstValueFrom(api.getTransactions(groupId, filters)));
+        const { outcome, value } = await attempt(() =>
+          firstValueFrom(api.getTransactions(groupId, filters)),
+        );
         if (value === null) {
           patchState(store, { loading: false, error: outcome.errorKey });
           return;
@@ -78,10 +83,19 @@ export const IntercompanyTransactionsStore = signalStore(
       },
       async scan(groupId: string, range: { from?: string; to?: string } = {}): Promise<IcOutcome> {
         patchState(store, { loading: true });
-        const { outcome, value } = await attempt(() => firstValueFrom(api.scanTransactions(groupId, range)));
+        const { outcome, value } = await attempt(() =>
+          firstValueFrom(api.scanTransactions(groupId, range)),
+        );
         patchState(store, {
           loading: false,
-          lastScan: value === null ? null : { created: value.data.created, skipped: value.data.skipped, failed: value.data.failed },
+          lastScan:
+            value === null
+              ? null
+              : {
+                  created: value.data.created,
+                  skipped: value.data.skipped,
+                  failed: value.data.failed,
+                },
         });
         if (value !== null) {
           await methods.load(groupId, { ...store.filters(), page: 1 });
@@ -90,15 +104,26 @@ export const IntercompanyTransactionsStore = signalStore(
       },
       mirror(id: string, mode?: IcMirrorMode): Promise<IcOutcome> {
         const version = store.transactions().find((row) => row.id === id)?.version;
-        return mark(id, async () => (await firstValueFrom(api.mirrorTransaction(id, { mode, expected_version: version }))).data);
+        return mark(
+          id,
+          async () =>
+            (await firstValueFrom(api.mirrorTransaction(id, { mode, expected_version: version })))
+              .data,
+        );
       },
       confirm(id: string): Promise<IcOutcome> {
         const version = store.transactions().find((row) => row.id === id)?.version;
-        return mark(id, async () => (await firstValueFrom(api.confirmTransaction(id, version))).data);
+        return mark(
+          id,
+          async () => (await firstValueFrom(api.confirmTransaction(id, version))).data,
+        );
       },
       reverse(id: string, reason: string): Promise<IcOutcome> {
         const version = store.transactions().find((row) => row.id === id)?.version;
-        return mark(id, async () => (await firstValueFrom(api.reverseTransaction(id, reason, version))).data);
+        return mark(
+          id,
+          async () => (await firstValueFrom(api.reverseTransaction(id, reason, version))).data,
+        );
       },
       syncPayment(id: string): Promise<IcOutcome> {
         return mark(id, async () => (await firstValueFrom(api.syncPayment(id))).data);
@@ -118,8 +143,13 @@ export const IntercompanyTransactionsStore = signalStore(
           patchState(store, { nettingRuns: value.data ?? [] });
         }
       },
-      async proposeNetting(groupId: string, payload: IcNettingPayload): Promise<IcOutcome & { run: IcNettingRun | null }> {
-        const { outcome, value } = await attempt(() => firstValueFrom(api.proposeNetting(groupId, payload)));
+      async proposeNetting(
+        groupId: string,
+        payload: IcNettingPayload,
+      ): Promise<IcOutcome & { run: IcNettingRun | null }> {
+        const { outcome, value } = await attempt(() =>
+          firstValueFrom(api.proposeNetting(groupId, payload)),
+        );
         if (value !== null) {
           patchState(store, { nettingRuns: [value.data, ...store.nettingRuns()] });
         }
@@ -127,16 +157,24 @@ export const IntercompanyTransactionsStore = signalStore(
       },
       async confirmNetting(id: string): Promise<IcOutcome> {
         const version = store.nettingRuns().find((run) => run.id === id)?.version;
-        const { outcome, value } = await attempt(() => firstValueFrom(api.confirmNetting(id, version)));
+        const { outcome, value } = await attempt(() =>
+          firstValueFrom(api.confirmNetting(id, version)),
+        );
         if (value !== null) {
-          patchState(store, { nettingRuns: store.nettingRuns().map((run) => (run.id === id ? value.data : run)) });
+          patchState(store, {
+            nettingRuns: store.nettingRuns().map((run) => (run.id === id ? value.data : run)),
+          });
         }
         return outcome;
       },
       async cancelNetting(id: string, reason: string): Promise<IcOutcome> {
-        const { outcome, value } = await attempt(() => firstValueFrom(api.cancelNetting(id, reason)));
+        const { outcome, value } = await attempt(() =>
+          firstValueFrom(api.cancelNetting(id, reason)),
+        );
         if (value !== null) {
-          patchState(store, { nettingRuns: store.nettingRuns().map((run) => (run.id === id ? value.data : run)) });
+          patchState(store, {
+            nettingRuns: store.nettingRuns().map((run) => (run.id === id ? value.data : run)),
+          });
         }
         return outcome;
       },

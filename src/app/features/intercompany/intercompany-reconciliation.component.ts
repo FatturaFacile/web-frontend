@@ -6,7 +6,13 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
-import { IcAnomalyType, IcMatchStatus, IcMatrixCell, IcReconciliationItem, PermissionsService } from '@core';
+import {
+  IcAnomalyType,
+  IcMatchStatus,
+  IcMatrixCell,
+  IcReconciliationItem,
+  PermissionsService,
+} from '@core';
 import { MoneyPipe, TranslatePipe } from '@shared';
 import { IntercompanyContextStore } from './intercompany-context.store';
 import { IntercompanyNotifier } from './intercompany-notifier.service';
@@ -45,19 +51,43 @@ type Resolution = 'dispute' | 'write_off' | 'adjust';
   template: `
     <div class="toolbar">
       <label for="ic-rec-date">{{ 'intercompany.reconciliation.asOf' | translate }}</label>
-      <input id="ic-rec-date" nz-input type="date" class="select-sm" [ngModel]="asOf()" (ngModelChange)="asOf.set($event)" />
+      <input
+        id="ic-rec-date"
+        nz-input
+        type="date"
+        class="select-sm"
+        [ngModel]="asOf()"
+        (ngModelChange)="asOf.set($event)"
+      />
       @if (canWrite) {
-        <button nz-button nzType="primary" type="button" [disabled]="!asOf()" [nzLoading]="store.loading()" (click)="run(true)">
+        <button
+          nz-button
+          nzType="primary"
+          type="button"
+          [disabled]="!asOf()"
+          [nzLoading]="store.loading()"
+          (click)="run(true)"
+        >
           {{ 'intercompany.reconciliation.runMatch' | translate }}
         </button>
-        <button nz-button type="button" [disabled]="!asOf()" (click)="run(false)">{{ 'intercompany.reconciliation.runWithoutMatch' | translate }}</button>
+        <button nz-button type="button" [disabled]="!asOf()" (click)="run(false)">
+          {{ 'intercompany.reconciliation.runWithoutMatch' | translate }}
+        </button>
       }
       <span class="spacer"></span>
       @if (store.batches().length > 1) {
         <label for="ic-rec-batch">{{ 'intercompany.reconciliation.batch' | translate }}</label>
-        <nz-select id="ic-rec-batch" class="select-md" [ngModel]="store.batch()?.id" (ngModelChange)="store.openBatch($event)">
+        <nz-select
+          id="ic-rec-batch"
+          class="select-md"
+          [ngModel]="store.batch()?.id"
+          (ngModelChange)="store.openBatch($event)"
+        >
           @for (batch of store.batches(); track batch.id) {
-            <nz-option [nzValue]="batch.id" [nzLabel]="batch.as_of_date + ' (' + batch.totals.items + ')'" />
+            <nz-option
+              [nzValue]="batch.id"
+              [nzLabel]="batch.as_of_date + ' (' + batch.totals.items + ')'"
+            />
           }
         </nz-select>
       }
@@ -69,13 +99,27 @@ type Resolution = 'dispute' | 'write_off' | 'adjust';
 
     @if (store.batch(); as batch) {
       <div class="kpis">
-        <nz-card nzSize="small"><strong>{{ batch.totals.items }}</strong><br />{{ 'intercompany.reconciliation.kpiItems' | translate }}</nz-card>
-        <nz-card nzSize="small"><strong>{{ batch.totals.matched }}</strong><br />{{ 'intercompany.enum.matchStatus.matched' | translate }}</nz-card>
-        <nz-card nzSize="small"><strong>{{ batch.totals.unmatched }}</strong><br />{{ 'intercompany.enum.matchStatus.unmatched' | translate }}</nz-card>
-        <nz-card nzSize="small"><strong>{{ batch.totals.disputed }}</strong><br />{{ 'intercompany.enum.matchStatus.disputed' | translate }}</nz-card>
+        <nz-card nzSize="small"
+          ><strong>{{ batch.totals.items }}</strong
+          ><br />{{ 'intercompany.reconciliation.kpiItems' | translate }}</nz-card
+        >
+        <nz-card nzSize="small"
+          ><strong>{{ batch.totals.matched }}</strong
+          ><br />{{ 'intercompany.enum.matchStatus.matched' | translate }}</nz-card
+        >
+        <nz-card nzSize="small"
+          ><strong>{{ batch.totals.unmatched }}</strong
+          ><br />{{ 'intercompany.enum.matchStatus.unmatched' | translate }}</nz-card
+        >
+        <nz-card nzSize="small"
+          ><strong>{{ batch.totals.disputed }}</strong
+          ><br />{{ 'intercompany.enum.matchStatus.disputed' | translate }}</nz-card
+        >
         @for (anomaly of anomalies; track anomaly) {
           <nz-card nzSize="small">
-            <strong>{{ batch.totals.difference_by_anomaly[anomaly] | money: ctx.groupCurrency() }}</strong><br />
+            <strong>{{
+              batch.totals.difference_by_anomaly[anomaly] | money: ctx.groupCurrency()
+            }}</strong><br />
             {{ enumKey('anomalyType', anomaly) | translate }}
           </nz-card>
         }
@@ -84,13 +128,23 @@ type Resolution = 'dispute' | 'write_off' | 'adjust';
 
     @if (store.matrix(); as matrix) {
       <nz-card [nzTitle]="'intercompany.reconciliation.matrix' | translate" class="section">
-        <p class="muted">{{ 'intercompany.reconciliation.matrixHint' | translate }} ({{ matrix.currency }}, {{ matrix.as_of_date }})</p>
+        <p class="muted">
+          {{ 'intercompany.reconciliation.matrixHint' | translate }} ({{ matrix.currency }},
+          {{ matrix.as_of_date }})
+        </p>
         <div style="overflow-x: auto">
           <table class="matrix">
-            <caption class="muted">{{ 'intercompany.reconciliation.matrixCaption' | translate }}</caption>
+            <caption class="muted">
+              {{
+                'intercompany.reconciliation.matrixCaption' | translate
+              }}
+            </caption>
             <thead>
               <tr>
-                <th scope="col">{{ 'intercompany.reconciliation.entityA' | translate }} \\ {{ 'intercompany.reconciliation.entityB' | translate }}</th>
+                <th scope="col">
+                  {{ 'intercompany.reconciliation.entityA' | translate }} \\
+                  {{ 'intercompany.reconciliation.entityB' | translate }}
+                </th>
                 @for (entity of matrix.entities; track entity.tenant_id) {
                   <th scope="col">{{ entity.name }}</th>
                 }
@@ -114,7 +168,10 @@ type Resolution = 'dispute' | 'write_off' | 'adjust';
                             [attr.aria-pressed]="isSelected(cell)"
                             (click)="drill(cell)"
                           >
-                            <span>{{ cell.receivable_a | money: matrix.currency }} / {{ cell.payable_b | money: matrix.currency }}</span><br />
+                            <span
+                              >{{ cell.receivable_a | money: matrix.currency }} /
+                              {{ cell.payable_b | money: matrix.currency }}</span
+                            ><br />
                             <strong>{{ cell.difference | money: matrix.currency }}</strong>
                             @if (anomalyCount(cell) > 0) {
                               <br /><nz-tag nzColor="orange">{{ anomalyCount(cell) }}</nz-tag>
@@ -135,23 +192,47 @@ type Resolution = 'dispute' | 'write_off' | 'adjust';
 
       <div class="toolbar">
         <label for="ic-rec-anomaly">{{ 'intercompany.reconciliation.anomaly' | translate }}</label>
-        <nz-select id="ic-rec-anomaly" class="select-sm" nzAllowClear [ngModel]="store.filters().anomaly_type" (ngModelChange)="filter({ anomaly_type: $event })">
+        <nz-select
+          id="ic-rec-anomaly"
+          class="select-sm"
+          nzAllowClear
+          [ngModel]="store.filters().anomaly_type"
+          (ngModelChange)="filter({ anomaly_type: $event })"
+        >
           @for (anomaly of anomalies; track anomaly) {
-            <nz-option [nzValue]="anomaly" [nzLabel]="enumKey('anomalyType', anomaly) | translate" />
+            <nz-option
+              [nzValue]="anomaly"
+              [nzLabel]="enumKey('anomalyType', anomaly) | translate"
+            />
           }
         </nz-select>
         <label for="ic-rec-status">{{ 'intercompany.reconciliation.status' | translate }}</label>
-        <nz-select id="ic-rec-status" class="select-sm" nzAllowClear [ngModel]="store.filters().status" (ngModelChange)="filter({ status: $event })">
+        <nz-select
+          id="ic-rec-status"
+          class="select-sm"
+          nzAllowClear
+          [ngModel]="store.filters().status"
+          (ngModelChange)="filter({ status: $event })"
+        >
           @for (status of statuses; track status) {
             <nz-option [nzValue]="status" [nzLabel]="enumKey('matchStatus', status) | translate" />
           }
         </nz-select>
         @if (store.cell()) {
-          <button nz-button nzSize="small" type="button" (click)="store.drillDown(null)">{{ 'intercompany.reconciliation.clearCell' | translate }}</button>
+          <button nz-button nzSize="small" type="button" (click)="store.drillDown(null)">
+            {{ 'intercompany.reconciliation.clearCell' | translate }}
+          </button>
         }
       </div>
 
-      <nz-table #table nzSize="small" [nzData]="store.items()" [nzLoading]="store.loading()" [nzScroll]="{ x: '1240px' }" [nzPageSize]="20">
+      <nz-table
+        #table
+        nzSize="small"
+        [nzData]="store.items()"
+        [nzLoading]="store.loading()"
+        [nzScroll]="{ x: '1240px' }"
+        [nzPageSize]="20"
+      >
         <thead>
           <tr>
             <th>{{ 'intercompany.reconciliation.documentA' | translate }}</th>
@@ -168,7 +249,10 @@ type Resolution = 'dispute' | 'write_off' | 'adjust';
           @for (item of table.data; track item.id) {
             <tr>
               <td>
-                {{ item.entity_a_name }}<br />{{ item.a_document_number }}<br /><span class="muted">{{ item.a_document_date }}</span>
+                {{ item.entity_a_name }}<br />{{ item.a_document_number }}<br /><span
+                  class="muted"
+                  >{{ item.a_document_date }}</span
+                >
               </td>
               <td class="num">{{ item.a_amount | money: item.a_currency }}</td>
               <td>
@@ -177,23 +261,33 @@ type Resolution = 'dispute' | 'write_off' | 'adjust';
                   <br /><span class="muted">{{ item.b_document_date }}</span>
                 }
               </td>
-              <td class="num">{{ item.b_amount ? (item.b_amount | money: item.b_currency) : '-' }}</td>
+              <td class="num">
+                {{ item.b_amount ? (item.b_amount | money: item.b_currency) : '-' }}
+              </td>
               <td class="num">
                 {{ item.difference | money: item.a_currency }}
                 @if (hasDifference(item)) {
-                  <br /><span class="muted">{{ item.difference_group_currency | money: ctx.groupCurrency() }}</span>
+                  <br /><span class="muted">{{
+                    item.difference_group_currency | money: ctx.groupCurrency()
+                  }}</span>
                 }
               </td>
               <td>
-                <nz-tag [nzColor]="anomalyColor(item.anomaly_type)">{{ enumKey('anomalyType', item.anomaly_type) | translate }}</nz-tag>
+                <nz-tag [nzColor]="anomalyColor(item.anomaly_type)">{{
+                  enumKey('anomalyType', item.anomaly_type) | translate
+                }}</nz-tag>
                 @if (item.anomaly_reason) {
                   <br /><span class="muted">{{ item.anomaly_reason }}</span>
                 }
               </td>
               <td>
-                <nz-tag [nzColor]="statusColor(item.status)">{{ enumKey('matchStatus', item.status) | translate }}</nz-tag>
+                <nz-tag [nzColor]="statusColor(item.status)">{{
+                  enumKey('matchStatus', item.status) | translate
+                }}</nz-tag>
                 @if (item.match_kind) {
-                  <br /><span class="muted">{{ 'intercompany.reconciliation.matchKind.' + item.match_kind | translate }}</span>
+                  <br /><span class="muted">{{
+                    'intercompany.reconciliation.matchKind.' + item.match_kind | translate
+                  }}</span>
                 }
                 @if (item.resolution_reason) {
                   <br /><span class="muted">{{ item.resolution_reason }}</span>
@@ -202,16 +296,59 @@ type Resolution = 'dispute' | 'write_off' | 'adjust';
               <td>
                 @if (canWrite) {
                   @if (item.status === 'unmatched') {
-                    <button nz-button nzSize="small" type="button" (click)="askMatch(item)">{{ 'intercompany.reconciliation.match' | translate }}</button>
-                    <button nz-button nzSize="small" type="button" (click)="askResolve(item, 'dispute')">{{ 'intercompany.reconciliation.dispute' | translate }}</button>
-                    <button nz-button nzSize="small" type="button" (click)="askResolve(item, 'adjust')">{{ 'intercompany.reconciliation.adjust' | translate }}</button>
-                    <button nz-button nzSize="small" nzDanger type="button" (click)="askResolve(item, 'write_off')">{{ 'intercompany.reconciliation.writeOff' | translate }}</button>
+                    <button nz-button nzSize="small" type="button" (click)="askMatch(item)">
+                      {{ 'intercompany.reconciliation.match' | translate }}
+                    </button>
+                    <button
+                      nz-button
+                      nzSize="small"
+                      type="button"
+                      (click)="askResolve(item, 'dispute')"
+                    >
+                      {{ 'intercompany.reconciliation.dispute' | translate }}
+                    </button>
+                    <button
+                      nz-button
+                      nzSize="small"
+                      type="button"
+                      (click)="askResolve(item, 'adjust')"
+                    >
+                      {{ 'intercompany.reconciliation.adjust' | translate }}
+                    </button>
+                    <button
+                      nz-button
+                      nzSize="small"
+                      nzDanger
+                      type="button"
+                      (click)="askResolve(item, 'write_off')"
+                    >
+                      {{ 'intercompany.reconciliation.writeOff' | translate }}
+                    </button>
                   } @else if (item.status === 'disputed') {
-                    <button nz-button nzSize="small" type="button" (click)="askResolve(item, 'adjust')">{{ 'intercompany.reconciliation.adjust' | translate }}</button>
-                    <button nz-button nzSize="small" nzDanger type="button" (click)="askResolve(item, 'write_off')">{{ 'intercompany.reconciliation.writeOff' | translate }}</button>
-                    <button nz-button nzSize="small" type="button" (click)="unmatch(item)">{{ 'intercompany.reconciliation.unmatch' | translate }}</button>
+                    <button
+                      nz-button
+                      nzSize="small"
+                      type="button"
+                      (click)="askResolve(item, 'adjust')"
+                    >
+                      {{ 'intercompany.reconciliation.adjust' | translate }}
+                    </button>
+                    <button
+                      nz-button
+                      nzSize="small"
+                      nzDanger
+                      type="button"
+                      (click)="askResolve(item, 'write_off')"
+                    >
+                      {{ 'intercompany.reconciliation.writeOff' | translate }}
+                    </button>
+                    <button nz-button nzSize="small" type="button" (click)="unmatch(item)">
+                      {{ 'intercompany.reconciliation.unmatch' | translate }}
+                    </button>
                   } @else {
-                    <button nz-button nzSize="small" type="button" (click)="unmatch(item)">{{ 'intercompany.reconciliation.unmatch' | translate }}</button>
+                    <button nz-button nzSize="small" type="button" (click)="unmatch(item)">
+                      {{ 'intercompany.reconciliation.unmatch' | translate }}
+                    </button>
                   }
                 }
               </td>
@@ -229,7 +366,13 @@ type Resolution = 'dispute' | 'write_off' | 'adjust';
       [withAmount]="resolution() === 'adjust'"
       (confirmed)="resolve($event)"
     />
-    <app-intercompany-reason-dialog [(open)]="matchOpen" titleKey="intercompany.reconciliation.match" fieldLabelKey="intercompany.reconciliation.counterpartDocument" [minLength]="1" (confirmed)="match($event.reason)" />
+    <app-intercompany-reason-dialog
+      [(open)]="matchOpen"
+      titleKey="intercompany.reconciliation.match"
+      fieldLabelKey="intercompany.reconciliation.counterpartDocument"
+      [minLength]="1"
+      (confirmed)="match($event.reason)"
+    />
   `,
 })
 export class IntercompanyReconciliationComponent {
@@ -268,22 +411,33 @@ export class IntercompanyReconciliationComponent {
 
   protected isSelected(cell: IcMatrixCell): boolean {
     const selected = this.store.cell();
-    return selected?.entity_a_tenant_id === cell.entity_a_tenant_id && selected?.entity_b_tenant_id === cell.entity_b_tenant_id;
+    return (
+      selected?.entity_a_tenant_id === cell.entity_a_tenant_id &&
+      selected?.entity_b_tenant_id === cell.entity_b_tenant_id
+    );
   }
 
   protected drill(cell: IcMatrixCell): void {
     void this.store.drillDown(this.isSelected(cell) ? null : cell);
   }
 
-  protected filter(change: { anomaly_type?: IcAnomalyType | null; status?: IcMatchStatus | null }): void {
-    const cleaned = Object.fromEntries(Object.entries(change).map(([key, value]) => [key, value ?? undefined]));
+  protected filter(change: {
+    anomaly_type?: IcAnomalyType | null;
+    status?: IcMatchStatus | null;
+  }): void {
+    const cleaned = Object.fromEntries(
+      Object.entries(change).map(([key, value]) => [key, value ?? undefined]),
+    );
     void this.store.applyFilters({ ...this.store.filters(), ...cleaned });
   }
 
   protected async run(autoMatch: boolean): Promise<void> {
     const groupId = this.ctx.groupId();
     if (groupId !== null) {
-      this.notifier.report(await this.store.runBatch(groupId, this.asOf(), autoMatch), 'intercompany.reconciliation.batchDone');
+      this.notifier.report(
+        await this.store.runBatch(groupId, this.asOf(), autoMatch),
+        'intercompany.reconciliation.batchDone',
+      );
     }
   }
 
@@ -295,7 +449,10 @@ export class IntercompanyReconciliationComponent {
   /** The text field of the dialog carries the id of the counterpart document for a manual match. */
   protected async match(counterpartDocumentId: string): Promise<void> {
     if (this.current !== null) {
-      this.notifier.report(await this.store.match(this.current, counterpartDocumentId), 'intercompany.reconciliation.matched');
+      this.notifier.report(
+        await this.store.match(this.current, counterpartDocumentId),
+        'intercompany.reconciliation.matched',
+      );
     }
   }
 

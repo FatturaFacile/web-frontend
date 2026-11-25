@@ -20,10 +20,24 @@ import { TranslatePipe } from '@shared';
     >
       <ng-container *nzModalContent>
         <label for="ic-reason">{{ fieldLabelKey() | translate }}</label>
-        <textarea id="ic-reason" nz-input rows="3" [ngModel]="reason()" (ngModelChange)="reason.set($event)"></textarea>
+        <textarea
+          id="ic-reason"
+          nz-input
+          rows="3"
+          [ngModel]="reason()"
+          (ngModelChange)="reason.set($event)"
+        ></textarea>
         @if (withAmount()) {
-          <label for="ic-reason-amount">{{ 'intercompany.reconciliation.adjustmentAmount' | translate }}</label>
-          <input id="ic-reason-amount" nz-input inputmode="decimal" [ngModel]="amount()" (ngModelChange)="amount.set($event)" />
+          <label for="ic-reason-amount">{{
+            'intercompany.reconciliation.adjustmentAmount' | translate
+          }}</label>
+          <input
+            id="ic-reason-amount"
+            nz-input
+            inputmode="decimal"
+            [ngModel]="amount()"
+            (ngModelChange)="amount.set($event)"
+          />
         }
       </ng-container>
     </nz-modal>

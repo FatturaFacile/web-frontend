@@ -44,8 +44,14 @@ export const IntercompanyStatementsStore = signalStore(
   withMethods((store, api = inject(IntercompanyApiService)) => {
     const loadStatements = async (runId: string, standard: IcStandard): Promise<void> => {
       patchState(store, { loading: true, error: null, standard });
-      const { outcome, value } = await attempt(() => firstValueFrom(api.getStatements(runId, standard)));
-      patchState(store, { statements: value?.data ?? null, loading: false, error: outcome.errorKey });
+      const { outcome, value } = await attempt(() =>
+        firstValueFrom(api.getStatements(runId, standard)),
+      );
+      patchState(store, {
+        statements: value?.data ?? null,
+        loading: false,
+        error: outcome.errorKey,
+      });
     };
 
     return {
@@ -59,7 +65,11 @@ export const IntercompanyStatementsStore = signalStore(
             firstValueFrom(api.getNciSchedule(runId)),
             firstValueFrom(api.getPackages(runId)),
           ]);
-          return { shareholdings: shareholdings.data, nci: nci.data, packages: packages.data ?? [] };
+          return {
+            shareholdings: shareholdings.data,
+            nci: nci.data,
+            packages: packages.data ?? [],
+          };
         });
         patchState(store, value ?? {});
       },
@@ -68,7 +78,9 @@ export const IntercompanyStatementsStore = signalStore(
       },
       async generate(runId: string): Promise<IcOutcome & { package: IcPackage | null }> {
         patchState(store, { generating: true });
-        const { outcome, value } = await attempt(() => firstValueFrom(api.createPackage(runId, store.standard())));
+        const { outcome, value } = await attempt(() =>
+          firstValueFrom(api.createPackage(runId, store.standard())),
+        );
         patchState(store, {
           generating: false,
           packages: value === null ? store.packages() : [value.data, ...store.packages()],
@@ -77,7 +89,9 @@ export const IntercompanyStatementsStore = signalStore(
         return { ...outcome, package: value?.data ?? null };
       },
       async download(item: IcPackage, format: IcPackageFormat): Promise<IcOutcome> {
-        const { outcome, value } = await attempt(() => firstValueFrom(api.downloadPackage(item.id, format)));
+        const { outcome, value } = await attempt(() =>
+          firstValueFrom(api.downloadPackage(item.id, format)),
+        );
         if (value !== null) {
           saveBlob(value, packageFileName(item.standard, item.run_id, format));
         }

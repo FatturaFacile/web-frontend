@@ -48,21 +48,68 @@ describe('IntercompanyTransactionsStore', () => {
           success: true,
           message: '',
           data: [transaction()],
-          meta: { current_page: 1, per_page: 20, total: 1, last_page: 1, summary: { total: 1, drafted: 0, confirmed: 0, reversed: 0, failed: 0, unpaid: 1, amount_by_currency: { CHF: '108.1000' } } },
+          meta: {
+            current_page: 1,
+            per_page: 20,
+            total: 1,
+            last_page: 1,
+            summary: {
+              total: 1,
+              drafted: 0,
+              confirmed: 0,
+              reversed: 0,
+              failed: 0,
+              unpaid: 1,
+              amount_by_currency: { CHF: '108.1000' },
+            },
+          },
         }),
       ),
-      scanTransactions: vi.fn(() => of({ success: true, message: '', data: { created: 2, skipped: 1, failed: 0, transactions: [] } })),
-      mirrorTransaction: vi.fn(() => of({ success: true, message: '', data: transaction({ status: 'drafted', mirror_status: 'draft', version: 2 }) })),
-      confirmTransaction: vi.fn(() => of({ success: true, message: '', data: transaction({ status: 'confirmed', mirror_status: 'confirmed', version: 3 }) })),
+      scanTransactions: vi.fn(() =>
+        of({
+          success: true,
+          message: '',
+          data: { created: 2, skipped: 1, failed: 0, transactions: [] },
+        }),
+      ),
+      mirrorTransaction: vi.fn(() =>
+        of({
+          success: true,
+          message: '',
+          data: transaction({ status: 'drafted', mirror_status: 'draft', version: 2 }),
+        }),
+      ),
+      confirmTransaction: vi.fn(() =>
+        of({
+          success: true,
+          message: '',
+          data: transaction({ status: 'confirmed', mirror_status: 'confirmed', version: 3 }),
+        }),
+      ),
       reverseTransaction: vi.fn(),
       syncPayment: vi.fn(),
       getNettingRuns: vi.fn(() => of({ success: true, message: '', data: [] })),
-      proposeNetting: vi.fn(() => of({ success: true, message: '', data: { id: 'n1', status: 'draft', version: 1, items: [] } })),
-      confirmNetting: vi.fn(() => of({ success: true, message: '', data: { id: 'n1', status: 'confirmed', version: 2, items: [] } })),
+      proposeNetting: vi.fn(() =>
+        of({
+          success: true,
+          message: '',
+          data: { id: 'n1', status: 'draft', version: 1, items: [] },
+        }),
+      ),
+      confirmNetting: vi.fn(() =>
+        of({
+          success: true,
+          message: '',
+          data: { id: 'n1', status: 'confirmed', version: 2, items: [] },
+        }),
+      ),
       cancelNetting: vi.fn(),
     };
     TestBed.configureTestingModule({
-      providers: [IntercompanyTransactionsStore, { provide: IntercompanyApiService, useValue: api }],
+      providers: [
+        IntercompanyTransactionsStore,
+        { provide: IntercompanyApiService, useValue: api },
+      ],
     });
     store = TestBed.inject(IntercompanyTransactionsStore);
   });
@@ -78,7 +125,9 @@ describe('IntercompanyTransactionsStore', () => {
   });
 
   it('keeps the translated error key when the load fails', async () => {
-    api['getTransactions'].mockReturnValue(throwError(() => new HttpErrorResponse({ status: 403 })));
+    api['getTransactions'].mockReturnValue(
+      throwError(() => new HttpErrorResponse({ status: 403 })),
+    );
 
     await store.load('g1');
 
@@ -98,7 +147,10 @@ describe('IntercompanyTransactionsStore', () => {
     await store.load('g1');
 
     await store.mirror('t1', 'draft');
-    expect(api['mirrorTransaction']).toHaveBeenCalledWith('t1', { mode: 'draft', expected_version: 1 });
+    expect(api['mirrorTransaction']).toHaveBeenCalledWith('t1', {
+      mode: 'draft',
+      expected_version: 1,
+    });
     expect(store.transactions()[0].status).toBe('drafted');
 
     const outcome = await store.confirm('t1');
@@ -110,7 +162,9 @@ describe('IntercompanyTransactionsStore', () => {
 
   it('reports a stale version as a conflict and leaves the row untouched', async () => {
     await store.load('g1');
-    api['reverseTransaction'].mockReturnValue(throwError(() => new HttpErrorResponse({ status: 409 })));
+    api['reverseTransaction'].mockReturnValue(
+      throwError(() => new HttpErrorResponse({ status: 409 })),
+    );
 
     const outcome = await store.reverse('t1', 'wrong entity');
 
@@ -121,7 +175,11 @@ describe('IntercompanyTransactionsStore', () => {
   });
 
   it('proposes, confirms and cancels netting runs', async () => {
-    const proposed = await store.proposeNetting('g1', { entity_a_tenant_id: 'a', entity_b_tenant_id: 'b', as_of_date: '2026-12-31' });
+    const proposed = await store.proposeNetting('g1', {
+      entity_a_tenant_id: 'a',
+      entity_b_tenant_id: 'b',
+      as_of_date: '2026-12-31',
+    });
     expect(proposed.run?.id).toBe('n1');
     expect(store.nettingRuns()).toHaveLength(1);
 

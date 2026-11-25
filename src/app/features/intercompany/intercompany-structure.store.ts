@@ -37,7 +37,10 @@ const initialState: IntercompanyStructureState = {
 export const IntercompanyStructureStore = signalStore(
   withState(initialState),
   withMethods((store, api = inject(IntercompanyApiService)) => {
-    const write = async <T>(call: () => Promise<T>, apply: (value: T) => void): Promise<IcOutcome> => {
+    const write = async <T>(
+      call: () => Promise<T>,
+      apply: (value: T) => void,
+    ): Promise<IcOutcome> => {
       patchState(store, { saving: true });
       const { outcome, value } = await attempt(call);
       patchState(store, { saving: false });
@@ -75,12 +78,15 @@ export const IntercompanyStructureStore = signalStore(
       removePartyLink(id: string): Promise<IcOutcome> {
         return write(
           async () => firstValueFrom(api.deletePartyLink(id)),
-          () => patchState(store, { partyLinks: store.partyLinks().filter((link) => link.id !== id) }),
+          () =>
+            patchState(store, { partyLinks: store.partyLinks().filter((link) => link.id !== id) }),
         );
       },
       async filterRates(groupId: string, rateFilters: IcPeriodRateFilters): Promise<void> {
         patchState(store, { rateFilters });
-        const { value } = await attempt(() => firstValueFrom(api.getPeriodRates(groupId, rateFilters)));
+        const { value } = await attempt(() =>
+          firstValueFrom(api.getPeriodRates(groupId, rateFilters)),
+        );
         if (value !== null) {
           patchState(store, { rates: value.data ?? [] });
         }
@@ -91,7 +97,14 @@ export const IntercompanyStructureStore = signalStore(
           (rate) => {
             const others = store
               .rates()
-              .filter((row) => !(row.currency === rate.currency && row.rate_type === rate.rate_type && row.period_end === rate.period_end));
+              .filter(
+                (row) =>
+                  !(
+                    row.currency === rate.currency &&
+                    row.rate_type === rate.rate_type &&
+                    row.period_end === rate.period_end
+                  ),
+              );
             patchState(store, { rates: [rate, ...others] });
           },
         );

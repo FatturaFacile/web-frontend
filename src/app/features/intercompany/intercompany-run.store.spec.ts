@@ -6,7 +6,14 @@ import { GeneralLedgerConsolidationApiService, IcRunWorkflow, IntercompanyApiSer
 import { IntercompanyRunStore } from './intercompany-run.store';
 
 function workflow(overrides: Partial<IcRunWorkflow> = {}): IcRunWorkflow {
-  return { run_id: 'r1', status: 'draft', version: 1, history: [], allowed_transitions: ['calculating'], ...overrides };
+  return {
+    run_id: 'r1',
+    status: 'draft',
+    version: 1,
+    history: [],
+    allowed_transitions: ['calculating'],
+    ...overrides,
+  };
 }
 
 const ok = <T>(data: T) => of({ success: true, message: '', data });
@@ -28,9 +35,20 @@ describe('IntercompanyRunStore', () => {
           ],
         }),
       ),
-      getEliminationLedger: vi.fn(() => ok({ run_id: 'r1', currency: 'CHF', entries: [], totals_by_type: {} })),
-      getNciSchedule: vi.fn(() => ok({ currency: 'CHF', rows: [], total_nci_net_assets: '0.0000', total_nci_profit: '0.0000' })),
-      advanceRun: vi.fn(() => ok(workflow({ status: 'review', version: 2, allowed_transitions: ['locked'] }))),
+      getEliminationLedger: vi.fn(() =>
+        ok({ run_id: 'r1', currency: 'CHF', entries: [], totals_by_type: {} }),
+      ),
+      getNciSchedule: vi.fn(() =>
+        ok({
+          currency: 'CHF',
+          rows: [],
+          total_nci_net_assets: '0.0000',
+          total_nci_profit: '0.0000',
+        }),
+      ),
+      advanceRun: vi.fn(() =>
+        ok(workflow({ status: 'review', version: 2, allowed_transitions: ['locked'] })),
+      ),
       reopenRun: vi.fn(() => ok(workflow({ status: 'review', version: 4 }))),
     };
     consolidation = { runConsolidation: vi.fn(() => ok({ id: 'r2' })) };
@@ -88,7 +106,9 @@ describe('IntercompanyRunStore', () => {
   });
 
   it('reopens a locked run with the reason and the version', async () => {
-    api['getWorkflow'].mockReturnValue(ok(workflow({ status: 'locked', version: 3, allowed_transitions: ['posted'] })));
+    api['getWorkflow'].mockReturnValue(
+      ok(workflow({ status: 'locked', version: 3, allowed_transitions: ['posted'] })),
+    );
     await store.load('r1');
     expect(store.closed()).toBe(true);
 

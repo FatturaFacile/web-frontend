@@ -35,7 +35,10 @@ describe('intercompany util', () => {
 
     it('keeps the first validation message of a 422', () => {
       const outcome = failureOf(
-        new HttpErrorResponse({ status: 422, error: { message: 'x', errors: { reason: ['The reason is required.'] } } }),
+        new HttpErrorResponse({
+          status: 422,
+          error: { message: 'x', errors: { reason: ['The reason is required.'] } },
+        }),
       );
 
       expect(outcome.ok).toBe(false);
@@ -45,7 +48,9 @@ describe('intercompany util', () => {
     });
 
     it('maps a stale version to the conflict key', () => {
-      const outcome = failureOf(new HttpErrorResponse({ status: 409, error: { success: false, message: 'Stale version' } }));
+      const outcome = failureOf(
+        new HttpErrorResponse({ status: 409, error: { success: false, message: 'Stale version' } }),
+      );
 
       expect(outcome.errorKey).toBe('intercompany.error.conflict');
       expect(outcome.status).toBe(409);
@@ -113,6 +118,8 @@ describe('intercompany util', () => {
   });
 
   it('names a package file after the standard and the run', () => {
-    expect(packageFileName('oic17', '12345678-aaaa', 'xlsx')).toBe('consolidated-package-oic17-12345678.xlsx');
+    expect(packageFileName('oic17', '12345678-aaaa', 'xlsx')).toBe(
+      'consolidated-package-oic17-12345678.xlsx',
+    );
   });
 });

@@ -8,7 +8,13 @@ describe('INTERCOMPANY_ROUTES', () => {
   const pages = INTERCOMPANY_ROUTES[0].children ?? [];
 
   it('opens the group structure first, then the four working pages', () => {
-    expect(pages.map((route) => route.path)).toEqual(['', 'transactions', 'reconciliation', 'consolidation', 'statements']);
+    expect(pages.map((route) => route.path)).toEqual([
+      '',
+      'transactions',
+      'reconciliation',
+      'consolidation',
+      'statements',
+    ]);
   });
 
   it('lazy loads the shell and a standalone component for every page', async () => {
@@ -34,11 +40,16 @@ describe('intercompany route of the application', () => {
     expect(route).toBeDefined();
     expect(route?.canActivate).toHaveLength(4);
     expect(route?.loadChildren).toBeTypeOf('function');
-    expect(PREMATURE_OPEN_ISSUE_MODULES['intercompany']).toEqual({ issue: 291, routePrefix: '/intercompany' });
+    expect(PREMATURE_OPEN_ISSUE_MODULES['intercompany']).toEqual({
+      issue: 291,
+      routePrefix: '/intercompany',
+    });
   });
 
   it('has a sidebar entry with a link to each page', () => {
-    const entries = MENU_SECTIONS.flatMap((section) => section.items ?? []).filter((item) => item.module === 'intercompany');
+    const entries = MENU_SECTIONS.flatMap((section) => section.items ?? []).filter(
+      (item) => item.module === 'intercompany',
+    );
     const links = entries.flatMap((entry) => entry.children ?? []).map((child) => child.route);
 
     expect(entries.length).toBeGreaterThan(0);

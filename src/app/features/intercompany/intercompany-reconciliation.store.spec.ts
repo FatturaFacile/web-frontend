@@ -11,7 +11,13 @@ const TOTALS = {
   disputed: 0,
   written_off: 0,
   adjusted: 0,
-  difference_by_anomaly: { timing: '0.0000', fx: '2.0000', amount: '0.0000', tax: '0.0000', missing_counterpart: '0.0000' },
+  difference_by_anomaly: {
+    timing: '0.0000',
+    fx: '2.0000',
+    amount: '0.0000',
+    tax: '0.0000',
+    missing_counterpart: '0.0000',
+  },
 };
 
 function item(overrides: Partial<IcReconciliationItem> = {}): IcReconciliationItem {
@@ -48,7 +54,15 @@ function item(overrides: Partial<IcReconciliationItem> = {}): IcReconciliationIt
 }
 
 function batch(items: IcReconciliationItem[] = [item()]): IcReconciliationBatch {
-  return { id: 'b1', group_id: 'g1', as_of_date: '2026-12-31', status: 'open', totals: TOTALS, created_at: '2026-12-31T00:00:00Z', items };
+  return {
+    id: 'b1',
+    group_id: 'g1',
+    as_of_date: '2026-12-31',
+    status: 'open',
+    totals: TOTALS,
+    created_at: '2026-12-31T00:00:00Z',
+    items,
+  };
 }
 
 const MATRIX = {
@@ -82,14 +96,23 @@ describe('IntercompanyReconciliationStore', () => {
       getBatch: vi.fn(() => of({ success: true, message: '', data: batch() })),
       createBatch: vi.fn(() => of({ success: true, message: '', data: batch([]) })),
       getMatrix: vi.fn(() => of({ success: true, message: '', data: MATRIX })),
-      disputeItem: vi.fn(() => of({ success: true, message: '', data: item({ status: 'disputed' }) })),
-      matchItem: vi.fn(() => of({ success: true, message: '', data: item({ status: 'matched', match_kind: 'manual' }) })),
+      disputeItem: vi.fn(() =>
+        of({ success: true, message: '', data: item({ status: 'disputed' }) }),
+      ),
+      matchItem: vi.fn(() =>
+        of({ success: true, message: '', data: item({ status: 'matched', match_kind: 'manual' }) }),
+      ),
       unmatchItem: vi.fn(),
       writeOffItem: vi.fn(),
-      adjustItem: vi.fn(() => of({ success: true, message: '', data: item({ status: 'adjusted' }) })),
+      adjustItem: vi.fn(() =>
+        of({ success: true, message: '', data: item({ status: 'adjusted' }) }),
+      ),
     };
     TestBed.configureTestingModule({
-      providers: [IntercompanyReconciliationStore, { provide: IntercompanyApiService, useValue: api }],
+      providers: [
+        IntercompanyReconciliationStore,
+        { provide: IntercompanyApiService, useValue: api },
+      ],
     });
     store = TestBed.inject(IntercompanyReconciliationStore);
   });
@@ -134,7 +157,10 @@ describe('IntercompanyReconciliationStore', () => {
 
     await store.drillDown({ entity_a_tenant_id: 'a', entity_b_tenant_id: 'b' });
 
-    expect(api['getBatch']).toHaveBeenLastCalledWith('b1', { entity_a_tenant_id: 'a', entity_b_tenant_id: 'b' });
+    expect(api['getBatch']).toHaveBeenLastCalledWith('b1', {
+      entity_a_tenant_id: 'a',
+      entity_b_tenant_id: 'b',
+    });
     expect(store.cell()).toEqual({ entity_a_tenant_id: 'a', entity_b_tenant_id: 'b' });
   });
 

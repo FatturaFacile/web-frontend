@@ -41,7 +41,9 @@ export const IntercompanyReconciliationStore = signalStore(
     items: computed<IcReconciliationItem[]>(() => store.batch()?.items ?? []),
     cellOf: computed(() => (a: string, b: string): IcMatrixCell | null => {
       const cells = store.matrix()?.cells ?? [];
-      return cells.find((cell) => cell.entity_a_tenant_id === a && cell.entity_b_tenant_id === b) ?? null;
+      return (
+        cells.find((cell) => cell.entity_a_tenant_id === a && cell.entity_b_tenant_id === b) ?? null
+      );
     }),
   })),
   withMethods((store, api = inject(IntercompanyApiService)) => {
@@ -50,13 +52,21 @@ export const IntercompanyReconciliationStore = signalStore(
       patchState(store, { batch: value?.data ?? store.batch(), error: outcome.errorKey });
     };
 
-    const resolve = async (item: IcReconciliationItem, call: () => Promise<IcReconciliationItem>): Promise<IcOutcome> => {
+    const resolve = async (
+      item: IcReconciliationItem,
+      call: () => Promise<IcReconciliationItem>,
+    ): Promise<IcOutcome> => {
       patchState(store, { busy: [...store.busy(), item.id] });
       const { outcome, value } = await attempt(call);
       patchState(store, { busy: store.busy().filter((id) => id !== item.id) });
       const batch = store.batch();
       if (value !== null && batch !== null) {
-        patchState(store, { batch: { ...batch, items: (batch.items ?? []).map((row) => (row.id === value.id ? value : row)) } });
+        patchState(store, {
+          batch: {
+            ...batch,
+            items: (batch.items ?? []).map((row) => (row.id === value.id ? value : row)),
+          },
+        });
         // The totals of the batch and the matrix move with the item.
         void loadBatch(batch.id, store.filters());
         void api
@@ -91,7 +101,9 @@ export const IntercompanyReconciliationStore = signalStore(
       /** Starts a reconciliation batch (automatic matching included by default) and shows it. */
       async runBatch(groupId: string, asOfDate: string, autoMatch = true): Promise<IcOutcome> {
         patchState(store, { loading: true, error: null });
-        const { outcome, value } = await attempt(() => firstValueFrom(api.createBatch(groupId, asOfDate, autoMatch)));
+        const { outcome, value } = await attempt(() =>
+          firstValueFrom(api.createBatch(groupId, asOfDate, autoMatch)),
+        );
         if (value === null) {
           patchState(store, { loading: false, error: outcome.errorKey });
           return outcome;
@@ -110,7 +122,9 @@ export const IntercompanyReconciliationStore = signalStore(
           await loadBatch(batch.id, filters);
         }
       },
-      async drillDown(cell: Pick<IcMatrixCell, 'entity_a_tenant_id' | 'entity_b_tenant_id'> | null): Promise<void> {
+      async drillDown(
+        cell: Pick<IcMatrixCell, 'entity_a_tenant_id' | 'entity_b_tenant_id'> | null,
+      ): Promise<void> {
         patchState(store, { cell });
         await methods.applyFilters({
           ...store.filters(),
@@ -119,19 +133,31 @@ export const IntercompanyReconciliationStore = signalStore(
         });
       },
       match(item: IcReconciliationItem, counterpartDocumentId: string): Promise<IcOutcome> {
-        return resolve(item, async () => (await firstValueFrom(api.matchItem(item.id, counterpartDocumentId))).data);
+        return resolve(
+          item,
+          async () => (await firstValueFrom(api.matchItem(item.id, counterpartDocumentId))).data,
+        );
       },
       unmatch(item: IcReconciliationItem): Promise<IcOutcome> {
         return resolve(item, async () => (await firstValueFrom(api.unmatchItem(item.id))).data);
       },
       dispute(item: IcReconciliationItem, reason: string): Promise<IcOutcome> {
-        return resolve(item, async () => (await firstValueFrom(api.disputeItem(item.id, reason))).data);
+        return resolve(
+          item,
+          async () => (await firstValueFrom(api.disputeItem(item.id, reason))).data,
+        );
       },
       writeOff(item: IcReconciliationItem, reason: string): Promise<IcOutcome> {
-        return resolve(item, async () => (await firstValueFrom(api.writeOffItem(item.id, reason))).data);
+        return resolve(
+          item,
+          async () => (await firstValueFrom(api.writeOffItem(item.id, reason))).data,
+        );
       },
       adjust(item: IcReconciliationItem, reason: string, amount: string): Promise<IcOutcome> {
-        return resolve(item, async () => (await firstValueFrom(api.adjustItem(item.id, reason, amount))).data);
+        return resolve(
+          item,
+          async () => (await firstValueFrom(api.adjustItem(item.id, reason, amount))).data,
+        );
       },
     };
     return methods;

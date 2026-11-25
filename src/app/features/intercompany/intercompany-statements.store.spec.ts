@@ -21,14 +21,25 @@ describe('IntercompanyStatementsStore', () => {
 
   beforeEach(() => {
     api = {
-      getStatements: vi.fn((_run: string, standard: string) => ok({ run_id: 'r1', standard, currency: 'CHF' })),
+      getStatements: vi.fn((_run: string, standard: string) =>
+        ok({ run_id: 'r1', standard, currency: 'CHF' }),
+      ),
       getShareholdings: vi.fn(() => ok({ currency: 'CHF', rows: [] })),
-      getNciSchedule: vi.fn(() => ok({ currency: 'CHF', rows: [], total_nci_net_assets: '0.0000', total_nci_profit: '0.0000' })),
+      getNciSchedule: vi.fn(() =>
+        ok({
+          currency: 'CHF',
+          rows: [],
+          total_nci_net_assets: '0.0000',
+          total_nci_profit: '0.0000',
+        }),
+      ),
       getPackages: vi.fn(() => ok([PACKAGE])),
       createPackage: vi.fn(() => ok(PACKAGE)),
       downloadPackage: vi.fn(() => of(new Blob(['x']))),
     };
-    TestBed.configureTestingModule({ providers: [IntercompanyStatementsStore, { provide: IntercompanyApiService, useValue: api }] });
+    TestBed.configureTestingModule({
+      providers: [IntercompanyStatementsStore, { provide: IntercompanyApiService, useValue: api }],
+    });
     store = TestBed.inject(IntercompanyStatementsStore);
   });
 
@@ -67,7 +78,9 @@ describe('IntercompanyStatementsStore', () => {
     const createUrl = vi.fn(() => 'blob:x');
     const revokeUrl = vi.fn();
     vi.stubGlobal('URL', { createObjectURL: createUrl, revokeObjectURL: revokeUrl });
-    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => undefined);
+    const click = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(() => undefined);
 
     const outcome = await store.download(PACKAGE, 'xlsx');
 

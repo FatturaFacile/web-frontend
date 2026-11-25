@@ -16,7 +16,9 @@ export class IntercompanyNotifier {
       return true;
     }
     const text = this.i18n.translate(outcome.errorKey ?? 'intercompany.error.generic');
-    this.message.error(outcome.detail && outcome.status === 422 ? `${text}: ${outcome.detail}` : text);
+    this.message.error(
+      outcome.detail && outcome.status === 422 ? `${text}: ${outcome.detail}` : text,
+    );
     return false;
   }
 }
