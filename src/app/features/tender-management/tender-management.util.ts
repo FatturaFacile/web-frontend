@@ -441,3 +441,47 @@ export function signatureFormatOfFile(fileName: string): 'p7m' | 'pades' | 'none
   }
   return lower.endsWith('.pdf') ? 'pades' : 'none';
 }
+
+// --- Go/No-Go criteria ---
+
+/**
+ * Translation key (and params) of a criterion of the eligibility matrix. The API names them `turnover`, `similar_projects`,
+ * `soa_<CATEGORY>` (e.g. `soa_OG1`), `certification_<DocType>` / `document_<DocType>` and `compliance_<code>`; any other key
+ * is looked up as `tenderManagement.criterion.<key>`.
+ */
+export function criterionLabel(key: string): { key: string; params: Record<string, string> } {
+  const soa = /^soa[_:](.+)$/.exec(key);
+  if (soa) {
+    return { key: 'tenderManagement.criterion.soa', params: { category: soa[1] } };
+  }
+  const document = /^(?:certification|document)[_:](.+)$/.exec(key);
+  if (document) {
+    return { key: `tenderManagement.enum.vaultDocType.${document[1]}`, params: {} };
+  }
+  const compliance = /^compliance[_:](.+)$/.exec(key);
+  if (compliance) {
+    return { key: `tenderManagement.compliance.${compliance[1]}`, params: {} };
+  }
+  return { key: `tenderManagement.criterion.${key}`, params: {} };
+}
+
+/** The reading of the matrix: solo, or the form of association the gaps call for. */
+export function recommendationKey(eligibility: Pick<TndEligibilityLike, 'can_bid_solo' | 'recommended_mode'>): string {
+  if (eligibility.can_bid_solo) {
+    return 'tenderManagement.compliance.solo_eligible';
+  }
+  return eligibility.recommended_mode === 'Avvalimento'
+    ? 'tenderManagement.compliance.avvalimento_recommended'
+    : 'tenderManagement.compliance.rti_recommended';
+}
+
+type TndEligibilityLike = { can_bid_solo: boolean; recommended_mode: string };
+
+export function decisionColor(decision: 'go' | 'conditional' | 'no_go'): string {
+  return decision === 'go' ? 'green' : decision === 'conditional' ? 'orange' : 'red';
+}
+
+/** Share of the matrix criteria that are met, 0-100. */
+export function metShare(criteria: readonly { met: boolean }[]): number {
+  return criteria.length === 0 ? 0 : Math.round((criteria.filter((item) => item.met).length / criteria.length) * 100);
+}

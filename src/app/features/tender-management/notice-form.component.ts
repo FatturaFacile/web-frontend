@@ -1,4 +1,5 @@
 import { Component, computed, effect, input, output } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -99,7 +100,7 @@ function nullable(value: string | null | undefined): string | null {
         }
         <label class="field wide" for="tnd-nf-cpv">
           <span>CPV</span>
-          <nz-select nzId="tnd-nf-cpv" formControlName="cpv_category_codes" nzMode="tags" nzTokenSeparators="[',', ' ']"></nz-select>
+          <nz-select nzId="tnd-nf-cpv" formControlName="cpv_category_codes" nzMode="tags" [nzTokenSeparators]="[',', ' ']"></nz-select>
         </label>
         <label class="field" for="tnd-nf-criterion">
           <span>{{ 'tenderManagement.field.awardCriterion' | translate }}</span>
@@ -294,19 +295,23 @@ export class NoticeFormComponent {
     () => this.lookups()?.vault_doc_types.map((type) => type.value) ?? [...TND_VAULT_DOC_TYPES],
   );
 
-  private readonly jurisdictionValue = this.form.controls.jurisdiction;
-  private readonly criterionValue = this.form.controls.award_criterion;
+  private readonly jurisdictionValue = toSignal(this.form.controls.jurisdiction.valueChanges, {
+    initialValue: this.form.controls.jurisdiction.value,
+  });
+  private readonly criterionValue = toSignal(this.form.controls.award_criterion.valueChanges, {
+    initialValue: this.form.controls.award_criterion.value,
+  });
 
   protected isItalian(): boolean {
-    return this.jurisdictionValue.value === 'IT_Dlgs36_2023_ANAC';
+    return this.jurisdictionValue() === 'IT_Dlgs36_2023_ANAC';
   }
 
   protected isSwiss(): boolean {
-    return this.jurisdictionValue.value === 'CH_SIMAP_LAPub';
+    return this.jurisdictionValue() === 'CH_SIMAP_LAPub';
   }
 
   protected isOepv(): boolean {
-    return this.criterionValue.value === 'OEPV_MostEconomicallyAdvantageous';
+    return this.criterionValue() === 'OEPV_MostEconomicallyAdvantageous';
   }
 
   constructor() {
