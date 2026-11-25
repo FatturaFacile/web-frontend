@@ -85,17 +85,20 @@ export interface LpDscr {
   lines: LpDscrLine[];
 }
 
-export type LpCapitalStatus = 'ok' | 'watch' | 'half_capital_lost' | 'below_legal_minimum';
+export type LpCapitalStatus =
+  'ok' | 'watch' | 'half_capital_lost' | 'below_legal_minimum' | 'over_indebted';
 
 export interface LpCapital {
   regime: 'CH_CO_725' | 'IT_CC_2446_2447';
-  share_capital: string;
-  legal_minimum: string;
+  share_capital: string | null;
+  legal_minimum: string | null;
   net_equity: string;
-  half_capital: string;
+  half_capital: string | null;
   status: LpCapitalStatus;
   coverage_percent: string | null;
-  source: string;
+  /** False while the share capital has not been set up in the settings. */
+  configured: boolean;
+  source: 'ledger' | 'override';
 }
 
 export type LpPfnStatus = 'ok' | 'watch' | 'breach' | 'not_applicable';
@@ -114,6 +117,7 @@ export interface LpLiquidity {
   minimum_balance: string;
   runway_days: number | null;
   first_negative_date: string | null;
+  lowest_balance: string | null;
   status: 'ok' | 'watch' | 'negative';
 }
 

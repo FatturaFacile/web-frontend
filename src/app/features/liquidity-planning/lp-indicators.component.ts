@@ -76,6 +76,11 @@ type View = 'baseline' | 'scenario';
 
         <nz-card [nzTitle]="'lp.capital.title' | translate" data-testid="lp-capital">
           <nz-descriptions nzBordered nzSize="small" [nzColumn]="1">
+            @if (!ind.capital.configured) {
+              <nz-descriptions-item [nzTitle]="'lp.capital.status.label' | translate">
+                <nz-tag nzColor="warning">{{ 'lp.capital.notConfigured' | translate }}</nz-tag>
+              </nz-descriptions-item>
+            }
             <nz-descriptions-item [nzTitle]="'lp.capital.regimeLabel' | translate">
               {{ 'lp.capital.regime.' + ind.capital.regime | translate }}
             </nz-descriptions-item>
@@ -139,6 +144,13 @@ type View = 'baseline' | 'scenario';
               } @else {
                 {{ 'lp.liquidity.runwayDays' | translate: { days: ind.liquidity.runway_days } }}
               }
+            </nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'lp.liquidity.lowest' | translate">
+              {{
+                ind.liquidity.lowest_balance
+                  ? (ind.liquidity.lowest_balance | money: store.currency())
+                  : ('lp.common.notAvailable' | translate)
+              }}
             </nz-descriptions-item>
             <nz-descriptions-item [nzTitle]="'lp.liquidity.firstNegative' | translate">
               {{ ind.liquidity.first_negative_date ?? ('lp.common.none' | translate) }}

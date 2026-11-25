@@ -79,6 +79,7 @@ export const indicators: LpIndicators = {
     half_capital: '50000.00',
     status: 'ok',
     coverage_percent: '180.00',
+    configured: true,
     source: 'ledger',
   },
   pfn: {
@@ -94,6 +95,7 @@ export const indicators: LpIndicators = {
     minimum_balance: '5000.00',
     runway_days: null,
     first_negative_date: null,
+    lowest_balance: '1000.00',
     status: 'ok',
   },
 };
