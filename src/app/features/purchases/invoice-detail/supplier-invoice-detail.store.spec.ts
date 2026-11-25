@@ -59,6 +59,24 @@ describe('SupplierInvoiceDetailStore', () => {
     expect(store.loading()).toBe(false);
   });
 
+  it('leaves out of the outstanding amount what the buyer withholds or pays as split-payment VAT', () => {
+    const store = setup({
+      invoice: of({
+        data: {
+          ...invoice,
+          total_amount: '1220.00',
+          total_paid: '0',
+          withholding_tax_amount: '200.00',
+          split_payment_tax_amount: '220.00',
+        },
+      }),
+    });
+
+    store.load('i-1');
+
+    expect(store.outstanding()).toBe(800);
+  });
+
   it('picks the current run of the match history', () => {
     const history = [
       { id: 'r-old', is_current: false },
