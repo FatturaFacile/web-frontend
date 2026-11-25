@@ -276,7 +276,8 @@ export class IntercompanyReconciliationComponent {
   }
 
   protected filter(change: { anomaly_type?: IcAnomalyType | null; status?: IcMatchStatus | null }): void {
-    void this.store.applyFilters({ ...this.store.filters(), ...change });
+    const cleaned = Object.fromEntries(Object.entries(change).map(([key, value]) => [key, value ?? undefined]));
+    void this.store.applyFilters({ ...this.store.filters(), ...cleaned });
   }
 
   protected async run(autoMatch: boolean): Promise<void> {
