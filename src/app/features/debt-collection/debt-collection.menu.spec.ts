@@ -43,11 +43,12 @@ describe('debt collection access', () => {
     }
   });
 
-  it('lets owner, admin, accountant and sales manager send and escalate, never a read-only role', () => {
-    for (const role of ['owner', 'admin', 'accountant', 'sales_manager']) {
+  it('lets owner, admin and accountant send and escalate, never a read-only role', () => {
+    for (const role of ['owner', 'admin', 'accountant']) {
       expect(write([role]), role).toBe(true);
     }
     expect(write(['accountant_readonly'])).toBe(false);
+    expect(write(['sales_manager'])).toBe(false);
     expect(write(['sales'])).toBe(false);
   });
 

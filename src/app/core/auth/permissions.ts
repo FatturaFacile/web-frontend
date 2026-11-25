@@ -242,10 +242,10 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
   // legal escalation (Betreibung dossier, messa in mora) and the settings are write abilities.
   debt_collection: {
     read: [...FINANCE_READERS, 'sales_manager'],
-    write: [...FINANCE, 'sales_manager'],
+    write: FINANCE,
     grants: {
-      read: ['debt_collection.read', 'debt_collection.write', 'debt_collection.*'],
-      write: ['debt_collection.write', 'debt_collection.*'],
+      read: ['debt_collection.read', 'debt_collection.write', 'debt_collection.escalate', 'debt_collection.*'],
+      write: ['debt_collection.write', 'debt_collection.escalate', 'debt_collection.*'],
     },
   },
   agent_commissions_settle: {
