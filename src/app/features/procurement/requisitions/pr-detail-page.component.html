@@ -5,6 +5,9 @@
         <span nz-icon nzType="arrow-left" aria-hidden="true"></span>
         {{ 'PR.BACK_TO_LIST' | translate }}
       </a>
+      @if (detail(); as flowDetail) {
+        <app-document-flow-drawer type="requisition" [documentId]="flowDetail.id" />
+      }
     </div>
 
     <app-page-header

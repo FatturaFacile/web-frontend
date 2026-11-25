@@ -1,3 +1,4 @@
+import { DocumentFlowDrawerComponent } from '../srm/document-flow-drawer.component';
 import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -53,6 +54,7 @@ import { PurchaseRequisitionStore } from './purchase-requisition.store';
     TranslatePipe,
     PrBudgetIndicatorCardComponent,
     PrApprovalTrackerComponent,
+    DocumentFlowDrawerComponent,
     NzAlertModule,
     NzButtonModule,
     NzCardModule,
@@ -116,16 +118,19 @@ export class PrDetailPageComponent {
     const req = this.detail();
     return Boolean(
       req &&
-        (req.status === 'draft' ||
-          req.status === 'rejected' ||
-          req.status === 'budget_exceeded_blocked'),
+      (req.status === 'draft' ||
+        req.status === 'rejected' ||
+        req.status === 'budget_exceeded_blocked'),
     );
   });
 
   readonly canSubmit = computed(() => {
     const req = this.detail();
     return Boolean(
-      req && (req.status === 'draft' || req.status === 'rejected' || req.status === 'budget_exceeded_blocked'),
+      req &&
+      (req.status === 'draft' ||
+        req.status === 'rejected' ||
+        req.status === 'budget_exceeded_blocked'),
     );
   });
 

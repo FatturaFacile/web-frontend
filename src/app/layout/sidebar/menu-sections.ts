@@ -433,9 +433,21 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             module: 'procurement',
           },
           {
+            key: 'NAV.PROCUREMENT_SRM',
+            route: '/procurement/srm',
+            icon: 'fa-solid fa-gauge-high',
+            module: 'procurement',
+          },
+          {
             key: 'NAV.PROC_SUPPLIERS',
             route: '/procurement/suppliers',
             icon: 'fa-solid fa-truck-field',
+            module: 'procurement',
+          },
+          {
+            key: 'NAV.PROCUREMENT_SRM_SCORECARDS',
+            route: '/procurement/srm/scorecards',
+            icon: 'fa-solid fa-ranking-star',
             module: 'procurement',
           },
           {

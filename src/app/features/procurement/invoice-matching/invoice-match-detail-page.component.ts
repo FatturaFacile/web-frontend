@@ -3,6 +3,7 @@ import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { InvoiceMatchRun } from '@domain/procurement/invoice-matching.models';
+import { DocumentFlowDrawerComponent } from '../srm/document-flow-drawer.component';
 import { DateFormatPipe, MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -38,6 +39,7 @@ const TAB_HISTORY = 3;
   imports: [
     DateFormatPipe,
     DecimalPipe,
+    DocumentFlowDrawerComponent,
     InvoiceMatchGrIrComponent,
     InvoiceMatchLinesTableComponent,
     InvoiceMatchResolutionActionsComponent,
@@ -62,6 +64,12 @@ const TAB_HISTORY = 3;
       <a nz-button routerLink="/procurement/invoice-matching">{{
         'invoiceMatching.page.backToWorkbench' | translate
       }}</a>
+      @if (store.detail(); as flowRun) {
+        <app-document-flow-drawer
+          type="supplier_invoice"
+          [documentId]="flowRun.passive_invoice_id"
+        />
+      }
     </app-page-header>
 
     @if (store.failed()) {
