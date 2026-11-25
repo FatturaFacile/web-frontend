@@ -58,6 +58,7 @@ export const PREMATURE_OPEN_ISSUE_MODULES: Readonly<
   marketing_automation: { issue: 401, routePrefix: '/marketing-automation' },
   electronic_signature: { issue: 211, routePrefix: '/signatures' },
   tender_management: { issue: 415, routePrefix: '/tender-management' },
+  intercompany: { issue: 291, routePrefix: '/intercompany' },
 };
 
 /**
