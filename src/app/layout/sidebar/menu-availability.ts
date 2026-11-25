@@ -80,6 +80,7 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/communication/inbox',
   '/communication/preferences',
   '/configurator',
+  '/cpq-configurator',
   '/construction',
   '/construction/back-office',
   '/contract-register',

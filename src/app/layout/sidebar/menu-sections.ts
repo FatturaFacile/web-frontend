@@ -1303,6 +1303,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         module: 'configurator',
       },
       {
+        key: 'CPQ_CONFIGURATOR.NAV',
+        icon: 'fa-solid fa-diagram-project',
+        route: '/cpq-configurator',
+        module: 'cpq_configurator',
+      },
+      {
         key: 'NAV.GOVERNANCE',
         icon: 'fa-solid fa-scale-balanced',
         module: 'governance',

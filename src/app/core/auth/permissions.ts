@@ -189,6 +189,18 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
     read: ANY_MEMBER,
     write: ['owner', 'admin', 'accountant', 'sales', 'sales_manager'],
   },
+  cpq_configurator: {
+    read: ANY_MEMBER,
+    write: ['owner', 'admin', 'accountant', 'sales', 'sales_manager'],
+  },
+  cpq_configurator_admin: {
+    read: ['owner', 'admin', 'sales_manager'],
+    write: ['owner', 'admin', 'sales_manager'],
+    grants: {
+      read: ['cpq_configurator.manage', 'cpq_configurator.*'],
+      write: ['cpq_configurator.manage', 'cpq_configurator.*'],
+    },
+  },
   facility: { read: ANY_MEMBER, write: ANY_MEMBER },
   governance: { read: ANY_MEMBER, write: ANY_MEMBER },
   sustainability: {

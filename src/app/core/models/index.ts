@@ -56,6 +56,7 @@ export * from './communication-inbox.model';
 export * from './visitors.model';
 export * from './configurator.model';
 export * from './cpq.model';
+export * from './cpq-configurator.model';
 export * from './facility.model';
 export * from './governance.model';
 export * from './lease-accounting.model';
