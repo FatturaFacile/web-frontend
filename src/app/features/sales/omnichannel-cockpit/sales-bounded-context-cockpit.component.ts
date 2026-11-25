@@ -396,6 +396,305 @@ import { SalesBoundedContextStore } from './sales-bounded-context.store';
               </tbody>
             </nz-table>
           </nz-tab>
+
+          <!-- Mod 155 -->
+          <nz-tab [nzTitle]="ui('tab_mod155')">
+            <div class="sbc-toolbar">
+              <button nz-button nzType="primary" (click)="executeSampleCampaign()">
+                {{ ui('execute_campaign') }}
+              </button>
+            </div>
+            <nz-table [nzData]="store.marketingCampaigns()" nzSize="small" [nzShowPagination]="false">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Campaign</th>
+                  <th>RFM</th>
+                  <th>Excluded Insolvent</th>
+                  <th>Eligible</th>
+                  <th>ROI %</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of store.marketingCampaigns(); track row.id) {
+                  <tr>
+                    <td>{{ row.campaign_code }}</td>
+                    <td>{{ row.name }}</td>
+                    <td><nz-tag nzColor="purple">{{ row.rfm_segment }}</nz-tag></td>
+                    <td>{{ row.excluded_insolvent_count }}</td>
+                    <td>{{ row.eligible_recipients_count }}</td>
+                    <td>{{ row.roi_pct }}%</td>
+                  </tr>
+                }
+              </tbody>
+            </nz-table>
+          </nz-tab>
+
+          <!-- Mod 169 -->
+          <nz-tab [nzTitle]="ui('tab_mod169')">
+            <div class="sbc-toolbar">
+              <button nz-button nzType="primary" (click)="submitSampleTender()">
+                {{ ui('submit_tender') }}
+              </button>
+            </div>
+            <nz-table [nzData]="store.tenders()" nzSize="small" [nzShowPagination]="false">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Title</th>
+                  <th>Framework</th>
+                  <th>CIG / CUP</th>
+                  <th>Bid</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of store.tenders(); track row.id) {
+                  <tr>
+                    <td>{{ row.tender_code }}</td>
+                    <td>{{ row.title }}</td>
+                    <td><nz-tag>{{ row.procurement_framework }}</nz-tag></td>
+                    <td>{{ row.cig_code ?? '-' }} / {{ row.cup_code ?? '-' }}</td>
+                    <td>{{ row.bid_amount }} {{ row.currency }}</td>
+                    <td>
+                      @if (!row.converted_order_id) {
+                        <button nz-button nzSize="small" nzType="primary" (click)="convertTender(row.id)">
+                          {{ ui('convert_tender') }}
+                        </button>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </nz-table>
+          </nz-tab>
+
+          <!-- Mod 230 -->
+          <nz-tab [nzTitle]="ui('tab_mod230')">
+            <div class="sbc-toolbar">
+              <button nz-button nzType="primary" (click)="configureSampleCpqBom()">
+                {{ ui('configure_cpq_bom') }}
+              </button>
+            </div>
+            <nz-table [nzData]="store.cpqConfigurations()" nzSize="small" [nzShowPagination]="false">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Product Family</th>
+                  <th>BOM Cost</th>
+                  <th>Net Price</th>
+                  <th>Margin %</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of store.cpqConfigurations(); track row.id) {
+                  <tr>
+                    <td>{{ row.configuration_code }}</td>
+                    <td>{{ row.product_family }}</td>
+                    <td>{{ row.total_bom_cost }} {{ row.currency }}</td>
+                    <td>{{ row.net_configured_price }} {{ row.currency }}</td>
+                    <td>{{ row.calculated_margin_pct }}%</td>
+                    <td><nz-tag [nzColor]="row.has_constraint_conflict ? 'red' : 'green'">{{ row.status }}</nz-tag></td>
+                  </tr>
+                }
+              </tbody>
+            </nz-table>
+          </nz-tab>
+
+          <!-- Mod 231 -->
+          <nz-tab [nzTitle]="ui('tab_mod231')">
+            <div class="sbc-toolbar">
+              <button nz-button nzType="primary" (click)="calculateSampleGdoRebate()">
+                {{ ui('calculate_gdo_rebate') }}
+              </button>
+            </div>
+            <nz-table [nzData]="store.gdoRebates()" nzSize="small" [nzShowPagination]="false">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>GDO Chain</th>
+                  <th>Tier %</th>
+                  <th>Monthly Rateo</th>
+                  <th>Accrued Total</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of store.gdoRebates(); track row.id) {
+                  <tr>
+                    <td>{{ row.agreement_code }}</td>
+                    <td>{{ row.gdo_chain_name }}</td>
+                    <td>{{ row.resolved_tier_rate_pct }}%</td>
+                    <td>{{ row.monthly_accrual_rateo }} {{ row.currency }}</td>
+                    <td>{{ row.total_provisioned_accrual }} {{ row.currency }}</td>
+                    <td>
+                      @if (!row.settlement_credit_note_id) {
+                        <button nz-button nzSize="small" (click)="settleGdoRebate(row.id)">
+                          {{ ui('settle_rebate_credit_note') }}
+                        </button>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </nz-table>
+          </nz-tab>
+
+          <!-- Mod 232 -->
+          <nz-tab [nzTitle]="ui('tab_mod232')">
+            <div class="sbc-toolbar">
+              <button nz-button nzType="primary" (click)="processSampleReverseReturn()">
+                {{ ui('process_reverse_return') }}
+              </button>
+            </div>
+            <nz-table [nzData]="store.reverseReturns()" nzSize="small" [nzShowPagination]="false">
+              <thead>
+                <tr>
+                  <th>RMA #</th>
+                  <th>B-Stock Grade</th>
+                  <th>Disposition</th>
+                  <th>Art. 26 VAT</th>
+                  <th>Credit Note Gross</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of store.reverseReturns(); track row.id) {
+                  <tr>
+                    <td>{{ row.rma_number }}</td>
+                    <td><nz-tag nzColor="orange">{{ row.b_stock_grade }}</nz-tag></td>
+                    <td>{{ row.inventory_disposition }}</td>
+                    <td><nz-tag [nzColor]="row.art26_dpr633_72_vat_recoverable ? 'green' : 'default'">{{ row.art26_dpr633_72_vat_recoverable }}</nz-tag></td>
+                    <td>{{ row.credit_note_gross_amount }} {{ row.currency }}</td>
+                  </tr>
+                }
+              </tbody>
+            </nz-table>
+          </nz-tab>
+
+          <!-- Mod 233 -->
+          <nz-tab [nzTitle]="ui('tab_mod233')">
+            <div class="sbc-toolbar">
+              <button nz-button nzType="primary" (click)="reconcileSampleVanRoute()">
+                {{ ui('reconcile_van_route') }}
+              </button>
+            </div>
+            <nz-table [nzData]="store.vanRoutes()" nzSize="small" [nzShowPagination]="false">
+              <thead>
+                <tr>
+                  <th>Route #</th>
+                  <th>Driver / Plate</th>
+                  <th>Sezionale</th>
+                  <th>Cash + Card</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of store.vanRoutes(); track row.id) {
+                  <tr>
+                    <td>{{ row.route_code }}</td>
+                    <td>{{ row.driver_agent_name }} ({{ row.vehicle_plate }})</td>
+                    <td>{{ row.document_series_sezionale }}</td>
+                    <td>{{ row.collected_cash_amount }} / {{ row.electronic_payment_amount }} {{ row.currency }}</td>
+                    <td><nz-tag nzColor="green">{{ row.reconciliation_status }}</nz-tag></td>
+                  </tr>
+                }
+              </tbody>
+            </nz-table>
+          </nz-tab>
+
+          <!-- Mod 244 -->
+          <nz-tab [nzTitle]="ui('tab_mod244')">
+            <div class="sbc-toolbar">
+              <button nz-button nzType="primary" (click)="calculateSampleFranchisingRoyalty()">
+                {{ ui('calculate_franchising_royalty') }}
+              </button>
+            </div>
+            <nz-table [nzData]="store.franchisingAffiliates()" nzSize="small" [nzShowPagination]="false">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Store</th>
+                  <th>Sell-Out</th>
+                  <th>Total Fee</th>
+                  <th>Benchmark %</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of store.franchisingAffiliates(); track row.id) {
+                  <tr>
+                    <td>{{ row.affiliate_code }}</td>
+                    <td>{{ row.store_name }}</td>
+                    <td>{{ row.sell_out_turnover }} {{ row.currency }}</td>
+                    <td>{{ row.total_fee_invoiceable }} {{ row.currency }}</td>
+                    <td><nz-tag nzColor="blue">{{ row.benchmark_index_pct }}%</nz-tag></td>
+                  </tr>
+                }
+              </tbody>
+            </nz-table>
+          </nz-tab>
+
+          <!-- Mod 245 -->
+          <nz-tab [nzTitle]="ui('tab_mod245')">
+            <div class="sbc-toolbar">
+              <button nz-button nzType="primary" (click)="recordSampleSurvey()">
+                {{ ui('record_survey') }}
+              </button>
+            </div>
+            <nz-table [nzData]="store.surveys()" nzSize="small" [nzShowPagination]="false">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Trigger</th>
+                  <th>NPS / CSAT / CES</th>
+                  <th>Classification</th>
+                  <th>ISO 9001 Index</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of store.surveys(); track row.id) {
+                  <tr>
+                    <td>{{ row.survey_code }}</td>
+                    <td>{{ row.trigger_event }}</td>
+                    <td>{{ row.nps_score }} / {{ row.csat_score }} / {{ row.ces_score }}</td>
+                    <td><nz-tag [nzColor]="row.detractor_recovery_alert_triggered ? 'red' : 'green'">{{ row.nps_classification }}</nz-tag></td>
+                    <td>{{ row.iso9001_satisfaction_index }}%</td>
+                  </tr>
+                }
+              </tbody>
+            </nz-table>
+          </nz-tab>
+
+          <!-- Mod 358 -->
+          <nz-tab [nzTitle]="ui('tab_mod358')">
+            <div class="sbc-toolbar">
+              <button nz-button nzType="primary" (click)="processSampleWelfareSplit()">
+                {{ ui('process_welfare_split') }}
+              </button>
+            </div>
+            <nz-table [nzData]="store.welfareConventions()" nzSize="small" [nzShowPagination]="false">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Partner / CRAL</th>
+                  <th>Regime</th>
+                  <th>Employer Quota</th>
+                  <th>Employee Co-Pay</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of store.welfareConventions(); track row.id) {
+                  <tr>
+                    <td>{{ row.convention_code }}</td>
+                    <td>{{ row.partner_company_name }} ({{ row.cral_badge_number }})</td>
+                    <td><nz-tag>{{ row.welfare_regime }}</nz-tag></td>
+                    <td>{{ row.employer_welfare_quota_amount }} {{ row.currency }}</td>
+                    <td>{{ row.employee_copay_quota_amount }} {{ row.currency }}</td>
+                  </tr>
+                }
+              </tbody>
+            </nz-table>
+          </nz-tab>
         </nz-tabs>
       </nz-card>
     </div>
@@ -547,5 +846,116 @@ export class SalesBoundedContextCockpitComponent implements OnInit {
       currency: 'CHF',
     });
     this.message.success('Mod 042');
+  }
+
+  async executeSampleCampaign(): Promise<void> {
+    await this.store.executeMarketingCampaign({
+      name: 'Q4 Champions DEM',
+      channel: 'dem_email',
+      rfm_recency_score: 5,
+      rfm_frequency_score: 5,
+      rfm_monetary_score: 5,
+      exclude_insolvent_overdue: true,
+      gdpr_nlpd_lcsl_consent_verified: true,
+      currency: 'CHF',
+    });
+    this.message.success('Mod 155');
+  }
+
+  async submitSampleTender(): Promise<void> {
+    await this.store.submitTender({
+      title: 'Canton Ticino Digital Lot',
+      procurement_framework: 'simap_ch_lapub',
+      contracting_authority: 'Cantone Ticino',
+      bid_amount: 240000,
+      currency: 'CHF',
+    });
+    this.message.success('Mod 169');
+  }
+
+  async convertTender(id: string): Promise<void> {
+    await this.store.convertTenderToContract(id);
+    this.message.success('CIG/CUP Order');
+  }
+
+  async configureSampleCpqBom(): Promise<void> {
+    await this.store.configureCpqBom({
+      product_family: 'CNC Precision Cell',
+      selected_options: { voltage: '400V', chiller: 'high_capacity' },
+      currency: 'CHF',
+    });
+    this.message.success('Mod 230');
+  }
+
+  async calculateSampleGdoRebate(): Promise<void> {
+    await this.store.calculateGdoRebate({
+      gdo_chain_name: 'Coop / Esselunga',
+      sell_in_volume_amount: 300000,
+      sell_out_promo_contribution: 4500,
+      currency: 'EUR',
+    });
+    this.message.success('Mod 231');
+  }
+
+  async settleGdoRebate(id: string): Promise<void> {
+    await this.store.settleGdoRebateCreditNote(id);
+    this.message.success('TD04 Settled');
+  }
+
+  async processSampleReverseReturn(): Promise<void> {
+    await this.store.processReverseReturn({
+      return_reason: 'Transit damage',
+      is_advance_cross_shipping: true,
+      b_stock_grade: 'grade_b_refurbished',
+      return_net_amount: 1000,
+      currency: 'EUR',
+    });
+    this.message.success('Mod 232');
+  }
+
+  async reconcileSampleVanRoute(): Promise<void> {
+    await this.store.reconcileVanRoute({
+      driver_agent_name: 'Matteo Fontana',
+      vehicle_plate: 'TI-448291',
+      loaded_stock_qty: 100,
+      sold_stock_qty: 80,
+      returned_unsold_qty: 20,
+      expected_cash_amount: 1500,
+      collected_cash_amount: 1500,
+      currency: 'CHF',
+    });
+    this.message.success('Mod 233');
+  }
+
+  async calculateSampleFranchisingRoyalty(): Promise<void> {
+    await this.store.calculateFranchisingRoyalty({
+      store_name: 'Zurich Store',
+      sell_out_turnover: 120000,
+      currency: 'CHF',
+    });
+    this.message.success('Mod 244');
+  }
+
+  async recordSampleSurvey(): Promise<void> {
+    await this.store.recordSurvey({
+      trigger_event: 'post_delivery_ddt',
+      nps_score: 9,
+      csat_score: 5,
+      ces_score: 6,
+    });
+    this.message.success('Mod 245');
+  }
+
+  async processSampleWelfareSplit(): Promise<void> {
+    await this.store.processWelfareSplitBilling({
+      partner_company_name: 'Alpine Italia Srl',
+      corporate_email_domain: 'alpine.it',
+      employee_email: 'giulia@alpine.it',
+      cral_badge_number: 'CRAL-001',
+      welfare_regime: 'it_art51_tuir',
+      gross_basket_amount: 500,
+      currency: 'EUR',
+    });
+    this.message.success('Mod 358');
   }
 }

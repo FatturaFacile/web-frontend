@@ -14,6 +14,11 @@ export interface SalesBoundedContextConfig {
   subscription_actions: SbcOption[];
   commission_bases: SbcOption[];
   payment_providers: SbcOption[];
+  rfm_segments: SbcOption[];
+  tender_frameworks: SbcOption[];
+  b_stock_grades: SbcOption[];
+  nps_categories: SbcOption[];
+  welfare_regimes: SbcOption[];
 }
 
 export interface SalesBoundedContextOverview {
@@ -27,6 +32,15 @@ export interface SalesBoundedContextOverview {
   ddt_and_invoices_count: number;
   commissions_payable: number;
   portal_settled_total: number;
+  campaigns_attributed_revenue: number;
+  tenders_pipeline_value: number;
+  cpq_configurations_count: number;
+  gdo_rebates_accrued: number;
+  reverse_returns_count: number;
+  van_routes_reconciled_count: number;
+  franchising_royalties_total: number;
+  detractor_alerts_open: number;
+  welfare_employer_quota_total: number;
 }
 
 export interface SbcCustomerDossier {
@@ -182,4 +196,132 @@ export interface SbcPortalTransaction {
   payment_reference: string | null;
   support_subject: string | null;
   support_status: string | null;
+}
+
+export interface SbcMarketingCampaign {
+  id: string;
+  campaign_code: string;
+  name: string;
+  channel: string;
+  rfm_segment: string;
+  exclude_insolvent_overdue: boolean;
+  excluded_insolvent_count: number;
+  eligible_recipients_count: number;
+  attributed_revenue: string;
+  roi_pct: string;
+  currency: string;
+  status: string;
+}
+
+export interface SbcPublicPrivateTender {
+  id: string;
+  tender_code: string;
+  title: string;
+  procurement_framework: string;
+  contracting_authority: string;
+  cig_code: string | null;
+  cup_code: string | null;
+  total_award_score: string;
+  bid_amount: string;
+  currency: string;
+  pipeline_stage: string;
+  converted_order_id: string | null;
+}
+
+export interface SbcCpqConfiguration {
+  id: string;
+  configuration_code: string;
+  product_family: string;
+  has_constraint_conflict: boolean;
+  total_bom_cost: string;
+  net_configured_price: string;
+  calculated_margin_pct: string;
+  currency: string;
+  status: string;
+}
+
+export interface SbcGdoRebateAgreement {
+  id: string;
+  agreement_code: string;
+  gdo_chain_name: string;
+  contract_year: number;
+  currency: string;
+  sell_in_volume_amount: string;
+  resolved_tier_rate_pct: string;
+  annual_pfa_rebate_amount: string;
+  monthly_accrual_rateo: string;
+  total_provisioned_accrual: string;
+  settlement_status: string;
+  settlement_credit_note_id: string | null;
+}
+
+export interface SbcReverseLogisticsReturn {
+  id: string;
+  rma_number: string;
+  return_reason: string;
+  is_advance_cross_shipping: boolean;
+  replacement_shipment_ref: string | null;
+  b_stock_grade: string;
+  inventory_disposition: string;
+  art26_dpr633_72_vat_recoverable: boolean;
+  credit_note_gross_amount: string;
+  currency: string;
+  status: string;
+}
+
+export interface SbcVanSellingRoute {
+  id: string;
+  route_code: string;
+  driver_agent_name: string;
+  vehicle_plate: string;
+  document_series_sezionale: string;
+  sold_stock_qty: string;
+  returned_unsold_qty: string;
+  stock_variance_qty: string;
+  collected_cash_amount: string;
+  electronic_payment_amount: string;
+  currency: string;
+  reconciliation_status: string;
+}
+
+export interface SbcFranchisingAffiliate {
+  id: string;
+  affiliate_code: string;
+  franchisor_brand: string;
+  store_name: string;
+  country: string;
+  currency: string;
+  sell_out_turnover: string;
+  total_fee_invoiceable: string;
+  pushed_price_list_version: string;
+  benchmark_index_pct: string;
+  status: string;
+}
+
+export interface SbcPostDeliverySurvey {
+  id: string;
+  survey_code: string;
+  trigger_event: string;
+  nps_score: number;
+  csat_score: number;
+  ces_score: number;
+  nps_classification: string;
+  detractor_recovery_alert_triggered: boolean;
+  iso9001_clause_ref: string;
+  iso9001_satisfaction_index: string;
+}
+
+export interface SbcCorporateWelfareConvention {
+  id: string;
+  convention_code: string;
+  partner_company_name: string;
+  employee_email: string;
+  cral_badge_number: string;
+  welfare_regime: string;
+  discounted_net_amount: string;
+  employer_welfare_quota_amount: string;
+  employee_copay_quota_amount: string;
+  within_statutory_exemption: boolean;
+  currency: string;
+  status: string;
 }

@@ -4,15 +4,24 @@ import {
   SalesBoundedContextConfig,
   SalesBoundedContextOverview,
   SbcCommissionStatement,
+  SbcCorporateWelfareConvention,
+  SbcCpqConfiguration,
   SbcCpqQuote,
   SbcCustomerDossier,
   SbcDdtInvoice,
   SbcFrameworkOrder,
+  SbcFranchisingAffiliate,
+  SbcGdoRebateAgreement,
+  SbcMarketingCampaign,
   SbcOmnichannelLead,
   SbcOpportunityForecast,
   SbcPortalTransaction,
+  SbcPostDeliverySurvey,
   SbcPricingGuardrail,
+  SbcPublicPrivateTender,
   SbcRecurringSubscription,
+  SbcReverseLogisticsReturn,
+  SbcVanSellingRoute,
 } from '@core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
 import { firstValueFrom } from 'rxjs';
@@ -31,6 +40,15 @@ export interface SalesBoundedContextState {
   ddtInvoices: SbcDdtInvoice[];
   commissions: SbcCommissionStatement[];
   portalTransactions: SbcPortalTransaction[];
+  marketingCampaigns: SbcMarketingCampaign[];
+  tenders: SbcPublicPrivateTender[];
+  cpqConfigurations: SbcCpqConfiguration[];
+  gdoRebates: SbcGdoRebateAgreement[];
+  reverseReturns: SbcReverseLogisticsReturn[];
+  vanRoutes: SbcVanSellingRoute[];
+  franchisingAffiliates: SbcFranchisingAffiliate[];
+  surveys: SbcPostDeliverySurvey[];
+  welfareConventions: SbcCorporateWelfareConvention[];
 }
 
 const initialState: SalesBoundedContextState = {
@@ -47,6 +65,15 @@ const initialState: SalesBoundedContextState = {
   ddtInvoices: [],
   commissions: [],
   portalTransactions: [],
+  marketingCampaigns: [],
+  tenders: [],
+  cpqConfigurations: [],
+  gdoRebates: [],
+  reverseReturns: [],
+  vanRoutes: [],
+  franchisingAffiliates: [],
+  surveys: [],
+  welfareConventions: [],
 };
 
 export const SalesBoundedContextStore = signalStore(
@@ -56,6 +83,12 @@ export const SalesBoundedContextStore = signalStore(
     ui: computed(() => state.config()?.ui_copy ?? {}),
     pendingGuardrailsCount: computed(
       () => state.pricingGuardrails().filter((g) => g.approval_status === 'pending_manager_approval').length,
+    ),
+    detractorAlertsCount: computed(
+      () => state.surveys().filter((s) => s.detractor_recovery_alert_triggered).length,
+    ),
+    unsettledRebatesCount: computed(
+      () => state.gdoRebates().filter((r) => r.settlement_status !== 'settled_credit_note').length,
     ),
   })),
   withMethods((store, api = inject(SalesBoundedContextApiService)) => ({
@@ -75,6 +108,15 @@ export const SalesBoundedContextStore = signalStore(
           ddtRes,
           commRes,
           portalRes,
+          mktRes,
+          tendersRes,
+          cpqCfgRes,
+          gdoRes,
+          returnsRes,
+          vanRes,
+          franchiseRes,
+          surveysRes,
+          welfareRes,
         ] = await Promise.all([
           firstValueFrom(api.getConfig()),
           firstValueFrom(api.getOverview()),
@@ -88,6 +130,15 @@ export const SalesBoundedContextStore = signalStore(
           firstValueFrom(api.getDdtInvoices()),
           firstValueFrom(api.getCommissions()),
           firstValueFrom(api.getPortalTransactions()),
+          firstValueFrom(api.getMarketingCampaigns()),
+          firstValueFrom(api.getTenders()),
+          firstValueFrom(api.getCpqConfigurations()),
+          firstValueFrom(api.getGdoRebates()),
+          firstValueFrom(api.getReverseReturns()),
+          firstValueFrom(api.getVanRoutes()),
+          firstValueFrom(api.getFranchisingAffiliates()),
+          firstValueFrom(api.getSurveys()),
+          firstValueFrom(api.getWelfareConventions()),
         ]);
 
         patchState(store, {
@@ -103,6 +154,15 @@ export const SalesBoundedContextStore = signalStore(
           ddtInvoices: ddtRes.data,
           commissions: commRes.data,
           portalTransactions: portalRes.data,
+          marketingCampaigns: mktRes.data,
+          tenders: tendersRes.data,
+          cpqConfigurations: cpqCfgRes.data,
+          gdoRebates: gdoRes.data,
+          reverseReturns: returnsRes.data,
+          vanRoutes: vanRes.data,
+          franchisingAffiliates: franchiseRes.data,
+          surveys: surveysRes.data,
+          welfareConventions: welfareRes.data,
         });
       } finally {
         patchState(store, { loading: false });
@@ -201,6 +261,76 @@ export const SalesBoundedContextStore = signalStore(
     async executePortalAction(payload: Record<string, unknown>): Promise<SbcPortalTransaction> {
       const res = await firstValueFrom(api.executePortalAction(payload));
       patchState(store, { portalTransactions: [res.data, ...store.portalTransactions()] });
+      return res.data;
+    },
+
+    async executeMarketingCampaign(payload: Record<string, unknown>): Promise<SbcMarketingCampaign> {
+      const res = await firstValueFrom(api.executeMarketingCampaign(payload));
+      patchState(store, { marketingCampaigns: [res.data, ...store.marketingCampaigns()] });
+      return res.data;
+    },
+
+    async submitTender(payload: Record<string, unknown>): Promise<SbcPublicPrivateTender> {
+      const res = await firstValueFrom(api.submitTender(payload));
+      patchState(store, { tenders: [res.data, ...store.tenders()] });
+      return res.data;
+    },
+
+    async convertTenderToContract(id: string): Promise<SbcPublicPrivateTender> {
+      const res = await firstValueFrom(api.convertTenderToContract(id));
+      patchState(store, {
+        tenders: store.tenders().map((t) => (t.id === id ? res.data : t)),
+      });
+      return res.data;
+    },
+
+    async configureCpqBom(payload: Record<string, unknown>): Promise<SbcCpqConfiguration> {
+      const res = await firstValueFrom(api.configureCpqBom(payload));
+      patchState(store, { cpqConfigurations: [res.data, ...store.cpqConfigurations()] });
+      return res.data;
+    },
+
+    async calculateGdoRebate(payload: Record<string, unknown>): Promise<SbcGdoRebateAgreement> {
+      const res = await firstValueFrom(api.calculateGdoRebate(payload));
+      patchState(store, { gdoRebates: [res.data, ...store.gdoRebates()] });
+      return res.data;
+    },
+
+    async settleGdoRebateCreditNote(id: string): Promise<SbcGdoRebateAgreement> {
+      const res = await firstValueFrom(api.settleGdoRebateCreditNote(id));
+      patchState(store, {
+        gdoRebates: store.gdoRebates().map((r) => (r.id === id ? res.data : r)),
+      });
+      return res.data;
+    },
+
+    async processReverseReturn(payload: Record<string, unknown>): Promise<SbcReverseLogisticsReturn> {
+      const res = await firstValueFrom(api.processReverseReturn(payload));
+      patchState(store, { reverseReturns: [res.data, ...store.reverseReturns()] });
+      return res.data;
+    },
+
+    async reconcileVanRoute(payload: Record<string, unknown>): Promise<SbcVanSellingRoute> {
+      const res = await firstValueFrom(api.reconcileVanRoute(payload));
+      patchState(store, { vanRoutes: [res.data, ...store.vanRoutes()] });
+      return res.data;
+    },
+
+    async calculateFranchisingRoyalty(payload: Record<string, unknown>): Promise<SbcFranchisingAffiliate> {
+      const res = await firstValueFrom(api.calculateFranchisingRoyalty(payload));
+      patchState(store, { franchisingAffiliates: [res.data, ...store.franchisingAffiliates()] });
+      return res.data;
+    },
+
+    async recordSurvey(payload: Record<string, unknown>): Promise<SbcPostDeliverySurvey> {
+      const res = await firstValueFrom(api.recordSurvey(payload));
+      patchState(store, { surveys: [res.data, ...store.surveys()] });
+      return res.data;
+    },
+
+    async processWelfareSplitBilling(payload: Record<string, unknown>): Promise<SbcCorporateWelfareConvention> {
+      const res = await firstValueFrom(api.processWelfareSplitBilling(payload));
+      patchState(store, { welfareConventions: [res.data, ...store.welfareConventions()] });
       return res.data;
     },
   })),

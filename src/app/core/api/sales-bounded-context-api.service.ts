@@ -6,15 +6,24 @@ import {
   SalesBoundedContextConfig,
   SalesBoundedContextOverview,
   SbcCommissionStatement,
+  SbcCorporateWelfareConvention,
+  SbcCpqConfiguration,
   SbcCpqQuote,
   SbcCustomerDossier,
   SbcDdtInvoice,
   SbcFrameworkOrder,
+  SbcFranchisingAffiliate,
+  SbcGdoRebateAgreement,
+  SbcMarketingCampaign,
   SbcOmnichannelLead,
   SbcOpportunityForecast,
   SbcPortalTransaction,
+  SbcPostDeliverySurvey,
   SbcPricingGuardrail,
+  SbcPublicPrivateTender,
   SbcRecurringSubscription,
+  SbcReverseLogisticsReturn,
+  SbcVanSellingRoute,
 } from '../models/sales-bounded-context.model';
 
 @Injectable({ providedIn: 'root' })
@@ -124,5 +133,85 @@ export class SalesBoundedContextApiService {
 
   executePortalAction(payload: Record<string, unknown>): Observable<{ data: SbcPortalTransaction }> {
     return this.http.post<{ data: SbcPortalTransaction }>(`${this.baseUrl}/portal-transactions`, payload);
+  }
+
+  getMarketingCampaigns(): Observable<{ data: SbcMarketingCampaign[] }> {
+    return this.http.get<{ data: SbcMarketingCampaign[] }>(`${this.baseUrl}/marketing-campaigns`);
+  }
+
+  executeMarketingCampaign(payload: Record<string, unknown>): Observable<{ data: SbcMarketingCampaign }> {
+    return this.http.post<{ data: SbcMarketingCampaign }>(`${this.baseUrl}/marketing-campaigns`, payload);
+  }
+
+  getTenders(): Observable<{ data: SbcPublicPrivateTender[] }> {
+    return this.http.get<{ data: SbcPublicPrivateTender[] }>(`${this.baseUrl}/tenders`);
+  }
+
+  submitTender(payload: Record<string, unknown>): Observable<{ data: SbcPublicPrivateTender }> {
+    return this.http.post<{ data: SbcPublicPrivateTender }>(`${this.baseUrl}/tenders`, payload);
+  }
+
+  convertTenderToContract(id: string): Observable<{ data: SbcPublicPrivateTender }> {
+    return this.http.post<{ data: SbcPublicPrivateTender }>(`${this.baseUrl}/tenders/${id}/convert-contract`, {});
+  }
+
+  getCpqConfigurations(): Observable<{ data: SbcCpqConfiguration[] }> {
+    return this.http.get<{ data: SbcCpqConfiguration[] }>(`${this.baseUrl}/cpq-configurations`);
+  }
+
+  configureCpqBom(payload: Record<string, unknown>): Observable<{ data: SbcCpqConfiguration }> {
+    return this.http.post<{ data: SbcCpqConfiguration }>(`${this.baseUrl}/cpq-configurations`, payload);
+  }
+
+  getGdoRebates(): Observable<{ data: SbcGdoRebateAgreement[] }> {
+    return this.http.get<{ data: SbcGdoRebateAgreement[] }>(`${this.baseUrl}/gdo-rebates`);
+  }
+
+  calculateGdoRebate(payload: Record<string, unknown>): Observable<{ data: SbcGdoRebateAgreement }> {
+    return this.http.post<{ data: SbcGdoRebateAgreement }>(`${this.baseUrl}/gdo-rebates`, payload);
+  }
+
+  settleGdoRebateCreditNote(id: string): Observable<{ data: SbcGdoRebateAgreement }> {
+    return this.http.post<{ data: SbcGdoRebateAgreement }>(`${this.baseUrl}/gdo-rebates/${id}/settle-credit-note`, {});
+  }
+
+  getReverseReturns(): Observable<{ data: SbcReverseLogisticsReturn[] }> {
+    return this.http.get<{ data: SbcReverseLogisticsReturn[] }>(`${this.baseUrl}/reverse-returns`);
+  }
+
+  processReverseReturn(payload: Record<string, unknown>): Observable<{ data: SbcReverseLogisticsReturn }> {
+    return this.http.post<{ data: SbcReverseLogisticsReturn }>(`${this.baseUrl}/reverse-returns`, payload);
+  }
+
+  getVanRoutes(): Observable<{ data: SbcVanSellingRoute[] }> {
+    return this.http.get<{ data: SbcVanSellingRoute[] }>(`${this.baseUrl}/van-routes`);
+  }
+
+  reconcileVanRoute(payload: Record<string, unknown>): Observable<{ data: SbcVanSellingRoute }> {
+    return this.http.post<{ data: SbcVanSellingRoute }>(`${this.baseUrl}/van-routes`, payload);
+  }
+
+  getFranchisingAffiliates(): Observable<{ data: SbcFranchisingAffiliate[] }> {
+    return this.http.get<{ data: SbcFranchisingAffiliate[] }>(`${this.baseUrl}/franchising-affiliates`);
+  }
+
+  calculateFranchisingRoyalty(payload: Record<string, unknown>): Observable<{ data: SbcFranchisingAffiliate }> {
+    return this.http.post<{ data: SbcFranchisingAffiliate }>(`${this.baseUrl}/franchising-affiliates`, payload);
+  }
+
+  getSurveys(): Observable<{ data: SbcPostDeliverySurvey[] }> {
+    return this.http.get<{ data: SbcPostDeliverySurvey[] }>(`${this.baseUrl}/surveys`);
+  }
+
+  recordSurvey(payload: Record<string, unknown>): Observable<{ data: SbcPostDeliverySurvey }> {
+    return this.http.post<{ data: SbcPostDeliverySurvey }>(`${this.baseUrl}/surveys`, payload);
+  }
+
+  getWelfareConventions(): Observable<{ data: SbcCorporateWelfareConvention[] }> {
+    return this.http.get<{ data: SbcCorporateWelfareConvention[] }>(`${this.baseUrl}/welfare-conventions`);
+  }
+
+  processWelfareSplitBilling(payload: Record<string, unknown>): Observable<{ data: SbcCorporateWelfareConvention }> {
+    return this.http.post<{ data: SbcCorporateWelfareConvention }>(`${this.baseUrl}/welfare-conventions`, payload);
   }
 }
