@@ -599,6 +599,20 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'expense-management',
+    canActivate: [
+      authGuard,
+      menuEnabledGuard,
+      featureFlagGuard('expense_management'),
+      moduleGuard('expense_management'),
+    ],
+    data: { breadcrumb: 'NAV.EXPENSE_MANAGEMENT', title: 'PAGE_TITLE.EXPENSE_MANAGEMENT_REPORTS' },
+    loadChildren: () =>
+      import('./features/expense-management/expense-management.routes').then(
+        (m) => m.EXPENSE_MANAGEMENT_ROUTES,
+      ),
+  },
+  {
     path: 'marketing-automation',
     canActivate: [
       authGuard,

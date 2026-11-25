@@ -1261,6 +1261,37 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         ],
       },
       {
+        key: 'NAV.EXPENSE_MANAGEMENT',
+        icon: 'fa-solid fa-receipt',
+        module: 'expense_management',
+        children: [
+          {
+            key: 'NAV.EXPENSE_MANAGEMENT_REPORTS',
+            route: '/expense-management',
+            icon: 'fa-solid fa-file-invoice',
+            module: 'expense_management',
+          },
+          {
+            key: 'NAV.EXPENSE_MANAGEMENT_WORKBENCH',
+            route: '/expense-management/workbench',
+            icon: 'fa-solid fa-camera',
+            module: 'expense_management',
+          },
+          {
+            key: 'NAV.EXPENSE_MANAGEMENT_CARDS',
+            route: '/expense-management/cards',
+            icon: 'fa-solid fa-credit-card',
+            module: 'expense_management_finance',
+          },
+          {
+            key: 'NAV.EXPENSE_MANAGEMENT_VIOLATIONS',
+            route: '/expense-management/violations',
+            icon: 'fa-solid fa-triangle-exclamation',
+            module: 'expense_management',
+          },
+        ],
+      },
+      {
         key: 'NAV.TRAVEL',
         icon: 'fa-solid fa-plane-departure',
         route: '/travel',

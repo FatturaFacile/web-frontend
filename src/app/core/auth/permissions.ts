@@ -174,6 +174,17 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
     write: [...FINANCE, 'purchasing', 'procurement_manager'],
   },
   travel: { read: ANY_MEMBER, write: ANY_MEMBER },
+  // Expense and travel management (Mod 075): every member files their own reports, the API decides who approves.
+  // The corporate card reconciliation is the finance ability.
+  expense_management: { read: ANY_MEMBER, write: ANY_MEMBER },
+  expense_management_finance: {
+    read: FINANCE_READERS,
+    write: FINANCE,
+    grants: {
+      read: ['expense_management.settle', 'expense_management.*'],
+      write: ['expense_management.settle', 'expense_management.*'],
+    },
+  },
   configurator: {
     read: ANY_MEMBER,
     write: ['owner', 'admin', 'accountant', 'sales', 'sales_manager'],
