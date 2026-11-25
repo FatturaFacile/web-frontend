@@ -55,14 +55,12 @@ export const PROCUREMENT_ROUTES: Routes = [
   {
     path: 'rfqs/new',
     data: { breadcrumb: 'RFQ.CREATE_TITLE', title: 'RFQ.CREATE_TITLE' },
-    loadComponent: () =>
-      import('./rfq/rfq-wizard.component').then((m) => m.RfqWizardComponent),
+    loadComponent: () => import('./rfq/rfq-wizard.component').then((m) => m.RfqWizardComponent),
   },
   {
     path: 'rfqs/:id/edit',
     data: { breadcrumb: 'RFQ.EDIT_TITLE', title: 'RFQ.EDIT_TITLE' },
-    loadComponent: () =>
-      import('./rfq/rfq-wizard.component').then((m) => m.RfqWizardComponent),
+    loadComponent: () => import('./rfq/rfq-wizard.component').then((m) => m.RfqWizardComponent),
   },
   {
     path: 'rfqs/:id/matrix',
@@ -73,14 +71,20 @@ export const PROCUREMENT_ROUTES: Routes = [
   { path: 'rfqs/:id', pathMatch: 'full', redirectTo: '/procurement/rfqs/:id/matrix' },
   {
     path: 'contracts/:id/balance',
-    data: { breadcrumb: 'SUPPLIER_REBATES.BLANKET_BALANCE', title: 'SUPPLIER_REBATES.BLANKET_BALANCE' },
-    loadComponent: () => import('./blanket-balance.component').then((m) => m.BlanketBalanceComponent),
+    data: {
+      breadcrumb: 'SUPPLIER_REBATES.BLANKET_BALANCE',
+      title: 'SUPPLIER_REBATES.BLANKET_BALANCE',
+    },
+    loadComponent: () =>
+      import('./blanket-balance.component').then((m) => m.BlanketBalanceComponent),
   },
   {
     path: 'overdue-orders',
     data: { breadcrumb: 'purchases.overdue.title', title: 'purchases.overdue.title' },
     loadComponent: () =>
-      import('./fulfilment/overdue-orders-page.component').then((m) => m.OverdueOrdersPageComponent),
+      import('./fulfilment/overdue-orders-page.component').then(
+        (m) => m.OverdueOrdersPageComponent,
+      ),
   },
   {
     path: 'dropshipments',
@@ -92,7 +96,9 @@ export const PROCUREMENT_ROUTES: Routes = [
     path: 'dropshipments/:id',
     data: { breadcrumb: 'purchases.dropship.title', title: 'purchases.dropship.title' },
     loadComponent: () =>
-      import('./fulfilment/dropship-detail-page.component').then((m) => m.DropshipDetailPageComponent),
+      import('./fulfilment/dropship-detail-page.component').then(
+        (m) => m.DropshipDetailPageComponent,
+      ),
   },
   {
     path: 'invoice-matching',
@@ -144,6 +150,36 @@ export const PROCUREMENT_ROUTES: Routes = [
           ),
       },
     ],
+  },
+  {
+    path: 'srm',
+    data: { breadcrumb: 'NAV.PROCUREMENT_SRM', title: 'PAGE_TITLE.PROCUREMENT_SRM' },
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        data: { breadcrumb: 'NAV.PROCUREMENT_SRM', title: 'PAGE_TITLE.PROCUREMENT_SRM' },
+        loadComponent: () =>
+          import('./srm/srm-dashboard-page.component').then((m) => m.SrmDashboardPageComponent),
+      },
+      {
+        path: 'scorecards',
+        data: {
+          breadcrumb: 'NAV.PROCUREMENT_SRM_SCORECARDS',
+          title: 'PAGE_TITLE.PROCUREMENT_SRM_SCORECARDS',
+        },
+        loadComponent: () =>
+          import('./srm/supplier-scorecards-page.component').then(
+            (m) => m.SupplierScorecardsPageComponent,
+          ),
+      },
+    ],
+  },
+  {
+    path: 'document-flow/:type/:id',
+    data: { breadcrumb: 'srm.flow.title', title: 'srm.flow.title' },
+    loadComponent: () =>
+      import('./srm/document-flow-page.component').then((m) => m.DocumentFlowPageComponent),
   },
   procurementRoute('orders', 'Ordini & Ricevimenti', PROCUREMENT_ORDERS_PAGE),
   procurementRoute('admin', 'Regole & Analisi', PROCUREMENT_ADMIN_PAGE),

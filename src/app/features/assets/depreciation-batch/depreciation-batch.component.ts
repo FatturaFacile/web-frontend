@@ -21,7 +21,7 @@ import {
   I18nService,
   YearEndBatchResponse,
 } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import { MoneyPipe, PageHeaderComponent } from '@shared';
 
 interface SimulatedRow {
   asset_number?: string;
@@ -49,7 +49,6 @@ interface SimulatedRow {
     NzTableModule,
     NzTagModule,
     PageHeaderComponent,
-    TranslatePipe,
     MoneyPipe,
   ],
   templateUrl: './depreciation-batch.component.html',
@@ -109,7 +108,8 @@ export class DepreciationBatchComponent implements OnInit {
       })
       .subscribe({
         next: (res) => {
-          const payload = res.data as { items?: SimulatedRow[]; entries?: SimulatedRow[] } | SimulatedRow[] | null;
+          const payload = res.data as
+            { items?: SimulatedRow[]; entries?: SimulatedRow[] } | SimulatedRow[] | null;
           if (Array.isArray(payload)) {
             this.simulationRows.set(payload);
           } else {

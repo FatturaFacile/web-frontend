@@ -122,7 +122,7 @@ const emptyForm = (): SegmentForm => ({
             nzId="seg-preset"
             class="w-full"
             nzAllowClear
-            [nzPlaceholder]="'marketing.segments.preset_placeholder' | translate"
+            [nzPlaceHolder]="'marketing.segments.preset_placeholder' | translate"
             [ngModel]="null"
             (ngModelChange)="applyPreset($event)"
           >
@@ -156,22 +156,22 @@ const emptyForm = (): SegmentForm => ({
           <fieldset>
             <legend class="mb-1 text-xs font-medium">{{ 'marketing.segments.recency_days' | translate }}</legend>
             <div class="flex gap-2">
-              <nz-input-number [ngModel]="form().recencyMin" (ngModelChange)="set('recencyMin', $event)" [nzMin]="0" [nzPlaceholder]="'marketing.field.min' | translate" />
-              <nz-input-number [ngModel]="form().recencyMax" (ngModelChange)="set('recencyMax', $event)" [nzMin]="0" [nzPlaceholder]="'marketing.field.max' | translate" />
+              <nz-input-number [ngModel]="form().recencyMin" (ngModelChange)="set('recencyMin', $event)" [nzMin]="0" [nzPlaceHolder]="'marketing.field.min' | translate" />
+              <nz-input-number [ngModel]="form().recencyMax" (ngModelChange)="set('recencyMax', $event)" [nzMin]="0" [nzPlaceHolder]="'marketing.field.max' | translate" />
             </div>
           </fieldset>
           <fieldset>
             <legend class="mb-1 text-xs font-medium">{{ 'marketing.segments.frequency_orders' | translate }}</legend>
             <div class="flex gap-2">
-              <nz-input-number [ngModel]="form().frequencyMin" (ngModelChange)="set('frequencyMin', $event)" [nzMin]="0" [nzPlaceholder]="'marketing.field.min' | translate" />
-              <nz-input-number [ngModel]="form().frequencyMax" (ngModelChange)="set('frequencyMax', $event)" [nzMin]="0" [nzPlaceholder]="'marketing.field.max' | translate" />
+              <nz-input-number [ngModel]="form().frequencyMin" (ngModelChange)="set('frequencyMin', $event)" [nzMin]="0" [nzPlaceHolder]="'marketing.field.min' | translate" />
+              <nz-input-number [ngModel]="form().frequencyMax" (ngModelChange)="set('frequencyMax', $event)" [nzMin]="0" [nzPlaceHolder]="'marketing.field.max' | translate" />
             </div>
           </fieldset>
           <fieldset>
             <legend class="mb-1 text-xs font-medium">{{ 'marketing.segments.monetary_value' | translate }}</legend>
             <div class="flex gap-2">
-              <nz-input-number [ngModel]="form().monetaryMin" (ngModelChange)="set('monetaryMin', $event)" [nzMin]="0" [nzPlaceholder]="'marketing.field.min' | translate" />
-              <nz-input-number [ngModel]="form().monetaryMax" (ngModelChange)="set('monetaryMax', $event)" [nzMin]="0" [nzPlaceholder]="'marketing.field.max' | translate" />
+              <nz-input-number [ngModel]="form().monetaryMin" (ngModelChange)="set('monetaryMin', $event)" [nzMin]="0" [nzPlaceHolder]="'marketing.field.min' | translate" />
+              <nz-input-number [ngModel]="form().monetaryMax" (ngModelChange)="set('monetaryMax', $event)" [nzMin]="0" [nzPlaceHolder]="'marketing.field.max' | translate" />
             </div>
           </fieldset>
         </div>
@@ -193,8 +193,8 @@ const emptyForm = (): SegmentForm => ({
           <fieldset>
             <legend class="mb-1 text-xs font-medium">{{ 'marketing.segments.purchase_window' | translate }}</legend>
             <div class="flex gap-2">
-              <nz-input-number [ngModel]="form().windowMin" (ngModelChange)="set('windowMin', $event)" [nzMin]="0" [nzPlaceholder]="'marketing.field.min' | translate" />
-              <nz-input-number [ngModel]="form().windowMax" (ngModelChange)="set('windowMax', $event)" [nzMin]="0" [nzPlaceholder]="'marketing.field.max' | translate" />
+              <nz-input-number [ngModel]="form().windowMin" (ngModelChange)="set('windowMin', $event)" [nzMin]="0" [nzPlaceHolder]="'marketing.field.min' | translate" />
+              <nz-input-number [ngModel]="form().windowMax" (ngModelChange)="set('windowMax', $event)" [nzMin]="0" [nzPlaceHolder]="'marketing.field.max' | translate" />
             </div>
           </fieldset>
           <div>
@@ -205,10 +205,10 @@ const emptyForm = (): SegmentForm => ({
 
         <h3 class="mb-2 mt-4 text-sm font-semibold">{{ 'marketing.segments.credit_semaphore' | translate }}</h3>
         <div class="grid items-end gap-3 md:grid-cols-2">
-          <label class="flex items-center gap-2 text-sm">
-            <nz-switch [ngModel]="form().excludeInsolvent" (ngModelChange)="set('excludeInsolvent', $event)" />
+          <div class="flex items-center gap-2 text-sm">
+            <nz-switch [attr.aria-label]="'marketing.segments.exclude_insolvent' | translate" [ngModel]="form().excludeInsolvent" (ngModelChange)="set('excludeInsolvent', $event)" />
             {{ 'marketing.segments.exclude_insolvent' | translate }}
-          </label>
+          </div>
           <div>
             <label class="mb-1 block text-xs font-medium" for="seg-overdue">{{ 'marketing.segments.max_overdue' | translate }}</label>
             <nz-input-number nzId="seg-overdue" [ngModel]="form().maxOverdue" (ngModelChange)="set('maxOverdue', $event)" [nzMin]="0" [nzDisabled]="!form().excludeInsolvent" />
@@ -216,10 +216,10 @@ const emptyForm = (): SegmentForm => ({
         </div>
 
         <div class="mt-4 grid items-center gap-3 md:grid-cols-2">
-          <label class="flex items-center gap-2 text-sm">
-            <nz-switch [ngModel]="form().autoRefresh" (ngModelChange)="set('autoRefresh', $event)" />
+          <div class="flex items-center gap-2 text-sm">
+            <nz-switch [attr.aria-label]="'marketing.segments.auto_refresh' | translate" [ngModel]="form().autoRefresh" (ngModelChange)="set('autoRefresh', $event)" />
             {{ 'marketing.segments.auto_refresh' | translate }}
-          </label>
+          </div>
         </div>
 
         <div class="mt-6 flex flex-wrap gap-2">

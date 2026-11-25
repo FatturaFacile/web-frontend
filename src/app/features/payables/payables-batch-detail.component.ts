@@ -12,7 +12,7 @@ import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { PermissionsService, TranslateService } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import { PageHeaderComponent, TranslatePipe } from '@shared';
 import { PayablesBatchSummaryComponent } from './payables-batch-summary.component';
 import { PayablesBatchesStore } from './payables-batches.store';
 import {
@@ -36,7 +36,6 @@ import {
   providers: [PayablesBatchesStore],
   imports: [
     FormsModule,
-    MoneyPipe,
     PageHeaderComponent,
     PayablesBatchSummaryComponent,
     RouterLink,
