@@ -154,6 +154,57 @@ export class GeneralLedgerApiService {
     return this.http.delete<ApiResponse<unknown>>(`${this.base}/accounts/${id}`);
   }
 
+  getAccountsTree(params?: QueryFilterParams & { template_code?: string; postable?: boolean }): Observable<import('../models/general-ledger.model').ChartAccountTreeResponse> {
+    return this.http.get<import('../models/general-ledger.model').ChartAccountTreeResponse>(`${this.base}/accounts-tree`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  getAccountDetail(id: string): Observable<ApiResponse<ChartAccountDetail> & { meta?: { breadcrumbs: import('../models/general-ledger.model').AccountBreadcrumb[]; has_postings: boolean } }> {
+    return this.http.get<ApiResponse<ChartAccountDetail> & { meta?: { breadcrumbs: import('../models/general-ledger.model').AccountBreadcrumb[]; has_postings: boolean } }>(`${this.base}/accounts/${id}`);
+  }
+
+  moveAccount(id: string, parentAccountId: string | null): Observable<ApiResponse<ChartAccountDetail>> {
+    return this.http.post<ApiResponse<ChartAccountDetail>>(`${this.base}/accounts/${id}/move`, { parent_account_id: parentAccountId });
+  }
+
+  exportAccounts(format: 'xlsx' | 'csv' | 'xml', params?: { template_code?: string; active?: string }): Observable<Blob> {
+    return this.http.get(`${this.base}/accounts/export`, {
+      params: toHttpParams({ format, ...params }),
+      responseType: 'blob',
+    });
+  }
+
+  provisionAccountTemplate(template: string, payload: { include_default_mappings?: boolean; locale?: string } = {}): Observable<ApiResponse<ChartAccountTemplateImportResult & { mappings_created?: number }>> {
+    return this.http.post<ApiResponse<ChartAccountTemplateImportResult & { mappings_created?: number }>>(`${this.base}/account-templates/${template}/import`, payload);
+  }
+
+  getAccountMappings(params?: QueryFilterParams & { source_account_id?: string; source_standard?: string; target_standard?: string }): Observable<import('../models/general-ledger.model').AccountMappingsResponse> {
+    return this.http.get<import('../models/general-ledger.model').AccountMappingsResponse>(`${this.base}/account-mappings`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  createAccountMapping(payload: import('../models/general-ledger.model').AccountMappingPayload): Observable<ApiResponse<import('../models/general-ledger.model').AccountMapping>> {
+    return this.http.post<ApiResponse<import('../models/general-ledger.model').AccountMapping>>(`${this.base}/account-mappings`, payload);
+  }
+
+  updateAccountMapping(id: string, payload: import('../models/general-ledger.model').AccountMappingPayload): Observable<ApiResponse<import('../models/general-ledger.model').AccountMapping>> {
+    return this.http.put<ApiResponse<import('../models/general-ledger.model').AccountMapping>>(`${this.base}/account-mappings/${id}`, payload);
+  }
+
+  deleteAccountMapping(id: string): Observable<ApiResponse<unknown>> {
+    return this.http.delete<ApiResponse<unknown>>(`${this.base}/account-mappings/${id}`);
+  }
+
+  seedDefaultAccountMappings(sourceStandard?: string): Observable<ApiResponse<{ created: number }>> {
+    return this.http.post<ApiResponse<{ created: number }>>(`${this.base}/account-mappings/seed-defaults`, sourceStandard ? { source_standard: sourceStandard } : {});
+  }
+
+  getVatCodesLookup(): Observable<ApiResponse<import('../models/general-ledger.model').VatCodeOption[]>> {
+    return this.http.get<ApiResponse<import('../models/general-ledger.model').VatCodeOption[]>>('/api/v1/tax/vat-codes');
+  }
+
   // --- Journals: four-eyes workflow ---
 
   getJournals(params?: QueryFilterParams & { status?: string; fiscal_period_id?: string }): Observable<PaginatedResponse<GlJournalEntry>> {

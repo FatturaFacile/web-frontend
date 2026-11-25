@@ -419,15 +419,30 @@ export interface ChartAccountDetail {
   id: string;
   account_code: string | null;
   name: string;
+  account_name?: string;
+  description?: string | null;
   account_class: string;
   account_type: string;
   normal_balance: 'debit' | 'credit';
+  parent_account_id?: string | null;
+  level?: number;
+  hierarchy_path?: string;
   currency: string;
+  vat_code_id?: string | null;
+  vat_code?: string | null;
+  default_cost_center_id?: string | null;
+  default_cost_center_code?: string | null;
+  open_items_enabled?: boolean;
+  allowed_currencies?: string[];
+  is_postable?: boolean;
   is_reconciliation_account: boolean;
   reconciliation_type: string | null;
   allows_manual_posting: boolean;
   is_cost_center_mandatory: boolean;
+  is_system?: boolean;
   is_active: boolean;
+  template_code?: string | null;
+  statutory_code?: string | null;
   reporting_class: string | null;
 }
 
@@ -456,12 +471,137 @@ export interface ChartAccountPayload {
   normal_balance: 'debit' | 'credit';
   parent_account_id?: string | null;
   currency?: string | null;
+  description?: string | null;
+  vat_code_id?: string | null;
+  default_cost_center_id?: string | null;
+  open_items_enabled?: boolean | null;
+  allowed_currencies?: string[] | null;
+  is_postable?: boolean | null;
   is_reconciliation_account?: boolean | null;
   reconciliation_type?: string | null;
   allows_manual_posting?: boolean | null;
   is_cost_center_mandatory?: boolean | null;
   is_active?: boolean | null;
+  template_code?: string | null;
+  statutory_code?: string | null;
   reporting_class?: string | null;
+}
+
+export interface ChartAccountTreeNode {
+  id: string;
+  account_code: string;
+  account_name: string;
+  description?: string | null;
+  account_type: string;
+  normal_balance: 'debit' | 'credit';
+  parent_account_id: string | null;
+  level: number;
+  hierarchy_path: string;
+  vat_code_id: string | null;
+  vat_code?: string | null;
+  default_cost_center_id: string | null;
+  default_cost_center_code?: string | null;
+  open_items_enabled: boolean;
+  allowed_currencies: string[];
+  is_postable: boolean;
+  allows_manual_posting: boolean;
+  is_system: boolean;
+  is_active: boolean;
+  template_code: string | null;
+  statutory_code: string | null;
+  reporting_class: string | null;
+  reconciliation_type: string | null;
+  outgoing_mappings_count: number;
+  incoming_mappings_count: number;
+  has_postings: boolean;
+  children: ChartAccountTreeNode[];
+}
+
+export interface ChartAccountTreeMeta {
+  total_accounts: number;
+  postable_accounts: number;
+  active_accounts: number;
+  max_depth: number;
+  standards: string[];
+  ui_copy: Record<string, string>;
+}
+
+export interface ChartAccountTreeResponse {
+  data: ChartAccountTreeNode[];
+  meta: ChartAccountTreeMeta;
+}
+
+export interface AccountBreadcrumb {
+  id: string;
+  account_code: string;
+  account_name: string;
+}
+
+export interface AccountMapping {
+  id: string;
+  tenant_id?: string | null;
+  company_id?: string | null;
+  source_account_id: string;
+  source_account_code?: string | null;
+  source_account_name?: string | null;
+  target_account_id: string | null;
+  source_standard: string;
+  target_standard: string;
+  target_account_code: string;
+  target_account_name: string;
+  mapping_type: 'direct' | 'split' | 'aggregation' | 'reclassification';
+  is_bidirectional: boolean;
+  allocation_percentage: number;
+  notes: string | null;
+  is_active: boolean;
+  created_at?: string | null;
+}
+
+export interface AccountMappingPayload {
+  source_account_id: string;
+  target_account_id?: string | null;
+  source_standard?: string | null;
+  target_standard: string;
+  target_account_code: string;
+  target_account_name: string;
+  mapping_type?: 'direct' | 'split' | 'aggregation' | 'reclassification';
+  is_bidirectional?: boolean;
+  allocation_percentage?: number;
+  notes?: string | null;
+  is_active?: boolean;
+}
+
+export interface AccountMappingTreeGroup {
+  standard: string;
+  accounts: {
+    source_account_id: string;
+    source_account_code: string;
+    source_account_name: string;
+    targets: {
+      id: string;
+      target_account_id: string | null;
+      target_standard: string;
+      target_account_code: string;
+      target_account_name: string;
+      mapping_type: string;
+      is_bidirectional: boolean;
+      allocation_percentage: number;
+      is_active: boolean;
+    }[];
+  }[];
+}
+
+export interface AccountMappingsResponse {
+  data: AccountMapping[];
+  incoming: AccountMapping[];
+  tree: AccountMappingTreeGroup[];
+}
+
+export interface VatCodeOption {
+  id: string;
+  code: string;
+  name?: string;
+  rate?: number;
 }
 
 // --- Reports (all amounts in the accounting currency, decimal strings) ---
