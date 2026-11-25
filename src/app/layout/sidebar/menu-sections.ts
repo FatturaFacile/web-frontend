@@ -377,6 +377,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             icon: 'fa-solid fa-boxes-packing',
             module: 'subscriptions',
           },
+          {
+            key: 'NAV.OMNICHANNEL_PIPELINE',
+            route: '/sales/omnichannel-pipeline',
+            icon: 'fa-solid fa-layer-group',
+            module: 'sales_bounded_context',
+          },
         ],
       },
       {

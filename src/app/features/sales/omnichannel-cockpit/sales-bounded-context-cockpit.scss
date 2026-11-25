@@ -1,0 +1,18 @@
+.sbc-cockpit {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sbc-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+}
+
+.sbc-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 12px;
+}

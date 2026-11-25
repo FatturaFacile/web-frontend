@@ -396,6 +396,7 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/sales/cycle/returns',
   '/sales/invoices',
   '/sales/orders',
+  '/sales/omnichannel-pipeline',
   '/sales/qr-bill',
   '/sales/recurring-contracts',
   '/sales/sdi',
