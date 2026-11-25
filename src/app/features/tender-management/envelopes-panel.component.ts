@@ -80,7 +80,7 @@ export interface EnvelopeUpload {
             @for (item of items(key); track item.key) {
               <li class="item">
                 <div class="label">
-                  <strong>{{ item.label }}</strong>
+                  <strong>{{ item.label ?? ('tenderManagement.envelopeItem.' + item.key | translate) }}</strong>
                   @if (item.required) {
                     <nz-tag nzColor="blue">{{ 'tenderManagement.envelopes.required' | translate }}</nz-tag>
                   }

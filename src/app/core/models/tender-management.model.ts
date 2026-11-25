@@ -321,7 +321,8 @@ export interface TndEnvelopeItemSignature {
 
 export interface TndEnvelopeItem {
   key: string;
-  label: string;
+  /** Custom label of the item; null for the default checklist, which is named by tenderManagement.envelopeItem.<key>. */
+  label: string | null;
   required: boolean;
   signature_required: boolean;
   file_name: string | null;
