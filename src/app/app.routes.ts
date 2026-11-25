@@ -657,6 +657,18 @@ export const routes: Routes = [
       import('./features/e-signature/e-signature.routes').then((m) => m.E_SIGNATURE_ROUTES),
   },
   {
+    path: 'intercompany',
+    canActivate: [
+      authGuard,
+      menuEnabledGuard,
+      featureFlagGuard('intercompany'),
+      moduleGuard('intercompany'),
+    ],
+    data: { breadcrumb: 'NAV.INTERCOMPANY', title: 'PAGE_TITLE.INTERCOMPANY_STRUCTURE' },
+    loadChildren: () =>
+      import('./features/intercompany/intercompany.routes').then((m) => m.INTERCOMPANY_ROUTES),
+  },
+  {
     path: 'marketing-automation',
     canActivate: [
       authGuard,

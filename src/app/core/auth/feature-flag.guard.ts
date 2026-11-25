@@ -57,6 +57,7 @@ export const PREMATURE_OPEN_ISSUE_MODULES: Readonly<
   debt_collection: { issue: 267, routePrefix: '/debt-collection' },
   marketing_automation: { issue: 401, routePrefix: '/marketing-automation' },
   electronic_signature: { issue: 211, routePrefix: '/signatures' },
+  intercompany: { issue: 291, routePrefix: '/intercompany' },
 };
 
 /**

@@ -680,6 +680,43 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         ],
       },
       {
+        key: 'NAV.INTERCOMPANY',
+        icon: 'fa-solid fa-diagram-project',
+        module: 'intercompany',
+        children: [
+          {
+            key: 'NAV.INTERCOMPANY_STRUCTURE',
+            route: '/intercompany',
+            icon: 'fa-solid fa-sitemap',
+            module: 'intercompany',
+          },
+          {
+            key: 'NAV.INTERCOMPANY_TRANSACTIONS',
+            route: '/intercompany/transactions',
+            icon: 'fa-solid fa-right-left',
+            module: 'intercompany',
+          },
+          {
+            key: 'NAV.INTERCOMPANY_RECONCILIATION',
+            route: '/intercompany/reconciliation',
+            icon: 'fa-solid fa-scale-balanced',
+            module: 'intercompany',
+          },
+          {
+            key: 'NAV.INTERCOMPANY_CONSOLIDATION',
+            route: '/intercompany/consolidation',
+            icon: 'fa-solid fa-layer-group',
+            module: 'intercompany',
+          },
+          {
+            key: 'NAV.INTERCOMPANY_STATEMENTS',
+            route: '/intercompany/statements',
+            icon: 'fa-solid fa-file-invoice',
+            module: 'intercompany',
+          },
+        ],
+      },
+      {
         key: 'NAV.ITALIAN_VAT',
         icon: 'fa-solid fa-file-invoice-dollar',
         module: 'italian_vat',

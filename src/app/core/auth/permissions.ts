@@ -143,6 +143,15 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
       write: ['electronic_signature.configure', 'electronic_signature.*'],
     },
   },
+  // Intercompany mirror postings, reciprocal reconciliation and consolidated statements (Mod 021): finance roles.
+  intercompany: {
+    read: FINANCE_READERS,
+    write: FINANCE,
+    grants: {
+      read: ['intercompany.read', 'intercompany.write', 'intercompany.*', 'gl.*'],
+      write: ['intercompany.write', 'intercompany.*', 'gl.*'],
+    },
+  },
   payroll: {
     read: MANAGERS,
     write: MANAGERS,
