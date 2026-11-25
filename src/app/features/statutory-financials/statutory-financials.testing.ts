@@ -491,6 +491,8 @@ export function baseProviders(
   dossierId: string | null = 'd-1',
 ): (Provider | EnvironmentProviders)[] {
   return [
+    // The router goes first: it provides its own ActivatedRoute, which would override the double below.
+    provideRouter([]),
     { provide: StatutoryFinancialsApiService, useValue: api },
     { provide: PermissionsService, useValue: { canWrite } },
     { provide: NzMessageService, useValue: { success: vi.fn(), error: vi.fn() } },
@@ -502,7 +504,6 @@ export function baseProviders(
         parent: null,
       },
     },
-    provideRouter([]),
     provideNzIcons(icons),
   ];
 }

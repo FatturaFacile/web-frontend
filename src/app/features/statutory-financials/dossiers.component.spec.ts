@@ -43,7 +43,7 @@ describe('DossiersComponent', () => {
 
   it('lists the dossiers with year, standard, status, validation, net result and generation date', async () => {
     const root = await render();
-    const rows = Array.from(root.querySelectorAll('tbody tr'));
+    const rows = Array.from(root.querySelectorAll('tbody tr.ant-table-row'));
 
     expect(api['listDossiers']).toHaveBeenCalledWith({ per_page: 20, page: 1 });
     expect(rows).toHaveLength(2);
@@ -62,7 +62,7 @@ describe('DossiersComponent', () => {
 
   it('offers deletion only for a dossier that is not locked or filed', async () => {
     const root = await render();
-    const rows = Array.from(root.querySelectorAll('tbody tr'));
+    const rows = Array.from(root.querySelectorAll('tbody tr.ant-table-row'));
     const hasDelete = (row: Element | undefined) =>
       (row?.textContent ?? '').includes('statutoryFinancials.action.delete');
 
