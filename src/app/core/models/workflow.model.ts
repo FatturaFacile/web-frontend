@@ -2,7 +2,7 @@ export type WorkflowNodeType = 'start' | 'approval' | 'condition' | 'notificatio
 
 export type WorkflowInstanceStatus = 'pending' | 'approved' | 'rejected' | 'cancelled';
 
-export type WorkflowDecisionType = 'approved' | 'rejected' | 'abstained';
+export type WorkflowDecisionType = 'approved' | 'rejected' | 'abstained' | 'request_changes' | 'reassign';
 
 /** A pending approval of the inbox (WorkflowTaskResource of the API). */
 export interface WorkflowTask {
@@ -171,7 +171,10 @@ export interface WorkflowStartWorkflowRequest {
 
 export interface WorkflowRecordDecisionRequest {
   decision: WorkflowDecisionType;
+  /** Mandatory for `rejected` and `request_changes`. */
   comment?: string | null;
+  /** Target of a `reassign` decision. */
+  reassign_to_user_id?: string | null;
   idempotency_key?: string | null;
 }
 
@@ -182,6 +185,10 @@ export interface WorkflowDelegationModel {
   delegate_user_name?: string | null;
   delegator_user_name?: string | null;
   scope?: string;
+  /** Document types the delegation is limited to (empty: all). */
+  document_types?: string[] | null;
+  /** Largest amount the delegate may approve (empty: no cap). */
+  amount_cap?: number | null;
   starts_at?: string | null;
   ends_at?: string | null;
   is_active: boolean;
@@ -192,6 +199,8 @@ export interface WorkflowDelegationModel {
 export interface WorkflowCreateDelegationRequest {
   delegate_user_id: string;
   scope: string;
+  document_types?: string[];
+  amount_cap?: number | null;
   starts_at: string;
   ends_at: string;
   reason?: string | null;
@@ -252,6 +261,7 @@ export interface WorkflowTaskParams {
 
 export interface WorkflowInstanceParams {
   workflow_definition_id?: string;
+  approvable_id?: string;
   status?: WorkflowInstanceStatus;
   approvable_type?: string;
   page?: number;
@@ -263,4 +273,180 @@ export interface WorkflowDefinitionParams {
   search?: string;
   page?: number;
   per_page?: number;
+}
+
+// --- Approval engine (Mod 006) ---
+
+export interface WorkflowPendingCount {
+  pending_count: number;
+  overdue_count: number;
+}
+
+export type WorkflowMatrixOperator = 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'in' | 'not_in' | 'between';
+export type WorkflowApproverType = 'role' | 'user' | 'reporting_manager';
+/** single: one approver; and_parallel: all; or_parallel: any; majority: more than half. */
+export type WorkflowApprovalType = 'single' | 'and_parallel' | 'or_parallel' | 'majority';
+
+export interface WorkflowMatrixCondition {
+  id?: string;
+  field: string;
+  operator: WorkflowMatrixOperator;
+  /** A scalar, a list for `in` / `not_in`, `[min, max]` for `between`. */
+  value: string | number | boolean | (string | number)[];
+}
+
+/** Tiers of the same level run in parallel, the levels run in sequence. Bounds are inclusive, null is open. */
+export interface WorkflowMatrixTier {
+  id?: string;
+  tier_level: number;
+  threshold_min: number | null;
+  threshold_max: number | null;
+  approver_type: WorkflowApproverType;
+  approver_value: string;
+  approval_type: WorkflowApprovalType;
+}
+
+export interface WorkflowFallbackApprover {
+  approver_type: WorkflowApproverType;
+  approver_value: string;
+}
+
+/** One approval matrix: the conditions that select it (all must hold) and its tiers. */
+export interface WorkflowApprovalMatrix {
+  id: string;
+  code: string;
+  name: string;
+  subject_type: string;
+  currency: string;
+  priority: number;
+  is_active: boolean;
+  /** The explicit default matrix, used when no other one matches. */
+  is_default: boolean;
+  auto_approve_below: number | null;
+  fallback_approver: WorkflowFallbackApprover | null;
+  conditions: WorkflowMatrixCondition[];
+  tiers: WorkflowMatrixTier[];
+}
+
+export type WorkflowSaveMatrixRequest = Omit<WorkflowApprovalMatrix, 'id'>;
+
+export interface WorkflowSimulateRequest {
+  subject_type: string;
+  matrix_id?: string | null;
+  attributes: {
+    amount: number;
+    currency: string;
+    cost_center_id?: string;
+    category?: string;
+    new_supplier?: boolean;
+    discount_percent?: number;
+    company_id?: string;
+    [key: string]: string | number | boolean | undefined;
+  };
+}
+
+export interface WorkflowSimulationResult {
+  matrix: { id: string; code: string; name: string } | null;
+  used_default: boolean;
+  used_fallback: boolean;
+  auto_approved: boolean;
+  /** No approver could be resolved. */
+  blocked: boolean;
+  tiers: Pick<WorkflowMatrixTier, 'tier_level' | 'approver_type' | 'approver_value' | 'approval_type'>[];
+}
+
+export interface WorkflowBusinessCalendar {
+  id: string;
+  name: string;
+  timezone: string;
+  work_monday: boolean;
+  work_tuesday: boolean;
+  work_wednesday: boolean;
+  work_thursday: boolean;
+  work_friday: boolean;
+  work_saturday: boolean;
+  work_sunday: boolean;
+  /** `HH:mm`. */
+  work_hours_start: string;
+  work_hours_end: string;
+  is_default: boolean;
+}
+
+export type WorkflowSaveCalendarRequest = Omit<WorkflowBusinessCalendar, 'id'>;
+
+export type WorkflowHolidayType = 'national' | 'cantonal' | 'patron_saint' | 'company';
+
+export interface WorkflowHoliday {
+  id: string;
+  /** `Y-m-d`. */
+  holiday_date: string;
+  name: string;
+  holiday_type: WorkflowHolidayType;
+  region?: string | null;
+}
+
+export interface WorkflowCreateHolidayRequest {
+  holiday_date: string;
+  name: string;
+  holiday_type: WorkflowHolidayType;
+  region?: string | null;
+}
+
+export interface WorkflowSeedHolidaysRequest {
+  country: 'CH' | 'IT';
+  canton?: string;
+  patron_saint?: string;
+  year: number;
+}
+
+/** A document type that can go through approval; its label key is `workflows.subject_types.<code>`. */
+export interface WorkflowSubjectType {
+  code: string;
+  module: string;
+  registered: boolean;
+}
+
+export interface WorkflowTimelineEntry {
+  id: string;
+  type: string;
+  node_name: string | null;
+  status: string;
+  actor: string | null;
+  decided_at: string | null;
+  due_at: string | null;
+  comment: string | null;
+  channel: string | null;
+}
+
+export interface WorkflowRemoteApprovalPreview {
+  requires_reauth: boolean;
+  subject_label: string;
+  subject_type: string;
+  amount: number | null;
+  currency: string | null;
+  requester_name: string | null;
+  approver_name: string | null;
+  action: 'approve' | 'reject';
+  expires_at: string | null;
+}
+
+export interface WorkflowRemoteApprovalConfirm {
+  action: 'approve' | 'reject';
+  confirm: true;
+  comment?: string;
+  password?: string;
+  otp?: string;
+}
+
+export interface WorkflowRemoteApprovalResult {
+  message: string;
+  step_id: string;
+  status: string;
+}
+
+/** Body of a 409 on a decision: the step was decided already. */
+export interface WorkflowAlreadyDecided {
+  decision: string;
+  decided_by: string;
+  decided_at: string;
 }

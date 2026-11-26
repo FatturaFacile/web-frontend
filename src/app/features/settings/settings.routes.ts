@@ -16,6 +16,33 @@ export const SETTINGS_ROUTES: Routes = [
       import('./settings.component').then((m) => m.SettingsComponent),
   },
   {
+    path: 'profile/delegations',
+    data: { breadcrumb: 'workflows.delegations.title', titleKey: 'workflows.delegations.title' },
+    loadComponent: () =>
+      import('../workflows/delegations.page').then((m) => m.DelegationsPageComponent),
+  },
+  {
+    path: 'workflows/designer',
+    canActivate: [moduleGuard('workflow_design', 'write')],
+    data: { breadcrumb: 'workflows.designer.title', titleKey: 'workflows.designer.title' },
+    loadComponent: () =>
+      import('../workflows/workflow-designer.component').then((m) => m.WorkflowDesignerComponent),
+  },
+  {
+    path: 'workflows/matrices',
+    canActivate: [moduleGuard('workflow_design', 'write')],
+    data: { breadcrumb: 'workflows.matrix.title', titleKey: 'workflows.matrix.title' },
+    loadComponent: () =>
+      import('../workflows/approval-matrix-editor.component').then((m) => m.ApprovalMatrixEditorComponent),
+  },
+  {
+    path: 'workflows/calendars',
+    canActivate: [moduleGuard('workflow_design', 'write')],
+    data: { breadcrumb: 'workflows.calendar.title', titleKey: 'workflows.calendar.title' },
+    loadComponent: () =>
+      import('../workflows/business-calendar.component').then((m) => m.BusinessCalendarComponent),
+  },
+  {
     path: 'profile',
     data: { breadcrumb: 'PROFILE.TITLE', titleKey: 'PROFILE.TITLE' },
     loadComponent: () =>

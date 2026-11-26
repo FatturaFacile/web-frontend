@@ -1249,6 +1249,13 @@ export const routes: Routes = [
       ),
   },
   {
+    // Public confirmation page of an emailed approval link (Mod 006): no auth guard, the token is the credential, no application shell.
+    path: 'approve/:token',
+    data: { publicPage: true, title: 'workflows.token.title' },
+    loadComponent: () =>
+      import('./features/workflows/approval-token-confirm.page').then((m) => m.ApprovalTokenConfirmPageComponent),
+  },
+  {
     // Public customer satisfaction survey (Mod 245): no auth guard, the unguessable token is the credential, no application shell.
     path: 'survey/:token',
     data: { publicPage: true, title: 'PAGE_TITLE.CUSTOMER_SATISFACTION_SURVEY' },

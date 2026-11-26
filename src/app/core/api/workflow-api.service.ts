@@ -7,6 +7,22 @@ import {
   PaginatedResponse,
   QueryFilterParams,
   WorkflowAuditEntryResource,
+  WorkflowApprovalMatrix,
+  WorkflowAuditVerification,
+  WorkflowBusinessCalendar,
+  WorkflowCreateHolidayRequest,
+  WorkflowHoliday,
+  WorkflowPendingCount,
+  WorkflowRemoteApprovalPreview,
+  WorkflowRemoteApprovalConfirm,
+  WorkflowRemoteApprovalResult,
+  WorkflowSaveCalendarRequest,
+  WorkflowSaveMatrixRequest,
+  WorkflowSeedHolidaysRequest,
+  WorkflowSimulateRequest,
+  WorkflowSimulationResult,
+  WorkflowSubjectType,
+  WorkflowTimelineEntry,
   WorkflowAuditVerification,
   WorkflowCreateDelegationRequest,
   WorkflowDefinitionParams,
@@ -258,5 +274,116 @@ export class WorkflowApiService {
 
   deleteEscalationRule(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/workflows/escalation-rules/${id}`);
+  }
+  // --- APPROVAL ENGINE (Mod 006) ---
+  /** Counters of the header badge. */
+  getPendingCount(): Observable<ApiResponse<WorkflowPendingCount>> {
+    return this.http.get<ApiResponse<WorkflowPendingCount>>(`${this.base}/workflows/pending-count`);
+  }
+
+  getSubjectTypes(): Observable<ApiResponse<WorkflowSubjectType[]>> {
+    return this.http.get<ApiResponse<WorkflowSubjectType[]>>(`${this.base}/workflows/subject-types`);
+  }
+
+  // Approval matrices
+  getMatrices(params?: QueryFilterParams): Observable<PaginatedResponse<WorkflowApprovalMatrix>> {
+    return this.http.get<PaginatedResponse<WorkflowApprovalMatrix>>(`${this.base}/workflows/matrices`, {
+      params: params ? toHttpParams(params) : undefined,
+    });
+  }
+
+  getMatrix(id: string): Observable<ApiResponse<WorkflowApprovalMatrix>> {
+    return this.http.get<ApiResponse<WorkflowApprovalMatrix>>(`${this.base}/workflows/matrices/${id}`);
+  }
+
+  createMatrix(payload: WorkflowSaveMatrixRequest): Observable<ApiResponse<WorkflowApprovalMatrix>> {
+    return this.http.post<ApiResponse<WorkflowApprovalMatrix>>(`${this.base}/workflows/matrices`, payload);
+  }
+
+  updateMatrix(id: string, payload: WorkflowSaveMatrixRequest): Observable<ApiResponse<WorkflowApprovalMatrix>> {
+    return this.http.put<ApiResponse<WorkflowApprovalMatrix>>(`${this.base}/workflows/matrices/${id}`, payload);
+  }
+
+  simulateMatrix(payload: WorkflowSimulateRequest): Observable<ApiResponse<WorkflowSimulationResult>> {
+    return this.http.post<ApiResponse<WorkflowSimulationResult>>(`${this.base}/workflows/matrices/simulate`, payload);
+  }
+
+  // Business calendars
+  getCalendars(): Observable<ApiResponse<WorkflowBusinessCalendar[]>> {
+    return this.http.get<ApiResponse<WorkflowBusinessCalendar[]>>(`${this.base}/workflows/calendars`);
+  }
+
+  createCalendar(payload: WorkflowSaveCalendarRequest): Observable<ApiResponse<WorkflowBusinessCalendar>> {
+    return this.http.post<ApiResponse<WorkflowBusinessCalendar>>(`${this.base}/workflows/calendars`, payload);
+  }
+
+  updateCalendar(id: string, payload: WorkflowSaveCalendarRequest): Observable<ApiResponse<WorkflowBusinessCalendar>> {
+    return this.http.put<ApiResponse<WorkflowBusinessCalendar>>(`${this.base}/workflows/calendars/${id}`, payload);
+  }
+
+  getHolidays(calendarId: string): Observable<ApiResponse<WorkflowHoliday[]>> {
+    return this.http.get<ApiResponse<WorkflowHoliday[]>>(`${this.base}/workflows/calendars/${calendarId}/holidays`);
+  }
+
+  addHoliday(calendarId: string, payload: WorkflowCreateHolidayRequest): Observable<ApiResponse<WorkflowHoliday>> {
+    return this.http.post<ApiResponse<WorkflowHoliday>>(
+      `${this.base}/workflows/calendars/${calendarId}/holidays`,
+      payload,
+    );
+  }
+
+  deleteHoliday(calendarId: string, holidayId: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/workflows/calendars/${calendarId}/holidays/${holidayId}`);
+  }
+
+  seedHolidays(calendarId: string, payload: WorkflowSeedHolidaysRequest): Observable<ApiResponse<WorkflowHoliday[]>> {
+    return this.http.post<ApiResponse<WorkflowHoliday[]>>(
+      `${this.base}/workflows/calendars/${calendarId}/seed-holidays`,
+      payload,
+    );
+  }
+
+  // Instances: timeline, withdrawal and evidence
+  getInstanceTimeline(id: string): Observable<ApiResponse<WorkflowTimelineEntry[]>> {
+    return this.http.get<ApiResponse<WorkflowTimelineEntry[]>>(`${this.base}/workflows/instances/${id}/timeline`);
+  }
+
+  withdrawInstance(id: string): Observable<ApiResponse<{ success: boolean }>> {
+    return this.http.post<ApiResponse<{ success: boolean }>>(`${this.base}/workflows/instances/${id}/withdraw`, {});
+  }
+
+  /** Administrative cancellation: the reason is mandatory. */
+  cancelInstanceWithReason(id: string, reason: string): Observable<ApiResponse<{ success: boolean }>> {
+    return this.cancelInstance(id, reason);
+  }
+
+  /** Evidence PDF of the instance. */
+  downloadInstanceEvidence(id: string): Observable<Blob> {
+    return this.http.get(`${this.base}/workflows/instances/${id}/evidence`, { responseType: 'blob' });
+  }
+
+  exportSlaReport(format: 'xlsx' | 'pdf'): Observable<Blob> {
+    return this.http.get(`${this.base}/workflows/sla-report/export`, {
+      params: { format },
+      responseType: 'blob',
+    });
+  }
+
+  // Remote (token) approval: public, no session
+  getRemoteApprovalPreview(token: string, action: 'approve' | 'reject'): Observable<ApiResponse<WorkflowRemoteApprovalPreview>> {
+    return this.http.get<ApiResponse<WorkflowRemoteApprovalPreview>>(
+      `${this.base}/workflows/remote-approval/${encodeURIComponent(token)}`,
+      { params: { action } },
+    );
+  }
+
+  confirmRemoteApproval(
+    token: string,
+    payload: WorkflowRemoteApprovalConfirm,
+  ): Observable<ApiResponse<WorkflowRemoteApprovalResult> | WorkflowRemoteApprovalResult> {
+    return this.http.post<ApiResponse<WorkflowRemoteApprovalResult> | WorkflowRemoteApprovalResult>(
+      `${this.base}/workflows/remote-approval/${encodeURIComponent(token)}/confirm`,
+      payload,
+    );
   }
 }
