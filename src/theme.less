@@ -2,7 +2,204 @@
 // The tokens below are the only place where colours, font and radius are defined.
 @import '../node_modules/ng-zorro-antd/style/compact.less';
 @import '../node_modules/ng-zorro-antd/style/entry.less';
-@import '../node_modules/ng-zorro-antd/components.less';
+
+// Override unused ant-space-compact mixins (nz-space-compact is unused) to eliminate ~35 kB of unused CSS.
+.compact-item(@prefix-cls, @bordered-item-cls: null, @special-item-cls: null) {}
+.compact-item-vertical(@prefix-cls) {}
+
+// Only import styles for NG-ZORRO components actually used in this application.
+@import '../node_modules/ng-zorro-antd/icon/style/index.less';
+@import '../node_modules/ng-zorro-antd/alert/style/index.less';
+@import '../node_modules/ng-zorro-antd/alert/style/patch.less';
+@import '../node_modules/ng-zorro-antd/auto-complete/style/index.less';
+@import '../node_modules/ng-zorro-antd/auto-complete/style/patch.less';
+@import '../node_modules/ng-zorro-antd/avatar/style/index.less';
+@import '../node_modules/ng-zorro-antd/badge/style/index.less';
+@import '../node_modules/ng-zorro-antd/badge/style/patch.less';
+@import '../node_modules/ng-zorro-antd/breadcrumb/style/index.less';
+@import '../node_modules/ng-zorro-antd/breadcrumb/style/patch.less';
+@import '../node_modules/ng-zorro-antd/button/style/index.less';
+@import '../node_modules/ng-zorro-antd/calendar/style/index.less';
+@import '../node_modules/ng-zorro-antd/card/style/index.less';
+@import '../node_modules/ng-zorro-antd/card/style/patch.less';
+@import '../node_modules/ng-zorro-antd/checkbox/style/index.less';
+@import '../node_modules/ng-zorro-antd/checkbox/style/patch.less';
+@import '../node_modules/ng-zorro-antd/collapse/style/index.less';
+@import '../node_modules/ng-zorro-antd/collapse/style/patch.less';
+@import '../node_modules/ng-zorro-antd/date-picker/style/index.less';
+@import '../node_modules/ng-zorro-antd/date-picker/style/patch.less';
+@import '../node_modules/ng-zorro-antd/descriptions/style/index.less';
+@import '../node_modules/ng-zorro-antd/descriptions/style/patch.less';
+@import '../node_modules/ng-zorro-antd/divider/style/index.less';
+@import '../node_modules/ng-zorro-antd/divider/style/patch.less';
+@import '../node_modules/ng-zorro-antd/drawer/style/index.less';
+@import '../node_modules/ng-zorro-antd/drawer/style/patch.less';
+@import '../node_modules/ng-zorro-antd/dropdown/style/index.less';
+@import '../node_modules/ng-zorro-antd/dropdown/style/patch.less';
+@import '../node_modules/ng-zorro-antd/empty/style/index.less';
+@import '../node_modules/ng-zorro-antd/empty/style/patch.less';
+@import '../node_modules/ng-zorro-antd/form/style/index.less';
+@import '../node_modules/ng-zorro-antd/form/style/patch.less';
+@import '../node_modules/ng-zorro-antd/input/style/index.less';
+@import '../node_modules/ng-zorro-antd/input/style/patch.less';
+@import '../node_modules/ng-zorro-antd/input-number/style/index.less';
+@import '../node_modules/ng-zorro-antd/layout/style/index.less';
+@import '../node_modules/ng-zorro-antd/layout/style/patch.less';
+@import '../node_modules/ng-zorro-antd/list/style/index.less';
+@import '../node_modules/ng-zorro-antd/list/style/patch.less';
+@import '../node_modules/ng-zorro-antd/menu/style/index.less';
+@import '../node_modules/ng-zorro-antd/menu/style/patch.less';
+@import '../node_modules/ng-zorro-antd/message/style/index.less';
+@import '../node_modules/ng-zorro-antd/modal/style/index.less';
+@import '../node_modules/ng-zorro-antd/notification/style/index.less';
+@import '../node_modules/ng-zorro-antd/pagination/style/index.less';
+@import '../node_modules/ng-zorro-antd/pagination/style/patch.less';
+@import '../node_modules/ng-zorro-antd/popconfirm/style/index.less';
+@import '../node_modules/ng-zorro-antd/popconfirm/style/patch.less';
+@import '../node_modules/ng-zorro-antd/popover/style/index.less';
+@import '../node_modules/ng-zorro-antd/popover/style/patch.less';
+@import '../node_modules/ng-zorro-antd/progress/style/index.less';
+@import '../node_modules/ng-zorro-antd/qr-code/style/index.less';
+@import '../node_modules/ng-zorro-antd/radio/style/index.less';
+@import '../node_modules/ng-zorro-antd/radio/style/patch.less';
+@import '../node_modules/ng-zorro-antd/rate/style/index.less';
+@import '../node_modules/ng-zorro-antd/result/style/index.less';
+@import '../node_modules/ng-zorro-antd/result/style/patch.less';
+@import '../node_modules/ng-zorro-antd/segmented/style/index.less';
+@import '../node_modules/ng-zorro-antd/select/style/index.less';
+@import '../node_modules/ng-zorro-antd/select/style/patch.less';
+@import '../node_modules/ng-zorro-antd/skeleton/style/index.less';
+@import '../node_modules/ng-zorro-antd/slider/style/index.less';
+@import '../node_modules/ng-zorro-antd/slider/style/patch.less';
+@import '../node_modules/ng-zorro-antd/space/style/index.less';
+@import '../node_modules/ng-zorro-antd/space/style/patch.less';
+@import '../node_modules/ng-zorro-antd/spin/style/index.less';
+@import '../node_modules/ng-zorro-antd/spin/style/patch.less';
+@import '../node_modules/ng-zorro-antd/statistic/style/index.less';
+@import '../node_modules/ng-zorro-antd/steps/style/index.less';
+@import '../node_modules/ng-zorro-antd/switch/style/index.less';
+@import '../node_modules/ng-zorro-antd/switch/style/patch.less';
+@import '../node_modules/ng-zorro-antd/table/style/index.less';
+@import '../node_modules/ng-zorro-antd/table/style/patch.less';
+@import '../node_modules/ng-zorro-antd/tabs/style/index.less';
+@import '../node_modules/ng-zorro-antd/tabs/style/patch.less';
+@import '../node_modules/ng-zorro-antd/tag/style/index.less';
+@import '../node_modules/ng-zorro-antd/tag/style/patch.less';
+@import '../node_modules/ng-zorro-antd/timeline/style/index.less';
+@import '../node_modules/ng-zorro-antd/tooltip/style/index.less';
+@import '../node_modules/ng-zorro-antd/tooltip/style/patch.less';
+@import '../node_modules/ng-zorro-antd/tree/style/index.less';
+@import '../node_modules/ng-zorro-antd/tree/style/patch.less';
+@import '../node_modules/ng-zorro-antd/upload/style/index.less';
+
+// Slimmed NG-ZORRO Grid system (span + offset for base, xs, sm, md, lg, xl; omits unused push, pull, order, xxl, xxxl).
+@row-prefix-cls: ~'@{ant-prefix}-row';
+@col-prefix-cls: ~'@{ant-prefix}-col';
+
+.@{row-prefix-cls} {
+  display: flex;
+  flex-flow: row wrap;
+  min-width: 0;
+
+  &-rtl {
+    direction: rtl;
+  }
+
+  &::before,
+  &::after {
+    display: flex;
+  }
+
+  &-no-wrap {
+    flex-wrap: nowrap;
+  }
+
+  &-start {
+    justify-content: flex-start;
+  }
+
+  &-center {
+    justify-content: center;
+  }
+
+  &-end {
+    justify-content: flex-end;
+  }
+
+  &-space-between {
+    justify-content: space-between;
+  }
+
+  &-space-around {
+    justify-content: space-around;
+  }
+
+  &-space-evenly {
+    justify-content: space-evenly;
+  }
+
+  &-top {
+    align-items: flex-start;
+  }
+
+  &-middle {
+    align-items: center;
+  }
+
+  &-bottom {
+    align-items: flex-end;
+  }
+}
+
+.@{col-prefix-cls} {
+  position: relative;
+  max-width: 100%;
+  min-height: 1px;
+}
+
+.ff-loop-grid-columns(@index, @class) when (@index > 0) {
+  .@{col-prefix-cls}@{class}-@{index} {
+    display: block;
+    flex: 0 0 percentage((@index / @grid-columns));
+    max-width: percentage((@index / @grid-columns));
+  }
+  .@{col-prefix-cls}@{class}-offset-@{index} {
+    margin-inline-start: percentage((@index / @grid-columns));
+  }
+  .ff-loop-grid-columns((@index - 1), @class);
+}
+
+.ff-loop-grid-columns(@index, @class) when (@index = 0) {
+  .@{col-prefix-cls}@{class}-@{index} {
+    display: none;
+  }
+  .@{col-prefix-cls}@{class}-offset-@{index} {
+    margin-inline-start: 0;
+  }
+}
+
+.ff-make-grid(@class: ~'') {
+  .ff-loop-grid-columns(@grid-columns, @class);
+}
+
+.ff-make-grid();
+.ff-make-grid(-xs);
+
+@media (min-width: @screen-sm-min) {
+  .ff-make-grid(-sm);
+}
+
+@media (min-width: @screen-md-min) {
+  .ff-make-grid(-md);
+}
+
+@media (min-width: @screen-lg-min) {
+  .ff-make-grid(-lg);
+}
+
+@media (min-width: @screen-xl-min) {
+  .ff-make-grid(-xl);
+}
 
 @primary-color: #0f766e;
 @info-color: #0f766e;
