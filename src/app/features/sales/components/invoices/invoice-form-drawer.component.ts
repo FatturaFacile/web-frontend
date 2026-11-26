@@ -30,7 +30,14 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
-import { CompetencePeriodPickerComponent, IconActionDirective, ModalActionsDirective, TranslatePipe } from '@shared';
+import {
+  CompetencePeriodPickerComponent,
+  DocumentCurrencyRateFieldComponent,
+  IconActionDirective,
+  isValidRate,
+  ModalActionsDirective,
+  TranslatePipe,
+} from '@shared';
 import { endsNotBefore, revalidateOnStartChange } from '@shared/utils/date-validators';
 import { hasSharedRuleError, validationTipKey } from '@shared/utils/validation-tip';
 import { isValidCompetencePair } from '../../../general-ledger/accruals/competence-calculator.util';
@@ -119,6 +126,7 @@ function toIsoDate(d: Date): string {
     InvoiceTotalsBreakdownComponent,
     CrossBorderFieldsComponent,
     CompetencePeriodPickerComponent,
+    DocumentCurrencyRateFieldComponent,
     TranslatePipe,
   ],
   templateUrl: './invoice-form-drawer.component.html',
@@ -150,10 +158,9 @@ export class InvoiceFormDrawerComponent {
     { label: 'SALES.INVOICES.JURISDICTIONS.IT', value: 'IT' },
     { label: 'SALES.INVOICES.JURISDICTIONS.CH', value: 'CH' },
   ];
-  readonly currencyOptions = [
-    { label: 'CHF', value: 'CHF' },
-    { label: 'EUR', value: 'EUR' },
-  ];
+  /** Exchange rate of the invoice currency (decimal string) and whether the user typed it instead of taking the resolved one. */
+  protected readonly exchangeRate = signal<string | null>(null);
+  protected readonly rateManual = signal(false);
 
   readonly form = this.fb.group({
     contact_id: this.fb.control('', Validators.required),
@@ -390,6 +397,8 @@ export class InvoiceFormDrawerComponent {
     }
     this.preview.set(null);
     this.previewError.set(null);
+    this.exchangeRate.set(null);
+    this.rateManual.set(false);
     this.applyFiscalDefaults();
   }
 
@@ -459,6 +468,11 @@ export class InvoiceFormDrawerComponent {
     if (this.form.invalid || !v.date) {
       return;
     }
+    const typedRate = this.rateManual() ? this.exchangeRate() : null;
+    if (typedRate !== null && !isValidRate(typedRate)) {
+      // The rate field shows the format error: an invalid rate is never sent.
+      return;
+    }
     for (const item of v.items) {
       const pair = isValidCompetencePair(item.competence_start_date, item.competence_end_date);
       if (pair === 'incomplete') {
@@ -476,6 +490,8 @@ export class InvoiceFormDrawerComponent {
       date: toIsoDate(v.date),
       due_date: v.due_date ? toIsoDate(v.due_date) : null,
       currency: v.currency,
+      // A rate the user typed is sent as an override (decimal string); otherwise the server resolves it for the invoice date.
+      ...(typedRate !== null ? { exchange_rate: typedRate } : {}),
       payment_term_id: v.payment_term_id || null,
       jurisdiction: v.jurisdiction,
       notes: v.notes.trim() || null,

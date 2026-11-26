@@ -7,7 +7,13 @@ import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { en_US, provideNzI18n } from 'ng-zorro-antd/i18n';
 import { provideNzDateFnsAdapter } from 'ng-zorro-antd/core/time';
 import { icons } from '../../../../icons-provider';
-import { CatalogApiService, ClientApiService, I18nService, InvoiceApiService } from '@core';
+import {
+  CatalogApiService,
+  ClientApiService,
+  CurrencyApiService,
+  I18nService,
+  InvoiceApiService,
+} from '@core';
 import { InvoiceFormDrawerComponent } from './invoice-form-drawer.component';
 
 describe('InvoiceFormDrawerComponent', () => {
@@ -15,10 +21,41 @@ describe('InvoiceFormDrawerComponent', () => {
   let component: InvoiceFormDrawerComponent;
   let invoiceApi: { create: ReturnType<typeof vi.fn> };
   let message: { success: ReturnType<typeof vi.fn>; error: ReturnType<typeof vi.fn> };
+  let currencyApi: { getSettings: ReturnType<typeof vi.fn>; resolveRate: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
     invoiceApi = { create: vi.fn().mockReturnValue(of({ data: { id: 'inv-1' } })) };
     message = { success: vi.fn(), error: vi.fn() };
+    currencyApi = {
+      getSettings: vi.fn().mockReturnValue(
+        of({
+          data: {
+            functional_currency: 'CHF',
+            active_currencies: ['CHF', 'EUR'],
+            alert_threshold_percent: '2.50',
+            unrealized_gain_treatment: 'recognise',
+            vat_rate_method: 'estv_monthly',
+          },
+        }),
+      ),
+      resolveRate: vi.fn().mockReturnValue(
+        of({
+          data: {
+            base: 'EUR',
+            quote: 'CHF',
+            rate: '0.941200',
+            rate_type: 'mid',
+            source: 'ecb',
+            valid_on: '2026-11-20',
+            requested_date: '2026-11-20',
+            is_derived: false,
+            is_contract: false,
+            is_fallback_date: false,
+            rate_id: 'r-1',
+          },
+        }),
+      ),
+    };
 
     TestBed.configureTestingModule({
       imports: [InvoiceFormDrawerComponent],
@@ -36,6 +73,7 @@ describe('InvoiceFormDrawerComponent', () => {
               .mockReturnValue(of({ data: [{ id: 'pt-30', code: 'TP30', name: '30 days', days: 30 }] })),
           },
         },
+        { provide: CurrencyApiService, useValue: currencyApi },
         { provide: NzMessageService, useValue: message },
         { provide: I18nService, useValue: { translate: vi.fn((key: string) => key) } },
       ],
@@ -92,6 +130,24 @@ describe('InvoiceFormDrawerComponent', () => {
     expect(message.error).toHaveBeenCalledTimes(1);
     expect(message.error.mock.calls[0][0]).toBe('SALES.INVOICES.ERRORS.NO_EXCHANGE_RATE');
     expect(component.saving()).toBe(false);
+  });
+
+  it('does not send an exchange rate the user did not type (the server resolves it for the date)', () => {
+    fillValidForm();
+    component.submit();
+    expect(invoiceApi.create.mock.calls[0][0]).not.toHaveProperty('exchange_rate');
+  });
+
+  it('sends a typed exchange rate as a decimal string and never an invalid one', () => {
+    fillValidForm();
+    component['rateManual'].set(true);
+    component['exchangeRate'].set('0.9412345');
+    component.submit();
+    expect(invoiceApi.create).not.toHaveBeenCalled();
+
+    component['exchangeRate'].set('0.941234');
+    component.submit();
+    expect(invoiceApi.create.mock.calls[0][0]).toMatchObject({ currency: 'EUR', exchange_rate: '0.941234' });
   });
 
   it('does not call the API when submitted empty', () => {

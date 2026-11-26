@@ -38,3 +38,6 @@ export * from './components/global-search/global-search.service';
 export * from './components/record-collaboration/record-collaboration.component';
 export * from './components/record-attachments/record-attachments.component';
 export * from './utils/code128';
+export * from './components/currency-rate/currency-rate.util';
+export * from './components/currency-rate/manual-rate-dialog.component';
+export * from './components/currency-rate/document-currency-rate-field.component';

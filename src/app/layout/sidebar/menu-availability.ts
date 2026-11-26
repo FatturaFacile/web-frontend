@@ -233,6 +233,8 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/tender-management/vault',
   '/tender-management/benchmarks',
   '/statutory-financials',
+  '/finance/currencies',
+  '/finance/currencies/revaluation',
   '/passenger-transport/dispatch',
   '/passenger-transport/bookings',
   '/passenger-transport/fleet',

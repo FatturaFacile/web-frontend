@@ -152,6 +152,7 @@ export * from './passenger-transport.model';
 export * from './customer-satisfaction.model';
 export * from './franchise-network.model';
 export * from './corporate-conventions.model';
+export * from './currency-fx.model';
 export * from './electronic-signature.model';
 export * from './tender-management.model';
 export * from './receivables.model';

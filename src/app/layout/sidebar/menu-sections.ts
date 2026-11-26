@@ -669,6 +669,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         module: 'ledger',
       },
       {
+        key: 'NAV.FINANCE_CURRENCIES',
+        icon: 'fa-solid fa-coins',
+        route: '/finance/currencies',
+        module: 'ledger',
+      },
+      {
         key: 'NAV.GENERAL_LEDGER',
         icon: 'fa-solid fa-book',
         module: 'ledger',

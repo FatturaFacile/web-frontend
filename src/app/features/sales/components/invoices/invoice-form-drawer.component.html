@@ -102,14 +102,13 @@
           [crossBorder]="crossBorder()"
         />
 
-        <nz-form-item>
-          <nz-form-label nzRequired nzFor="currency">{{
-            "SALES.INVOICES.FORM.CURRENCY" | translate
-          }}</nz-form-label>
-          <nz-form-control [nzErrorTip]="errorTip('currency')">
-            <nz-select id="currency" formControlName="currency" [nzOptions]="currencyOptions" />
-          </nz-form-control>
-        </nz-form-item>
+        <app-document-currency-rate-field
+          [currency]="currency()"
+          (currencyChange)="form.controls.currency.setValue($event)"
+          [documentDate]="invoiceDateIso()"
+          [(rate)]="exchangeRate"
+          [(manual)]="rateManual"
+        />
       </div>
 
       <h4>{{ "SALES.INVOICES.FORM.ITEMS" | translate }}</h4>
