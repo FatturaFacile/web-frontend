@@ -651,6 +651,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         module: 'exports',
       },
       {
+        key: 'NAV.DATA_MIGRATION',
+        icon: 'fa-solid fa-wand-magic-sparkles',
+        route: '/data-migration',
+        module: 'data_migration',
+      },
+      {
         key: 'NAV.SDI_COCKPIT',
         icon: 'fa-solid fa-file-invoice',
         route: '/sdi-cockpit',

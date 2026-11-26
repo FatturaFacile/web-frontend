@@ -1089,6 +1089,15 @@ export const routes: Routes = [
       import('./features/exports/exports.component').then((m) => m.ExportsComponent),
   },
   {
+    path: 'data-migration',
+    canActivate: [authGuard, menuEnabledGuard, moduleGuard('data_migration', 'read')],
+    data: { breadcrumb: 'NAV.DATA_MIGRATION', title: 'PAGE_TITLE.DATA_MIGRATION' },
+    loadChildren: () =>
+      import('./features/data-migration/data-migration.routes').then(
+        (m) => m.DATA_MIGRATION_ROUTES,
+      ),
+  },
+  {
     path: 'sdi-cockpit',
     canActivate: [authGuard, menuEnabledGuard, moduleGuard('invoicing', 'read')],
     data: { breadcrumb: 'NAV.SDI_COCKPIT', title: 'NAV.SDI_COCKPIT' },

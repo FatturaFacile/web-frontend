@@ -141,6 +141,7 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/ai/insights',
   '/settings/ai',
   '/ecommerce-integrations',
+  '/data-migration',
   '/exports',
   '/logistics/consignment',
   '/logistics/delivery-notes',
