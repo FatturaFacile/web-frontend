@@ -75,6 +75,11 @@ export interface PasskeyItem {
   last_used_at: string | null;
 }
 
+/** A newly registered passkey; the recovery codes come once, with the first factor of the user (null afterwards). */
+export interface RegisteredPasskey extends PasskeyItem {
+  recovery_codes?: string[] | null;
+}
+
 /** A WebAuthn ceremony started by the API: its single-use id and the options for the browser. */
 export interface PasskeyCeremony<T> {
   ceremony_id: string;

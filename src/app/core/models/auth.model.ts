@@ -8,7 +8,7 @@ export interface User {
 }
 
 /** Second factors the API offers at the login challenge (`recovery_code` is the fallback, not a factor to enrol). */
-export type TwoFactorMethod = 'totp' | 'email' | 'webauthn' | 'recovery_code';
+export type TwoFactorMethod = 'totp' | 'email' | 'sms' | 'webauthn' | 'recovery_code';
 
 export interface TwoFactorStatus {
   enabled: boolean;
@@ -20,6 +20,10 @@ export interface TwoFactorStatus {
   pending_setup: boolean;
   confirmed_at: string | null;
   email_confirmed_at?: string | null;
+  sms_enabled?: boolean;
+  /** Phone of the SMS factor, masked by the API. */
+  sms_phone?: string | null;
+  sms_confirmed_at?: string | null;
   /** Number of trusted devices of the user. */
   trusted_devices?: number;
   remaining_recovery_codes: number;
@@ -53,6 +57,8 @@ export interface DisableTwoFactorPayload {
   recovery_code?: string | null;
   /** Alternative proof: the code emailed by `POST /auth/two-factor/email/send`. */
   email_code?: string | null;
+  /** Alternative proof: the code sent by `POST /auth/two-factor/sms/send`. */
+  sms_code?: string | null;
 }
 
 /** WebAuthn answer of a security key at the login challenge: the ceremony of the options call and the signed assertion. */
@@ -67,6 +73,7 @@ export interface TwoFactorChallengePayload {
   code?: string | null;
   recovery_code?: string | null;
   email_code?: string | null;
+  sms_code?: string | null;
   webauthn?: TwoFactorWebauthnProof;
   remember_device?: boolean;
   device_name?: string | null;
@@ -79,6 +86,7 @@ export interface LoginTwoFactorChallengeData {
   methods: TwoFactorMethod[];
   default_method: TwoFactorMethod | null;
   email_code_sent: boolean;
+  sms_code_sent?: boolean;
   trusted_devices_enabled: boolean;
 }
 
@@ -86,6 +94,11 @@ export interface LoginTwoFactorChallengeData {
 export interface EmailCodeDispatch {
   expires_in: number;
   resend_available_in: number;
+}
+
+/** Answer of the SMS enrolment start: the masked phone the code went to and the usual timings. */
+export interface SmsCodeDispatch extends EmailCodeDispatch {
+  phone: string;
 }
 
 /** Answer of `POST /auth/two-factor/challenge/webauthn/options`. */
@@ -98,6 +111,12 @@ export interface ConfirmEmailTwoFactorResponse {
   /** Only the first factor of the user returns recovery codes; empty afterwards. */
   recovery_codes: string[];
   methods: TwoFactorMethod[];
+}
+
+export interface EnableSmsTwoFactorPayload {
+  current_password: string;
+  /** E.164 number; the API ignores spaces, dots, dashes and brackets. */
+  phone: string;
 }
 
 export interface TwoFactorMethodsResponse {

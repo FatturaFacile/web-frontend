@@ -19,6 +19,7 @@ import { retryAfterSeconds, TwoFactorChallengeComponent } from './two-factor-cha
 describe('TwoFactorChallengeComponent', () => {
   const twoFactorChallenge = vi.fn();
   const sendTwoFactorEmailCode = vi.fn();
+  const sendTwoFactorSmsCode = vi.fn();
   const twoFactorWebauthnOptions = vi.fn();
   const webauthnGet = vi.fn();
   const webauthnSupported = vi.fn();
@@ -27,6 +28,7 @@ describe('TwoFactorChallengeComponent', () => {
     methods: TwoFactorMethod[] | null;
     defaultMethod: TwoFactorMethod | null;
     emailCodeSent: boolean;
+    smsCodeSent: boolean;
     trustedDevicesEnabled: boolean;
     email: string;
   }> = {}) {
@@ -36,7 +38,7 @@ describe('TwoFactorChallengeComponent', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         provideNzIcons(icons),
-        { provide: AuthApiService, useValue: { twoFactorChallenge, sendTwoFactorEmailCode, twoFactorWebauthnOptions } },
+        { provide: AuthApiService, useValue: { twoFactorChallenge, sendTwoFactorEmailCode, sendTwoFactorSmsCode, twoFactorWebauthnOptions } },
         { provide: WebAuthnService, useValue: { isSupported: webauthnSupported, get: webauthnGet } },
       ],
     });
@@ -61,7 +63,7 @@ describe('TwoFactorChallengeComponent', () => {
     (fixture.nativeElement as HTMLElement).querySelector(selector);
 
   beforeEach(() => {
-    [twoFactorChallenge, sendTwoFactorEmailCode, twoFactorWebauthnOptions, webauthnGet, webauthnSupported].forEach((m) => m.mockReset());
+    [twoFactorChallenge, sendTwoFactorEmailCode, sendTwoFactorSmsCode, twoFactorWebauthnOptions, webauthnGet, webauthnSupported].forEach((m) => m.mockReset());
     webauthnSupported.mockReturnValue(true);
     window.localStorage.clear();
   });
@@ -358,5 +360,78 @@ describe('TwoFactorChallengeComponent', () => {
     (text(fixture, '[data-testid="back-to-login"]') as HTMLButtonElement).click();
 
     expect(restart).toHaveBeenCalledWith(null);
+  });
+
+  describe('SMS code', () => {
+    it('lists the SMS among the other methods in the order of the API', () => {
+      const { component } = create({ methods: ['totp', 'email', 'sms', 'webauthn', 'recovery_code'] });
+
+      expect(component['otherMethods']()).toEqual(['email', 'sms', 'webauthn', 'recovery_code']);
+    });
+
+    it('shows the auto-sent state and the resend countdown when the API already sent an SMS', () => {
+      vi.useFakeTimers();
+      const { component, fixture } = create({ methods: ['sms', 'recovery_code'], smsCodeSent: true });
+      fixture.detectChanges();
+
+      expect(component['method']()).toBe('sms');
+      expect(text(fixture, '[data-testid="sms-sent"]')).not.toBeNull();
+      expect(text(fixture, '[data-testid="sms-resend-wait"]')).not.toBeNull();
+
+      vi.advanceTimersByTime(60_000);
+      fixture.detectChanges();
+
+      expect(component['smsResendIn']()).toBe(0);
+      expect(text(fixture, '[data-testid="resend-sms-code"]')).not.toBeNull();
+    });
+
+    it('asks to send the SMS when none was sent, then counts down, independently of the email countdown', () => {
+      vi.useFakeTimers();
+      sendTwoFactorSmsCode.mockReturnValue(of({ data: { expires_in: 600, resend_available_in: 20 } }));
+      const { component, fixture } = create({ methods: ['totp', 'email', 'sms'] });
+      component['selectMethod']('sms');
+      fixture.detectChanges();
+      expect(text(fixture, '[data-testid="send-sms-code"]')).not.toBeNull();
+
+      component['sendSmsCode']();
+
+      expect(sendTwoFactorSmsCode).toHaveBeenCalledWith('tok');
+      expect(sendTwoFactorEmailCode).not.toHaveBeenCalled();
+      expect(component['smsDispatched']()).toBe(true);
+      expect(component['smsResendIn']()).toBe(20);
+      expect(component['resendIn']()).toBe(0);
+
+      component['sendSmsCode']();
+      expect(sendTwoFactorSmsCode).toHaveBeenCalledTimes(1);
+
+      vi.advanceTimersByTime(20_000);
+      expect(component['smsResendIn']()).toBe(0);
+    });
+
+    it('answers with the SMS code', () => {
+      twoFactorChallenge.mockReturnValue(of({ data: {} }));
+      const { component } = create({ methods: ['sms'], smsCodeSent: true });
+      component['form'].controls.code.setValue(' 112233 ');
+
+      component['submit']();
+
+      expect(twoFactorChallenge).toHaveBeenCalledWith({ challenge_token: 'tok', sms_code: '112233' });
+    });
+
+    it('shows the wait advertised by Retry-After and the SMS error when the provider refuses', () => {
+      vi.useFakeTimers();
+      sendTwoFactorSmsCode.mockReturnValueOnce(fail(429, null, { 'Retry-After': '33' }));
+      const { component } = create({ methods: ['totp', 'sms'] });
+      component['selectMethod']('sms');
+
+      component['sendSmsCode']();
+      expect(component['smsResendIn']()).toBe(33);
+
+      vi.advanceTimersByTime(33_000);
+      sendTwoFactorSmsCode.mockReturnValueOnce(fail(422));
+      component['sendSmsCode']();
+      expect(component['errorMessage']()).not.toBeNull();
+      expect(component['smsDispatched']()).toBe(false);
+    });
   });
 });

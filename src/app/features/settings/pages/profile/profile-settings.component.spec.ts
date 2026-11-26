@@ -12,6 +12,7 @@ describe('ProfileSettingsComponent', () => {
   const getTwoFactorStatus = vi.fn();
   const changePassword = vi.fn();
   const sendEmailVerificationCode = vi.fn();
+  const sendSmsVerificationCode = vi.fn();
   const getPasswordPolicyRules = vi.fn();
   const checkPassword = vi.fn();
   const logout = vi.fn();
@@ -28,7 +29,7 @@ describe('ProfileSettingsComponent', () => {
         provideHttpClientTesting(),
         {
           provide: AuthApiService,
-          useValue: { getTwoFactorStatus, changePassword, sendEmailVerificationCode, getPasswordPolicyRules, checkPassword },
+          useValue: { getTwoFactorStatus, changePassword, sendEmailVerificationCode, sendSmsVerificationCode, getPasswordPolicyRules, checkPassword },
         },
         { provide: AuthStore, useValue: { logout, user: () => ({ id: 'u1', email: 'anna@acme.example' }), activeTenantId: () => 'tenant-1' } },
       ],
@@ -47,6 +48,7 @@ describe('ProfileSettingsComponent', () => {
       code: '',
       recovery_code: '',
       email_code: '',
+      sms_code: '',
       ...extra,
     });
   }
@@ -222,5 +224,43 @@ describe('ProfileSettingsComponent', () => {
 
     expect((fixture.nativeElement as HTMLElement).querySelector('app-password-strength')).not.toBeNull();
     expect(getPasswordPolicyRules).toHaveBeenCalledWith('tenant-1');
+  });
+
+  it('asks the SMS code when the SMS is the only factor, and sends it', () => {
+    changePassword.mockReturnValue(of({ success: true }));
+    sendSmsVerificationCode.mockReturnValue(of({ success: true, data: { expires_in: 600, resend_available_in: 60 } }));
+    const { component, fixture } = create(true, { sms_enabled: true, totp_enabled: false, email_enabled: false });
+    fixture.detectChanges();
+    const root: HTMLElement = fixture.nativeElement;
+
+    expect(root.querySelector('#sms_code')).not.toBeNull();
+    expect(root.querySelector('#code')).toBeNull();
+
+    component['sendSmsCode']();
+    expect(sendSmsVerificationCode).toHaveBeenCalledTimes(1);
+    expect(component['smsCodeSent']()).toBe(true);
+
+    fill(component);
+    component['onSubmit']();
+    expect(changePassword).not.toHaveBeenCalled();
+
+    component['form'].controls.sms_code.setValue(' 778899 ');
+    component['onSubmit']();
+    const payload = changePassword.mock.calls.at(-1)?.[0];
+    expect(payload.sms_code).toBe('778899');
+    expect(payload).not.toHaveProperty('code');
+    expect(payload).not.toHaveProperty('email_code');
+  });
+
+  it('lets the user switch between the authenticator and the SMS code when both are on', () => {
+    const { component, fixture } = create(true, { sms_enabled: true, totp_enabled: true });
+    fixture.detectChanges();
+    const root: HTMLElement = fixture.nativeElement;
+
+    expect(root.querySelector('[data-testid="toggle-sms-code"]')).not.toBeNull();
+    component['toggleSmsCode']();
+    fixture.detectChanges();
+    expect(root.querySelector('#sms_code')).not.toBeNull();
+    expect(root.querySelector('#code')).toBeNull();
   });
 });

@@ -3,12 +3,14 @@ import { inject, Injectable } from '@angular/core';
 import { environment } from '@env';
 import { Observable } from 'rxjs';
 import type { ApiResponse } from '../models';
+import { handleErrorsLocally } from '../http/error-handling.context';
 import type {
   AbacRuleDto,
   FieldPolicyEntry,
   PasskeyCeremony,
   PasskeyItem,
   PermissionCatalog,
+  RegisteredPasskey,
   RoleDto,
   SaveRolePayload,
 } from './iam.models';
@@ -87,12 +89,17 @@ export class IamApiService {
     return this.http.post<ApiResponse<PasskeyCeremony<PublicKeyCredentialCreationOptionsJSON>>>(`${this.auth}/passkeys/options`, {});
   }
 
-  finishPasskeyRegistration(ceremonyId: string, name: string, credential: unknown): Observable<ApiResponse<PasskeyItem>> {
-    return this.http.post<ApiResponse<PasskeyItem>>(`${this.auth}/passkeys`, { ceremony_id: ceremonyId, name, credential });
+  finishPasskeyRegistration(ceremonyId: string, name: string, credential: unknown): Observable<ApiResponse<RegisteredPasskey>> {
+    return this.http.post<ApiResponse<RegisteredPasskey>>(`${this.auth}/passkeys`, { ceremony_id: ceremonyId, name, credential });
+  }
+
+  renamePasskey(id: string, name: string): Observable<ApiResponse<PasskeyItem>> {
+    return this.http.patch<ApiResponse<PasskeyItem>>(`${this.auth}/passkeys/${id}`, { name });
   }
 
   revokePasskey(id: string): Observable<ApiResponse<null>> {
-    return this.http.delete<ApiResponse<null>>(`${this.auth}/passkeys/${id}`);
+    // 403 `mfa_cannot_be_disabled` (the last factor the tenant requires) is explained by the caller.
+    return this.http.delete<ApiResponse<null>>(`${this.auth}/passkeys/${id}`, { context: handleErrorsLocally(403) });
   }
 
   beginPasskeyLogin(): Observable<ApiResponse<PasskeyCeremony<PublicKeyCredentialRequestOptionsJSON>>> {

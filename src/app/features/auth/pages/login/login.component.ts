@@ -95,6 +95,7 @@ export class LoginComponent {
   protected readonly challengeMethods = signal<readonly TwoFactorMethod[] | null>(null);
   protected readonly challengeDefaultMethod = signal<TwoFactorMethod | null>(null);
   protected readonly challengeEmailSent = signal(false);
+  protected readonly challengeSmsSent = signal(false);
   protected readonly challengeTrustedDevices = signal(false);
   protected readonly challengeTrustedDays = signal(DEFAULT_TRUSTED_DEVICE_DAYS);
 
@@ -155,6 +156,7 @@ export class LoginComponent {
           this.challengeMethods.set(data.methods ?? null);
           this.challengeDefaultMethod.set(data.default_method ?? null);
           this.challengeEmailSent.set(data.email_code_sent ?? false);
+          this.challengeSmsSent.set(data.sms_code_sent ?? false);
           this.challengeTrustedDevices.set(data.trusted_devices_enabled ?? false);
           this.challengeTrustedDays.set(data.trusted_device_days ?? DEFAULT_TRUSTED_DEVICE_DAYS);
           this.isChallengeStep.set(true);
@@ -248,6 +250,7 @@ export class LoginComponent {
     this.challengeMethods.set(null);
     this.challengeDefaultMethod.set(null);
     this.challengeEmailSent.set(false);
+    this.challengeSmsSent.set(false);
     this.errorMessage.set(message);
   }
 

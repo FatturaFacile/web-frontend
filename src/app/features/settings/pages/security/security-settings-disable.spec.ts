@@ -10,6 +10,7 @@ import { SecuritySettingsComponent } from './security-settings.component';
 
 describe('SecuritySettingsComponent disable form', () => {
   const disableTwoFactor = vi.fn(() => of({ success: true, data: { enabled: false } }));
+  const sendSmsVerificationCode = vi.fn(() => of({ success: true, data: { expires_in: 600, resend_available_in: 60 } }));
   const sendEmailVerificationCode = vi.fn(() => of({ success: true, data: { expires_in: 600, resend_available_in: 60 } }));
 
   function create() {
@@ -29,6 +30,7 @@ describe('SecuritySettingsComponent disable form', () => {
             getSessions: () => of({ success: true, data: [[], []] }),
             getTrustedDevices: () => of({ success: true, message: '', data: [], meta: { days: 30, enabled: true } }),
             sendEmailVerificationCode,
+            sendSmsVerificationCode,
           },
         },
       ],
@@ -107,5 +109,29 @@ describe('SecuritySettingsComponent disable form', () => {
         current: false,
       }),
     ).toBe('Chrome / Windows');
+  });
+
+  it('accepts the SMS code as the proof and sends it', () => {
+    const component = create();
+    const form = component['disableForm'];
+
+    form.patchValue({ currentPassword: TEST_PASSWORD });
+    expect(component['isSecondFactorRequired']('code', 'recoveryCode', 'emailCode')).toBe(true);
+
+    form.patchValue({ smsCode: '445566' });
+    expect(form.controls.code.valid).toBe(true);
+    expect(form.controls.emailCode.valid).toBe(true);
+    component.confirmDisable();
+
+    expect(disableTwoFactor).toHaveBeenCalledWith(expect.objectContaining({ current_password: TEST_PASSWORD, sms_code: '445566' }));
+  });
+
+  it('sends a proof code by SMS and remembers that it was sent', () => {
+    const component = create();
+
+    component.sendSmsProofCode();
+
+    expect(sendSmsVerificationCode).toHaveBeenCalledTimes(1);
+    expect(component['smsCodeSent']()).toBe(true);
   });
 });

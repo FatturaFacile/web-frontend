@@ -563,4 +563,67 @@ describe('AuthApiService (Sanctum SPA Cookie Authentication)', () => {
       expect(httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/password-policy`).request.method).toBe('GET');
     });
   });
+
+  describe('SMS factor', () => {
+    it('asks for a sign-in code by SMS with the challenge token, handling the refusals locally', () => {
+      service.sendTwoFactorSmsCode('tok').subscribe();
+
+      const req = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/two-factor/challenge/sms`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ challenge_token: 'tok' });
+      expect(req.request.context.get(LOCALLY_HANDLED_ERROR_STATUSES)).toContain(429);
+      req.flush({ data: { expires_in: 600, resend_available_in: 60 } });
+    });
+
+    it('answers the challenge with the SMS code', () => {
+      service.twoFactorChallenge({ challenge_token: 'tok', sms_code: '123456' }).subscribe();
+
+      const req = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/two-factor-challenge`);
+      expect(req.request.body).toEqual({ challenge_token: 'tok', sms_code: '123456' });
+      req.flush({ data: {} });
+    });
+
+    it('starts the enrolment with the password and the phone, and confirms it with the code', () => {
+      service.enableSmsTwoFactor({ current_password: TEST_PASSWORD, phone: '+41791234567' }).subscribe();
+      const enable = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/two-factor/sms/enable`);
+      expect(enable.request.method).toBe('POST');
+      expect(enable.request.body).toEqual({ current_password: TEST_PASSWORD, phone: '+41791234567' });
+      enable.flush({ data: { phone: '+41*******67', expires_in: 600, resend_available_in: 60 } });
+
+      service.confirmSmsTwoFactor({ code: '123456' }).subscribe();
+      const confirm = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/two-factor/sms/confirm`);
+      expect(confirm.request.body).toEqual({ code: '123456' });
+      confirm.flush({ data: { recovery_codes: [], methods: ['sms'] } });
+    });
+
+    it('sends a verification code by SMS for a sensitive change', () => {
+      service.sendSmsVerificationCode().subscribe();
+
+      const req = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/two-factor/sms/send`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({});
+      req.flush({ data: { expires_in: 600, resend_available_in: 60 } });
+    });
+
+    it('turns the factor off with the password in the body of a DELETE', () => {
+      service.disableSmsTwoFactor({ current_password: TEST_PASSWORD }).subscribe();
+
+      const req = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/two-factor/sms`);
+      expect(req.request.method).toBe('DELETE');
+      expect(req.request.body).toEqual({ current_password: TEST_PASSWORD });
+      req.flush({ data: { methods: [] } });
+    });
+
+    it('accepts the SMS code as proof to disable the authenticator and to change the password', () => {
+      service.disableTwoFactor({ current_password: TEST_PASSWORD, sms_code: '111111' }).subscribe();
+      const disable = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/two-factor/disable`);
+      expect(disable.request.body.sms_code).toBe('111111');
+      disable.flush({ data: {} });
+
+      service.changePassword({ current_password: TEST_PASSWORD, password: 'n', password_confirmation: 'n', sms_code: '222222' }).subscribe();
+      const change = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/password`);
+      expect(change.request.body.sms_code).toBe('222222');
+      change.flush({ data: {} });
+    });
+  });
 });

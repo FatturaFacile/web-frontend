@@ -27,16 +27,18 @@ import { TranslatePipe } from '@shared';
 const DEFAULT_RESEND_SECONDS = 60;
 
 /** Order in which the factors are offered; the recovery code is always the last resort. */
-const METHOD_ORDER: readonly TwoFactorMethod[] = ['totp', 'email', 'webauthn', 'recovery_code'];
+const METHOD_ORDER: readonly TwoFactorMethod[] = ['totp', 'email', 'sms', 'webauthn', 'recovery_code'];
 
 const METHOD_ICON: Readonly<Record<TwoFactorMethod, string>> = {
   totp: 'mobile',
   email: 'mail',
+  sms: 'message',
   webauthn: 'safety-certificate',
   recovery_code: 'key',
 };
 
 type CallKind = 'send' | 'verify';
+type CodeChannel = 'email' | 'sms';
 
 /**
  * The second step of a sign-in: the user answers the challenge with one of the factors the API offered (authenticator
@@ -143,6 +145,57 @@ type CallKind = 'send' | 'verify';
                   data-testid="resend-email-code"
                   [nzLoading]="isSending()"
                   (click)="sendEmailCode()"
+                >
+                  {{ 'auth.mfa.challenge.resend' | translate }}
+                </button>
+              }
+            </div>
+          }
+          @case ('sms') {
+            <p class="hint">{{ 'auth.mfa.challenge.sms_hint' | translate }}</p>
+            @if (smsDispatched()) {
+              <p class="sent" role="status" data-testid="sms-sent">{{ 'auth.mfa.challenge.sms_sent' | translate }}</p>
+            }
+            <nz-form-item>
+              <nz-form-label nzRequired nzFor="mfa-sms-code">{{ 'auth.mfa.challenge.code_label' | translate }}</nz-form-label>
+              <nz-form-control>
+                <input
+                  nz-input
+                  id="mfa-sms-code"
+                  type="text"
+                  inputmode="numeric"
+                  formControlName="code"
+                  placeholder="123456"
+                  maxlength="16"
+                  nzSize="large"
+                  autocomplete="one-time-code"
+                />
+              </nz-form-control>
+            </nz-form-item>
+            <div class="resend-row">
+              @if (!smsDispatched()) {
+                <button
+                  nz-button
+                  nzType="default"
+                  type="button"
+                  data-testid="send-sms-code"
+                  [nzLoading]="isSending()"
+                  (click)="sendSmsCode()"
+                >
+                  {{ 'auth.mfa.challenge.send_code' | translate }}
+                </button>
+              } @else if (smsResendIn() > 0) {
+                <span class="resend-wait" data-testid="sms-resend-wait">
+                  {{ 'auth.mfa.challenge.resend_in' | translate: { seconds: smsResendIn() } }}
+                </span>
+              } @else {
+                <button
+                  nz-button
+                  nzType="link"
+                  type="button"
+                  data-testid="resend-sms-code"
+                  [nzLoading]="isSending()"
+                  (click)="sendSmsCode()"
                 >
                   {{ 'auth.mfa.challenge.resend' | translate }}
                 </button>
@@ -316,6 +369,8 @@ export class TwoFactorChallengeComponent implements OnInit {
   readonly defaultMethod = input<TwoFactorMethod | null>(null);
   /** The API already emailed a code with the challenge. */
   readonly emailCodeSent = input<boolean>(false);
+  /** The API already sent a code by SMS with the challenge. */
+  readonly smsCodeSent = input<boolean>(false);
   readonly trustedDevicesEnabled = input<boolean>(false);
   readonly trustedDeviceDays = input<number>(DEFAULT_TRUSTED_DEVICE_DAYS);
   /** Address the code is emailed to; also the account the trusted-device token is kept for. */
@@ -343,6 +398,8 @@ export class TwoFactorChallengeComponent implements OnInit {
   protected readonly isWaitingForKey = signal(false);
   protected readonly emailDispatched = linkedSignal(() => this.emailCodeSent());
   protected readonly resendIn = signal(0);
+  protected readonly smsDispatched = linkedSignal(() => this.smsCodeSent());
+  protected readonly smsResendIn = signal(0);
 
   protected readonly form = this.fb.group({
     code: this.fb.control(''),
@@ -352,14 +409,21 @@ export class TwoFactorChallengeComponent implements OnInit {
   });
 
   private timer: ReturnType<typeof setInterval> | null = null;
+  private smsTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor() {
-    this.destroyRef.onDestroy(() => this.stopCountdown());
+    this.destroyRef.onDestroy(() => {
+      this.stopCountdown();
+      this.stopCountdown('sms');
+    });
   }
 
   ngOnInit(): void {
     if (this.emailCodeSent()) {
       this.startCountdown(DEFAULT_RESEND_SECONDS);
+    }
+    if (this.smsCodeSent()) {
+      this.startCountdown(DEFAULT_RESEND_SECONDS, 'sms');
     }
   }
 
@@ -401,7 +465,9 @@ export class TwoFactorChallengeComponent implements OnInit {
         ? { recovery_code: recoveryCode.trim() }
         : method === 'email'
           ? { email_code: code.trim() }
-          : { code: code.trim() };
+          : method === 'sms'
+            ? { sms_code: code.trim() }
+            : { code: code.trim() };
 
     this.authApi.twoFactorChallenge(this.payload(proof)).subscribe({
       next: (res) => {
@@ -417,20 +483,34 @@ export class TwoFactorChallengeComponent implements OnInit {
 
   /** Emails a (new) sign-in code and starts the countdown before the next one may be requested. */
   protected sendEmailCode(): void {
-    if (this.isSending() || this.resendIn() > 0) {
+    this.sendCode('email');
+  }
+
+  /** Sends a (new) sign-in code by SMS and starts the countdown before the next one may be requested. */
+  protected sendSmsCode(): void {
+    this.sendCode('sms');
+  }
+
+  private sendCode(channel: CodeChannel): void {
+    const wait = channel === 'sms' ? this.smsResendIn() : this.resendIn();
+    if (this.isSending() || wait > 0) {
       return;
     }
     this.isSending.set(true);
     this.errorMessage.set(null);
-    this.authApi.sendTwoFactorEmailCode(this.challengeToken()).subscribe({
+    const request$ =
+      channel === 'sms'
+        ? this.authApi.sendTwoFactorSmsCode(this.challengeToken())
+        : this.authApi.sendTwoFactorEmailCode(this.challengeToken());
+    request$.subscribe({
       next: (res) => {
         this.isSending.set(false);
-        this.emailDispatched.set(true);
-        this.startCountdown(res.data?.resend_available_in ?? DEFAULT_RESEND_SECONDS);
+        (channel === 'sms' ? this.smsDispatched : this.emailDispatched).set(true);
+        this.startCountdown(res.data?.resend_available_in ?? DEFAULT_RESEND_SECONDS, channel);
       },
       error: (err: unknown) => {
         this.isSending.set(false);
-        this.handleError(err, 'send');
+        this.handleError(err, 'send', false, channel);
       },
     });
   }
@@ -493,7 +573,7 @@ export class TwoFactorChallengeComponent implements OnInit {
     this.succeeded.emit(data);
   }
 
-  private handleError(err: unknown, kind: CallKind, viaKey = false): void {
+  private handleError(err: unknown, kind: CallKind, viaKey = false, channel: CodeChannel = 'email'): void {
     if (!(err instanceof HttpErrorResponse)) {
       this.errorMessage.set(this.i18n.translate('ERRORS.GENERIC', { status: 0 }));
       return;
@@ -513,7 +593,7 @@ export class TwoFactorChallengeComponent implements OnInit {
       case 429: {
         if (kind === 'send') {
           const seconds = retryAfterSeconds(err) ?? DEFAULT_RESEND_SECONDS;
-          this.startCountdown(seconds);
+          this.startCountdown(seconds, channel);
           this.errorMessage.set(this.i18n.translate('auth.mfa.error.too_many_codes', { seconds }));
         } else {
           this.restart.emit(this.i18n.translate('auth.mfa.error.too_many_attempts'));
@@ -521,30 +601,47 @@ export class TwoFactorChallengeComponent implements OnInit {
         return;
       }
       case 422:
-        this.errorMessage.set(this.i18n.translate(kind === 'send' ? 'auth.mfa.error.method_unavailable' : 'auth.mfa.error.invalid_code'));
+        this.errorMessage.set(this.i18n.translate(
+          kind === 'send'
+            ? channel === 'sms'
+              ? 'auth.mfa.error.sms_unavailable'
+              : 'auth.mfa.error.method_unavailable'
+            : 'auth.mfa.error.invalid_code',
+        ));
         return;
       default:
         this.errorMessage.set(this.i18n.translate('ERRORS.GENERIC', { status: err.status }));
     }
   }
 
-  private startCountdown(seconds: number): void {
-    this.stopCountdown();
-    this.resendIn.set(Math.max(0, Math.ceil(seconds)));
-    if (this.resendIn() === 0) {
+  private startCountdown(seconds: number, channel: CodeChannel = 'email'): void {
+    this.stopCountdown(channel);
+    const remaining = channel === 'sms' ? this.smsResendIn : this.resendIn;
+    remaining.set(Math.max(0, Math.ceil(seconds)));
+    if (remaining() === 0) {
       return;
     }
-    this.timer = setInterval(() => {
-      this.resendIn.update((value) => Math.max(0, value - 1));
-      if (this.resendIn() === 0) {
-        this.stopCountdown();
+    const timer = setInterval(() => {
+      remaining.update((value) => Math.max(0, value - 1));
+      if (remaining() === 0) {
+        this.stopCountdown(channel);
       }
     }, 1000);
+    if (channel === 'sms') {
+      this.smsTimer = timer;
+    } else {
+      this.timer = timer;
+    }
   }
 
-  private stopCountdown(): void {
-    if (this.timer !== null) {
-      clearInterval(this.timer);
+  private stopCountdown(channel: CodeChannel = 'email'): void {
+    const timer = channel === 'sms' ? this.smsTimer : this.timer;
+    if (timer !== null) {
+      clearInterval(timer);
+    }
+    if (channel === 'sms') {
+      this.smsTimer = null;
+    } else {
       this.timer = null;
     }
   }

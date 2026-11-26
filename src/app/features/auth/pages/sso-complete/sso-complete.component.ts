@@ -75,6 +75,7 @@ const DEFAULT_RETURN_URL = '/sales/invoices';
                   [methods]="challengeMethods()"
                   [defaultMethod]="challengeDefaultMethod()"
                   [emailCodeSent]="challengeEmailSent()"
+                  [smsCodeSent]="challengeSmsSent()"
                   [trustedDevicesEnabled]="challengeTrustedDevices()"
                   [trustedDeviceDays]="challengeTrustedDays()"
                   (succeeded)="completeLogin($event)"
@@ -102,6 +103,7 @@ export class SsoCompleteComponent implements OnInit {
   protected readonly challengeMethods = signal<readonly TwoFactorMethod[] | null>(null);
   protected readonly challengeDefaultMethod = signal<TwoFactorMethod | null>(null);
   protected readonly challengeEmailSent = signal(false);
+  protected readonly challengeSmsSent = signal(false);
   protected readonly challengeTrustedDevices = signal(false);
   protected readonly challengeTrustedDays = signal(DEFAULT_TRUSTED_DEVICE_DAYS);
 
@@ -133,6 +135,7 @@ export class SsoCompleteComponent implements OnInit {
           this.challengeMethods.set(data.methods ?? null);
           this.challengeDefaultMethod.set(data.default_method ?? null);
           this.challengeEmailSent.set(data.email_code_sent ?? false);
+          this.challengeSmsSent.set(data.sms_code_sent ?? false);
           this.challengeTrustedDevices.set(data.trusted_devices_enabled ?? false);
           this.challengeTrustedDays.set(data.trusted_device_days ?? DEFAULT_TRUSTED_DEVICE_DAYS);
           this.state.set('challenge');

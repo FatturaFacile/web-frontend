@@ -117,6 +117,23 @@
               {{ (emailCodeSent() ? 'auth.mfa.challenge.resend' : 'auth.mfa.challenge.send_code') | translate }}
             </button>
           </nz-form-item>
+        } @else if (useSmsCode()) {
+          <nz-form-item>
+            <nz-form-label nzRequired nzFor="sms_code">{{ 'auth.mfa.method.sms' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="fieldError">
+              <input
+                nz-input
+                id="sms_code"
+                formControlName="sms_code"
+                inputmode="numeric"
+                autocomplete="one-time-code"
+                maxlength="16"
+              />
+            </nz-form-control>
+            <button nz-button nzType="link" type="button" data-testid="send-sms-code" [nzLoading]="isSendingSmsCode()" (click)="sendSmsCode()">
+              {{ (smsCodeSent() ? 'auth.mfa.challenge.resend' : 'auth.mfa.challenge.send_code') | translate }}
+            </button>
+          </nz-form-item>
         } @else if (useRecoveryCode()) {
           <nz-form-item>
             <nz-form-label nzRequired nzFor="recovery_code">{{ 'PROFILE.RECOVERY_CODE' | translate }}</nz-form-label>
@@ -142,6 +159,11 @@
         <button nz-button nzType="link" type="button" class="factor-switch" (click)="toggleRecoveryCode()">
           {{ (useRecoveryCode() ? 'PROFILE.USE_APP_CODE' : 'PROFILE.USE_RECOVERY_CODE') | translate }}
         </button>
+        @if (smsFactorEnabled() && authenticatorEnabled()) {
+          <button nz-button nzType="link" type="button" class="factor-switch" data-testid="toggle-sms-code" (click)="toggleSmsCode()">
+            {{ (useSmsCode() ? 'PROFILE.USE_APP_CODE' : 'auth.mfa.method.sms') | translate }}
+          </button>
+        }
         @if (emailFactorEnabled() && authenticatorEnabled()) {
           <button nz-button nzType="link" type="button" class="factor-switch" data-testid="toggle-email-code" (click)="toggleEmailCode()">
             {{ (useEmailCode() ? 'PROFILE.USE_APP_CODE' : 'auth.mfa.method.email') | translate }}

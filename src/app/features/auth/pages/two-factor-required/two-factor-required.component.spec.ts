@@ -58,6 +58,9 @@ describe('TwoFactorRequiredComponent', () => {
 
     (el.querySelector('[data-testid="enroll-totp"]') as HTMLButtonElement).click();
     expect(component['showTotp']()).toBe(true);
+
+    (el.querySelector('[data-testid="enroll-sms"]') as HTMLButtonElement).click();
+    expect(component['showSms']()).toBe(true);
   });
 
   it('lifts the block and goes where the user was heading once a factor is enrolled', () => {

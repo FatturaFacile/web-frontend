@@ -67,6 +67,9 @@
   <!-- EMAIL CODE -->
   <app-email-otp-card class="section-card" [status]="twoFactorStatus()" (changed)="loadTwoFactorStatus()" />
 
+  <!-- SMS CODE -->
+  <app-sms-otp-card class="section-card" [status]="twoFactorStatus()" (changed)="loadTwoFactorStatus()" />
+
   <!-- TRUSTED DEVICES -->
   <app-trusted-devices-card class="section-card" (changed)="loadTwoFactorStatus()" />
 
@@ -181,7 +184,7 @@
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
-        <nz-form-label [nzRequired]="isSecondFactorRequired('recoveryCode', 'emailCode')" nzFor="disable-code">{{ 'SECURITY.APP_CODE' | translate }}</nz-form-label>
+        <nz-form-label [nzRequired]="isSecondFactorRequired('recoveryCode', 'emailCode', 'smsCode')" nzFor="disable-code">{{ 'SECURITY.APP_CODE' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="secondFactorError(disableForm.controls.code)">
           <input
             nz-input
@@ -194,7 +197,7 @@
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
-        <nz-form-label [nzRequired]="isSecondFactorRequired('code', 'emailCode')" nzFor="disable-recovery-code">{{ 'SECURITY.OR_RECOVERY_CODE' | translate }}</nz-form-label>
+        <nz-form-label [nzRequired]="isSecondFactorRequired('code', 'emailCode', 'smsCode')" nzFor="disable-recovery-code">{{ 'SECURITY.OR_RECOVERY_CODE' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="secondFactorError(disableForm.controls.recoveryCode)">
           <input
             nz-input
@@ -208,7 +211,7 @@
       </nz-form-item>
       @if (twoFactorStatus()?.email_enabled) {
         <nz-form-item>
-          <nz-form-label [nzRequired]="isSecondFactorRequired('code', 'recoveryCode')" nzFor="disable-email-code">{{ 'auth.mfa.method.email' | translate }}</nz-form-label>
+          <nz-form-label [nzRequired]="isSecondFactorRequired('code', 'recoveryCode', 'smsCode')" nzFor="disable-email-code">{{ 'auth.mfa.method.email' | translate }}</nz-form-label>
           <nz-form-control [nzErrorTip]="secondFactorError(disableForm.controls.emailCode)">
             <input
               nz-input
@@ -221,6 +224,24 @@
           </nz-form-control>
           <button nz-button nzType="link" type="button" data-testid="disable-send-email-code" [nzLoading]="isSendingEmailCode()" (click)="sendEmailProofCode()">
             {{ (emailCodeSent() ? 'auth.mfa.challenge.resend' : 'auth.mfa.challenge.send_code') | translate }}
+          </button>
+        </nz-form-item>
+      }
+      @if (twoFactorStatus()?.sms_enabled) {
+        <nz-form-item>
+          <nz-form-label [nzRequired]="isSecondFactorRequired('code', 'recoveryCode', 'emailCode')" nzFor="disable-sms-code">{{ 'auth.mfa.method.sms' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="secondFactorError(disableForm.controls.smsCode)">
+            <input
+              nz-input
+              id="disable-sms-code"
+              type="text"
+              formControlName="smsCode"
+              autocomplete="one-time-code"
+              [placeholder]="'SECURITY.APP_CODE_PLACEHOLDER' | translate"
+            />
+          </nz-form-control>
+          <button nz-button nzType="link" type="button" data-testid="disable-send-sms-code" [nzLoading]="isSendingSmsCode()" (click)="sendSmsProofCode()">
+            {{ (smsCodeSent() ? 'auth.mfa.challenge.resend' : 'auth.mfa.challenge.send_code') | translate }}
           </button>
         </nz-form-item>
       }

@@ -7,6 +7,7 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { AuthApiService, AuthStore } from '@core';
 import { TranslatePipe } from '@shared';
 import { EmailOtpSetupModalComponent } from '../../components/email-otp-setup-modal/email-otp-setup-modal.component';
+import { SmsOtpSetupModalComponent } from '../../components/sms-otp-setup-modal/sms-otp-setup-modal.component';
 import { TwoFactorSetupModalComponent } from '../../components/two-factor-setup-modal/two-factor-setup-modal.component';
 
 const DEFAULT_RETURN_URL = '/dashboard';
@@ -18,7 +19,7 @@ const DEFAULT_RETURN_URL = '/dashboard';
  */
 @Component({
   selector: 'app-two-factor-required',
-  imports: [NzAlertModule, NzButtonModule, NzCardModule, NzIconModule, EmailOtpSetupModalComponent, TwoFactorSetupModalComponent, TranslatePipe],
+  imports: [NzAlertModule, NzButtonModule, NzCardModule, NzIconModule, EmailOtpSetupModalComponent, SmsOtpSetupModalComponent, TwoFactorSetupModalComponent, TranslatePipe],
   template: `
     <main class="required-wrapper">
       <nz-card [nzBordered]="false" class="required-card">
@@ -35,6 +36,9 @@ const DEFAULT_RETURN_URL = '/dashboard';
           <button nz-button nzSize="large" nzBlock type="button" data-testid="enroll-email" (click)="showEmail.set(true)">
             <nz-icon nzType="mail" /> {{ 'auth.mfa.method.email' | translate }}
           </button>
+          <button nz-button nzSize="large" nzBlock type="button" data-testid="enroll-sms" (click)="showSms.set(true)">
+            <nz-icon nzType="message" /> {{ 'auth.mfa.method.sms' | translate }}
+          </button>
           <button nz-button nzType="link" nzBlock type="button" data-testid="sign-out" (click)="signOut()">
             {{ 'HEADER.LOGOUT' | translate }}
           </button>
@@ -43,6 +47,7 @@ const DEFAULT_RETURN_URL = '/dashboard';
 
       <app-two-factor-setup-modal [(isVisible)]="showTotp" (completed)="onEnrolled()" />
       <app-email-otp-setup-modal [(isVisible)]="showEmail" (completed)="onEnrolled()" />
+      <app-sms-otp-setup-modal [(isVisible)]="showSms" (completed)="onEnrolled()" />
     </main>
   `,
   styles: `
@@ -63,6 +68,7 @@ export class TwoFactorRequiredComponent implements OnInit {
 
   protected readonly showTotp = signal(false);
   protected readonly showEmail = signal(false);
+  protected readonly showSms = signal(false);
 
   ngOnInit(): void {
     // Nothing to enrol (opened by hand, or already done): go on to the app.

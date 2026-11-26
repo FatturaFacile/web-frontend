@@ -25,6 +25,7 @@ import {
 import { ModalActionsDirective, PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { EmailOtpCardComponent } from './email-otp-card.component';
 import { PasskeysCardComponent } from './passkeys-card.component';
+import { SmsOtpCardComponent } from './sms-otp-card.component';
 import { TrustedDevicesCardComponent } from './trusted-devices-card.component';
 import { userAgentLabel } from './user-agent.util';
 import { TwoFactorSetupModalComponent } from '../../../auth/components/two-factor-setup-modal/two-factor-setup-modal.component';
@@ -37,7 +38,7 @@ function requiredWithout(...others: string[]): ValidatorFn {
   };
 }
 
-type SecondFactorField = 'code' | 'recoveryCode' | 'emailCode';
+type SecondFactorField = 'code' | 'recoveryCode' | 'emailCode' | 'smsCode';
 
 @Component({
   selector: 'app-security-settings',
@@ -61,6 +62,7 @@ type SecondFactorField = 'code' | 'recoveryCode' | 'emailCode';
     PageHeaderComponent,
     EmailOtpCardComponent,
     PasskeysCardComponent,
+    SmsOtpCardComponent,
     TrustedDevicesCardComponent,
     TranslatePipe,
     TwoFactorSetupModalComponent,
@@ -89,9 +91,10 @@ export class SecuritySettingsComponent implements OnInit {
 
   protected readonly disableForm = this.fb.group({
     currentPassword: this.fb.control('', [Validators.required]),
-    code: this.fb.control('', [requiredWithout('recoveryCode', 'emailCode'), Validators.maxLength(16)]),
-    recoveryCode: this.fb.control('', [requiredWithout('code', 'emailCode'), Validators.maxLength(32)]),
-    emailCode: this.fb.control('', [requiredWithout('code', 'recoveryCode'), Validators.maxLength(16)]),
+    code: this.fb.control('', [requiredWithout('recoveryCode', 'emailCode', 'smsCode'), Validators.maxLength(16)]),
+    recoveryCode: this.fb.control('', [requiredWithout('code', 'emailCode', 'smsCode'), Validators.maxLength(32)]),
+    emailCode: this.fb.control('', [requiredWithout('code', 'recoveryCode', 'smsCode'), Validators.maxLength(16)]),
+    smsCode: this.fb.control('', [requiredWithout('code', 'recoveryCode', 'emailCode'), Validators.maxLength(16)]),
   });
 
   protected readonly passwordConfirmForm = this.fb.group({
@@ -100,13 +103,15 @@ export class SecuritySettingsComponent implements OnInit {
 
   protected readonly isSendingEmailCode = signal(false);
   protected readonly emailCodeSent = signal(false);
+  protected readonly isSendingSmsCode = signal(false);
+  protected readonly smsCodeSent = signal(false);
   protected readonly newRecoveryCodes = signal<string[]>([]);
   protected readonly showCodesDialog = signal(false);
 
   constructor() {
     // Each proof is required only while the others are blank: re-validate the siblings when one changes.
     const controls = this.disableForm.controls;
-    const fields: SecondFactorField[] = ['code', 'recoveryCode', 'emailCode'];
+    const fields: SecondFactorField[] = ['code', 'recoveryCode', 'emailCode', 'smsCode'];
     for (const field of fields) {
       controls[field].valueChanges.pipe(takeUntilDestroyed()).subscribe(() => {
         for (const other of fields.filter((name) => name !== field)) {
@@ -168,6 +173,7 @@ export class SecuritySettingsComponent implements OnInit {
   openDisableModal(): void {
     this.disableForm.reset();
     this.emailCodeSent.set(false);
+    this.smsCodeSent.set(false);
     this.showDisableModal.set(true);
   }
 
@@ -177,13 +183,14 @@ export class SecuritySettingsComponent implements OnInit {
       return;
     }
 
-    const { currentPassword, code, recoveryCode, emailCode } = this.disableForm.getRawValue();
+    const { currentPassword, code, recoveryCode, emailCode, smsCode } = this.disableForm.getRawValue();
     this.authApi
       .disableTwoFactor({
         current_password: currentPassword,
         code: code.trim() || undefined,
         recovery_code: recoveryCode.trim() || undefined,
         email_code: emailCode.trim() || undefined,
+        sms_code: smsCode.trim() || undefined,
       })
       .subscribe({
         next: (res) => {
@@ -217,6 +224,28 @@ export class SecuritySettingsComponent implements OnInit {
           seconds !== null
             ? this.i18n.translate('auth.mfa.error.too_many_codes', { seconds })
             : this.i18n.translate('ERRORS.GENERIC', { status: err instanceof HttpErrorResponse ? err.status : 0 }),
+        );
+      },
+    });
+  }
+
+  /** Sends a code by SMS that proves the user for the change, as another alternative proof. */
+  sendSmsProofCode(): void {
+    this.isSendingSmsCode.set(true);
+    this.authApi.sendSmsVerificationCode().subscribe({
+      next: () => {
+        this.isSendingSmsCode.set(false);
+        this.smsCodeSent.set(true);
+        this.message.success(this.i18n.translate('auth.mfa.challenge.sms_sent'));
+      },
+      error: (err: unknown) => {
+        this.isSendingSmsCode.set(false);
+        const seconds =
+          err instanceof HttpErrorResponse && err.status === 429 ? Number(err.headers?.get('Retry-After')) || 60 : null;
+        this.message.error(
+          seconds !== null
+            ? this.i18n.translate('auth.mfa.error.too_many_codes', { seconds })
+            : this.i18n.translate('auth.mfa.error.sms_unavailable'),
         );
       },
     });
