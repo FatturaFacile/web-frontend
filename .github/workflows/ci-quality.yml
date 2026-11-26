@@ -38,8 +38,6 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
-        with:
-          version: 12.18.0
 
       - name: Install Node Dependencies
         run: pnpm install --frozen-lockfile
@@ -67,8 +65,6 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
-        with:
-          version: 12.18.0
 
       - name: Install Node Dependencies
         run: pnpm install --frozen-lockfile
@@ -107,8 +103,6 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
-        with:
-          version: 12.18.0
 
       - name: Run NPM Security Audit Gate
         run: pnpm audit --audit-level=high
