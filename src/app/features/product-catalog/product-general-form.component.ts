@@ -155,7 +155,7 @@ import {
           />
           @if (!barcodeValid()) {
             <small class="error">{{
-              'productCatalog.error.gtin_invalid' | translate: { gtin: form().barcode }
+              'productCatalog.error.gtin_invalid' | translate: { gtin: form().barcode ?? '' }
             }}</small>
           } @else {
             <small>{{ 'productCatalog.hint.gtin' | translate }}</small>

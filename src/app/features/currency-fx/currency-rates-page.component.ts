@@ -58,7 +58,7 @@ import { SyncRunsComponent } from './sync-runs.component';
   template: `
     <app-page-header [title]="'PAGE_TITLE.FINANCE_CURRENCIES' | translate"></app-page-header>
 
-    <nz-tabset>
+    <nz-tabs>
       <nz-tab [nzTitle]="'FINANCE.CURRENCIES.TAB.RATES' | translate">
         <div class="toolbar">
           <label class="field" for="fx-f-base">
@@ -260,7 +260,7 @@ import { SyncRunsComponent } from './sync-runs.component';
           <app-currency-settings [canWrite]="canWrite" />
         </ng-template>
       </nz-tab>
-    </nz-tabset>
+    </nz-tabs>
 
     <app-manual-rate-dialog
       [(open)]="dialogOpen"

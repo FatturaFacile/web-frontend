@@ -11,7 +11,7 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { ILR_RISK_ZONES, IlrRiskZone, IlrWashBatch } from '@core';
 import { TranslatePipe } from '@shared';
-import { certificationColor, IlrOutcome, severityColor } from './industrial-laundry.util';
+import { certificationColor, IlrOutcome, scalarParams, severityColor } from './industrial-laundry.util';
 import { RabcConsoleStore } from './rabc-console.store';
 
 /**
@@ -44,7 +44,7 @@ import { RabcConsoleStore } from './rabc-console.store';
           nzShowIcon
           nzCloseable
           [nzMessage]="(failure.errorKey ?? 'industrialLaundry.error.generic') | translate: failure.params"
-          [nzDescription]="failure.detail ?? undefined"
+          [nzDescription]="failure.detail ?? null"
           (nzOnClose)="feedback.set(null)"
         ></nz-alert>
       }
@@ -130,7 +130,7 @@ import { RabcConsoleStore } from './rabc-console.store';
               <td>
                 <div class="chips">
                   @for (violation of batch.violations; track $index) {
-                    <nz-tag [nzColor]="severityColor(violation.severity)">{{ 'industrialLaundry.finding.' + violation.code | translate: violation.params }}</nz-tag>
+                    <nz-tag [nzColor]="severityColor(violation.severity)">{{ 'industrialLaundry.finding.' + violation.code | translate: scalarParams(violation.params) }}</nz-tag>
                   }
                 </div>
               </td>
@@ -167,7 +167,7 @@ import { RabcConsoleStore } from './rabc-console.store';
             nzType="error"
             nzShowIcon
             [nzMessage]="(failure.errorKey ?? 'industrialLaundry.error.generic') | translate: failure.params"
-            [nzDescription]="failure.detail ?? undefined"
+            [nzDescription]="failure.detail ?? null"
           ></nz-alert>
         }
         <div class="form-grid">
@@ -214,6 +214,7 @@ export class BatchPanelComponent {
   protected readonly verifier = signal('');
   protected readonly statusColor = certificationColor;
   protected readonly severityColor = severityColor;
+  protected readonly scalarParams = scalarParams;
 
   protected readonly selectedProgram = computed(() => {
     const code = this.program();

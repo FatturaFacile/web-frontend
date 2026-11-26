@@ -238,7 +238,7 @@ import { SignatureCenterStore } from './signature-center.store';
                     left(envelope.expires_at)! <= 3
                   ) {
                     <nz-tag nzColor="volcano">{{
-                      'signatures.center.daysLeft' | translate: { days: left(envelope.expires_at) }
+                      'signatures.center.daysLeft' | translate: { days: left(envelope.expires_at) ?? 0 }
                     }}</nz-tag>
                   }
                 }

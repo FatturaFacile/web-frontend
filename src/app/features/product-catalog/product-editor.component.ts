@@ -41,7 +41,7 @@ import { VariantMatrixComponent } from './variant-matrix.component';
         ></nz-alert>
       }
 
-      <nz-tabset>
+      <nz-tabs>
         <nz-tab [nzTitle]="'productCatalog.tab.general' | translate">
           <app-pc-general-form
             [canWrite]="canWrite"
@@ -64,7 +64,7 @@ import { VariantMatrixComponent } from './variant-matrix.component';
             <app-pc-uom-packaging [canWrite]="canWrite"></app-pc-uom-packaging>
           </nz-tab>
         }
-      </nz-tabset>
+      </nz-tabs>
     </nz-spin>
   `,
 })

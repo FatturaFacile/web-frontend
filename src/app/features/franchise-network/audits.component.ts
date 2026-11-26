@@ -74,7 +74,7 @@ import { FRANCHISE_NETWORK_AUDIT_MODULE, FrnOutcome } from './franchise-network.
         nzShowIcon
         nzCloseable
         [nzMessage]="failure.errorKey ?? 'franchiseNetwork.error.generic' | translate: failure.params"
-        [nzDescription]="failure.detail ?? undefined"
+        [nzDescription]="failure.detail ?? null"
         (nzOnClose)="feedback.set(null)"
       ></nz-alert>
     }

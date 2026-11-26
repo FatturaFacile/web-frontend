@@ -124,7 +124,7 @@ import { RecoveryStore } from './recovery.store';
         [nzMessage]="
           failure.errorKey ?? 'customerSatisfaction.error.generic' | translate: failure.params
         "
-        [nzDescription]="failure.detail ?? undefined"
+        [nzDescription]="failure.detail ?? null"
         (nzOnClose)="feedback.set(null)"
       ></nz-alert>
     }

@@ -10,7 +10,7 @@ import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { GDT_PROMOTION_STATUSES, GdtPromotion } from '@core';
-import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import { PageHeaderComponent, TranslatePipe } from '@shared';
 import { promotionStatusColor } from './gdo-trade-terms.util';
 import { PromotionsStore } from './promotions.store';
 
@@ -20,7 +20,6 @@ import { PromotionsStore } from './promotions.store';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     FormsModule,
-    MoneyPipe,
     NzAlertModule,
     NzButtonModule,
     NzEmptyModule,

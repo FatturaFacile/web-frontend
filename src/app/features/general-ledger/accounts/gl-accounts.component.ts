@@ -21,7 +21,7 @@ import { NzSwitchModule } from 'ng-zorro-antd/switch';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
-import { NzTreeModule, NzTreeNodeOptions } from 'ng-zorro-antd/tree';
+import { NzFormatEmitEvent, NzTreeModule, NzTreeNodeOptions } from 'ng-zorro-antd/tree';
 import type {
   AccountMapping,
   AccountMappingPayload,
@@ -178,7 +178,7 @@ export class GlAccountsComponent implements OnInit {
     this.store.setFilters({ activeFilter: value ?? '' });
   }
 
-  onTreeNodeClick(event: { node?: { origin?: unknown } }): void {
+  onTreeNodeClick(event: NzFormatEmitEvent): void {
     const node = event.node?.origin as ChartAccountTreeNode | undefined;
     if (node) {
       this.store.selectAccount(node);

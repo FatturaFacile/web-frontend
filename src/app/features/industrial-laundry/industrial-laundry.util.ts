@@ -34,6 +34,19 @@ export function errorKey(code: string | null | undefined): string {
   return `industrialLaundry.error.${code ? code : 'generic'}`;
 }
 
+/** Strips null entries from dynamic translation parameter maps so TranslatePipe receives only string | number values. */
+export function scalarParams(
+  params: Record<string, string | number | null> | undefined,
+): Record<string, string | number> {
+  const result: Record<string, string | number> = {};
+  for (const [key, value] of Object.entries(params ?? {})) {
+    if (value !== null) {
+      result[key] = value;
+    }
+  }
+  return result;
+}
+
 export function problemOf(error: unknown): IlrProblem | null {
   if (!(error instanceof HttpErrorResponse)) {
     return null;

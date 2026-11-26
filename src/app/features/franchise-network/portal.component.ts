@@ -64,7 +64,7 @@ import { PortalStore } from './portal.store';
         nzShowIcon
         nzCloseable
         [nzMessage]="failure.errorKey ?? 'franchiseNetwork.error.generic' | translate: failure.params"
-        [nzDescription]="failure.detail ?? undefined"
+        [nzDescription]="failure.detail ?? null"
         (nzOnClose)="feedback.set(null)"
       ></nz-alert>
     }

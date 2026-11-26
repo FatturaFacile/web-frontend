@@ -98,7 +98,7 @@ interface ManifestRow {
         [nzMessage]="
           failure.errorKey ?? 'passengerTransport.error.generic' | translate: failure.params
         "
-        [nzDescription]="failure.detail ?? undefined"
+        [nzDescription]="failure.detail ?? null"
         (nzOnClose)="feedback.set(null)"
       ></nz-alert>
     }

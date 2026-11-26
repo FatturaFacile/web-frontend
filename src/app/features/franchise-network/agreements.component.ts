@@ -96,7 +96,7 @@ import {
         nzShowIcon
         nzCloseable
         [nzMessage]="failure.errorKey ?? 'franchiseNetwork.error.generic' | translate: failure.params"
-        [nzDescription]="failure.detail ?? undefined"
+        [nzDescription]="failure.detail ?? null"
         (nzOnClose)="feedback.set(null)"
       ></nz-alert>
     }
@@ -278,7 +278,7 @@ import {
             nzType="error"
             nzShowIcon
             [nzMessage]="failure.errorKey ?? 'franchiseNetwork.error.generic' | translate: failure.params"
-            [nzDescription]="failure.detail ?? undefined"
+            [nzDescription]="failure.detail ?? null"
           ></nz-alert>
         }
         <form [formGroup]="form" class="form" (ngSubmit)="submit()">

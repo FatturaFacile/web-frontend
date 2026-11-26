@@ -52,7 +52,7 @@ import { IlrOutcome, previousMonthRange } from './industrial-laundry.util';
         nzShowIcon
         nzCloseable
         [nzMessage]="(failure.errorKey ?? 'industrialLaundry.error.generic') | translate: failure.params"
-        [nzDescription]="failure.detail ?? undefined"
+        [nzDescription]="failure.detail ?? null"
         (nzOnClose)="feedback.set(null)"
       ></nz-alert>
     }

@@ -66,7 +66,7 @@ import { SettlementDetailStore } from './settlement-detail.store';
         nzShowIcon
         nzCloseable
         [nzMessage]="(failure.errorKey ?? 'gdoTradeTerms.error.generic') | translate: failure.params"
-        [nzDescription]="failure.detail ?? undefined"
+        [nzDescription]="failure.detail ?? null"
         (nzOnClose)="feedback.set(null)"
       ></nz-alert>
     }

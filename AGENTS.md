@@ -37,6 +37,7 @@ Single source of truth for all AI coding agents working on the Angular 22 enterp
   - Prefer Signal Forms (`@angular/forms/signals`) or Reactive forms over Template-driven forms.
   - Do NOT use `ngClass` or `ngStyle`; use native `class` and `style` bindings.
   - Do NOT import `CommonModule`; import only specific required pipes/directives (e.g. `AsyncPipe`, `DatePipe`).
+  - **NG-ZORRO Nullable Inputs**: Never pass `?? undefined` to NG-ZORRO component inputs (such as `[nzDescription]`). Always coalesce optional values with `?? null` (`string | TemplateRef<void> | null`).
 - **Reactive State Management**:
   - Fine-grained reactivity using Angular core signals (`signal()`, `computed()`, `linkedSignal()`).
   - Global and feature state management via `@ngrx/signals` (`signalStore`, `withState`, `withComputed`, `withMethods`, `rxMethod`).
@@ -52,6 +53,7 @@ Single source of truth for all AI coding agents working on the Angular 22 enterp
   - Quad-lingual architecture: Italian (`it`), English (`en`), German (`de`), French (`fr`).
   - All user-facing strings must use translation keys via `TranslatePipe` (`'KEY' | translate`) or `I18nService`.
   - Every new key must be added across all four languages (`database/seeders/Translations/{Italian,English,German,French}FrontendTranslations.php` in backend).
+  - **TranslatePipe Parameter Hygiene**: Never pass `null` or `undefined` values inside `TranslatePipe` interpolation maps (`Record<string, string | number>`). Always coalesce nullable values (e.g., `?? ''` for strings, `?? 0` for numbers) or strip `null` entries from dynamic parameter records before binding.
 - **Security & Secret Hygiene**:
   - Never commit credentials, passwords, secrets, or API keys.
   - In unit tests, never write fixed passwords or secret strings; import and use `TEST_PASSWORD` from `src/testing/credentials.ts` (or derive from it).

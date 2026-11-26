@@ -10,7 +10,7 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { ILR_DIRECTIONS, IlrDirection, IlrScanSession } from '@core';
 import { TranslatePipe } from '@shared';
-import { IlrOutcome, netWeight, parseReads, severityColor } from './industrial-laundry.util';
+import { IlrOutcome, netWeight, parseReads, scalarParams, severityColor } from './industrial-laundry.util';
 import { RabcConsoleStore } from './rabc-console.store';
 
 /**
@@ -43,7 +43,7 @@ import { RabcConsoleStore } from './rabc-console.store';
           nzShowIcon
           nzCloseable
           [nzMessage]="(failure.errorKey ?? 'industrialLaundry.error.generic') | translate: failure.params"
-          [nzDescription]="failure.detail ?? undefined"
+          [nzDescription]="failure.detail ?? null"
           (nzOnClose)="feedback.set(null)"
         ></nz-alert>
       }
@@ -141,8 +141,8 @@ import { RabcConsoleStore } from './rabc-console.store';
             class="feedback"
             nzShowIcon
             [nzType]="alert.severity === 'blocking' ? 'error' : 'warning'"
-            [nzMessage]="'industrialLaundry.finding.' + alert.code | translate: alert.params ?? {}"
-            [nzDescription]="alert.epc ?? undefined"
+            [nzMessage]="'industrialLaundry.finding.' + alert.code | translate: scalarParams(alert.params)"
+            [nzDescription]="alert.epc ?? null"
           ></nz-alert>
         }
         @if (scan.rejected_reads.length > 0) {
@@ -220,6 +220,7 @@ export class ScanConsolePanelComponent {
   protected readonly generateDdt = signal(true);
 
   protected readonly net = computed(() => netWeight(this.gross(), this.tare()));
+  protected readonly scalarParams = scalarParams;
   protected readonly readsCount = computed(() => parseReads(this.readsText()).length);
   protected readonly canSubmit = computed(
     () => this.gate().trim() !== '' && this.barcode().trim() !== '' && this.readsCount() > 0,

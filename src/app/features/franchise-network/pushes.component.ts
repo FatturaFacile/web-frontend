@@ -16,6 +16,7 @@ import {
   FrnPush,
   FrnPushCreatePayload,
   FrnPushPayload,
+  FrnTargetStatus,
   PermissionsService,
   TranslateService,
 } from '@core';
@@ -75,7 +76,7 @@ import { PushesStore } from './pushes.store';
         nzShowIcon
         nzCloseable
         [nzMessage]="failure.errorKey ?? 'franchiseNetwork.error.generic' | translate: failure.params"
-        [nzDescription]="failure.detail ?? undefined"
+        [nzDescription]="failure.detail ?? null"
         (nzOnClose)="feedback.set(null)"
       ></nz-alert>
     }
@@ -189,7 +190,7 @@ import { PushesStore } from './pushes.store';
             nzType="error"
             nzShowIcon
             [nzMessage]="failure.errorKey ?? 'franchiseNetwork.error.generic' | translate: failure.params"
-            [nzDescription]="failure.detail ?? undefined"
+            [nzDescription]="failure.detail ?? null"
           ></nz-alert>
         }
         <form [formGroup]="form" class="form" (ngSubmit)="submit(true)">
@@ -353,8 +354,8 @@ export class PushesComponent implements OnInit {
     void this.store.load();
   }
 
-  protected summary(push: FrnPush): { status: string; count: number }[] {
-    const counts = new Map<string, number>();
+  protected summary(push: FrnPush): { status: FrnTargetStatus; count: number }[] {
+    const counts = new Map<FrnTargetStatus, number>();
     for (const target of push.targets ?? []) {
       counts.set(target.status, (counts.get(target.status) ?? 0) + 1);
     }

@@ -172,7 +172,7 @@ import {
                 [nzMessage]="
                   failure.errorKey ?? 'passengerTransport.error.generic' | translate: failure.params
                 "
-                [nzDescription]="failure.detail ?? undefined"
+                [nzDescription]="failure.detail ?? null"
               ></nz-alert>
             }
 

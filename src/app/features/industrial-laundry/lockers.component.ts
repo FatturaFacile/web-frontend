@@ -81,7 +81,7 @@ import { LockersStore } from './lockers.store';
         nzShowIcon
         nzCloseable
         [nzMessage]="(failure.errorKey ?? 'industrialLaundry.error.generic') | translate: failure.params"
-        [nzDescription]="failure.detail ?? undefined"
+        [nzDescription]="failure.detail ?? null"
         (nzOnClose)="feedback.set(null)"
       ></nz-alert>
     }
@@ -152,7 +152,7 @@ import { LockersStore } from './lockers.store';
             nzType="error"
             nzShowIcon
             [nzMessage]="(failure.errorKey ?? 'industrialLaundry.error.generic') | translate: failure.params"
-            [nzDescription]="failure.detail ?? undefined"
+            [nzDescription]="failure.detail ?? null"
           ></nz-alert>
         }
         <div class="form-grid">

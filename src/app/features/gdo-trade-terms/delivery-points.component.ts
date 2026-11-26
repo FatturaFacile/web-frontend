@@ -84,7 +84,7 @@ import { GdtOutcome } from './gdo-trade-terms.util';
         nzShowIcon
         nzCloseable
         [nzMessage]="(failure.errorKey ?? 'gdoTradeTerms.error.generic') | translate: failure.params"
-        [nzDescription]="failure.detail ?? undefined"
+        [nzDescription]="failure.detail ?? null"
         (nzOnClose)="feedback.set(null)"
       ></nz-alert>
     }
@@ -158,7 +158,7 @@ import { GdtOutcome } from './gdo-trade-terms.util';
               nzType="error"
               nzShowIcon
               [nzMessage]="(failure.errorKey ?? 'gdoTradeTerms.error.generic') | translate: failure.params"
-              [nzDescription]="failure.detail ?? undefined"
+              [nzDescription]="failure.detail ?? null"
             ></nz-alert>
           }
           <label for="gdt-dp-contact">{{ 'gdoTradeTerms.field.retailer' | translate }}</label>

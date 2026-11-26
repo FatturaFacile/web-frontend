@@ -115,7 +115,7 @@ const EXCHANGE_ACTIONS: readonly PtrExchangeAction[] = ['cede', 'acquire', 'rele
         [nzMessage]="
           failure.errorKey ?? 'passengerTransport.error.generic' | translate: failure.params
         "
-        [nzDescription]="failure.detail ?? undefined"
+        [nzDescription]="failure.detail ?? null"
         (nzOnClose)="feedback.set(null)"
       ></nz-alert>
     }
@@ -777,7 +777,7 @@ const EXCHANGE_ACTIONS: readonly PtrExchangeAction[] = ['cede', 'acquire', 'rele
             [nzMessage]="
               failure.errorKey ?? 'passengerTransport.error.generic' | translate: failure.params
             "
-            [nzDescription]="failure.detail ?? undefined"
+            [nzDescription]="failure.detail ?? null"
           ></nz-alert>
         }
         <form [formGroup]="hotelForm" class="form" (ngSubmit)="saveHotel()">
@@ -990,7 +990,7 @@ const EXCHANGE_ACTIONS: readonly PtrExchangeAction[] = ['cede', 'acquire', 'rele
             [nzMessage]="
               failure.errorKey ?? 'passengerTransport.error.generic' | translate: failure.params
             "
-            [nzDescription]="failure.detail ?? undefined"
+            [nzDescription]="failure.detail ?? null"
           ></nz-alert>
         }
         <form [formGroup]="schoolForm" class="form" (ngSubmit)="saveSchool()">

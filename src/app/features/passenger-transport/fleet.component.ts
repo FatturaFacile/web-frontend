@@ -81,7 +81,7 @@ import { PASSENGER_TRANSPORT_MODULE, PtrOutcome, toNumber } from './passenger-tr
         [nzMessage]="
           failure.errorKey ?? 'passengerTransport.error.generic' | translate: failure.params
         "
-        [nzDescription]="failure.detail ?? undefined"
+        [nzDescription]="failure.detail ?? null"
         (nzOnClose)="feedback.set(null)"
       ></nz-alert>
     }
@@ -184,7 +184,7 @@ import { PASSENGER_TRANSPORT_MODULE, PtrOutcome, toNumber } from './passenger-tr
             [nzMessage]="
               failure.errorKey ?? 'passengerTransport.error.generic' | translate: failure.params
             "
-            [nzDescription]="failure.detail ?? undefined"
+            [nzDescription]="failure.detail ?? null"
           ></nz-alert>
         }
         <form [formGroup]="form" class="form" (ngSubmit)="submit()">

@@ -35,7 +35,7 @@ import { cascadeDiscount, currentYear, GdtOutcome, percentText } from './gdo-tra
           nzType="error"
           nzShowIcon
           [nzMessage]="(failure.errorKey ?? 'gdoTradeTerms.error.generic') | translate: failure.params"
-          [nzDescription]="failure.detail ?? undefined"
+          [nzDescription]="failure.detail ?? null"
         ></nz-alert>
       }
 
