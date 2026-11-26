@@ -103,6 +103,11 @@ export interface GlJournalEntry {
   rejected_at: string | null;
   rejection_reason: string | null;
   recurring_journal_id: string | null;
+  fiduciary_verified?: boolean;
+  fiduciary_verified_at?: string | null;
+  fiduciary_verified_by?: string | null;
+  fiduciary_verification_note?: string | null;
+  open_notes_count?: number;
   lines?: GlJournalLine[];
 }
 

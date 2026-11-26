@@ -8,7 +8,7 @@ export type AccessMode = 'read' | 'write';
 /** Role wildcard: every member of the tenant. */
 const ANY_MEMBER = ['*'] as const;
 const FINANCE = ['owner', 'admin', 'accountant'] as const;
-const FINANCE_READERS = [...FINANCE, 'accountant_readonly'] as const;
+const FINANCE_READERS = [...FINANCE, 'accountant_readonly', 'external_fiduciary'] as const;
 const MANAGERS = ['owner', 'admin'] as const;
 const CONTRACT_MANAGERS = [
   'owner',
@@ -688,6 +688,14 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
         'data_migration.rollback',
         'data_migration.*',
       ],
+    },
+  },
+  fiduciary_portal: {
+    read: [...FINANCE_READERS, 'finance_director'],
+    write: [...FINANCE, 'external_fiduciary', 'finance_director'],
+    grants: {
+      read: ['fiduciary_portal.*', 'gl.*'],
+      write: ['fiduciary_portal.*', 'gl.*'],
     },
   },
 };

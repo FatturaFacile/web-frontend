@@ -35,7 +35,15 @@ import { GlLookupStore } from '../shared/gl-lookup.store';
             }}</nz-descriptions-item>
             <nz-descriptions-item [nzTitle]="'GL.STATUS' | translate">
               <nz-tag>{{ 'GL.JOURNAL_STATUS_' + e.status.toUpperCase() | translate }}</nz-tag>
+              @if (e.fiduciary_verified) {
+                <nz-tag nzColor="cyan">{{ 'fiduciaryPortal.badge.verified' | translate }}</nz-tag>
+              }
             </nz-descriptions-item>
+            @if (e.fiduciary_verification_note) {
+              <nz-descriptions-item [nzTitle]="'fiduciaryPortal.badge.verified' | translate" [nzSpan]="2">{{
+                e.fiduciary_verification_note
+              }}</nz-descriptions-item>
+            }
             <nz-descriptions-item [nzTitle]="'GL.COL_DATE' | translate">{{
               e.posting_date
             }}</nz-descriptions-item>
