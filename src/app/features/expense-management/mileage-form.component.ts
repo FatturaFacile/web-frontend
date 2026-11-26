@@ -78,8 +78,8 @@ import { defaultCalculationSource, failureOf, today, toNumber } from './expense-
         formControlName="distance_km"
       />
 
-      <label class="switch">
-        <nz-switch formControlName="is_round_trip"></nz-switch>
+      <label class="switch" for="exm-km-round-trip">
+        <nz-switch nzId="exm-km-round-trip" formControlName="is_round_trip"></nz-switch>
         <span>{{ 'expenseManagement.field.roundTrip' | translate }}</span>
       </label>
 

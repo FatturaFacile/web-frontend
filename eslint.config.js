@@ -68,6 +68,30 @@ export default tseslint.config(
         'error',
         { allowList: ['aria-label', 'innerHTML', 'innerText', 'outerHTML', 'textContent', 'appIconAction', 'appModalAction'] },
       ],
+      '@angular-eslint/template/label-has-associated-control': [
+        'error',
+        {
+          controlComponents: [
+            'nz-select',
+            'nz-date-picker',
+            'nz-range-picker',
+            'nz-input-number',
+            'nz-switch',
+            'nz-time-picker',
+            'nz-cascader',
+            'nz-tree-select',
+            'nz-autocomplete',
+            'nz-rate',
+            'nz-slider',
+          ],
+          labelComponents: [
+            {
+              inputs: ['for', 'htmlFor', 'nzId'],
+              selector: 'label',
+            },
+          ],
+        },
+      ],
     },
   }
 );

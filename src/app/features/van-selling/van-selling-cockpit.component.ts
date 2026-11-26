@@ -508,12 +508,12 @@ import { VanSellingStore } from './van-selling.store';
 
                 <div class="grid-3" style="margin-top: 16px;">
                   <div>
-                    <label>{{ store.label('opening_float') }}</label>
-                    <nz-input-number [(ngModel)]="openingFloat" [nzMin]="0" style="width: 100%;"></nz-input-number>
+                    <label for="van-eod-opening-float">{{ store.label('opening_float') }}</label>
+                    <nz-input-number nzId="van-eod-opening-float" id="van-eod-opening-float" [(ngModel)]="openingFloat" [nzMin]="0" style="width: 100%;"></nz-input-number>
                   </div>
                   <div>
-                    <label>{{ store.label('counted_cash') }}</label>
-                    <nz-input-number [(ngModel)]="countedCash" [nzMin]="0" style="width: 100%;"></nz-input-number>
+                    <label for="van-eod-counted-cash">{{ store.label('counted_cash') }}</label>
+                    <nz-input-number nzId="van-eod-counted-cash" id="van-eod-counted-cash" [(ngModel)]="countedCash" [nzMin]="0" style="width: 100%;"></nz-input-number>
                   </div>
                   <div style="display: flex; align-items: flex-end;">
                     <button nz-button nzType="primary" (click)="completeEod()" style="width: 100%;">
@@ -580,7 +580,7 @@ import { VanSellingStore } from './van-selling.store';
               <nz-form-control><input nz-input formControlName="driver_name" /></nz-form-control>
             </nz-form-item>
             <nz-form-item>
-              <label nz-checkbox formControlName="has_cold_chain">{{ store.label('cold_chain') }}</label>
+              <label nz-checkbox for="van-new-cold-chain" nzId="van-new-cold-chain" formControlName="has_cold_chain">{{ store.label('cold_chain') }}</label>
             </nz-form-item>
           </form>
         </ng-container>
@@ -594,8 +594,8 @@ import { VanSellingStore } from './van-selling.store';
         (nzOnOk)="saveTemperature()"
       >
         <ng-container *nzModalContent>
-          <label>{{ store.label('current_temp') }}</label>
-          <nz-input-number [(ngModel)]="tempInput" style="width: 100%;"></nz-input-number>
+          <label for="van-record-temp-input">{{ store.label('current_temp') }}</label>
+          <nz-input-number nzId="van-record-temp-input" id="van-record-temp-input" [(ngModel)]="tempInput" style="width: 100%;"></nz-input-number>
         </ng-container>
       </nz-modal>
 

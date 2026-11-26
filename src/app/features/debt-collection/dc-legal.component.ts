@@ -96,6 +96,8 @@ type Dialog = 'dossier' | 'messa' | null;
                   <td>
                     <label
                       nz-checkbox
+                      [attr.for]="'dc-legal-item-' + item.receivable_item_id"
+                      [nzId]="'dc-legal-item-' + item.receivable_item_id"
                       [ngModel]="store.selected().includes(item.receivable_item_id)"
                       [attr.aria-label]="item.document_number"
                       (ngModelChange)="store.toggleItem(item.receivable_item_id, $event)"

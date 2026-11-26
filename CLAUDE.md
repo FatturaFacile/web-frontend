@@ -12,12 +12,16 @@ Follow `AGENTS.md` in the repository root as the canonical source of truth for A
   - Keep components standalone, lean, and default to `OnPush`.
   - Use native control flow (`@if`, `@for`, `@switch`) and signal primitives (`input()`, `output()`, `model()`, `computed()`, `linkedSignal()`).
   - Use `@ngrx/signals` for feature/global state stores.
+- **TypeScript & Lint Standards (`@typescript-eslint` + `@angular-eslint`)**:
+  - Use `T[]` / `readonly T[]` instead of `Array<T>` / `ReadonlyArray<T>` (`@typescript-eslint/array-type`).
+  - Use `interface` instead of `type` for object shapes and DTOs; reserve `type` for unions, intersections, or mapped types (`@typescript-eslint/consistent-type-definitions`).
+  - Remove unused imports/variables (such as unused `vi` in `.spec.ts` files) or prefix intentionally unused parameters with `_` (`@typescript-eslint/no-unused-vars`).
 - **Accessibility & i18n**:
   - Verify WCAG AA accessibility compliance and AXE rules.
+  - **Form Label Association (`@angular-eslint/template/label-has-associated-control`)**: Every `<label>` must explicitly link to a form control via `for="unique-id"`. Pair with `id="unique-id"` on native controls (`<input>`, `<select>`, `<textarea>`) or `nzId="unique-id"` (and `id="unique-id"` if unsupported) on NG-ZORRO controls (`nz-select`, `nz-date-picker`, `nz-input-number`, `nz-switch`, `nz-time-picker`, `nz-cascader`, `nz-tree-select`, etc.), keeping custom selectors registered under `controlComponents` in `eslint.config.js`. Never use `<label>` for read-only captions or static values—use `<span>` or `<div>`.
   - Never hardcode user-facing strings; use quad-lingual translation keys (it, en, de, fr).
 - **Credentials & Security**:
   - Never hardcode secrets or test passwords in specs; use `TEST_PASSWORD` from `src/testing/credentials.ts`.
-
 
 ## Git Workflow & Direct Merge Policy (STRICT)
 - **Target Branch (`dev`):** Integrate all work directly into `dev` via local merge. **NEVER commit, merge, or push directly to `main`**, and **NEVER create Pull Requests (`gh pr create` / `gh pr`).**

@@ -162,14 +162,14 @@ export interface LinePrefill {
       </nz-select>
 
       @if (outOfPocket()) {
-        <label class="switch">
-          <nz-switch formControlName="paid_in_cash"></nz-switch>
+        <label class="switch" for="exm-line-cash">
+          <nz-switch nzId="exm-line-cash" formControlName="paid_in_cash"></nz-switch>
           <span>{{ 'expenseManagement.field.paidInCash' | translate }}</span>
         </label>
       }
 
-      <label class="switch">
-        <nz-switch formControlName="billable_to_customer"></nz-switch>
+      <label class="switch" for="exm-line-billable">
+        <nz-switch nzId="exm-line-billable" formControlName="billable_to_customer"></nz-switch>
         <span>{{ 'expenseManagement.field.billable' | translate }}</span>
       </label>
 

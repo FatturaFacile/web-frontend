@@ -96,6 +96,8 @@ import { DataMigrationStore } from './data-migration.store';
                 @for (schema of store.entitySchemas(); track schema.code) {
                   <label
                     nz-checkbox
+                    [attr.for]="'mig-entity-' + schema.code"
+                    [nzId]="'mig-entity-' + schema.code"
                     [ngModel]="isEntitySelected(schema.code)"
                     (ngModelChange)="toggleEntity(schema.code, $event)"
                   >
@@ -110,6 +112,7 @@ import { DataMigrationStore } from './data-migration.store';
                 </label>
                 <nz-select
                   id="migration-tpl-select"
+                  nzId="migration-tpl-select"
                   style="width: 340px"
                   nzAllowClear
                   [ngModel]="store.selectedTemplateId()"
@@ -218,6 +221,7 @@ import { DataMigrationStore } from './data-migration.store';
                   <label for="mig-date-fmt">{{ 'dataMigration.label.dateFormat' | translate }}</label>
                   <nz-select
                     id="mig-date-fmt"
+                    nzId="mig-date-fmt"
                     style="width: 100%"
                     [ngModel]="store.valueTransformations().date_format ?? 'Y-m-d'"
                     (ngModelChange)="store.updateTransformations({ date_format: $event })"
@@ -231,6 +235,7 @@ import { DataMigrationStore } from './data-migration.store';
                   <label for="mig-dec-sep">{{ 'dataMigration.label.decimalSeparator' | translate }}</label>
                   <nz-select
                     id="mig-dec-sep"
+                    nzId="mig-dec-sep"
                     style="width: 100%"
                     [ngModel]="store.valueTransformations().decimal_separator ?? '.'"
                     (ngModelChange)="store.updateTransformations({ decimal_separator: $event })"
@@ -243,6 +248,7 @@ import { DataMigrationStore } from './data-migration.store';
                   <label for="mig-currency">{{ 'dataMigration.label.currencyDefault' | translate }}</label>
                   <nz-select
                     id="mig-currency"
+                    nzId="mig-currency"
                     style="width: 100%"
                     [ngModel]="store.valueTransformations().currency_default ?? 'EUR'"
                     (ngModelChange)="store.updateTransformations({ currency_default: $event })"

@@ -145,6 +145,8 @@ import { WorkbenchStore } from './workbench.store';
       </label>
       <label
         nz-checkbox
+        for="dc-prop-show-excluded"
+        nzId="dc-prop-show-excluded"
         [ngModel]="store.filters().include_excluded === 1"
         (ngModelChange)="setFilter({ include_excluded: $event ? 1 : 0 })"
       >
@@ -163,6 +165,8 @@ import { WorkbenchStore } from './workbench.store';
       <div class="selection-bar" role="status">
         <label
           nz-checkbox
+          for="dc-prop-select-all"
+          nzId="dc-prop-select-all"
           [ngModel]="allSelected()"
           [nzIndeterminate]="store.selectedCount() > 0 && !allSelected()"
           [attr.aria-label]="'debtCollection.action.selectAll' | translate"
@@ -224,6 +228,8 @@ import { WorkbenchStore } from './workbench.store';
                 <td>
                   <label
                     nz-checkbox
+                    [attr.for]="'dc-prop-grp-' + group.key"
+                    [nzId]="'dc-prop-grp-' + group.key"
                     [ngModel]="store.selected().includes(group.key)"
                     [attr.aria-label]="group.customer_name"
                     (ngModelChange)="store.toggleGroup(group.key, $event)"

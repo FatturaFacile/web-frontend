@@ -96,30 +96,30 @@ function emptyCalendar(): WorkflowBusinessCalendar {
       </div>
 
       <div class="row">
-        <label class="inline">
+        <label class="inline" for="wf-cal-name">
           {{ 'workflows.calendar.name' | translate }}
-          <input nz-input maxlength="150" [ngModel]="form().name" (ngModelChange)="patch('name', $event)" />
+          <input id="wf-cal-name" nz-input maxlength="150" [ngModel]="form().name" (ngModelChange)="patch('name', $event)" />
         </label>
-        <label class="inline">
+        <label class="inline" for="wf-cal-tz">
           {{ 'workflows.calendar.timezone' | translate }}
-          <input nz-input [ngModel]="form().timezone" (ngModelChange)="patch('timezone', $event)" />
+          <input id="wf-cal-tz" nz-input [ngModel]="form().timezone" (ngModelChange)="patch('timezone', $event)" />
         </label>
-        <label class="inline">
+        <label class="inline" for="wf-cal-start">
           {{ 'workflows.calendar.hoursStart' | translate }}
-          <input nz-input type="time" [ngModel]="form().work_hours_start" (ngModelChange)="patch('work_hours_start', $event)" />
+          <input id="wf-cal-start" nz-input type="time" [ngModel]="form().work_hours_start" (ngModelChange)="patch('work_hours_start', $event)" />
         </label>
-        <label class="inline">
+        <label class="inline" for="wf-cal-end">
           {{ 'workflows.calendar.hoursEnd' | translate }}
-          <input nz-input type="time" [ngModel]="form().work_hours_end" (ngModelChange)="patch('work_hours_end', $event)" />
+          <input id="wf-cal-end" nz-input type="time" [ngModel]="form().work_hours_end" (ngModelChange)="patch('work_hours_end', $event)" />
         </label>
-        <label class="inline">
+        <label class="inline" for="wf-cal-default">
           {{ 'workflows.calendar.default' | translate }}
-          <nz-switch [ngModel]="form().is_default" (ngModelChange)="patch('is_default', $event)"></nz-switch>
+          <nz-switch nzId="wf-cal-default" id="wf-cal-default" [ngModel]="form().is_default" (ngModelChange)="patch('is_default', $event)"></nz-switch>
         </label>
       </div>
       <div class="row">
         @for (day of weekdays; track day) {
-          <label nz-checkbox [ngModel]="workingDay(day)" (ngModelChange)="setWorkingDay(day, $event)">
+          <label nz-checkbox [attr.for]="'wf-cal-day-' + day" [nzId]="'wf-cal-day-' + day" [ngModel]="workingDay(day)" (ngModelChange)="setWorkingDay(day, $event)">
             {{ 'workflows.calendar.day.' + day | translate }}
           </label>
         }
@@ -143,17 +143,17 @@ function emptyCalendar(): WorkflowBusinessCalendar {
         <div>
           <nz-card [nzTitle]="'workflows.calendar.addHoliday' | translate">
             <div class="row">
-              <label class="inline">
+              <label class="inline" for="wf-hol-date">
                 {{ 'workflows.calendar.date' | translate }}
-                <input nz-input type="date" [ngModel]="holidayDraft().holiday_date" (ngModelChange)="patchHoliday('holiday_date', $event)" data-testid="holiday-date" />
+                <input id="wf-hol-date" nz-input type="date" [ngModel]="holidayDraft().holiday_date" (ngModelChange)="patchHoliday('holiday_date', $event)" data-testid="holiday-date" />
               </label>
-              <label class="inline">
+              <label class="inline" for="wf-hol-name">
                 {{ 'workflows.calendar.holidayName' | translate }}
-                <input nz-input maxlength="150" [ngModel]="holidayDraft().name" (ngModelChange)="patchHoliday('name', $event)" data-testid="holiday-name" />
+                <input id="wf-hol-name" nz-input maxlength="150" [ngModel]="holidayDraft().name" (ngModelChange)="patchHoliday('name', $event)" data-testid="holiday-name" />
               </label>
-              <label class="inline">
+              <label class="inline" for="wf-hol-type">
                 {{ 'workflows.calendar.holidayType' | translate }}
-                <nz-select class="select" [ngModel]="holidayDraft().holiday_type" (ngModelChange)="patchHoliday('holiday_type', $event)">
+                <nz-select nzId="wf-hol-type" id="wf-hol-type" class="select" [ngModel]="holidayDraft().holiday_type" (ngModelChange)="patchHoliday('holiday_type', $event)">
                   @for (type of holidayTypes; track type) {
                     <nz-option [nzValue]="type" [nzLabel]="'workflows.calendar.type.' + type | translate"></nz-option>
                   }
@@ -167,31 +167,31 @@ function emptyCalendar(): WorkflowBusinessCalendar {
 
           <nz-card [nzTitle]="'workflows.calendar.seed.title' | translate" class="section">
             <div class="row">
-              <label class="inline">
+              <label class="inline" for="wf-seed-country">
                 {{ 'workflows.calendar.seed.country' | translate }}
-                <nz-select class="select" [ngModel]="seed().country" (ngModelChange)="patchSeed('country', $event)">
+                <nz-select nzId="wf-seed-country" id="wf-seed-country" class="select" [ngModel]="seed().country" (ngModelChange)="patchSeed('country', $event)">
                   <nz-option nzValue="CH" nzLabel="CH"></nz-option>
                   <nz-option nzValue="IT" nzLabel="IT"></nz-option>
                 </nz-select>
               </label>
               @if (seed().country === 'CH') {
-                <label class="inline">
+                <label class="inline" for="wf-seed-canton">
                   {{ 'workflows.calendar.seed.canton' | translate }}
-                  <nz-select class="select" nzAllowClear nzShowSearch [ngModel]="seed().canton" (ngModelChange)="patchSeed('canton', $event)">
+                  <nz-select nzId="wf-seed-canton" id="wf-seed-canton" class="select" nzAllowClear nzShowSearch [ngModel]="seed().canton" (ngModelChange)="patchSeed('canton', $event)">
                     @for (canton of cantons; track canton) {
                       <nz-option [nzValue]="canton" [nzLabel]="canton"></nz-option>
                     }
                   </nz-select>
                 </label>
               } @else {
-                <label class="inline">
+                <label class="inline" for="wf-seed-patron">
                   {{ 'workflows.calendar.seed.patronSaint' | translate }}
-                  <input nz-input maxlength="60" [ngModel]="seed().patron_saint" (ngModelChange)="patchSeed('patron_saint', $event)" />
+                  <input id="wf-seed-patron" nz-input maxlength="60" [ngModel]="seed().patron_saint" (ngModelChange)="patchSeed('patron_saint', $event)" />
                 </label>
               }
-              <label class="inline">
+              <label class="inline" for="wf-seed-year">
                 {{ 'workflows.calendar.seed.year' | translate }}
-                <nz-input-number [ngModel]="seed().year" (ngModelChange)="patchSeed('year', $event)" [nzMin]="2000" [nzMax]="2100"></nz-input-number>
+                <nz-input-number nzId="wf-seed-year" id="wf-seed-year" [ngModel]="seed().year" (ngModelChange)="patchSeed('year', $event)" [nzMin]="2000" [nzMax]="2100"></nz-input-number>
               </label>
               <button nz-button data-testid="seed-holidays" [nzLoading]="seeding()" (click)="seedHolidays()">
                 {{ 'workflows.calendar.seed.run' | translate }}

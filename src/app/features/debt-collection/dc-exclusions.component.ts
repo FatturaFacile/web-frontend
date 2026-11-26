@@ -58,6 +58,8 @@ import { DcLookupsStore } from './lookups.store';
       </div>
       <label
         nz-checkbox
+        for="dc-ex-active-only"
+        nzId="dc-ex-active-only"
         [ngModel]="store.activeOnly()"
         (ngModelChange)="store.setActiveOnly($event)"
       >

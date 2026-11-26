@@ -22,7 +22,11 @@ Single source of truth for all AI coding agents working on the Angular 22 enterp
 
 ## 2. Coding & Quality Standards
 
-- **TypeScript Strictness**: Strict typing enabled. Zero-warning tolerance. Never use `any`; use `unknown` with type guards or pattern matching.
+- **TypeScript Strictness & ESLint (`@typescript-eslint`)**:
+  - Strict typing enabled with zero-warning tolerance (`pnpm run lint`). Never use `any`; use `unknown` with type guards or pattern matching.
+  - **Array Syntax (`@typescript-eslint/array-type`)**: Always use `T[]` / `readonly T[]` instead of `Array<T>` / `ReadonlyArray<T>`.
+  - **Object Shapes (`@typescript-eslint/consistent-type-definitions`)**: Always use `interface` instead of `type` for object shapes and DTOs (reserve `type` strictly for unions, intersections, mapped types, or primitives).
+  - **Unused Symbols (`@typescript-eslint/no-unused-vars`)**: Remove unused imports and variables (e.g., unused `vi` in `.spec.ts` files) or prefix intentionally unused parameters with `_`.
 - **Angular 22 Component Standards**:
   - 100% Standalone components, directives, and pipes (`bootstrapApplication` in `src/main.ts`).
   - Do NOT set `standalone: true` (it is the default in Angular 20+).
@@ -37,9 +41,13 @@ Single source of truth for all AI coding agents working on the Angular 22 enterp
   - Fine-grained reactivity using Angular core signals (`signal()`, `computed()`, `linkedSignal()`).
   - Global and feature state management via `@ngrx/signals` (`signalStore`, `withState`, `withComputed`, `withMethods`, `rxMethod`).
   - Never call `.mutate()` on signals; use `.update()` or `.set()`. Keep state transformations pure and deterministic.
-- **Accessibility (a11y)**:
-  - Must pass all AXE checks (`@axe-core/playwright`, `axe-core`).
+- **Accessibility (a11y) & Angular Template Rules (`@angular-eslint`)**:
+  - Must pass all AXE checks (`@axe-core/playwright`, `axe-core`) and `pnpm run lint` template rules.
   - Strict WCAG AA compliance across all components (semantic HTML, keyboard focus management, ARIA roles/labels, tap target sizing, color contrast).
+  - **Form Label Association (`@angular-eslint/template/label-has-associated-control`)**: Every `<label>` in a template MUST explicitly associate with a form control via `for="unique-id"`:
+    - Pair `<label for="unique-id">` with a matching `id="unique-id"` on native form controls (`<input>`, `<select>`, `<textarea>`), or wrap the native control directly inside `<label>`.
+    - Pair `<label for="unique-id">` with `nzId="unique-id"` (and `id="unique-id"` if `nzId` is unsupported) on NG-ZORRO controls (`nz-select`, `nz-date-picker`, `nz-range-picker`, `nz-time-picker`, `nz-input-number`, `nz-switch`, `nz-cascader`, `nz-tree-select`, `nz-autocomplete`, `nz-slider`, `nz-rate`, `nz-checkbox-wrapper`, `nz-radio-group`), keeping custom control selectors registered under `controlComponents` in `eslint.config.js`.
+    - Never use `<label>` for read-only captions, static display values, or badges—use `<span>` or `<div>` instead.
 - **Localization (i18n)**:
   - Quad-lingual architecture: Italian (`it`), English (`en`), German (`de`), French (`fr`).
   - All user-facing strings must use translation keys via `TranslatePipe` (`'KEY' | translate`) or `I18nService`.
@@ -54,7 +62,6 @@ Single source of truth for all AI coding agents working on the Angular 22 enterp
 
 Run with `pnpm` (`pnpm.cmd` on Windows). Never use `npm` or `yarn`.
 
-```bash
 # Install dependencies (frozen lockfile)
 pnpm install --frozen-lockfile
 
@@ -96,7 +103,6 @@ pnpm run api:generate
 # Design Tokens Verification & Build
 pnpm run tokens:check
 pnpm run tokens:build
-```
 
 ---
 

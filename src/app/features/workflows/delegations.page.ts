@@ -57,9 +57,11 @@ import {
 
     <nz-card [nzTitle]="'workflows.delegations.new' | translate">
       <div class="grid">
-        <label class="inline">
+        <label class="inline" for="wf-del-user">
           {{ 'workflows.delegations.delegate' | translate }}
           <nz-select
+            nzId="wf-del-user"
+            id="wf-del-user"
             nzShowSearch
             nzServerSearch
             [ngModel]="draft().delegateUserId"
@@ -73,38 +75,40 @@ import {
             }
           </nz-select>
         </label>
-        <label class="inline">
+        <label class="inline" for="wf-del-period">
           {{ 'workflows.delegations.period' | translate }}
           <nz-range-picker
+            nzId="wf-del-period"
+            id="wf-del-period"
             [ngModel]="draft().range"
             (ngModelChange)="patch('range', $event?.length === 2 ? $event : null)"
             [nzDisabledDate]="beforeToday"
             data-testid="period"
           ></nz-range-picker>
         </label>
-        <label class="inline">
+        <label class="inline" for="wf-del-scope">
           {{ 'workflows.delegations.scope' | translate }}
-          <nz-select [ngModel]="draft().scope" (ngModelChange)="patch('scope', $event)">
+          <nz-select nzId="wf-del-scope" id="wf-del-scope" [ngModel]="draft().scope" (ngModelChange)="patch('scope', $event)">
             @for (scope of scopes; track scope) {
               <nz-option [nzValue]="scope" [nzLabel]="'workflows.delegations.scope.' + scope | translate"></nz-option>
             }
           </nz-select>
         </label>
-        <label class="inline">
+        <label class="inline" for="wf-del-doctypes">
           {{ 'workflows.delegations.documentTypes' | translate }}
-          <nz-select nzMode="multiple" [ngModel]="draft().documentTypes" (ngModelChange)="patch('documentTypes', $event)" [nzPlaceHolder]="'workflows.delegations.allDocumentTypes' | translate">
+          <nz-select nzId="wf-del-doctypes" id="wf-del-doctypes" nzMode="multiple" [ngModel]="draft().documentTypes" (ngModelChange)="patch('documentTypes', $event)" [nzPlaceHolder]="'workflows.delegations.allDocumentTypes' | translate">
             @for (type of subjectTypes(); track type.code) {
               <nz-option [nzValue]="type.code" [nzLabel]="'workflows.subject_types.' + type.code | translate"></nz-option>
             }
           </nz-select>
         </label>
-        <label class="inline">
+        <label class="inline" for="wf-del-cap">
           {{ 'workflows.delegations.amountCap' | translate }}
-          <nz-input-number [ngModel]="draft().amountCap" (ngModelChange)="patch('amountCap', $event ?? null)" [nzMin]="0"></nz-input-number>
+          <nz-input-number nzId="wf-del-cap" id="wf-del-cap" [ngModel]="draft().amountCap" (ngModelChange)="patch('amountCap', $event ?? null)" [nzMin]="0"></nz-input-number>
         </label>
-        <label class="inline wide">
+        <label class="inline wide" for="wf-del-reason">
           {{ 'workflows.delegations.reason' | translate }}
-          <input nz-input maxlength="1000" [ngModel]="draft().reason" (ngModelChange)="patch('reason', $event)" />
+          <input id="wf-del-reason" nz-input maxlength="1000" [ngModel]="draft().reason" (ngModelChange)="patch('reason', $event)" />
         </label>
       </div>
       @if (problem(); as key) {

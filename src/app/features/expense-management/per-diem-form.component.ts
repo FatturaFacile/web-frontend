@@ -93,12 +93,12 @@ import { failureOf, isPositive } from './expense-management.util';
       />
 
       @if (form.controls.allowance_method.value !== 'analytic') {
-        <label class="switch">
-          <nz-switch formControlName="lodging_reimbursed"></nz-switch>
+        <label class="switch" for="exm-pd-lodging">
+          <nz-switch nzId="exm-pd-lodging" formControlName="lodging_reimbursed"></nz-switch>
           <span>{{ 'expenseManagement.field.lodgingReimbursed' | translate }}</span>
         </label>
-        <label class="switch">
-          <nz-switch formControlName="meals_reimbursed"></nz-switch>
+        <label class="switch" for="exm-pd-meals">
+          <nz-switch nzId="exm-pd-meals" formControlName="meals_reimbursed"></nz-switch>
           <span>{{ 'expenseManagement.field.mealsReimbursed' | translate }}</span>
         </label>
       }

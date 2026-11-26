@@ -475,7 +475,7 @@ export function recommendationKey(eligibility: Pick<TndEligibilityLike, 'can_bid
     : 'tenderManagement.compliance.rti_recommended';
 }
 
-type TndEligibilityLike = { can_bid_solo: boolean; recommended_mode: string };
+interface TndEligibilityLike { can_bid_solo: boolean; recommended_mode: string }
 
 export function decisionColor(decision: 'go' | 'conditional' | 'no_go'): string {
   return decision === 'go' ? 'green' : decision === 'conditional' ? 'orange' : 'red';

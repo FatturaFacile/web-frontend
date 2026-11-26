@@ -244,6 +244,8 @@ export function emptyPolicy(): DcPolicyPayload {
             <div class="field">
               <label
                 nz-checkbox
+                for="dc-pol-default"
+                nzId="dc-pol-default"
                 [nzDisabled]="!canWrite"
                 [ngModel]="policy.is_default"
                 (ngModelChange)="patch({ is_default: $event })"
@@ -252,6 +254,8 @@ export function emptyPolicy(): DcPolicyPayload {
               </label>
               <label
                 nz-checkbox
+                for="dc-pol-active"
+                nzId="dc-pol-active"
                 [nzDisabled]="!canWrite"
                 [ngModel]="policy.is_active"
                 (ngModelChange)="patch({ is_active: $event })"
@@ -360,6 +364,8 @@ export function emptyPolicy(): DcPolicyPayload {
                   <td>
                     <label
                       nz-checkbox
+                      [attr.for]="'dc-pol-lvl-int-' + $index"
+                      [nzId]="'dc-pol-lvl-int-' + $index"
                       [nzDisabled]="!canWrite"
                       [ngModel]="row.charge_interest"
                       (ngModelChange)="patchLevel($index, { charge_interest: $event })"
@@ -368,6 +374,8 @@ export function emptyPolicy(): DcPolicyPayload {
                     </label>
                     <label
                       nz-checkbox
+                      [attr.for]="'dc-pol-lvl-warn-' + $index"
+                      [nzId]="'dc-pol-lvl-warn-' + $index"
                       [nzDisabled]="!canWrite"
                       [ngModel]="row.legal_warning"
                       (ngModelChange)="patchLevel($index, { legal_warning: $event })"
@@ -376,6 +384,8 @@ export function emptyPolicy(): DcPolicyPayload {
                     </label>
                     <label
                       nz-checkbox
+                      [attr.for]="'dc-pol-lvl-act-' + $index"
+                      [nzId]="'dc-pol-lvl-act-' + $index"
                       [nzDisabled]="!canWrite"
                       [ngModel]="row.is_active"
                       (ngModelChange)="patchLevel($index, { is_active: $event })"

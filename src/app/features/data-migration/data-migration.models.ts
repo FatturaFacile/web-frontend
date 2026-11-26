@@ -128,7 +128,7 @@ export interface MigrationJob {
   } | null;
   dry_run_summary_json: MigrationDryRunSummary | null;
   rollback_manifest_json: {
-    created_records?: Array<{ entity: string; model: string; id: string }>;
+    created_records?: { entity: string; model: string; id: string }[];
   } | null;
   dry_run_at: string | null;
   completed_at: string | null;

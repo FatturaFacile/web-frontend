@@ -80,6 +80,7 @@ import { FiduciaryPortalStore } from './fiduciary-portal.store';
           </label>
           <nz-select
             id="fid-client-select"
+            nzId="fid-client-select"
             style="min-width: 300px"
             [ngModel]="store.activeTenantId()"
             (ngModelChange)="onSwitchClient($event)"
@@ -274,6 +275,8 @@ import { FiduciaryPortalStore } from './fiduciary-portal.store';
                     <td>
                       <label
                         nz-checkbox
+                        [attr.for]="'fid-entry-' + entry.id"
+                        [nzId]="'fid-entry-' + entry.id"
                         [ngModel]="isSelected(entry.id)"
                         (ngModelChange)="store.toggleEntrySelection(entry.id, $event)"
                       ></label>
@@ -404,7 +407,7 @@ import { FiduciaryPortalStore } from './fiduciary-portal.store';
                   <nz-option [nzValue]="fmt.code" [nzLabel]="fmt.label_key | translate" />
                 }
               </nz-select>
-              <label nz-checkbox [(ngModel)]="transcodingUnmappedOnly" (ngModelChange)="reloadTranscoding()">
+              <label nz-checkbox for="fid-transcoding-unmapped" nzId="fid-transcoding-unmapped" [(ngModel)]="transcodingUnmappedOnly" (ngModelChange)="reloadTranscoding()">
                 {{ 'fiduciaryPortal.filter.unmappedOnly' | translate }}
               </label>
               <button nz-button type="button" (click)="store.seedDefaultTranscodings()">
@@ -513,10 +516,10 @@ import { FiduciaryPortalStore } from './fiduciary-portal.store';
             <div class="filter-toolbar">
               <input nz-input type="date" style="width: 150px" [(ngModel)]="exportForm.from_date" />
               <input nz-input type="date" style="width: 150px" [(ngModel)]="exportForm.to_date" />
-              <label nz-checkbox [(ngModel)]="exportForm.only_verified">
+              <label nz-checkbox for="fid-export-verified" nzId="fid-export-verified" [(ngModel)]="exportForm.only_verified">
                 {{ 'fiduciaryPortal.filter.onlyVerified' | translate }}
               </label>
-              <label nz-checkbox [(ngModel)]="exportForm.apply_transcoding">
+              <label nz-checkbox for="fid-export-transcoding" nzId="fid-export-transcoding" [(ngModel)]="exportForm.apply_transcoding">
                 {{ 'fiduciaryPortal.filter.applyTranscoding' | translate }}
               </label>
               <button nz-button type="button" (click)="validateCurrentExport()">

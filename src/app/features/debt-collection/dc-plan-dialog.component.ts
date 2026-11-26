@@ -58,6 +58,8 @@ import { buildInstallments, sumDecimals, todayIso } from './debt-collection.util
               <div>
                 <label
                   nz-checkbox
+                  [attr.for]="'dc-plan-item-' + item.receivable_item_id"
+                  [nzId]="'dc-plan-item-' + item.receivable_item_id"
                   [ngModel]="selected().includes(item.receivable_item_id)"
                   (ngModelChange)="toggle(item.receivable_item_id, $event)"
                 >

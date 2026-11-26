@@ -111,41 +111,41 @@ interface SimulationInput {
 
     <nz-card [nzTitle]="'workflows.matrix.editor' | translate" class="section">
       <div class="row">
-        <label class="inline">
+        <label class="inline" for="wf-matrix-code">
           {{ 'workflows.matrix.code' | translate }}
-          <input nz-input maxlength="60" [ngModel]="draft().code" (ngModelChange)="mutate(setText('code', $event))" />
+          <input id="wf-matrix-code" nz-input maxlength="60" [ngModel]="draft().code" (ngModelChange)="mutate(setText('code', $event))" />
         </label>
-        <label class="inline wide">
+        <label class="inline wide" for="wf-matrix-name">
           {{ 'workflows.matrix.name' | translate }}
-          <input nz-input maxlength="150" [ngModel]="draft().name" (ngModelChange)="mutate(setText('name', $event))" />
+          <input id="wf-matrix-name" nz-input maxlength="150" [ngModel]="draft().name" (ngModelChange)="mutate(setText('name', $event))" />
         </label>
-        <label class="inline">
+        <label class="inline" for="wf-matrix-subject-type">
           {{ 'workflows.matrix.subjectType' | translate }}
-          <nz-select class="select" [ngModel]="draft().subject_type" (ngModelChange)="mutate(setText('subject_type', $event))">
+          <nz-select nzId="wf-matrix-subject-type" id="wf-matrix-subject-type" class="select" [ngModel]="draft().subject_type" (ngModelChange)="mutate(setText('subject_type', $event))">
             @for (type of subjectTypes(); track type.code) {
               <nz-option [nzValue]="type.code" [nzLabel]="'workflows.subject_types.' + type.code | translate"></nz-option>
             }
           </nz-select>
         </label>
-        <label class="inline">
+        <label class="inline" for="wf-matrix-currency">
           {{ 'workflows.matrix.currency' | translate }}
-          <input nz-input class="currency" maxlength="3" [ngModel]="draft().currency" (ngModelChange)="mutate(setText('currency', $event.toUpperCase()))" />
+          <input id="wf-matrix-currency" nz-input class="currency" maxlength="3" [ngModel]="draft().currency" (ngModelChange)="mutate(setText('currency', $event.toUpperCase()))" />
         </label>
-        <label class="inline">
+        <label class="inline" for="wf-matrix-priority">
           {{ 'workflows.matrix.priority' | translate }}
-          <nz-input-number [ngModel]="draft().priority" (ngModelChange)="mutate(setNumber('priority', $event))" [nzMin]="1" [nzStep]="10"></nz-input-number>
+          <nz-input-number nzId="wf-matrix-priority" id="wf-matrix-priority" [ngModel]="draft().priority" (ngModelChange)="mutate(setNumber('priority', $event))" [nzMin]="1" [nzStep]="10"></nz-input-number>
         </label>
-        <label class="inline">
+        <label class="inline" for="wf-matrix-auto-approve">
           {{ 'workflows.matrix.autoApproveBelow' | translate }}
-          <nz-input-number [ngModel]="draft().auto_approve_below" (ngModelChange)="mutate(setNumber('auto_approve_below', $event))" [nzMin]="0"></nz-input-number>
+          <nz-input-number nzId="wf-matrix-auto-approve" id="wf-matrix-auto-approve" [ngModel]="draft().auto_approve_below" (ngModelChange)="mutate(setNumber('auto_approve_below', $event))" [nzMin]="0"></nz-input-number>
         </label>
-        <label class="inline">
+        <label class="inline" for="wf-matrix-active">
           {{ 'workflows.matrix.active' | translate }}
-          <nz-switch [ngModel]="draft().is_active" (ngModelChange)="mutate(setFlag('is_active', $event))"></nz-switch>
+          <nz-switch nzId="wf-matrix-active" id="wf-matrix-active" [ngModel]="draft().is_active" (ngModelChange)="mutate(setFlag('is_active', $event))"></nz-switch>
         </label>
-        <label class="inline">
+        <label class="inline" for="wf-matrix-default">
           {{ 'workflows.matrix.default' | translate }}
-          <nz-switch [ngModel]="draft().is_default" (ngModelChange)="mutate(setFlag('is_default', $event))"></nz-switch>
+          <nz-switch nzId="wf-matrix-default" id="wf-matrix-default" [ngModel]="draft().is_default" (ngModelChange)="mutate(setFlag('is_default', $event))"></nz-switch>
         </label>
       </div>
 
@@ -240,29 +240,29 @@ interface SimulationInput {
 
     <nz-card [nzTitle]="'workflows.matrix.simulate.title' | translate" class="section">
       <div class="row">
-        <label class="inline">
+        <label class="inline" for="wf-sim-amount">
           {{ 'workflows.matrix.field.amount' | translate }}
-          <nz-input-number [ngModel]="sim().amount" (ngModelChange)="patchSim('amount', $event)" [nzMin]="0" data-testid="sim-amount"></nz-input-number>
+          <nz-input-number nzId="wf-sim-amount" id="wf-sim-amount" [ngModel]="sim().amount" (ngModelChange)="patchSim('amount', $event)" [nzMin]="0" data-testid="sim-amount"></nz-input-number>
         </label>
-        <label class="inline">
+        <label class="inline" for="wf-sim-currency">
           {{ 'workflows.matrix.field.currency' | translate }}
-          <input nz-input class="currency" maxlength="3" [ngModel]="sim().currency" (ngModelChange)="patchSim('currency', $event)" />
+          <input id="wf-sim-currency" nz-input class="currency" maxlength="3" [ngModel]="sim().currency" (ngModelChange)="patchSim('currency', $event)" />
         </label>
-        <label class="inline">
+        <label class="inline" for="wf-sim-cost-center">
           {{ 'workflows.matrix.field.cost_center_id' | translate }}
-          <input nz-input [ngModel]="sim().cost_center_id" (ngModelChange)="patchSim('cost_center_id', $event)" />
+          <input id="wf-sim-cost-center" nz-input [ngModel]="sim().cost_center_id" (ngModelChange)="patchSim('cost_center_id', $event)" />
         </label>
-        <label class="inline">
+        <label class="inline" for="wf-sim-category">
           {{ 'workflows.matrix.field.category' | translate }}
-          <input nz-input [ngModel]="sim().category" (ngModelChange)="patchSim('category', $event)" />
+          <input id="wf-sim-category" nz-input [ngModel]="sim().category" (ngModelChange)="patchSim('category', $event)" />
         </label>
-        <label class="inline">
+        <label class="inline" for="wf-sim-discount">
           {{ 'workflows.matrix.field.discount_percent' | translate }}
-          <nz-input-number [ngModel]="sim().discount_percent" (ngModelChange)="patchSim('discount_percent', $event)" [nzMin]="0" [nzMax]="100"></nz-input-number>
+          <nz-input-number nzId="wf-sim-discount" id="wf-sim-discount" [ngModel]="sim().discount_percent" (ngModelChange)="patchSim('discount_percent', $event)" [nzMin]="0" [nzMax]="100"></nz-input-number>
         </label>
-        <label class="inline">
+        <label class="inline" for="wf-sim-new-supplier">
           {{ 'workflows.matrix.field.new_supplier' | translate }}
-          <nz-switch [ngModel]="sim().new_supplier" (ngModelChange)="patchSim('new_supplier', $event)"></nz-switch>
+          <nz-switch nzId="wf-sim-new-supplier" id="wf-sim-new-supplier" [ngModel]="sim().new_supplier" (ngModelChange)="patchSim('new_supplier', $event)"></nz-switch>
         </label>
         <button nz-button nzType="primary" data-testid="simulate" [nzLoading]="simulating()" (click)="simulate()">{{ 'workflows.matrix.simulate.run' | translate }}</button>
       </div>
