@@ -1,0 +1,154 @@
+:host {
+  display: block;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  margin-bottom: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 180px;
+  flex: 1 1 180px;
+
+  > span {
+    font-weight: 500;
+  }
+
+  small {
+    color: rgba(0, 0, 0, 0.55);
+  }
+
+  .error,
+  small.error {
+    color: #cf1322;
+  }
+
+  &.wide {
+    grid-column: 1 / -1;
+  }
+
+  &.switch {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px 16px;
+  margin-bottom: 12px;
+}
+
+.hint {
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.error {
+  color: #cf1322;
+  display: block;
+}
+
+.form-alert {
+  margin-bottom: 16px;
+}
+
+.form-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.axis {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+
+  legend {
+    padding: 0 4px;
+    font-weight: 500;
+    width: auto;
+  }
+
+  small {
+    color: rgba(0, 0, 0, 0.45);
+    margin-left: 4px;
+  }
+}
+
+.matrix-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  margin: 8px 0;
+}
+
+.kit-line,
+.level-row {
+  display: grid;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.kit-line {
+  grid-template-columns: minmax(220px, 3fr) minmax(90px, 1fr) auto auto;
+}
+
+.level-row {
+  grid-template-columns: 110px minmax(120px, 1fr) 120px 120px 130px minmax(120px, 1fr) 100px auto;
+
+  .factor {
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+}
+
+.value-row {
+  display: grid;
+  grid-template-columns: 110px repeat(4, minmax(90px, 1fr)) 90px minmax(80px, 1fr) 110px minmax(
+      80px,
+      1fr
+    ) 110px auto;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.columns nz-tag {
+  margin-bottom: 4px;
+}
+
+.split span {
+  margin-left: 8px;
+}
+
+@media (max-width: 768px) {
+  .kit-line,
+  .level-row,
+  .value-row {
+    grid-template-columns: 1fr;
+  }
+}

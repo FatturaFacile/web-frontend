@@ -68,6 +68,7 @@ export const PREMATURE_OPEN_ISSUE_MODULES: Readonly<
   sales_bounded_context: { issue: 139, routePrefix: '/sales/omnichannel-pipeline' },
   franchise_network: { issue: 490, routePrefix: '/franchise-network' },
   corporate_conventions: { issue: 604, routePrefix: '/sales/corporate-conventions' },
+  product_catalog: { issue: 248, routePrefix: '/product-catalog' },
 };
 
 /**

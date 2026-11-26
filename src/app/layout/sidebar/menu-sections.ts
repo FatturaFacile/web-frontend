@@ -1649,6 +1649,31 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         ],
       },
       {
+        key: 'NAV.PRODUCT_CATALOG',
+        icon: 'fa-solid fa-boxes-stacked',
+        module: 'product_catalog',
+        children: [
+          {
+            key: 'NAV.PRODUCT_CATALOG_PRODUCTS',
+            route: '/product-catalog',
+            icon: 'fa-solid fa-box-open',
+            module: 'product_catalog',
+          },
+          {
+            key: 'NAV.PRODUCT_CATALOG_ATTRIBUTES',
+            route: '/product-catalog/attributes',
+            icon: 'fa-solid fa-swatchbook',
+            module: 'product_catalog',
+          },
+          {
+            key: 'NAV.PRODUCT_CATALOG_TRANSFER',
+            route: '/product-catalog/import-export',
+            icon: 'fa-solid fa-file-import',
+            module: 'product_catalog',
+          },
+        ],
+      },
+      {
         key: 'NAV.TRAVEL',
         icon: 'fa-solid fa-plane-departure',
         route: '/travel',
