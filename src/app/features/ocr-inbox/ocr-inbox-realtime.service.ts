@@ -1,4 +1,4 @@
-import { DestroyRef, inject, Service, signal } from '@angular/core';
+import { DestroyRef, inject, Injectable, signal } from '@angular/core';
 import { environment } from '@env';
 import { firstValueFrom } from 'rxjs';
 import { PlatformApiService } from '../../core/api/platform-api.service';
@@ -20,7 +20,7 @@ interface EchoLike {
  * `tenant.{id}.ocr-inbox` of the Reverb server the backend advertises. When realtime is not configured or the connection
  * cannot be opened, `connected` stays false and the page falls back to polling.
  */
-@Service()
+@Injectable()
 export class OcrInboxRealtimeService {
   private readonly api = inject(PlatformApiService);
   private echo: EchoLike | null = null;

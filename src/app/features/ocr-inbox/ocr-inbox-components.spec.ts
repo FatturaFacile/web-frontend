@@ -15,6 +15,7 @@ import { DocumentPageRenderer } from './document-page-renderer.service';
 import { ExtractionReviewFormComponent } from './extraction-review-form.component';
 import { OcrInboxApiService } from './ocr-inbox-api.service';
 import { OcrInboxPageComponent } from './ocr-inbox-page.component';
+import { OcrInboxRealtimeService } from './ocr-inbox-realtime.service';
 import { OcrInboxStore } from './ocr-inbox.store';
 import {
   boxesFixture,
@@ -369,6 +370,7 @@ describe('extraction review form', () => {
     };
     TestBed.configureTestingModule({
       providers: baseProviders([
+        OcrInboxRealtimeService,
         { provide: OcrInboxApiService, useValue: api },
         { provide: CrmApiService, useValue: crm },
         { provide: NzMessageService, useValue: message },
@@ -740,6 +742,7 @@ describe('AI Inbox page', () => {
     };
     TestBed.configureTestingModule({
       providers: baseProviders([
+        OcrInboxRealtimeService,
         { provide: OcrInboxApiService, useValue: api },
         { provide: CrmApiService, useValue: { getSuppliers: vi.fn(() => of({ data: [] })) } },
         {
