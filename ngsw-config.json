@@ -1,6 +1,13 @@
 {
   "$schema": "./node_modules/@angular/service-worker/config/schema.json",
   "index": "/index.html",
+  "navigationUrls": [
+    "/**",
+    "!/**/*.*",
+    "!/**/*__*",
+    "!/**/*__*/**",
+    "!/api/**"
+  ],
   "assetGroups": [
     {
       "name": "app",
@@ -11,15 +18,28 @@
           "/index.csr.html",
           "/index.html",
           "/manifest.webmanifest",
-          "/*.css",
-          "/*.js"
+          "/main-*.js",
+          "/polyfills-*.js",
+          "/styles-*.css"
+        ]
+      }
+    },
+    {
+      "name": "lazy-chunks",
+      "installMode": "lazy",
+      "updateMode": "lazy",
+      "resources": {
+        "files": [
+          "/chunk-*.js",
+          "/theme-dark.css",
+          "/assets/pdfjs/*.mjs"
         ]
       }
     },
     {
       "name": "assets",
       "installMode": "lazy",
-      "updateMode": "prefetch",
+      "updateMode": "lazy",
       "resources": {
         "files": [
           "/**/*.(svg|cur|jpg|jpeg|png|apng|webp|avif|gif|otf|ttf|woff|woff2)",
@@ -31,7 +51,10 @@
   "dataGroups": [
     {
       "name": "translations",
-      "urls": ["/api/v1/translations/**", "https://**/api/v1/translations/**"],
+      "urls": [
+        "/api/v1/translations/**",
+        "https://**/api/v1/translations/**"
+      ],
       "cacheConfig": {
         "strategy": "freshness",
         "maxSize": 20,
