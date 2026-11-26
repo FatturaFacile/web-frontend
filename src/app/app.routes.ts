@@ -1095,6 +1095,14 @@ export const routes: Routes = [
       import('./features/accounting/accounting.routes').then((m) => m.ACCOUNTING_ROUTES),
   },
   {
+    // Multi-currency engine (Mod 003): rates, ECB / SNB / ESTV sync, settings, exposure and the FX revaluation wizard.
+    path: 'finance/currencies',
+    canActivate: [authGuard, menuEnabledGuard, moduleGuard('ledger')],
+    data: { breadcrumb: 'NAV.FINANCE_CURRENCIES', title: 'PAGE_TITLE.FINANCE_CURRENCIES' },
+    loadChildren: () =>
+      import('./features/currency-fx/currency-fx.routes').then((m) => m.CURRENCY_FX_ROUTES),
+  },
+  {
     path: 'general-ledger',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.GENERAL_LEDGER', title: 'NAV.GENERAL_LEDGER' },

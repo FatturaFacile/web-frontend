@@ -1,0 +1,101 @@
+:host {
+  display: block;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  margin-bottom: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 160px;
+  flex: 1 1 160px;
+
+  > span {
+    font-weight: 500;
+  }
+
+  small {
+    color: rgba(0, 0, 0, 0.55);
+  }
+
+  .error {
+    color: #cf1322;
+  }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px 16px;
+  margin-bottom: 12px;
+}
+
+.form-alert {
+  margin-bottom: 16px;
+}
+
+.form-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.row-actions {
+  white-space: nowrap;
+
+  > * {
+    margin-right: 4px;
+  }
+}
+
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.muted {
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.fx-gain {
+  color: #389e0d;
+}
+
+.fx-loss {
+  color: #cf1322;
+}
+
+.totals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin: 16px 0;
+
+  > div {
+    display: flex;
+    flex-direction: column;
+
+    strong {
+      font-size: 18px;
+      font-variant-numeric: tabular-nums;
+    }
+  }
+}
+
+.steps {
+  margin-bottom: 24px;
+}
+
+.sync-error {
+  color: #cf1322;
+  max-width: 320px;
+  word-break: break-word;
+}

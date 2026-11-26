@@ -126,6 +126,8 @@ export interface CreateInvoicePayload {
   date: string;
   due_date?: string | null;
   currency: string;
+  /** Rate typed by the user (decimal string, at most six decimals); omitted = the server resolves it for `date`. */
+  exchange_rate?: string | null;
   payment_term_id?: string | null;
   jurisdiction: Jurisdiction;
   split_payment?: boolean | null;
