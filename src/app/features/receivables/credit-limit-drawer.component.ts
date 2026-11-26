@@ -1,4 +1,13 @@
-import { Component, computed, effect, input, model, output, signal, untracked } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  input,
+  model,
+  output,
+  signal,
+  untracked,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -7,7 +16,12 @@ import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzSelectModule } from 'ng-zorro-antd/select';
-import { ArCreditLimit, ArCreditLimitPayload, ArCreditLimitUpdate, AR_REACTION_POLICIES } from '@core';
+import {
+  ArCreditLimit,
+  ArCreditLimitPayload,
+  ArCreditLimitUpdate,
+  AR_REACTION_POLICIES,
+} from '@core';
 import { TranslatePipe } from '@shared';
 import {
   draftFromLimit,
@@ -188,7 +202,7 @@ export interface LimitSubmit {
             <nz-date-picker
               nzId="cl-from"
               style="width: 100%"
-              [ngModel]="date(draft().valid_from)"
+              [ngModel]="validFrom()"
               (ngModelChange)="set('valid_from', iso($event))"
             ></nz-date-picker>
             @if (error('valid_from'); as text) {
@@ -201,7 +215,7 @@ export interface LimitSubmit {
             <nz-date-picker
               nzId="cl-to"
               style="width: 100%"
-              [ngModel]="date(draft().valid_to)"
+              [ngModel]="validTo()"
               (ngModelChange)="set('valid_to', iso($event))"
             ></nz-date-picker>
             @if (error('valid_to'); as text) {
@@ -210,9 +224,14 @@ export interface LimitSubmit {
           </div>
 
           <div class="field wide">
-            <label for="credit-limit-drawer-field" nzId="credit-limit-drawer-field" nz-checkbox [ngModel]="draft().is_active" (ngModelChange)="set('is_active', $event)">{{
-              'AR.LIMIT_ACTIVE' | translate
-            }}</label>
+            <label
+              for="credit-limit-drawer-field"
+              nzId="credit-limit-drawer-field"
+              nz-checkbox
+              [ngModel]="draft().is_active"
+              (ngModelChange)="set('is_active', $event)"
+              >{{ 'AR.LIMIT_ACTIVE' | translate }}</label
+            >
           </div>
 
           <div class="field wide">
@@ -233,8 +252,16 @@ export interface LimitSubmit {
       <div class="drawer-footer">
         <span></span>
         <span>
-          <button nz-button type="button" (click)="open.set(false)">{{ 'AR.CANCEL' | translate }}</button>
-          <button nz-button nzType="primary" type="button" [nzLoading]="saving()" (click)="submit()">
+          <button nz-button type="button" (click)="open.set(false)">
+            {{ 'AR.CANCEL' | translate }}
+          </button>
+          <button
+            nz-button
+            nzType="primary"
+            type="button"
+            [nzLoading]="saving()"
+            (click)="submit()"
+          >
             {{ 'AR.SAVE' | translate }}
           </button>
         </span>
@@ -262,6 +289,9 @@ export class CreditLimitDrawerComponent {
   /** Shown only after the first submit attempt, so an empty new form is not red. */
   readonly showErrors = signal(false);
   readonly errors = computed<LimitErrors>(() => validateLimitDraft(this.draft()));
+  /** Memoised dates: a fresh `Date` on every change detection pass would make the pickers write their model forever. */
+  readonly validFrom = computed(() => this.date(this.draft().valid_from));
+  readonly validTo = computed(() => this.date(this.draft().valid_to));
 
   constructor() {
     effect(() => {
@@ -276,7 +306,10 @@ export class CreditLimitDrawerComponent {
   }
 
   set<K extends LimitField>(field: K, value: LimitDraft[K] | null): void {
-    this.draft.update((draft) => ({ ...draft, [field]: value ?? (typeof draft[field] === 'boolean' ? false : '') }));
+    this.draft.update((draft) => ({
+      ...draft,
+      [field]: value ?? (typeof draft[field] === 'boolean' ? false : ''),
+    }));
   }
 
   /** The translation key, or the first message of the API, of a field. */

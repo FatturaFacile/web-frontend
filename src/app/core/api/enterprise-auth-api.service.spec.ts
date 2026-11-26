@@ -120,7 +120,7 @@ describe('EnterpriseAuthApiService', () => {
       .getSecurityAudit({
         from: '2026-11-01',
         to: '2026-11-30',
-        user_id: 'u1',
+        subject_user_id: 'u1',
         event_type: ['login_failed', 'login_succeeded'],
         status: 'failure',
         auth_method: 'passkey',

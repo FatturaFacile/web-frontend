@@ -218,6 +218,7 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/leave-management/comporto',
   '/leave-management/holidays',
   '/leave-management/policies',
+  '/liquidity-planning', // workspace and EBA report
   '/agent-commissions',
   '/agent-commissions/rules',
   '/agent-commissions/ledger',

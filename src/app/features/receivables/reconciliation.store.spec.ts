@@ -19,7 +19,9 @@ describe('ReconciliationStore', () => {
       getUnreconciledPayments: vi.fn(() =>
         of({ data: [...payments, { ...payments[0], ledger_entry_id: 'l-usd', currency: 'USD' }] }),
       ),
-      allocate: vi.fn(() => of({ data: { allocations: [], items: [item('1', { open_amount: '0.00' })] } })),
+      allocate: vi.fn(() =>
+        of({ data: { allocations: [], items: [item('1', { open_amount: '0.00' })] } }),
+      ),
     };
     TestBed.configureTestingModule({
       providers: [ReconciliationStore, { provide: ReceivablesApiService, useValue: api }],
@@ -30,7 +32,9 @@ describe('ReconciliationStore', () => {
   it('starts with one full payment line per item and no residual', () => {
     store.init([first, second], TODAY);
 
-    expect(store.lines().map((line) => [line.itemId, line.type, line.amount, line.valueDate])).toEqual([
+    expect(
+      store.lines().map((line) => [line.itemId, line.type, line.amount, line.valueDate]),
+    ).toEqual([
       ['1', 'payment', '300.00', TODAY],
       ['2', 'payment', '150.00', TODAY],
     ]);
@@ -44,7 +48,11 @@ describe('ReconciliationStore', () => {
     store.init([first], TODAY);
     store.updateLine(1, { amount: '100.00' });
 
-    expect(store.residuals()[0]).toMatchObject({ settled: '100.00', raised: '0.00', residual: '200.00' });
+    expect(store.residuals()[0]).toMatchObject({
+      settled: '100.00',
+      raised: '0.00',
+      residual: '200.00',
+    });
     expect(store.isValid()).toBe(true);
   });
 
@@ -82,7 +90,11 @@ describe('ReconciliationStore', () => {
     store.setType(1, 'debit_adjustment');
     store.updateLine(1, { amount: '25.00' });
 
-    expect(store.residuals()[0]).toMatchObject({ settled: '0.00', raised: '25.00', residual: '325.00' });
+    expect(store.residuals()[0]).toMatchObject({
+      settled: '0.00',
+      raised: '25.00',
+      residual: '325.00',
+    });
     expect(store.lineErrors()[1]).toBeUndefined();
     expect(store.totalSettled()).toBe('0.00');
     expect(store.capacityOf(1)).toBe('300.00');
@@ -222,7 +234,9 @@ describe('ReconciliationStore', () => {
 
     expect(result.ok).toBe(false);
     expect(result.message).toBe('The amount exceeds the open amount.');
-    expect(store.errors()).toEqual({ 'allocations.0.amount': ['The amount exceeds the open amount.'] });
+    expect(store.errors()).toEqual({
+      'allocations.0.amount': ['The amount exceeds the open amount.'],
+    });
     expect(store.lines()).toHaveLength(1);
     expect(store.saving()).toBe(false);
   });

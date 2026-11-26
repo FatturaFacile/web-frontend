@@ -277,7 +277,18 @@ describe('PurchasesComponent', () => {
       expect.objectContaining({
         supplier_id: 'sup-1',
         expected_delivery_date: '2026-12-15',
-        lines: [{ description: 'Widget A', quantity_ordered: 5, unit_price: 20, tax_rate: 22 }],
+        lines: [
+          {
+            description: 'Widget A',
+            quantity_ordered: 5,
+            unit_price: 20,
+            tax_rate: 22,
+            uom: null,
+            base_uom: null,
+            uom_conversion_factor: null,
+            discount_cascade: [],
+          },
+        ],
       }),
     );
     expect(component.createModalVisible()).toBe(false);

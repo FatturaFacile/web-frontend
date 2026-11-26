@@ -62,6 +62,7 @@ describe('TenantUsersComponent', () => {
 
   function setup(platformAdmin = false): { page: Page; fixture: ReturnType<typeof TestBed.createComponent<TenantUsersComponent>> } {
     TestBed.resetTestingModule();
+    TestBed.overrideComponent(TenantUsersComponent, { set: { providers: [{ provide: NzModalService, useValue: { confirm } }] } });
     TestBed.configureTestingModule({
       providers: [
         provideRouter([]),
@@ -231,7 +232,7 @@ describe('TenantUsersComponent', () => {
   it('describes the lock with the failed attempts', () => {
     const { page } = setup();
 
-    expect(page.lockedDetail(members[4])).toContain('5');
+    expect(page.lockedDetail(members[4])).toContain('security.lockout.failed_attempts');
     expect(page.lockedDetail(members[1])).toBeNull();
   });
 

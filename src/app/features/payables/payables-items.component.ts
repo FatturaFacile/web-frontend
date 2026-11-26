@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, ParamMap, Router, RouterLink } from '@angular/router';
@@ -93,10 +93,12 @@ function queryObject(map: ParamMap): Record<string, string> {
       [title]="'AP.ITEMS_TITLE' | translate"
       [subtitle]="'AP.ITEMS_SUBTITLE' | translate"
     >
+    <ng-container ngProjectAs="[header-actions]">
       <a nz-button routerLink="/payables/aging">{{ 'AP.GO_AGING' | translate }}</a>
       <a nz-button nzType="primary" routerLink="/payables/batches">{{
         'AP.GO_BATCHES' | translate
       }}</a>
+    </ng-container>
     </app-page-header>
 
     @if (store.summary(); as summary) {
@@ -476,6 +478,7 @@ export class PayablesItemsComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly message = inject(NzMessageService);
   private readonly translate = inject(TranslateService);
+  private readonly destroyRef = inject(DestroyRef);
 
   /** Accountants and finance managers may dispute, block and release; the others only read. */
   readonly canWrite = inject(PermissionsService).canWrite(PAYABLES_MODULE);
@@ -502,7 +505,7 @@ export class PayablesItemsComponent implements OnInit {
   readonly skontoTagColor = skontoColor;
 
   ngOnInit(): void {
-    this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((map) => {
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((map) => {
       void this.store.init(itemFiltersFromQuery(queryObject(map)));
     });
   }

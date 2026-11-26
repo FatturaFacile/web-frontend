@@ -7,7 +7,10 @@ import { CustomerStatementStore } from './customer-statement.store';
 import { statement } from './receivables.fixtures';
 
 describe('CustomerStatementStore', () => {
-  let api: Record<'getStatement' | 'downloadStatementPdf' | 'downloadStatementXlsx' | 'sendStatement', ReturnType<typeof vi.fn>>;
+  let api: Record<
+    'getStatement' | 'downloadStatementPdf' | 'downloadStatementXlsx' | 'sendStatement',
+    ReturnType<typeof vi.fn>
+  >;
   let store: InstanceType<typeof CustomerStatementStore>;
 
   beforeEach(() => {
@@ -39,7 +42,10 @@ describe('CustomerStatementStore', () => {
     await store.open('c-1', '2026-01-01', '2026-03-31');
 
     await store.setPeriod('2026-02-01', '2026-02-28');
-    expect(api.getStatement).toHaveBeenLastCalledWith('c-1', { from: '2026-02-01', to: '2026-02-28' });
+    expect(api.getStatement).toHaveBeenLastCalledWith('c-1', {
+      from: '2026-02-01',
+      to: '2026-02-28',
+    });
 
     await store.setCurrency('CHF');
     expect(api.getStatement).toHaveBeenLastCalledWith('c-1', {
@@ -77,7 +83,10 @@ describe('CustomerStatementStore', () => {
     expect(pdf.ok).toBe(true);
     expect(pdf.blob).toBeInstanceOf(Blob);
     expect(pdf.filename).toBe('statement-rossi-srl-2026-01-01-2026-03-31.pdf');
-    expect(api.downloadStatementPdf).toHaveBeenCalledWith('c-1', { from: '2026-01-01', to: '2026-03-31' });
+    expect(api.downloadStatementPdf).toHaveBeenCalledWith('c-1', {
+      from: '2026-01-01',
+      to: '2026-03-31',
+    });
 
     const xlsx = await store.download('xlsx');
     expect(xlsx.filename).toBe('statement-rossi-srl-2026-01-01-2026-03-31.xlsx');
@@ -126,7 +135,10 @@ describe('CustomerStatementStore', () => {
         () =>
           new HttpErrorResponse({
             status: 422,
-            error: { message: 'Invalid', errors: { recipient: ['The recipient must be a valid email address.'] } },
+            error: {
+              message: 'Invalid',
+              errors: { recipient: ['The recipient must be a valid email address.'] },
+            },
           }),
       ),
     );

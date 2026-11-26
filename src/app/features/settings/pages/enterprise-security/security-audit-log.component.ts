@@ -274,7 +274,7 @@ export class SecurityAuditLogComponent implements OnInit {
     return {
       from: from ? formatAuditDate(from) : undefined,
       to: to ? formatAuditDate(to) : undefined,
-      user_id: this.userId() ?? undefined,
+      subject_user_id: this.userId() ?? undefined,
       event_type: this.eventTypes().length > 0 ? this.eventTypes() : undefined,
       status: this.status() ?? undefined,
       auth_method: this.authMethod() ?? undefined,

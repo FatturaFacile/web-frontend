@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { PermissionsService, SignatureRequestService, TranslateService } from '@core';
+import { PermissionsService, SignatureRequestService } from '@core';
+import { I18nService } from '@core/i18n/i18n.service';
 import { SendForSignatureButtonComponent } from './send-for-signature-button.component';
 
 describe('SendForSignatureButtonComponent', () => {
@@ -26,8 +27,8 @@ describe('SendForSignatureButtonComponent', () => {
         { provide: PermissionsService, useValue: { canWrite: () => canWrite } },
         { provide: SignatureRequestService, useValue: requests },
         {
-          provide: TranslateService,
-          useValue: { instant: (key: string) => key, get: (key: string) => key },
+          provide: I18nService,
+          useValue: { translate: (key: string) => key },
         },
       ],
     });

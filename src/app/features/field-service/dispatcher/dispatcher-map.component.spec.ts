@@ -67,7 +67,7 @@ describe('DispatcherMapComponent', () => {
     fixture.componentRef.setInput('lanes', []);
     fixture.detectChanges();
     expect(el().querySelector('[data-testid="map-empty"]')).not.toBeNull();
-    expect(el().querySelector('svg')).toBeNull();
+    expect(el().querySelector('svg.map-svg')).toBeNull();
   });
 
   it('plots queued and scheduled sites with one route polyline per technician', () => {

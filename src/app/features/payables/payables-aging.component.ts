@@ -41,6 +41,7 @@ import { bucketLabelParts, fromIsoDate, toIsoDate } from './payables.util';
       [title]="'AP.AGING_TITLE' | translate"
       [subtitle]="'AP.AGING_SUBTITLE' | translate"
     >
+    <ng-container ngProjectAs="[header-actions]">
       <a nz-button routerLink="/payables">{{ 'AP.BACK_TO_ITEMS' | translate }}</a>
       <button
         nz-button
@@ -60,6 +61,7 @@ import { bucketLabelParts, fromIsoDate, toIsoDate } from './payables.util';
       >
         {{ 'AP.EXPORT_PDF' | translate }}
       </button>
+    </ng-container>
     </app-page-header>
 
     <div class="filters" role="search" [attr.aria-label]="'AP.FILTERS' | translate">

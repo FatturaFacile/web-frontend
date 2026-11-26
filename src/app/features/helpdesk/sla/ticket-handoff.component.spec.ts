@@ -21,6 +21,7 @@ describe('TicketHandoffComponent', () => {
 
   const api = { escalateToFieldService: vi.fn(), escalateToRma: vi.fn() };
   const message = { success: vi.fn(), error: vi.fn(), info: vi.fn() };
+  const translate = vi.fn((key: string, _params?: Record<string, unknown>) => key);
   const modal = { confirm: vi.fn((options: { nzOnOk: () => void }) => options.nzOnOk()) };
 
   async function setup(ticket: Partial<TicketResource> = {}): Promise<void> {
@@ -28,7 +29,7 @@ describe('TicketHandoffComponent', () => {
       imports: [TicketHandoffComponent],
       providers: [
         { provide: HelpdeskSlaApiService, useValue: api },
-        { provide: I18nService, useValue: { translate: (key: string) => key } },
+        { provide: I18nService, useValue: { translate } },
         { provide: NzMessageService, useValue: message },
       ],
     })
@@ -87,7 +88,8 @@ describe('TicketHandoffComponent', () => {
       reported_symptom: undefined,
       goodwill: true,
     });
-    expect(message.success).toHaveBeenCalledWith('HELPDESK_SLA.RMA_CREATED', { token: 'TRK1' });
+    expect(translate).toHaveBeenCalledWith('HELPDESK_SLA.RMA_CREATED', { token: 'TRK1' });
+    expect(message.success).toHaveBeenCalledWith('HELPDESK_SLA.RMA_CREATED');
   });
 
   it('shows the reason of a 422 refusal', async () => {

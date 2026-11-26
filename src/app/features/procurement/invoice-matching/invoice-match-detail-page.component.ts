@@ -61,6 +61,7 @@ const TAB_HISTORY = 3;
       [title]="'PAGE_TITLE.PROCUREMENT_INVOICE_MATCHING_DETAIL' | translate"
       [subtitle]="'invoiceMatching.page.detailSubtitle' | translate"
     >
+    <ng-container ngProjectAs="[header-actions]">
       <a nz-button routerLink="/procurement/invoice-matching">{{
         'invoiceMatching.page.backToWorkbench' | translate
       }}</a>
@@ -70,6 +71,7 @@ const TAB_HISTORY = 3;
           [documentId]="flowRun.passive_invoice_id"
         />
       }
+    </ng-container>
     </app-page-header>
 
     @if (store.failed()) {

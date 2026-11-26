@@ -37,12 +37,14 @@ import { batchStatusColor, PAYABLES_MODULE } from './payables.util';
       [title]="'AP.BATCHES_TITLE' | translate"
       [subtitle]="'AP.BATCHES_SUBTITLE' | translate"
     >
+    <ng-container ngProjectAs="[header-actions]">
       <a nz-button routerLink="/payables">{{ 'AP.BACK_TO_ITEMS' | translate }}</a>
       @if (canWrite) {
         <a nz-button nzType="primary" routerLink="/payables/batches/new">{{
           'AP.NEW_BATCH' | translate
         }}</a>
       }
+    </ng-container>
     </app-page-header>
 
     <div class="filters" role="search" [attr.aria-label]="'AP.FILTERS' | translate">

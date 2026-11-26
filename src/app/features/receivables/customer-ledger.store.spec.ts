@@ -34,7 +34,10 @@ describe('CustomerLedgerStore', () => {
     await store.load('c-1', { from: '2026-01-01' });
 
     await store.setFilters({ status: 'overdue' });
-    expect(api.getLedger).toHaveBeenLastCalledWith('c-1', { from: '2026-01-01', status: 'overdue' });
+    expect(api.getLedger).toHaveBeenLastCalledWith('c-1', {
+      from: '2026-01-01',
+      status: 'overdue',
+    });
 
     await store.setFilters({ status: undefined, to: '2026-03-31' });
     expect(api.getLedger).toHaveBeenLastCalledWith('c-1', {

@@ -172,10 +172,12 @@ describe('errors', () => {
     expect(apiErrorMessage(validation)).toBe('The reason is required.');
     expect(fieldErrors(validation)).toEqual({ reason: ['The reason is required.'] });
 
-    expect(apiErrorMessage(new HttpErrorResponse({ status: 403, error: { message: 'Forbidden' } }))).toBe(
-      'Forbidden',
+    expect(
+      apiErrorMessage(new HttpErrorResponse({ status: 403, error: { message: 'Forbidden' } })),
+    ).toBe('Forbidden');
+    expect(apiErrorMessage(new HttpErrorResponse({ status: 500, error: { detail: 'Boom' } }))).toBe(
+      'Boom',
     );
-    expect(apiErrorMessage(new HttpErrorResponse({ status: 500, error: { detail: 'Boom' } }))).toBe('Boom');
     expect(apiErrorMessage(new Error('x'))).toBeNull();
     expect(fieldErrors(new HttpErrorResponse({ status: 500 }))).toEqual({});
   });
@@ -201,16 +203,22 @@ describe('open items query string', () => {
 
   it('writes only the filters that are set', () => {
     expect(
-      itemFiltersToQuery({ bucket: '1_30', customer_id: 'c-1', due_to: '', open_only: true, page: 3 }),
+      itemFiltersToQuery({
+        bucket: '1_30',
+        customer_id: 'c-1',
+        due_to: '',
+        open_only: true,
+        page: 3,
+      }),
     ).toEqual({ bucket: '1_30', customer_id: 'c-1', open_only: '1' });
   });
 });
 
 describe('statement file name', () => {
   it('builds an ascii slug of the customer', () => {
-    expect(statementFileName('Società Rossi & Figli S.r.l.', '2026-01-01', '2026-03-31', 'pdf')).toBe(
-      'statement-societa-rossi-figli-s-r-l-2026-01-01-2026-03-31.pdf',
-    );
+    expect(
+      statementFileName('Società Rossi & Figli S.r.l.', '2026-01-01', '2026-03-31', 'pdf'),
+    ).toBe('statement-societa-rossi-figli-s-r-l-2026-01-01-2026-03-31.pdf');
     expect(statementFileName('***', '2026-01-01', '2026-03-31', 'xlsx')).toBe(
       'statement-customer-2026-01-01-2026-03-31.xlsx',
     );
@@ -224,9 +232,15 @@ describe('bucket label from a key', () => {
       key: 'AR.BUCKET_RANGE',
       params: { from: 31, to: 60 },
     });
-    expect(bucketPartsFromKey('121_plus')).toEqual({ key: 'AR.BUCKET_OVER', params: { from: 121 } });
+    expect(bucketPartsFromKey('121_plus')).toEqual({
+      key: 'AR.BUCKET_OVER',
+      params: { from: 121 },
+    });
     expect(bucketPartsFromKey('over_90')).toEqual({ key: 'AR.BUCKET_OVER_90' });
-    expect(bucketPartsFromKey('weird')).toEqual({ key: 'AR.BUCKET_OTHER', params: { bucket: 'weird' } });
+    expect(bucketPartsFromKey('weird')).toEqual({
+      key: 'AR.BUCKET_OTHER',
+      params: { bucket: 'weird' },
+    });
   });
 });
 
@@ -244,7 +258,10 @@ describe('drill-down and outcomes', () => {
 
   it('turns a failed call into an outcome with the message and the field errors', () => {
     const failure = arFailure(
-      new HttpErrorResponse({ status: 422, error: { message: 'Invalid', errors: { amount: ['Too much.'] } } }),
+      new HttpErrorResponse({
+        status: 422,
+        error: { message: 'Invalid', errors: { amount: ['Too much.'] } },
+      }),
     );
 
     expect(failure).toEqual({ ok: false, message: 'Too much.', errors: { amount: ['Too much.'] } });

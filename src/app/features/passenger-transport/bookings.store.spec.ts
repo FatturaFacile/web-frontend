@@ -62,11 +62,12 @@ describe('BookingsStore', () => {
   });
 
   it('keeps the quote and clears it on request', async () => {
+    // requestQuote fills the quote state key; clearQuote empties it.
     api.quoteBooking.mockReturnValue(
       of({ success: true, message: '', data: { vat: { total_gross: '110.00' } } }),
     );
 
-    const outcome = await store.quote({
+    const outcome = await store.requestQuote({
       service_type: 'airport_transfer',
       pickup_datetime: '2028-03-10 10:00:00',
       pickup_address: 'a',

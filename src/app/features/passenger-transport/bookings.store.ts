@@ -95,8 +95,8 @@ export const BookingsStore = signalStore(
       setPage(page: number): Promise<void> {
         return load({ ...store.filters(), page });
       },
-      /** Prices a trip without saving it: the kilometres by country and the VAT split. */
-      async quote(payload: PtrBookingPayload): Promise<PtrOutcome> {
+      /** Prices a trip without saving it (kilometres by country and VAT split). Not named `quote`: that is the state key. */
+      async requestQuote(payload: PtrBookingPayload): Promise<PtrOutcome> {
         const ticket = ++quoteSequence;
         patchState(store, { quoting: true });
         try {

@@ -10,6 +10,7 @@ import {
   DeleteOutline,
   FilePdfOutline,
   MailOutline,
+  MessageOutline,
   MinusCircleOutline,
   MoreOutline,
   CopyOutline,
@@ -77,6 +78,7 @@ import {
   ArrowLeftOutline,
   LinkOutline,
   ThunderboltOutline,
+  RollbackOutline,
 } from '@ant-design/icons-angular/icons';
 
 export const icons = [
@@ -91,6 +93,7 @@ export const icons = [
   DeleteOutline,
   FilePdfOutline,
   MailOutline,
+  MessageOutline,
   MinusCircleOutline,
   MoreOutline,
   CopyOutline,
@@ -158,4 +161,5 @@ export const icons = [
   ArrowLeftOutline,
   LinkOutline,
   ThunderboltOutline,
+  RollbackOutline,
 ];

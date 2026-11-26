@@ -7,7 +7,7 @@ import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
+import { NzModalService } from 'ng-zorro-antd/modal';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { firstValueFrom } from 'rxjs';
@@ -21,7 +21,7 @@ import { enterpriseErrorText } from './enterprise-security.util';
  */
 @Component({
   selector: 'app-scim-group-mappings',
-  imports: [ReactiveFormsModule, NzAlertModule, NzButtonModule, NzCardModule, NzFormModule, NzInputModule, NzModalModule, NzSelectModule, NzTableModule, TranslatePipe],
+  imports: [ReactiveFormsModule, NzAlertModule, NzButtonModule, NzCardModule, NzFormModule, NzInputModule, NzSelectModule, NzTableModule, TranslatePipe],
   template: `
     <nz-card [nzTitle]="'security.scim.groups.mappings.title' | translate" [nzLoading]="loading()" class="block">
       <p>{{ 'security.scim.groups.mappings.help' | translate }}</p>

@@ -261,7 +261,7 @@ export interface SecurityAuditEventType {
 export interface SecurityAuditFilters {
   from?: string;
   to?: string;
-  user_id?: string;
+  subject_user_id?: string;
   /** Sent as a comma separated list. */
   event_type?: string[];
   status?: SecurityAuditStatus;

@@ -1,3 +1,5 @@
+import { registerLocaleData } from '@angular/common';
+import localeItCh from '@angular/common/locales/it-CH';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
@@ -18,7 +20,12 @@ import { MarketingCampaignsComponent } from './marketing-campaigns.component';
 import { MarketingDashboardComponent } from './marketing-dashboard.component';
 import { RfmSegmentsComponent } from './rfm-segments.component';
 
+registerLocaleData(localeItCh);
+
 const base = `${environment.apiBaseUrl}/marketing-automation`;
+
+/** Lets the store promises (which Angular does not track as pending tasks) finish before the view is checked. */
+const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve));
 const envelope = <T>(data: T) => ({ success: true, message: '', data });
 
 const campaign = (overrides: Record<string, unknown> = {}) => ({
@@ -106,6 +113,7 @@ describe('Mod 155 Marketing Automation pages', () => {
       http.expectOne((r) => r.url === `${base}/dashboard`).flush(
         envelope({ currency: 'EUR', totals: { sent_count: 0, calculated_roi_percentage: null, roi_state: 'no_cost' }, campaigns: [] }),
       );
+      await settle();
       await fixture.whenStable();
       fixture.detectChanges();
 
@@ -430,6 +438,7 @@ describe('Mod 155 Marketing Automation pages', () => {
       http.expectOne(`${base}/compliance/strategies`).flush(
         envelope([{ code: 'ch_lcsl_art3_nlpd', jurisdictions: ['CH'], footer_keys: [] }, { code: 'it_gdpr_art130', jurisdictions: ['IT', 'EU'], footer_keys: [] }]),
       );
+      await settle();
       await fixture.whenStable();
       fixture.detectChanges();
 

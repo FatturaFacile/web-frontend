@@ -78,13 +78,17 @@ describe('ReceivablesDashboardComponent', () => {
     expect(bars[0].textContent).toContain('AR.BUCKET_CURRENT');
     expect(bars[1].textContent).toContain('AR.BUCKET_RANGE');
     expect(bars[3].textContent).toContain('AR.BUCKET_OVER');
-    const fills = [...(fixture.nativeElement as HTMLElement).querySelectorAll<HTMLElement>('.aging-bar .fill')];
+    const fills = [
+      ...(fixture.nativeElement as HTMLElement).querySelectorAll<HTMLElement>('.aging-bar .fill'),
+    ];
     expect(fills.map((fill) => fill.style.width)).toEqual(['100%', '50%', '25%', '0%']);
   });
 
   it('drills down from a bucket total of the chart to the open items of that bucket', async () => {
     const fixture = await render();
-    const bars = (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLButtonElement>('.aging-bar');
+    const bars = (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLButtonElement>(
+      '.aging-bar',
+    );
 
     bars[2].click();
 
@@ -96,7 +100,7 @@ describe('ReceivablesDashboardComponent', () => {
   it('drills down from a customer and bucket cell of the matrix, and from the totals', async () => {
     const fixture = await render();
     const root = fixture.nativeElement as HTMLElement;
-    const rows = root.querySelectorAll('table.matrix tbody tr');
+    const rows = root.querySelectorAll('.matrix-wrap table.matrix tbody tr');
     // The biggest customer first: Bianchi (c-2) has money in `current` and `31_60` only.
     expect(rows[0].querySelector('th')?.textContent).toContain('Bianchi SA');
     const cells = rows[0].querySelectorAll<HTMLButtonElement>('button.link-button');
@@ -112,7 +116,9 @@ describe('ReceivablesDashboardComponent', () => {
       queryParams: { customer_id: 'c-2', currency: 'EUR', open_only: '1' },
     });
 
-    const footer = root.querySelectorAll<HTMLButtonElement>('table.matrix tfoot button.link-button');
+    const footer = root.querySelectorAll<HTMLButtonElement>(
+      '.matrix-wrap table.matrix tfoot button.link-button',
+    );
     expect(footer).toHaveLength(5);
     footer[1].click();
     expect(navigate).toHaveBeenLastCalledWith(['/receivables/items'], {
@@ -122,7 +128,9 @@ describe('ReceivablesDashboardComponent', () => {
 
   it('lists the blocked customers with their name and reason', async () => {
     const fixture = await render();
-    const blocked = (fixture.nativeElement as HTMLElement).querySelector('.grid-2 table.matrix tbody');
+    const blocked = (fixture.nativeElement as HTMLElement).querySelector(
+      '.grid-2 table.matrix tbody',
+    );
 
     expect(blocked?.textContent).toContain('Rossi SRL');
     expect(blocked?.textContent).toContain('over_limit');

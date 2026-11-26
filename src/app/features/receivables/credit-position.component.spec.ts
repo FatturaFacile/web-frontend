@@ -3,6 +3,8 @@ import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
+import { provideNzDateFnsAdapter } from 'ng-zorro-antd/core/time';
+import { en_US, provideNzI18n } from 'ng-zorro-antd/i18n';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { of, throwError } from 'rxjs';
@@ -25,7 +27,20 @@ const translateSpy = {
 const messageSpy = { success: vi.fn(), error: vi.fn() };
 
 describe('CreditPositionComponent', () => {
-  let api: Record<'getCredit' | 'getRisk' | 'getCreditLimits' | 'getProvision' | 'getDso' | 'createCreditLimit' | 'updateCreditLimit' | 'deleteCreditLimit' | 'grantOverride' | 'revokeOverride' | 'saveProvisionRates', ReturnType<typeof vi.fn>>;
+  let api: Record<
+    | 'getCredit'
+    | 'getRisk'
+    | 'getCreditLimits'
+    | 'getProvision'
+    | 'getDso'
+    | 'createCreditLimit'
+    | 'updateCreditLimit'
+    | 'deleteCreditLimit'
+    | 'grantOverride'
+    | 'revokeOverride'
+    | 'saveProvisionRates',
+    ReturnType<typeof vi.fn>
+  >;
   let canWrite: boolean;
 
   beforeEach(() => {
@@ -34,11 +49,20 @@ describe('CreditPositionComponent', () => {
     api = {
       getCredit: vi.fn(() => of({ data: credit })),
       getRisk: vi.fn(() => of({ data: risk })),
-      getCreditLimits: vi.fn(() => of({ data: [limit(), limit({ id: 'lim-0', valid_to: '2025-12-31', is_active: false })] })),
+      getCreditLimits: vi.fn(() =>
+        of({ data: [limit(), limit({ id: 'lim-0', valid_to: '2025-12-31', is_active: false })] }),
+      ),
       getProvision: vi.fn(() => of({ data: provision })),
       getDso: vi.fn(() =>
         of({
-          data: { as_of: '2026-03-31', period_days: 90, currency: 'EUR', receivables: '1.00', credit_sales: '2.00', dso: 54 },
+          data: {
+            as_of: '2026-03-31',
+            period_days: 90,
+            currency: 'EUR',
+            receivables: '1.00',
+            credit_sales: '2.00',
+            dso: 54,
+          },
         }),
       ),
       createCreditLimit: vi.fn(() => of({ data: limit() })),
@@ -66,6 +90,8 @@ describe('CreditPositionComponent', () => {
         { provide: NzMessageService, useValue: messageSpy },
         { provide: TranslateService, useValue: translateSpy },
         provideNzIcons(icons),
+        provideNzI18n(en_US),
+        provideNzDateFnsAdapter(),
       ],
     });
   });
@@ -184,7 +210,10 @@ describe('CreditPositionComponent', () => {
         () =>
           new HttpErrorResponse({
             status: 422,
-            error: { message: 'Invalid', errors: { valid_to: ['The end cannot precede the start.'] } },
+            error: {
+              message: 'Invalid',
+              errors: { valid_to: ['The end cannot precede the start.'] },
+            },
           }),
       ),
     );
@@ -291,7 +320,9 @@ describe('CreditPositionComponent', () => {
 
   it('shows the error of a failed load', async () => {
     api.getCredit.mockReturnValueOnce(
-      throwError(() => new HttpErrorResponse({ status: 404, error: { message: 'Customer not found' } })),
+      throwError(
+        () => new HttpErrorResponse({ status: 404, error: { message: 'Customer not found' } }),
+      ),
     );
 
     const { root } = await open('/credit/c-9');

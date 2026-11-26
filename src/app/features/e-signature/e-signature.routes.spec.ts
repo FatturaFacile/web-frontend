@@ -91,6 +91,7 @@ describe('electronic signature navigation and access', () => {
       expect(canAccessModule(ESIG_MODULE, 'write', [role], []), role).toBe(true);
     }
     expect(canAccessModule(ESIG_MODULE, 'write', ['accountant_readonly'], [])).toBe(false);
+    // The read-only role can never write, not even with an explicit write permission.
     expect(
       canAccessModule(
         ESIG_MODULE,
@@ -98,7 +99,10 @@ describe('electronic signature navigation and access', () => {
         ['accountant_readonly'],
         ['electronic_signature.write'],
       ),
-    ).toBe(true);
+    ).toBe(false);
+    expect(canAccessModule(ESIG_MODULE, 'write', ['member'], ['electronic_signature.write'])).toBe(
+      true,
+    );
   });
 
   it('keeps the provider settings to owners and administrators', () => {

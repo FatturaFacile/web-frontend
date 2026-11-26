@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -54,6 +54,7 @@ import {
       [title]="'AP.BATCH_DETAIL_TITLE' | translate"
       [subtitle]="store.detail()?.number ?? ''"
     >
+    <ng-container ngProjectAs="[header-actions]">
       <a nz-button routerLink="/payables/batches">{{ 'AP.BACK_TO_BATCHES' | translate }}</a>
       @if (store.detail(); as batch) {
         @if (canWrite && canSubmit(batch)) {
@@ -111,6 +112,7 @@ import {
           </button>
         }
       }
+    </ng-container>
     </app-page-header>
 
     @if (store.error(); as error) {
@@ -201,6 +203,7 @@ export class PayablesBatchDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly message = inject(NzMessageService);
   private readonly translate = inject(TranslateService);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly permissions = inject(PermissionsService);
 
   /** Accountants prepare and send the batch; only owner / admin (CFO) approve it and execute the payment. */
@@ -218,7 +221,7 @@ export class PayablesBatchDetailComponent implements OnInit {
   readonly color = batchStatusColor;
 
   ngOnInit(): void {
-    this.route.paramMap.pipe(takeUntilDestroyed()).subscribe((params) => {
+    this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const id = params.get('id');
       if (id) {
         void this.store.loadDetail(id);

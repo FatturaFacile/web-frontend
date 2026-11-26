@@ -7,9 +7,27 @@ import { CreditPositionStore } from './credit-position.store';
 import { credit, limit, provision, risk } from './receivables.fixtures';
 
 describe('CreditPositionStore', () => {
-  let api: Record<'getCredit' | 'getRisk' | 'getCreditLimits' | 'getProvision' | 'getDso' | 'createCreditLimit' | 'updateCreditLimit' | 'deleteCreditLimit' | 'grantOverride' | 'revokeOverride' | 'saveProvisionRates', ReturnType<typeof vi.fn>>;
+  let api: Record<
+    | 'getCredit'
+    | 'getRisk'
+    | 'getCreditLimits'
+    | 'getProvision'
+    | 'getDso'
+    | 'createCreditLimit'
+    | 'updateCreditLimit'
+    | 'deleteCreditLimit'
+    | 'grantOverride'
+    | 'revokeOverride'
+    | 'saveProvisionRates',
+    ReturnType<typeof vi.fn>
+  >;
   let store: InstanceType<typeof CreditPositionStore>;
-  const older = limit({ id: 'lim-0', granted_limit: '1000.00', valid_from: '2025-01-01', valid_to: '2025-12-31' });
+  const older = limit({
+    id: 'lim-0',
+    granted_limit: '1000.00',
+    valid_from: '2025-01-01',
+    valid_to: '2025-12-31',
+  });
 
   beforeEach(() => {
     api = {
@@ -87,7 +105,9 @@ describe('CreditPositionStore', () => {
 
   it('reports a failed load of the position', async () => {
     api.getCredit.mockReturnValueOnce(
-      throwError(() => new HttpErrorResponse({ status: 404, error: { message: 'Customer not found' } })),
+      throwError(
+        () => new HttpErrorResponse({ status: 404, error: { message: 'Customer not found' } }),
+      ),
     );
 
     await store.load('c-9');
@@ -124,7 +144,10 @@ describe('CreditPositionStore', () => {
         () =>
           new HttpErrorResponse({
             status: 422,
-            error: { message: 'Invalid', errors: { valid_to: ['The valid to must not be before valid from.'] } },
+            error: {
+              message: 'Invalid',
+              errors: { valid_to: ['The valid to must not be before valid from.'] },
+            },
           }),
       ),
     );
@@ -154,7 +177,11 @@ describe('CreditPositionStore', () => {
   it('grants and revokes overrides', async () => {
     await store.load('c-1');
 
-    await store.grantOverride({ scope: 'all', reason: 'Strategic account', expires_at: '2026-06-30' });
+    await store.grantOverride({
+      scope: 'all',
+      reason: 'Strategic account',
+      expires_at: '2026-06-30',
+    });
     expect(api.grantOverride).toHaveBeenCalledWith('c-1', {
       scope: 'all',
       reason: 'Strategic account',

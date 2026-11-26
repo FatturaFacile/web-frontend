@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, computed, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -72,11 +72,18 @@ const MAX_PERCENT_CENTS = 10000n;
     NzTagModule,
   ],
   template: `
-    <app-page-header [title]="'AR.CREDIT_TITLE' | translate" [subtitle]="'AR.CREDIT_SUBTITLE' | translate">
-      @if (customerId(); as id) {
-        <a nz-button [routerLink]="['/receivables/ledger', id]">{{ 'AR.LEDGER' | translate }}</a>
-        <a nz-button [routerLink]="['/receivables/statement', id]">{{ 'AR.STATEMENT' | translate }}</a>
-      }
+    <app-page-header
+      [title]="'AR.CREDIT_TITLE' | translate"
+      [subtitle]="'AR.CREDIT_SUBTITLE' | translate"
+    >
+      <div class="header-actions">
+        @if (customerId(); as id) {
+          <a nz-button [routerLink]="['/receivables/ledger', id]">{{ 'AR.LEDGER' | translate }}</a>
+          <a nz-button [routerLink]="['/receivables/statement', id]">{{
+            'AR.STATEMENT' | translate
+          }}</a>
+        }
+      </div>
     </app-page-header>
 
     <div class="toolbar">
@@ -122,7 +129,10 @@ const MAX_PERCENT_CENTS = 10000n;
               }
             </ul>
             @if (credit.decision.reaction_policy; as policy) {
-              <div>{{ 'AR.REACTION_POLICY' | translate }}: {{ 'AR.POLICY_' + policy.toUpperCase() | translate }}</div>
+              <div>
+                {{ 'AR.REACTION_POLICY' | translate }}:
+                {{ 'AR.POLICY_' + policy.toUpperCase() | translate }}
+              </div>
             }
           </ng-template>
 
@@ -177,14 +187,19 @@ const MAX_PERCENT_CENTS = 10000n;
             <nz-card role="listitem">
               <span class="muted">{{ 'AR.INSURED_COVER' | translate }}</span>
               <span class="figure">{{ credit.insured_cover | money: money }}</span>
-              <span class="muted">{{ 'AR.UNINSURED_EXPOSURE' | translate }}: {{ credit.uninsured_exposure | money: money }}</span>
+              <span class="muted"
+                >{{ 'AR.UNINSURED_EXPOSURE' | translate }}:
+                {{ credit.uninsured_exposure | money: money }}</span
+              >
             </nz-card>
 
             <nz-card role="listitem">
               <span class="muted">{{ 'AR.DSO' | translate }}</span>
               <span class="figure">{{ store.dso()?.dso ?? '–' }}</span>
               @if (store.dso(); as dso) {
-                <span class="muted">{{ 'AR.DSO_PERIOD' | translate: { days: dso.period_days } }}</span>
+                <span class="muted">{{
+                  'AR.DSO_PERIOD' | translate: { days: dso.period_days }
+                }}</span>
               }
             </nz-card>
 
@@ -192,7 +207,9 @@ const MAX_PERCENT_CENTS = 10000n;
               <nz-card role="listitem">
                 <span class="muted">{{ 'AR.RISK_SCORE' | translate }}</span>
                 <span class="figure">{{ risk.score }}</span>
-                <nz-tag [nzColor]="ratingTag(risk.rating)">{{ 'AR.RATING_' + risk.rating.toUpperCase() | translate }}</nz-tag>
+                <nz-tag [nzColor]="ratingTag(risk.rating)">{{
+                  'AR.RATING_' + risk.rating.toUpperCase() | translate
+                }}</nz-tag>
               </nz-card>
             }
           </div>
@@ -207,7 +224,9 @@ const MAX_PERCENT_CENTS = 10000n;
                   </tr>
                   <tr>
                     <th scope="row">{{ 'AR.UNBILLED_DELIVERY_NOTES' | translate }}</th>
-                    <td class="num">{{ credit.exposure.unbilled_delivery_notes | money: money }}</td>
+                    <td class="num">
+                      {{ credit.exposure.unbilled_delivery_notes | money: money }}
+                    </td>
                   </tr>
                   <tr>
                     <th scope="row">{{ 'AR.CONFIRMED_ORDERS' | translate }}</th>
@@ -215,7 +234,9 @@ const MAX_PERCENT_CENTS = 10000n;
                   </tr>
                   <tr>
                     <th scope="row">{{ 'AR.UNRECONCILED_PAYMENTS' | translate }}</th>
-                    <td class="num">− {{ credit.exposure.unreconciled_payments | money: money }}</td>
+                    <td class="num">
+                      − {{ credit.exposure.unreconciled_payments | money: money }}
+                    </td>
                   </tr>
                   <tr>
                     <th scope="row">{{ 'AR.TOTAL_EXPOSURE' | translate }}</th>
@@ -244,7 +265,10 @@ const MAX_PERCENT_CENTS = 10000n;
                   @for (factor of risk.factors; track factor.key) {
                     <li>
                       <span>{{ 'AR.FACTOR_' + factor.key.toUpperCase() | translate }}</span>
-                      <span class="num">{{ factor.value }} · {{ factor.points }} {{ 'AR.POINTS' | translate }}</span>
+                      <span class="num"
+                        >{{ factor.value }} · {{ factor.points }}
+                        {{ 'AR.POINTS' | translate }}</span
+                      >
                     </li>
                   }
                 </ul>
@@ -257,7 +281,9 @@ const MAX_PERCENT_CENTS = 10000n;
           <nz-card class="card" [nzTitle]="'AR.OVERRIDES' | translate">
             @if (canWrite) {
               <div class="toolbar">
-                <button nz-button type="button" (click)="openOverride()">{{ 'AR.GRANT_OVERRIDE' | translate }}</button>
+                <button nz-button type="button" (click)="openOverride()">
+                  {{ 'AR.GRANT_OVERRIDE' | translate }}
+                </button>
               </div>
             }
             @if (store.activeOverrides().length === 0) {
@@ -280,7 +306,13 @@ const MAX_PERCENT_CENTS = 10000n;
                       <td>{{ entry.expires_at ?? '–' }}</td>
                       <td>
                         @if (canWrite) {
-                          <button nz-button nzSize="small" nzDanger type="button" (click)="startRevoke(entry)">
+                          <button
+                            nz-button
+                            nzSize="small"
+                            nzDanger
+                            type="button"
+                            (click)="startRevoke(entry)"
+                          >
                             {{ 'AR.REVOKE' | translate }}
                           </button>
                         }
@@ -335,7 +367,12 @@ const MAX_PERCENT_CENTS = 10000n;
                         </td>
                         <td>
                           @if (canWrite) {
-                            <button nz-button nzSize="small" type="button" (click)="openEditLimit(row)">
+                            <button
+                              nz-button
+                              nzSize="small"
+                              type="button"
+                              (click)="openEditLimit(row)"
+                            >
                               {{ 'AR.EDIT' | translate }}
                             </button>
                             <button
@@ -374,9 +411,13 @@ const MAX_PERCENT_CENTS = 10000n;
                     >
                       {{ 'AR.SAVE' | translate }}
                     </button>
-                    <button nz-button type="button" (click)="editingRates.set(false)">{{ 'AR.CANCEL' | translate }}</button>
+                    <button nz-button type="button" (click)="editingRates.set(false)">
+                      {{ 'AR.CANCEL' | translate }}
+                    </button>
                   } @else {
-                    <button nz-button type="button" (click)="startRates()">{{ 'AR.EDIT_RATES' | translate }}</button>
+                    <button nz-button type="button" (click)="startRates()">
+                      {{ 'AR.EDIT_RATES' | translate }}
+                    </button>
                   }
                 </div>
               }
@@ -425,7 +466,9 @@ const MAX_PERCENT_CENTS = 10000n;
                   </tr>
                   <tr>
                     <th scope="row" colspan="3">{{ 'AR.NET_REALIZABLE_VALUE' | translate }}</th>
-                    <td class="num">{{ provision.net_realizable_value | money: provision.currency }}</td>
+                    <td class="num">
+                      {{ provision.net_realizable_value | money: provision.currency }}
+                    </td>
                   </tr>
                 </tfoot>
               </table>
@@ -467,7 +510,10 @@ const MAX_PERCENT_CENTS = 10000n;
               (ngModelChange)="overrideScope.set($event)"
             >
               @for (scope of scopes; track scope) {
-                <nz-option [nzValue]="scope" [nzLabel]="'AR.SCOPE_' + scope.toUpperCase() | translate"></nz-option>
+                <nz-option
+                  [nzValue]="scope"
+                  [nzLabel]="'AR.SCOPE_' + scope.toUpperCase() | translate"
+                ></nz-option>
               }
             </nz-select>
           </div>
@@ -480,7 +526,9 @@ const MAX_PERCENT_CENTS = 10000n;
               [ngModel]="overrideReason()"
               (ngModelChange)="overrideReason.set($event)"
             ></textarea>
-            <span class="muted">{{ 'AR.OVERRIDE_REASON_HINT' | translate: { min: minReason } }}</span>
+            <span class="muted">{{
+              'AR.OVERRIDE_REASON_HINT' | translate: { min: minReason }
+            }}</span>
           </div>
           <div class="field">
             <label for="ov-expires">{{ 'AR.OVERRIDE_EXPIRES' | translate }}</label>
@@ -526,6 +574,7 @@ const MAX_PERCENT_CENTS = 10000n;
   `,
 })
 export class CreditPositionComponent implements OnInit {
+  private readonly destroyRef = inject(DestroyRef);
   readonly store = inject(CreditPositionStore);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -566,7 +615,8 @@ export class CreditPositionComponent implements OnInit {
     return expires !== null && expires <= todayIso();
   });
   readonly overrideValid = computed(
-    () => this.overrideReason().trim().length >= MIN_OVERRIDE_REASON && !this.overrideExpiryInvalid(),
+    () =>
+      this.overrideReason().trim().length >= MIN_OVERRIDE_REASON && !this.overrideExpiryInvalid(),
   );
   readonly revokeTarget = signal<ArOverride | null>(null);
   readonly revokeReason = signal('');
@@ -586,7 +636,7 @@ export class CreditPositionComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.route.paramMap.pipe(takeUntilDestroyed()).subscribe((params) => {
+    this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const id = params.get('customerId');
       this.customerId.set(id);
       this.editingRates.set(false);
@@ -612,7 +662,9 @@ export class CreditPositionComponent implements OnInit {
   }
 
   onCustomer(option: ArCustomerOption | null): void {
-    void this.router.navigate(option ? ['/receivables/credit', option.id] : ['/receivables/credit']);
+    void this.router.navigate(
+      option ? ['/receivables/credit', option.id] : ['/receivables/credit'],
+    );
   }
 
   // --- Limits ---
@@ -638,7 +690,9 @@ export class CreditPositionComponent implements OnInit {
     } else {
       this.limitErrors.set(outcome.errors);
       this.limitMessage.set(
-        Object.keys(outcome.errors).length > 0 ? null : (outcome.message ?? this.translate.instant('AR.SAVE_ERROR')),
+        Object.keys(outcome.errors).length > 0
+          ? null
+          : (outcome.message ?? this.translate.instant('AR.SAVE_ERROR')),
       );
     }
   }

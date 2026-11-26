@@ -43,8 +43,11 @@ describe('initial bundle', () => {
     },
   );
 
-  it('the root component only reaches the two-factor modal through a @defer block', () => {
+  it('the root component does not load the two-factor modal eagerly', () => {
+    // The mandatory-MFA setup lives on its own lazy route (two-factor-required), so the shell must not import the modal.
     const template = readFileSync(join(root, 'app.component.html'), 'utf8');
-    expect(template).toMatch(/@defer \([^\n]*\) \{\s*<app-two-factor-setup-modal/);
+    const component = readFileSync(join(root, 'app.component.ts'), 'utf8');
+    expect(template).not.toContain('app-two-factor-setup-modal');
+    expect(component).not.toContain('TwoFactorSetupModalComponent');
   });
 });

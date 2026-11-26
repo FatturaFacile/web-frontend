@@ -402,6 +402,7 @@ describe('BudgetingVersionToolsComponent', () => {
     expect(api.importBudget).toHaveBeenCalledWith('bv-1', file, 'replace', true);
 
     api.importBudget.mockReturnValue(of({ data: { id: 'im-2', status: 'failed', total_rows: 1, imported_rows: 0, error_rows: 1, errors: [{ row: 2, field: 'account_code', message: 'Unknown account' }] } }));
+    component.visible.set(true);
     component.runImport(false);
     expect(component.importResult()?.errors[0].row).toBe(2);
     expect(component.visible()).toBe(true);
@@ -508,7 +509,7 @@ describe('BudgetingVolumePriceComponent', () => {
 
 describe('BudgetingAuditComponent', () => {
   it('loads the audit trail and the import history', () => {
-    const api = { getVersionAudit: vi.fn().mockReturnValue(of({ data: [{ id: 'e1', action: 'revise' }] })), getImports: vi.fn().mockReturnValue(of({ data: [{ id: 'i1' }] })) };
+    const api = { getVersionAudit: vi.fn().mockReturnValue(of({ data: [{ id: 'e1', action: 'revise' }] })), getImports: vi.fn().mockReturnValue(of({ data: [{ id: 'i1', status: 'imported' }] })) };
     configure(api);
     const fixture = TestBed.createComponent(BudgetingAuditComponent);
     fixture.componentRef.setInput('versionId', 'bv-1');

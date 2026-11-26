@@ -23,7 +23,8 @@ type Mock = ReturnType<typeof vi.fn>;
 
 function setup<T>(token: new (...args: never[]) => T, api: Record<string, Mock>): T {
   TestBed.configureTestingModule({
-    providers: [{ provide: IndustrialLaundryApiService, useValue: api }],
+    // The stores are component-scoped (no providedIn), so they must be provided explicitly.
+    providers: [{ provide: IndustrialLaundryApiService, useValue: api }, token as never],
   });
   return TestBed.inject(token as never) as T;
 }

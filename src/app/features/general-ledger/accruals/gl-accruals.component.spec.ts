@@ -1,9 +1,8 @@
 import { TestBed } from '@angular/core/testing';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { of } from 'rxjs';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthStore, GeneralLedgerApiService, I18nService, PermissionsService } from '@core';
 import { icons } from '../../../icons-provider';
 import { GlAccrualsComponent } from './gl-accruals.component';
@@ -133,6 +132,20 @@ describe('GlAccrualsComponent (Mod 022 Workbench)', () => {
     error: ReturnType<typeof vi.fn>;
   };
 
+  const originalCreateObjectUrl = URL.createObjectURL;
+  const originalRevokeObjectUrl = URL.revokeObjectURL;
+
+  /** Patches the static helpers in place: replacing the whole URL global would break `new URL()`. */
+  function stubObjectUrls(create: () => string, revoke: () => void): void {
+    URL.createObjectURL = create;
+    URL.revokeObjectURL = revoke;
+  }
+
+  afterEach(() => {
+    URL.createObjectURL = originalCreateObjectUrl;
+    URL.revokeObjectURL = originalRevokeObjectUrl;
+  });
+
   beforeEach(() => {
     api = {
       getFiscalYears: vi.fn().mockReturnValue(
@@ -176,7 +189,6 @@ describe('GlAccrualsComponent (Mod 022 Workbench)', () => {
     TestBed.configureTestingModule({
       imports: [GlAccrualsComponent],
       providers: [
-        provideNoopAnimations(),
         provideNzIcons(icons),
         { provide: GeneralLedgerApiService, useValue: api },
         { provide: PermissionsService, useValue: { canWrite: () => true } },
@@ -241,7 +253,7 @@ describe('GlAccrualsComponent (Mod 022 Workbench)', () => {
   it('requests reconciliation CSV export from API', async () => {
     const createObjectUrl = vi.fn().mockReturnValue('blob:mock');
     const revokeObjectUrl = vi.fn();
-    vi.stubGlobal('URL', { ...URL, createObjectURL: createObjectUrl, revokeObjectURL: revokeObjectUrl });
+    stubObjectUrls(createObjectUrl, revokeObjectUrl);
 
     const fixture = TestBed.createComponent(GlAccrualsComponent);
     fixture.detectChanges();
@@ -251,11 +263,10 @@ describe('GlAccrualsComponent (Mod 022 Workbench)', () => {
 
     expect(api.exportAccrualsReconciliation).toHaveBeenCalledTimes(1);
     expect(createObjectUrl).toHaveBeenCalled();
-    vi.unstubAllGlobals();
   });
 
   it('requests the reconciliation worksheet as xlsx', async () => {
-    vi.stubGlobal('URL', { ...URL, createObjectURL: vi.fn().mockReturnValue('blob:mock'), revokeObjectURL: vi.fn() });
+    stubObjectUrls(vi.fn().mockReturnValue('blob:mock'), vi.fn());
 
     const fixture = TestBed.createComponent(GlAccrualsComponent);
     fixture.detectChanges();
@@ -264,7 +275,6 @@ describe('GlAccrualsComponent (Mod 022 Workbench)', () => {
     await fixture.componentInstance['exportReconciliation']('xlsx');
 
     expect(api.exportAccrualsReconciliation).toHaveBeenCalledWith(expect.anything(), 'xlsx');
-    vi.unstubAllGlobals();
   });
 
   it('computes real-time preview inside the manual accrual modal form', async () => {

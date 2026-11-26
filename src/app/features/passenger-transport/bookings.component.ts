@@ -369,7 +369,7 @@ export class BookingsComponent implements OnInit {
   }
 
   protected async quote(payload: PtrBookingPayload): Promise<void> {
-    await this.store.quote(payload);
+    await this.store.requestQuote(payload);
   }
 
   protected async save(payload: PtrBookingPayload): Promise<void> {

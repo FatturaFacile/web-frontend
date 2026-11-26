@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { toHttpParams } from '../http/laravel-http.utils';
 import { ApiResponse, PaginatedResponse } from '../models/api.models';
 import {
+  CsvMapping,
   CsvProfile,
   F24Delegation,
   F24Payload,
@@ -153,7 +154,7 @@ export class TreasuryBankingApiService {
 
   saveCsvProfile(
     name: string,
-    mapping: CsvProfile | Omit<CsvProfile, 'id'>,
+    mapping: CsvMapping,
   ): Observable<ApiResponse<CsvProfile>> {
     return this.http.post<ApiResponse<CsvProfile>>(`${this.base}/csv-profiles`, {
       ...mapping,

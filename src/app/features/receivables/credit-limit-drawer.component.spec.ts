@@ -1,5 +1,7 @@
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideNzDateFnsAdapter } from 'ng-zorro-antd/core/time';
+import { en_US, provideNzI18n } from 'ng-zorro-antd/i18n';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ArCreditLimit, TranslateService } from '@core';
@@ -19,7 +21,12 @@ describe('CreditLimitDrawerComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [{ provide: TranslateService, useValue: translateSpy }, provideNzIcons(icons)],
+      providers: [
+        { provide: TranslateService, useValue: translateSpy },
+        provideNzIcons(icons),
+        provideNzI18n(en_US),
+        provideNzDateFnsAdapter(),
+      ],
     });
   });
 
