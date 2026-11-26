@@ -1108,6 +1108,15 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'fiduciary-portal',
+    canActivate: [authGuard, menuEnabledGuard, moduleGuard('fiduciary_portal', 'read')],
+    data: { breadcrumb: 'NAV.FIDUCIARY_PORTAL', title: 'PAGE_TITLE.FIDUCIARY_PORTAL' },
+    loadChildren: () =>
+      import('./features/fiduciary-portal/fiduciary-portal.routes').then(
+        (m) => m.FIDUCIARY_PORTAL_ROUTES,
+      ),
+  },
+  {
     path: 'sdi-cockpit',
     canActivate: [authGuard, menuEnabledGuard, moduleGuard('invoicing', 'read')],
     data: { breadcrumb: 'NAV.SDI_COCKPIT', title: 'NAV.SDI_COCKPIT' },

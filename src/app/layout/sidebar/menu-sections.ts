@@ -657,6 +657,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         module: 'data_migration',
       },
       {
+        key: 'NAV.FIDUCIARY_PORTAL',
+        icon: 'fa-solid fa-user-tie',
+        route: '/fiduciary-portal',
+        module: 'fiduciary_portal',
+      },
+      {
         key: 'NAV.SDI_COCKPIT',
         icon: 'fa-solid fa-file-invoice',
         route: '/sdi-cockpit',

@@ -59,6 +59,9 @@
   </ng-template>
   <ng-template #statusTpl let-entry>
     <nz-tag [nzColor]="statusColor(entry.status)">{{ 'GL.JOURNAL_STATUS_' + entry.status.toUpperCase() | translate }}</nz-tag>
+    @if (entry.fiduciary_verified) {
+      <nz-tag nzColor="cyan">{{ 'fiduciaryPortal.badge.verified' | translate }}</nz-tag>
+    }
   </ng-template>
   <ng-template #totalTpl let-entry>{{ entry.total_amount | money: currency() }}</ng-template>
   <ng-template #actionsTpl let-entry>
