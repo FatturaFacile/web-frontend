@@ -8,6 +8,11 @@ export const WORKFLOW_ROUTES: Routes = [
     loadComponent: () => import('@shared').then((m) => m.ResourcePageComponent),
   },
   {
+    path: 'inbox',
+    data: { breadcrumb: 'workflows.inbox.title', title: 'workflows.inbox.title' },
+    loadComponent: () => import('./approval-inbox.page').then((m) => m.ApprovalInboxPageComponent),
+  },
+  {
     path: '',
     loadComponent: () =>
       import('./workflows.component').then((m) => m.WorkflowsComponent),

@@ -19,6 +19,7 @@ import { TranslatePipe } from '@shared/pipes/translate.pipe';
 import { GlobalSearchService } from '@shared/components/global-search/global-search.service';
 import { CopilotStore } from '@features/copilot/copilot.store';
 import { AcademyStore } from '@features/academy/academy.store';
+import { ApprovalPendingBadgeComponent } from './approval-pending-badge.component';
 import { AppearanceSwitcherComponent } from './appearance-switcher.component';
 import { NotificationBellComponent } from './notification-bell.component';
 import { DisplayPreferencesComponent } from './display-preferences.component';
@@ -36,6 +37,7 @@ import { DisplayPreferencesComponent } from './display-preferences.component';
     NzTagModule,
     NzAvatarModule,
     AppearanceSwitcherComponent,
+    ApprovalPendingBadgeComponent,
     NotificationBellComponent,
     DisplayPreferencesComponent,
     TranslatePipe,

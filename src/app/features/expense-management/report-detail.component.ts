@@ -25,6 +25,7 @@ import {
   TranslateService,
 } from '@core';
 import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import { ApprovalStatusBannerComponent } from '@features/workflows/approval-status-banner.component';
 import { ExmOutcome, isPositive, saveBlob, statusColor } from './expense-management.util';
 import { FiscalNoticesComponent } from './fiscal-notices.component';
 import { LineFormComponent } from './line-form.component';
@@ -44,6 +45,7 @@ type Dialog = 'approve' | 'reject' | 'payout' | null;
   selector: 'app-exm-report-detail',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    ApprovalStatusBannerComponent,
     FiscalNoticesComponent,
     FormsModule,
     LineFormComponent,
@@ -90,6 +92,7 @@ type Dialog = 'approve' | 'reject' | 'payout' | null;
 
     <nz-spin [nzSpinning]="store.loading()">
       @if (store.report(); as report) {
+        <app-approval-status-banner subjectType="expense_report" [subjectId]="report.id" />
         <header class="head">
           <div>
             <h2>
