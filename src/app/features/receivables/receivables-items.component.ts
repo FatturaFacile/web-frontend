@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, ParamMap, Router, RouterLink } from '@angular/router';
@@ -78,19 +78,24 @@ function queryObject(map: ParamMap): Record<string, string> {
     NzTagModule,
   ],
   template: `
-    <app-page-header [title]="'AR.ITEMS_TITLE' | translate" [subtitle]="'AR.ITEMS_SUBTITLE' | translate">
-      <a nz-button routerLink="/receivables">{{ 'AR.BACK_TO_DASHBOARD' | translate }}</a>
-      @if (canWrite) {
-        <button
-          nz-button
-          nzType="primary"
-          type="button"
-          [disabled]="!store.selectionIsCoherent()"
-          (click)="reconcileOpen.set(true)"
-        >
-          {{ 'AR.RECONCILE' | translate }} ({{ store.selectionCount() }})
-        </button>
-      }
+    <app-page-header
+      [title]="'AR.ITEMS_TITLE' | translate"
+      [subtitle]="'AR.ITEMS_SUBTITLE' | translate"
+    >
+      <div class="header-actions">
+        <a nz-button routerLink="/receivables">{{ 'AR.BACK_TO_DASHBOARD' | translate }}</a>
+        @if (canWrite) {
+          <button
+            nz-button
+            nzType="primary"
+            type="button"
+            [disabled]="!store.selectionIsCoherent()"
+            (click)="reconcileOpen.set(true)"
+          >
+            {{ 'AR.RECONCILE' | translate }} ({{ store.selectionCount() }})
+          </button>
+        }
+      </div>
     </app-page-header>
 
     <div class="filters" role="search" [attr.aria-label]="'AR.FILTERS' | translate">
@@ -112,7 +117,10 @@ function queryObject(map: ParamMap): Record<string, string> {
           (ngModelChange)="apply({ status: $event ?? undefined })"
         >
           @for (status of statuses; track status) {
-            <nz-option [nzValue]="status" [nzLabel]="'AR.STATUS_' + status.toUpperCase() | translate"></nz-option>
+            <nz-option
+              [nzValue]="status"
+              [nzLabel]="'AR.STATUS_' + status.toUpperCase() | translate"
+            ></nz-option>
           }
         </nz-select>
       </div>
@@ -127,7 +135,10 @@ function queryObject(map: ParamMap): Record<string, string> {
           (ngModelChange)="apply({ document_type: $event ?? undefined })"
         >
           @for (type of documentTypes; track type) {
-            <nz-option [nzValue]="type" [nzLabel]="'AR.DOCTYPE_' + type.toUpperCase() | translate"></nz-option>
+            <nz-option
+              [nzValue]="type"
+              [nzLabel]="'AR.DOCTYPE_' + type.toUpperCase() | translate"
+            ></nz-option>
           }
         </nz-select>
       </div>
@@ -171,7 +182,13 @@ function queryObject(map: ParamMap): Record<string, string> {
       </div>
 
       <div class="field">
-        <label for="receivables-items-field" nzId="receivables-items-field" nz-checkbox [ngModel]="filters().open_only !== false" (ngModelChange)="apply({ open_only: $event })">
+        <label
+          for="receivables-items-field"
+          nzId="receivables-items-field"
+          nz-checkbox
+          [ngModel]="filters().open_only !== false"
+          (ngModelChange)="apply({ open_only: $event })"
+        >
           {{ 'AR.OPEN_ONLY' | translate }}
         </label>
       </div>
@@ -184,7 +201,9 @@ function queryObject(map: ParamMap): Record<string, string> {
           {{ 'AR.BUCKET' | translate }}: {{ part.key | translate: part.params }}
         </nz-tag>
       }
-      <button nz-button type="button" (click)="reset()">{{ 'AR.RESET_FILTERS' | translate }}</button>
+      <button nz-button type="button" (click)="reset()">
+        {{ 'AR.RESET_FILTERS' | translate }}
+      </button>
       <span class="muted spacer">{{ 'AR.RESULTS' | translate: { total: store.total() } }}</span>
     </div>
 
@@ -192,7 +211,12 @@ function queryObject(map: ParamMap): Record<string, string> {
       <nz-alert class="card" nzType="error" nzShowIcon [nzMessage]="error | translate"></nz-alert>
     }
     @if (store.selectionCount() > 0 && !store.selectionIsCoherent()) {
-      <nz-alert class="card" nzType="warning" nzShowIcon [nzMessage]="'AR.SELECTION_MIXED' | translate"></nz-alert>
+      <nz-alert
+        class="card"
+        nzType="warning"
+        nzShowIcon
+        [nzMessage]="'AR.SELECTION_MIXED' | translate"
+      ></nz-alert>
     }
 
     <nz-spin [nzSpinning]="store.loading()">
@@ -239,7 +263,9 @@ function queryObject(map: ParamMap): Record<string, string> {
                         type="checkbox"
                         [checked]="store.selectedIds().includes(row.id)"
                         [disabled]="!isOpen(row)"
-                        [attr.aria-label]="'AR.SELECT_ROW' | translate: { document: row.document_number }"
+                        [attr.aria-label]="
+                          'AR.SELECT_ROW' | translate: { document: row.document_number }
+                        "
                         (change)="onToggle(row.id, $event)"
                       />
                     </td>
@@ -248,7 +274,9 @@ function queryObject(map: ParamMap): Record<string, string> {
                   <th scope="row">
                     {{ row.document_number }} <span class="muted">· {{ row.sequence }}</span>
                     <br />
-                    <span class="muted">{{ 'AR.DOCTYPE_' + row.document_type.toUpperCase() | translate }}</span>
+                    <span class="muted">{{
+                      'AR.DOCTYPE_' + row.document_type.toUpperCase() | translate
+                    }}</span>
                   </th>
                   <td>{{ row.issue_date }}</td>
                   <td>{{ row.due_date }}</td>
@@ -257,13 +285,22 @@ function queryObject(map: ParamMap): Record<string, string> {
                   <td class="num">{{ row.original_amount | money: row.currency }}</td>
                   <td class="num">{{ row.open_amount | money: row.currency }}</td>
                   <td>
-                    <nz-tag [nzColor]="color(row)">{{ 'AR.STATUS_' + row.status.toUpperCase() | translate }}</nz-tag>
+                    <nz-tag [nzColor]="color(row)">{{
+                      'AR.STATUS_' + row.status.toUpperCase() | translate
+                    }}</nz-tag>
                     @if (row.days_past_due > 0) {
-                      <span class="muted">{{ 'AR.DAYS_PAST_DUE' | translate: { days: row.days_past_due } }}</span>
+                      <span class="muted">{{
+                        'AR.DAYS_PAST_DUE' | translate: { days: row.days_past_due }
+                      }}</span>
                     }
                   </td>
                   <td>
-                    <button nz-button nzSize="small" type="button" (click)="store.openDetail(row.id)">
+                    <button
+                      nz-button
+                      nzSize="small"
+                      type="button"
+                      (click)="store.openDetail(row.id)"
+                    >
                       {{ 'AR.DETAILS' | translate }}
                     </button>
                     @if (canWrite && isOpen(row)) {
@@ -322,7 +359,12 @@ function queryObject(map: ParamMap): Record<string, string> {
             — {{ 'AR.OPEN_AMOUNT' | translate }}: {{ detail.open_amount | money: detail.currency }}
           </p>
           @if (detail.dispute_reason) {
-            <nz-alert class="card" nzType="warning" nzShowIcon [nzMessage]="detail.dispute_reason"></nz-alert>
+            <nz-alert
+              class="card"
+              nzType="warning"
+              nzShowIcon
+              [nzMessage]="detail.dispute_reason"
+            ></nz-alert>
           }
           @if ((detail.allocations ?? []).length === 0) {
             <nz-empty [nzNotFoundContent]="'AR.NO_ALLOCATIONS' | translate"></nz-empty>
@@ -396,6 +438,7 @@ function queryObject(map: ParamMap): Record<string, string> {
   `,
 })
 export class ReceivablesItemsComponent implements OnInit {
+  private readonly destroyRef = inject(DestroyRef);
   readonly store = inject(ReceivablesItemsStore);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -415,8 +458,12 @@ export class ReceivablesItemsComponent implements OnInit {
 
   readonly filters = this.store.filters;
   readonly dueRange = computed(() => dateRange(this.filters().due_from, this.filters().due_to));
-  readonly issuedRange = computed(() => dateRange(this.filters().issued_from, this.filters().issued_to));
-  readonly valueRange = computed(() => dateRange(this.filters().value_from, this.filters().value_to));
+  readonly issuedRange = computed(() =>
+    dateRange(this.filters().issued_from, this.filters().issued_to),
+  );
+  readonly valueRange = computed(() =>
+    dateRange(this.filters().value_from, this.filters().value_to),
+  );
   readonly allSelected = computed(
     () =>
       this.store.selectableIds().length > 0 &&
@@ -435,7 +482,7 @@ export class ReceivablesItemsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((map) => {
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((map) => {
       void this.store.init(itemFiltersFromQuery(queryObject(map)));
     });
   }

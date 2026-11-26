@@ -2,6 +2,8 @@ import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
+import { provideNzDateFnsAdapter } from 'ng-zorro-antd/core/time';
+import { en_US, provideNzI18n } from 'ng-zorro-antd/i18n';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { of } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -37,6 +39,8 @@ describe('CustomerLedgerComponent', () => {
         },
         { provide: TranslateService, useValue: translateSpy },
         provideNzIcons(icons),
+        provideNzI18n(en_US),
+        provideNzDateFnsAdapter(),
       ],
     });
   });

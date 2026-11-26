@@ -17,6 +17,9 @@ interface Call {
 
 const CARDS: WbsNode[] = NODES.map((entry) => (entry.id === 'n11' ? { ...entry, isCritical: true } : entry));
 
+/** The cards as the API holds them: a successful completion update is reflected by the next board load. */
+let server: WbsNode[] = CARDS;
+
 function answer(request: TestRequest, calls: Call[], fail: boolean): void {
   const { method, url, body } = request.request;
   calls.push({ method, url, body });
@@ -24,10 +27,16 @@ function answer(request: TestRequest, calls: Call[], fail: boolean): void {
   if (url.includes('/translations/')) {
     request.flush({ translations: {} });
   } else if (method === 'GET' && url.endsWith('/projects/p1/kanban')) {
-    request.flush({ data: CARDS });
+    request.flush({ data: server });
   } else if (method === 'PUT' && fail) {
     request.flush({ message: 'no' }, { status: 500, statusText: 'Server Error' });
   } else {
+    if (method === 'PUT') {
+      const nodeId = url.split('/').pop();
+      const { percentComplete } = body as { percentComplete: number };
+      server = server.map((entry) => (entry.id === nodeId ? { ...entry, percentComplete } : entry));
+    }
+
     request.flush({ data: {} });
   }
 }
@@ -47,6 +56,7 @@ async function settle(fixture: ComponentFixture<ProjectKanbanComponent>, http: H
 async function render(options: { canWrite?: boolean; failWrites?: boolean } = {}) {
   const { canWrite = true, failWrites = false } = options;
 
+  server = CARDS;
   TestBed.resetTestingModule();
   await TestBed.configureTestingModule({
     imports: [ProjectKanbanComponent],

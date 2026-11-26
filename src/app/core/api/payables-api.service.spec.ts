@@ -111,8 +111,9 @@ describe('PayablesApiService', () => {
 
   it('walks the approval workflow', () => {
     service.submitBatch('b-1').subscribe();
-    expect(httpTesting.expectOne(`${base}/batches/b-1/submit`).request.method).toBe('POST');
-    httpTesting.expectOne(`${base}/batches/b-1/submit`).flush({ data: {} });
+    const request = httpTesting.expectOne(`${base}/batches/b-1/submit`);
+    expect(request.request.method).toBe('POST');
+    request.flush({ data: {} });
   });
 
   it('approves, rejects, executes and cancels a batch', () => {

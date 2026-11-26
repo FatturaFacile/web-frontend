@@ -19,7 +19,11 @@ describe('credit limit form', () => {
   });
 
   it('fills the form from an existing limit', () => {
-    const draft = draftFromLimit(limit({ valid_to: '2026-12-31', notes: 'Review in autumn' }), 'CHF', today);
+    const draft = draftFromLimit(
+      limit({ valid_to: '2026-12-31', notes: 'Review in autumn' }),
+      'CHF',
+      today,
+    );
 
     expect(draft.currency).toBe('EUR');
     expect(draft.granted_limit).toBe('2000.00');
@@ -67,20 +71,30 @@ describe('credit limit form', () => {
   it('keeps the coverage between 0 and 100 and the overdue days a whole number up to 3650', () => {
     const base = draftFromLimit(limit(), 'EUR', today);
 
-    expect(validateLimitDraft({ ...base, coverage_percentage: '100.01' }).coverage_percentage).toBe('AR.ERR_PERCENT');
-    expect(validateLimitDraft({ ...base, coverage_percentage: '100' }).coverage_percentage).toBeUndefined();
-    expect(validateLimitDraft({ ...base, max_overdue_days: '3651' }).max_overdue_days).toBe('AR.ERR_DAYS');
-    expect(validateLimitDraft({ ...base, max_overdue_days: '1.5' }).max_overdue_days).toBe('AR.ERR_DAYS');
+    expect(validateLimitDraft({ ...base, coverage_percentage: '100.01' }).coverage_percentage).toBe(
+      'AR.ERR_PERCENT',
+    );
+    expect(
+      validateLimitDraft({ ...base, coverage_percentage: '100' }).coverage_percentage,
+    ).toBeUndefined();
+    expect(validateLimitDraft({ ...base, max_overdue_days: '3651' }).max_overdue_days).toBe(
+      'AR.ERR_DAYS',
+    );
+    expect(validateLimitDraft({ ...base, max_overdue_days: '1.5' }).max_overdue_days).toBe(
+      'AR.ERR_DAYS',
+    );
     expect(validateLimitDraft({ ...base, max_overdue_days: '' }).max_overdue_days).toBeUndefined();
   });
 
   it('refuses an end of validity before its start', () => {
     const base = draftFromLimit(limit(), 'EUR', today);
 
-    expect(validateLimitDraft({ ...base, valid_from: '2026-04-01', valid_to: '2026-03-01' }).valid_to).toBe(
-      'AR.ERR_PERIOD',
-    );
-    expect(validateLimitDraft({ ...base, valid_from: '2026-04-01', valid_to: '2026-04-01' }).valid_to).toBeUndefined();
+    expect(
+      validateLimitDraft({ ...base, valid_from: '2026-04-01', valid_to: '2026-03-01' }).valid_to,
+    ).toBe('AR.ERR_PERIOD');
+    expect(
+      validateLimitDraft({ ...base, valid_from: '2026-04-01', valid_to: '2026-04-01' }).valid_to,
+    ).toBeUndefined();
   });
 
   it('wants the insurer or the policy number for an insured limit', () => {

@@ -58,7 +58,9 @@ import {
       [title]="'AP.WIZARD_TITLE' | translate"
       [subtitle]="'AP.WIZARD_SUBTITLE' | translate"
     >
+    <ng-container ngProjectAs="[header-actions]">
       <a nz-button routerLink="/payables/batches">{{ 'AP.CANCEL' | translate }}</a>
+    </ng-container>
     </app-page-header>
 
     <nz-steps class="wizard-steps" [nzCurrent]="step()" nzSize="small">

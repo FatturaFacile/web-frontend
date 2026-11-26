@@ -63,6 +63,7 @@ import { ToleranceRulesStore } from './tolerance-rules.store';
       [title]="'PAGE_TITLE.PROCUREMENT_INVOICE_MATCHING_RULES' | translate"
       [subtitle]="'invoiceMatching.page.rulesSubtitle' | translate"
     >
+    <ng-container ngProjectAs="[header-actions]">
       <a nz-button routerLink="/procurement/invoice-matching">{{
         'invoiceMatching.page.backToWorkbench' | translate
       }}</a>
@@ -75,6 +76,7 @@ import { ToleranceRulesStore } from './tolerance-rules.store';
       >
         {{ 'invoiceMatching.button.newRule' | translate }}
       </button>
+    </ng-container>
     </app-page-header>
 
     <nz-alert

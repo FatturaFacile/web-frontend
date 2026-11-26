@@ -80,7 +80,7 @@
     </div>
   </nz-card>
 
-  <nz-tabset [(nzSelectedIndex)]="activeTab">
+  <nz-tabs [(nzSelectedIndex)]="activeTab">
     <!-- Tab 1: Unlimited Hierarchy Tree + Inspector -->
     <nz-tab [nzTitle]="copy('tab_tree', 'Hierarchy Tree')">
       <div class="tree-split">
@@ -301,7 +301,7 @@
         </tbody>
       </nz-table>
     </nz-tab>
-  </nz-tabset>
+  </nz-tabs>
 </div>
 
 <!-- Account Create/Edit Modal -->

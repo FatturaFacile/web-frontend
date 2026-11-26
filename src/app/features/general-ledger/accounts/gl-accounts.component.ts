@@ -1,4 +1,5 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzBreadCrumbModule } from 'ng-zorro-antd/breadcrumb';
@@ -138,9 +139,13 @@ export class GlAccountsComponent implements OnInit {
     return this.store.tree().map(mapNode);
   });
 
+  /** Form values as a signal: a computed over plain form controls would never re-evaluate. */
+  private readonly formValue = toSignal(this.form.valueChanges, {
+    initialValue: this.form.getRawValue(),
+  });
+
   readonly balanceCoherenceWarning = computed<boolean>(() => {
-    const type = this.form.controls.account_type.value;
-    const side = this.form.controls.normal_balance.value;
+    const { account_type: type, normal_balance: side } = this.formValue();
     if (!type || !side) {
       return false;
     }

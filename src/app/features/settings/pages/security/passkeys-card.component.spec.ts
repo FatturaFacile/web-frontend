@@ -27,6 +27,7 @@ describe('PasskeysCardComponent', () => {
   const confirm = vi.fn();
 
   async function create() {
+    TestBed.overrideComponent(PasskeysCardComponent, { set: { providers: [{ provide: NzModalService, useValue: { confirm } }] } });
     TestBed.configureTestingModule({
       providers: [
         provideNzIcons(icons),

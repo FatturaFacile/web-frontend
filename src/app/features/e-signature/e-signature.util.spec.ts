@@ -1,5 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { describe, expect, it } from 'vitest';
+import { webcrypto } from 'node:crypto';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { EsigProviderConfig, EsigTemplate } from '@core';
 import {
   authMethodsFor,
@@ -218,6 +219,14 @@ describe('e-signature util', () => {
         'contratto-di-lavoro-2027-signed.pdf',
       );
       expect(downloadName({ title: '***' }, '.pdf')).toBe('document.pdf');
+    });
+
+    // jsdom exposes no `crypto.subtle` (browsers do), so the spec provides Node's Web Crypto implementation.
+    beforeEach(() => {
+      vi.stubGlobal('crypto', webcrypto);
+    });
+    afterEach(() => {
+      vi.unstubAllGlobals();
     });
 
     it('hashes a file with SHA-256 in the browser', async () => {

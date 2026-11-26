@@ -2,7 +2,6 @@ import { describe, expect, it, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { GlAccountsComponent } from './gl-accounts.component';
 
 describe('GlAccountsComponent', () => {
@@ -11,7 +10,7 @@ describe('GlAccountsComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [GlAccountsComponent],
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideNoopAnimations()],
+      providers: [provideHttpClient(), provideHttpClientTesting()],
     }).compileComponents();
 
     httpMock = TestBed.inject(HttpTestingController);

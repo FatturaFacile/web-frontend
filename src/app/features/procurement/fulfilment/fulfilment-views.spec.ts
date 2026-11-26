@@ -2,6 +2,7 @@ import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { PurchaseOrder } from '@core/models';
 import { I18nService } from '@core/i18n';
+import { provideNzDateFnsAdapter } from 'ng-zorro-antd/core/time';
 import { provideNzI18n, en_US } from 'ng-zorro-antd/i18n';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
@@ -58,6 +59,7 @@ describe('PoConfirmationDrawerComponent', () => {
       providers: [
         provideNzIcons(icons),
         provideNzI18n(en_US),
+        provideNzDateFnsAdapter(),
         { provide: PurchaseOrderFulfilmentStore, useValue: store },
         { provide: NzMessageService, useValue: { success: vi.fn(), error: vi.fn() } },
         { provide: I18nService, useValue: { currentLanguage: signal<'en'>('en'), translate: vi.fn((key: string) => key) } },
@@ -92,3 +94,4 @@ describe('PoConfirmationDrawerComponent', () => {
     expect(component.lineDiffers(first)).toBe(true);
   });
 });
+

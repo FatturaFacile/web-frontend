@@ -1,3 +1,5 @@
+import { registerLocaleData } from '@angular/common';
+import localeItCh from '@angular/common/locales/it-CH';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
@@ -13,6 +15,8 @@ import { AccrualLedgersComponent } from './accrual-ledgers.component';
 import { DepartmentGanttCalendarComponent } from './department-gantt-calendar.component';
 import { LeaveManagementStore } from './leave-management.store';
 import { LeaveRequestsComponent } from './leave-requests.component';
+
+registerLocaleData(localeItCh);
 
 const base = `${environment.apiBaseUrl}/leave-management`;
 const hrBase = `${environment.apiBaseUrl}/hr`;

@@ -74,7 +74,12 @@ import { fromIsoDate, toIsoDate, todayIso } from './receivables.util';
                   {{ row.residual | money: row.item.currency }}
                 </td>
                 <td>
-                  <button nz-button nzSize="small" type="button" (click)="store.addLine(row.item.id, today())">
+                  <button
+                    nz-button
+                    nzSize="small"
+                    type="button"
+                    (click)="store.addLine(row.item.id, today())"
+                  >
                     {{ 'AR.ADD_LINE' | translate }}
                   </button>
                 </td>
@@ -106,7 +111,9 @@ import { fromIsoDate, toIsoDate, todayIso } from './receivables.util';
 
             <div class="draft-grid">
               <div class="field">
-                <label [attr.for]="'type-' + line.uid">{{ 'AR.ALLOCATION_TYPE' | translate }}</label>
+                <label [attr.for]="'type-' + line.uid">{{
+                  'AR.ALLOCATION_TYPE' | translate
+                }}</label>
                 <nz-select
                   [nzId]="'type-' + line.uid"
                   style="width: 100%"
@@ -152,7 +159,9 @@ import { fromIsoDate, toIsoDate, todayIso } from './receivables.util';
 
               @if (line.type === 'payment') {
                 <div class="field">
-                  <label [attr.for]="'payment-' + line.uid">{{ 'AR.UNRECONCILED_PAYMENT' | translate }}</label>
+                  <label [attr.for]="'payment-' + line.uid">{{
+                    'AR.UNRECONCILED_PAYMENT' | translate
+                  }}</label>
                   <nz-select
                     [nzId]="'payment-' + line.uid"
                     style="width: 100%"
@@ -165,14 +174,23 @@ import { fromIsoDate, toIsoDate, todayIso } from './receivables.util';
                     @for (payment of store.payments(); track payment.ledger_entry_id) {
                       <nz-option
                         [nzValue]="payment.ledger_entry_id"
-                        [nzLabel]="paymentLabel(payment.reference, payment.date, store.paymentRemaining()[payment.ledger_entry_id], payment.currency)"
+                        [nzLabel]="
+                          paymentLabel(
+                            payment.reference,
+                            payment.date,
+                            store.paymentRemaining()[payment.ledger_entry_id],
+                            payment.currency
+                          )
+                        "
                       ></nz-option>
                     }
                   </nz-select>
                 </div>
               } @else if (line.type === 'credit_note') {
                 <div class="field">
-                  <label [attr.for]="'source-' + line.uid">{{ 'AR.CREDIT_NOTE_ID' | translate }}</label>
+                  <label [attr.for]="'source-' + line.uid">{{
+                    'AR.CREDIT_NOTE_ID' | translate
+                  }}</label>
                   <input
                     nz-input
                     [id]="'source-' + line.uid"
@@ -222,7 +240,9 @@ import { fromIsoDate, toIsoDate, todayIso } from './receivables.util';
           <strong>{{ store.totalSettled() | money: currency() }}</strong>
         </span>
         <span>
-          <button nz-button type="button" (click)="open.set(false)">{{ 'AR.CANCEL' | translate }}</button>
+          <button nz-button type="button" (click)="open.set(false)">
+            {{ 'AR.CANCEL' | translate }}
+          </button>
           <button
             nz-button
             nzType="primary"
@@ -271,8 +291,14 @@ export class ReconciliationDrawerComponent {
     return this.store.items()[0]?.currency ?? 'EUR';
   }
 
+  /** Memoised per value: a fresh `Date` on every change detection pass would make the picker write its model forever. */
+  private readonly dates = new Map<string, Date | null>();
+
   date(value: string): Date | null {
-    return fromIsoDate(value);
+    if (!this.dates.has(value)) {
+      this.dates.set(value, fromIsoDate(value));
+    }
+    return this.dates.get(value) ?? null;
   }
 
   iso(value: Date | null): string {

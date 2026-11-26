@@ -9,7 +9,10 @@ import { item } from './receivables.fixtures';
 const meta = { current_page: 1, from: 1, last_page: 2, per_page: 25, to: 3, total: 40 };
 
 describe('ReceivablesItemsStore', () => {
-  let api: Record<'listItems' | 'getItem' | 'setDispute' | 'reverseAllocation', ReturnType<typeof vi.fn>>;
+  let api: Record<
+    'listItems' | 'getItem' | 'setDispute' | 'reverseAllocation',
+    ReturnType<typeof vi.fn>
+  >;
   let store: InstanceType<typeof ReceivablesItemsStore>;
   const rows = [
     item('1'),
@@ -51,7 +54,9 @@ describe('ReceivablesItemsStore', () => {
   it('goes back to the first page when a filter changes and keeps the others', async () => {
     await store.init({ bucket: '1_30' });
     await store.setPage(2);
-    expect(api.listItems).toHaveBeenLastCalledWith(expect.objectContaining({ bucket: '1_30', page: 2 }));
+    expect(api.listItems).toHaveBeenLastCalledWith(
+      expect.objectContaining({ bucket: '1_30', page: 2 }),
+    );
 
     await store.setFilters({ status: 'overdue' });
     expect(api.listItems).toHaveBeenLastCalledWith(

@@ -69,12 +69,12 @@ describe('SecuritySettingsComponent disable form', () => {
     const form = component['disableForm'];
 
     form.patchValue({ currentPassword: TEST_PASSWORD });
-    expect(component['isSecondFactorRequired']('code', 'recoveryCode')).toBe(true);
+    expect(component['isSecondFactorRequired']('recoveryCode', 'emailCode', 'smsCode')).toBe(true);
 
     form.patchValue({ emailCode: '654321' });
     expect(form.controls.code.valid).toBe(true);
     expect(form.controls.recoveryCode.valid).toBe(true);
-    expect(component['isSecondFactorRequired']('code', 'recoveryCode')).toBe(false);
+    expect(component['isSecondFactorRequired']('recoveryCode', 'emailCode', 'smsCode')).toBe(false);
     component.confirmDisable();
 
     expect(disableTwoFactor).toHaveBeenCalledWith({

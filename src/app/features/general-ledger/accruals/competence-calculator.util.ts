@@ -156,7 +156,12 @@ export function calculateCompetencePreview(input: CompetencePreviewInput): Compe
   const targetYear =
     input.fiscalYearEnd
       ? new Date(parseIsoDayUtc(input.fiscalYearEnd)!).getUTCFullYear()
-      : (docMs !== null ? new Date(docMs).getUTCFullYear() : new Date(startMs).getUTCFullYear());
+      : // Without an explicit fiscal year the reference year is the one in which the competence
+        // starts, unless the document is dated earlier. A document booked in a later year than
+        // the competence start is an accrual (rateo).
+        (docMs !== null
+          ? Math.min(new Date(docMs).getUTCFullYear(), new Date(startMs).getUTCFullYear())
+          : new Date(startMs).getUTCFullYear());
 
   const fyStartMs = input.fiscalYearStart
     ? (parseIsoDayUtc(input.fiscalYearStart) ?? Date.UTC(targetYear, 0, 1))

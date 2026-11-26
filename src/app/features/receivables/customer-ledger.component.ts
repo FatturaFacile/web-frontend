@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, computed, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -41,14 +41,21 @@ import { dateRange, drilldownQuery, statusColor, toIsoDate } from './receivables
     NzTagModule,
   ],
   template: `
-    <app-page-header [title]="'AR.LEDGER_TITLE' | translate" [subtitle]="'AR.LEDGER_SUBTITLE' | translate">
-      @if (customerId(); as id) {
-        <a nz-button [routerLink]="['/receivables/items']" [queryParams]="itemsQuery()">{{
-          'AR.OPEN_ITEMS_RECONCILE' | translate
-        }}</a>
-        <a nz-button [routerLink]="['/receivables/credit', id]">{{ 'AR.CREDIT' | translate }}</a>
-        <a nz-button [routerLink]="['/receivables/statement', id]">{{ 'AR.STATEMENT' | translate }}</a>
-      }
+    <app-page-header
+      [title]="'AR.LEDGER_TITLE' | translate"
+      [subtitle]="'AR.LEDGER_SUBTITLE' | translate"
+    >
+      <div class="header-actions">
+        @if (customerId(); as id) {
+          <a nz-button [routerLink]="['/receivables/items']" [queryParams]="itemsQuery()">{{
+            'AR.OPEN_ITEMS_RECONCILE' | translate
+          }}</a>
+          <a nz-button [routerLink]="['/receivables/credit', id]">{{ 'AR.CREDIT' | translate }}</a>
+          <a nz-button [routerLink]="['/receivables/statement', id]">{{
+            'AR.STATEMENT' | translate
+          }}</a>
+        }
+      </div>
     </app-page-header>
 
     <div class="toolbar">
@@ -80,7 +87,10 @@ import { dateRange, drilldownQuery, statusColor, toIsoDate } from './receivables
             (ngModelChange)="store.setFilters({ status: $event ?? undefined })"
           >
             @for (status of statuses; track status) {
-              <nz-option [nzValue]="status" [nzLabel]="'AR.STATUS_' + status.toUpperCase() | translate"></nz-option>
+              <nz-option
+                [nzValue]="status"
+                [nzLabel]="'AR.STATUS_' + status.toUpperCase() | translate"
+              ></nz-option>
             }
           </nz-select>
         </div>
@@ -94,7 +104,10 @@ import { dateRange, drilldownQuery, statusColor, toIsoDate } from './receivables
             (ngModelChange)="store.setFilters({ document_type: $event ?? undefined })"
           >
             @for (type of documentTypes; track type) {
-              <nz-option [nzValue]="type" [nzLabel]="'AR.DOCTYPE_' + type.toUpperCase() | translate"></nz-option>
+              <nz-option
+                [nzValue]="type"
+                [nzLabel]="'AR.DOCTYPE_' + type.toUpperCase() | translate"
+              ></nz-option>
             }
           </nz-select>
         </div>
@@ -180,6 +193,7 @@ import { dateRange, drilldownQuery, statusColor, toIsoDate } from './receivables
   `,
 })
 export class CustomerLedgerComponent implements OnInit {
+  private readonly destroyRef = inject(DestroyRef);
   readonly store = inject(CustomerLedgerStore);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -188,10 +202,12 @@ export class CustomerLedgerComponent implements OnInit {
   readonly documentTypes = ['invoice', 'debit_note'] as const;
   readonly customerId = signal<string | null>(null);
   readonly range = computed(() => dateRange(this.store.filters().from, this.store.filters().to));
-  readonly currency = computed(() => this.store.currencies()[0] ?? this.store.filters().currency ?? 'EUR');
+  readonly currency = computed(
+    () => this.store.currencies()[0] ?? this.store.filters().currency ?? 'EUR',
+  );
 
   ngOnInit(): void {
-    this.route.paramMap.pipe(takeUntilDestroyed()).subscribe((params) => {
+    this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const id = params.get('customerId');
       this.customerId.set(id);
       if (id) {
@@ -211,7 +227,9 @@ export class CustomerLedgerComponent implements OnInit {
   }
 
   onCustomer(option: ArCustomerOption | null): void {
-    void this.router.navigate(option ? ['/receivables/ledger', option.id] : ['/receivables/ledger']);
+    void this.router.navigate(
+      option ? ['/receivables/ledger', option.id] : ['/receivables/ledger'],
+    );
   }
 
   onRange(dates: Date[] | null): void {

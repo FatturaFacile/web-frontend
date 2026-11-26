@@ -21,9 +21,11 @@ import { InvoiceMatchingStore } from './invoice-matching.store';
       [title]="'PAGE_TITLE.PROCUREMENT_INVOICE_MATCHING_BLOCKED' | translate"
       [subtitle]="'invoiceMatching.page.blockedSubtitle' | translate"
     >
+    <ng-container ngProjectAs="[header-actions]">
       <a nz-button routerLink="/procurement/invoice-matching">{{
         'invoiceMatching.page.backToWorkbench' | translate
       }}</a>
+    </ng-container>
     </app-page-header>
 
     <app-invoice-match-runs-table queue="blocked" />

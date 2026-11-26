@@ -47,31 +47,35 @@ import {
       [title]="'AR.DASHBOARD_TITLE' | translate"
       [subtitle]="'AR.DASHBOARD_SUBTITLE' | translate"
     >
-      @if (store.availableCurrencies().length > 1) {
-        <nz-select
-          class="currency-select"
-          style="width: 100px"
-          [ngModel]="store.activeCurrency()"
-          [attr.aria-label]="'AR.CURRENCY' | translate"
-          (ngModelChange)="onCurrency($event)"
-        >
-          @for (code of store.availableCurrencies(); track code) {
-            <nz-option [nzValue]="code" [nzLabel]="code"></nz-option>
-          }
-        </nz-select>
-      }
-      @if (canWrite) {
-        <button
-          nz-button
-          type="button"
-          [nzLoading]="store.posting()"
-          [disabled]="!store.hasData()"
-          (click)="postProvision()"
-        >
-          {{ 'AR.POST_PROVISION' | translate }}
+      <div class="header-actions">
+        @if (store.availableCurrencies().length > 1) {
+          <nz-select
+            class="currency-select"
+            style="width: 100px"
+            [ngModel]="store.activeCurrency()"
+            [attr.aria-label]="'AR.CURRENCY' | translate"
+            (ngModelChange)="onCurrency($event)"
+          >
+            @for (code of store.availableCurrencies(); track code) {
+              <nz-option [nzValue]="code" [nzLabel]="code"></nz-option>
+            }
+          </nz-select>
+        }
+        @if (canWrite) {
+          <button
+            nz-button
+            type="button"
+            [nzLoading]="store.posting()"
+            [disabled]="!store.hasData()"
+            (click)="postProvision()"
+          >
+            {{ 'AR.POST_PROVISION' | translate }}
+          </button>
+        }
+        <button nz-button type="button" (click)="store.refresh()">
+          {{ 'AR.REFRESH' | translate }}
         </button>
-      }
-      <button nz-button type="button" (click)="store.refresh()">{{ 'AR.REFRESH' | translate }}</button>
+      </div>
     </app-page-header>
 
     @if (store.error(); as error) {
@@ -223,7 +227,11 @@ import {
                         </td>
                       }
                       <td class="num">
-                        <button type="button" class="link-button" (click)="drill(null, row.customer_id)">
+                        <button
+                          type="button"
+                          class="link-button"
+                          (click)="drill(null, row.customer_id)"
+                        >
                           {{ row.total_open | money: currency }}
                         </button>
                       </td>
@@ -249,13 +257,13 @@ import {
                     @for (bucket of store.buckets(); track bucket.key) {
                       <td class="num">
                         <button type="button" class="link-button" (click)="drill(bucket.key)">
-                          {{ (store.aging()?.totals[bucket.key] ?? '0.00') | money: currency }}
+                          {{ store.aging()?.totals[bucket.key] ?? '0.00' | money: currency }}
                         </button>
                       </td>
                     }
                     <td class="num">
                       <button type="button" class="link-button" (click)="drill(null)">
-                        {{ (store.aging()?.total_open ?? '0.00') | money: currency }}
+                        {{ store.aging()?.total_open ?? '0.00' | money: currency }}
                       </button>
                     </td>
                     <td></td>

@@ -1,3 +1,5 @@
+import { registerLocaleData } from '@angular/common';
+import localeDeCh from '@angular/common/locales/de-CH';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
@@ -12,6 +14,8 @@ import { icons } from '../../icons-provider';
 import { SwissVatConfigComponent } from './swiss-vat-config.component';
 import { SwissVatReturnsComponent } from './swiss-vat-returns.component';
 import { SwissVatStore } from './swiss-vat.store';
+
+registerLocaleData(localeDeCh);
 
 const base = `${environment.apiBaseUrl}/swiss-vat`;
 
@@ -33,7 +37,7 @@ describe('Swiss VAT pages', () => {
         { provide: LOCALE_ID, useValue: 'de-CH' },
         { provide: NzMessageService, useValue: message },
         { provide: I18nService, useValue: { translate: (key: string) => key } },
-        { provide: PermissionsService, useValue: { canAccess: () => true } },
+        { provide: PermissionsService, useValue: { hasAccess: () => true } },
       ],
     });
     http = TestBed.inject(HttpTestingController);

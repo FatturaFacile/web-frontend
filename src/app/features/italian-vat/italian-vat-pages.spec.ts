@@ -36,7 +36,10 @@ describe('Italian VAT pages', () => {
         ItalianVatStore,
         { provide: LOCALE_ID, useValue: 'en-US' },
         { provide: NzMessageService, useValue: message },
-        { provide: I18nService, useValue: { translate: (key: string) => key } },
+        {
+          provide: I18nService,
+          useValue: { translate: (key: string) => key, currentLanguage: () => 'en' },
+        },
       ],
     });
     http = TestBed.inject(HttpTestingController);
@@ -87,7 +90,17 @@ describe('Italian VAT pages', () => {
             },
           }),
         );
+      await fixture.whenStable();
       http.expectOne((r) => r.url === `${base}/register-prints`).flush(envelope([]));
+      // The embedded goods panel loads its own lookups and balances.
+      http
+        .match(
+          (r) =>
+            r.url.includes('/crm/') ||
+            r.url === `${base}/goods-movements` ||
+            r.url === `${base}/goods-balances`,
+        )
+        .forEach((r) => r.flush(envelope([])));
       await fixture.whenStable();
       fixture.detectChanges();
 

@@ -130,7 +130,10 @@ describe('LpReportComponent', () => {
     };
     TestBed.configureTestingModule({
       providers: [
-        provideRouter([{ path: '**', component: LpReportComponent }]),
+        // The report sits below the workspace, as in the real routes: its back link (`..`) needs a parent route.
+        provideRouter([
+          { path: 'liquidity-planning', children: [{ path: 'report', component: LpReportComponent }] },
+        ]),
         LiquidityPlanningStore,
         { provide: LiquidityPlanningApiService, useValue: api },
         { provide: NzMessageService, useValue: messageSpy },
@@ -141,7 +144,7 @@ describe('LpReportComponent', () => {
     const print = vi.spyOn(window, 'print').mockImplementation(() => undefined);
 
     const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/', LpReportComponent);
+    await harness.navigateByUrl('/liquidity-planning/report', LpReportComponent);
     await harness.fixture.whenStable();
     harness.detectChanges();
 

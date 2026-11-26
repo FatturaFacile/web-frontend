@@ -29,3 +29,9 @@ globalThis.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise
 
   return new Response('Not Found', { status: 404 });
 };
+
+// jsdom does not expose crypto.subtle; borrow the Node implementation (browsers have it in secure contexts).
+if (!globalThis.crypto?.subtle) {
+  const { webcrypto } = await import('node:crypto');
+  Object.defineProperty(globalThis.crypto, 'subtle', { value: webcrypto.subtle, configurable: true });
+}

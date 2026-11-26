@@ -3,6 +3,8 @@ import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
+import { provideNzDateFnsAdapter } from 'ng-zorro-antd/core/time';
+import { en_US, provideNzI18n } from 'ng-zorro-antd/i18n';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { of, throwError } from 'rxjs';
@@ -26,7 +28,15 @@ const messageSpy = { success: vi.fn(), error: vi.fn() };
 const meta = { current_page: 1, from: 1, last_page: 1, per_page: 25, to: 3, total: 3 };
 
 describe('ReceivablesItemsComponent', () => {
-  let api: Record<'listItems' | 'getItem' | 'setDispute' | 'reverseAllocation' | 'getUnreconciledPayments' | 'allocate', ReturnType<typeof vi.fn>>;
+  let api: Record<
+    | 'listItems'
+    | 'getItem'
+    | 'setDispute'
+    | 'reverseAllocation'
+    | 'getUnreconciledPayments'
+    | 'allocate',
+    ReturnType<typeof vi.fn>
+  >;
   let canWrite: boolean;
   const rows = [
     item('1'),
@@ -94,6 +104,8 @@ describe('ReceivablesItemsComponent', () => {
         { provide: NzMessageService, useValue: messageSpy },
         { provide: TranslateService, useValue: translateSpy },
         provideNzIcons(icons),
+        provideNzI18n(en_US),
+        provideNzDateFnsAdapter(),
       ],
     });
   });
@@ -141,7 +153,9 @@ describe('ReceivablesItemsComponent', () => {
     await router.navigateByUrl('/');
     await harness.fixture.whenStable();
 
-    expect(api.listItems).toHaveBeenLastCalledWith(expect.not.objectContaining({ bucket: '31_60' }));
+    expect(api.listItems).toHaveBeenLastCalledWith(
+      expect.not.objectContaining({ bucket: '31_60' }),
+    );
   });
 
   it('rewrites the url, and reloads from it, when a filter changes', async () => {

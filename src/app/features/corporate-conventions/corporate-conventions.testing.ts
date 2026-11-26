@@ -1,6 +1,8 @@
 import { EnvironmentProviders, Provider, signal } from '@angular/core';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
+import { provideNzDateFnsAdapter } from 'ng-zorro-antd/core/time';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
+import { en_US, provideNzI18n } from 'ng-zorro-antd/i18n';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { vi } from 'vitest';
 import { icons } from '../../icons-provider';
@@ -221,5 +223,7 @@ export function baseProviders(
       },
     },
     provideNzIcons(icons),
+    provideNzI18n(en_US),
+    provideNzDateFnsAdapter(),
   ];
 }

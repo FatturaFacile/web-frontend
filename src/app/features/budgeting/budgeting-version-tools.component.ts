@@ -254,7 +254,9 @@ export class BudgetingVersionToolsComponent {
         this.created.emit(createdId);
       }
     };
-    const failed = (error: unknown): void => this.message.error(apiErrorText(error) ?? this.translate.instant('BUDGETING.ACTION_ERROR'));
+    const failed = (error: unknown): void => {
+      this.message.error(apiErrorText(error) ?? this.translate.instant('BUDGETING.ACTION_ERROR'));
+    };
 
     switch (this.tool()) {
       case 'revise': {

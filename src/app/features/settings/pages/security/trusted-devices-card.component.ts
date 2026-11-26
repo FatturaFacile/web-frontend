@@ -5,7 +5,7 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
+import { NzModalService } from 'ng-zorro-antd/modal';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { firstValueFrom } from 'rxjs';
 import { AuthApiService, I18nService, TrustedDevice } from '@core';
@@ -17,7 +17,7 @@ import { TranslatePipe } from '@shared';
  */
 @Component({
   selector: 'app-trusted-devices-card',
-  imports: [DatePipe, NzAlertModule, NzButtonModule, NzCardModule, NzIconModule, NzModalModule, NzTableModule, TranslatePipe],
+  imports: [DatePipe, NzAlertModule, NzButtonModule, NzCardModule, NzIconModule, NzTableModule, TranslatePipe],
   template: `
     <nz-card [nzTitle]="'security.mfa.trusted.title' | translate" [nzLoading]="loading()" [nzExtra]="extraTpl">
       <ng-template #extraTpl>

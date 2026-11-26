@@ -3,6 +3,8 @@ import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
+import { provideNzDateFnsAdapter } from 'ng-zorro-antd/core/time';
+import { en_US, provideNzI18n } from 'ng-zorro-antd/i18n';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { of, throwError } from 'rxjs';
@@ -25,7 +27,10 @@ const translateSpy = {
 const messageSpy = { success: vi.fn(), error: vi.fn() };
 
 describe('CustomerStatementComponent', () => {
-  let api: Record<'getStatement' | 'downloadStatementPdf' | 'downloadStatementXlsx' | 'sendStatement', ReturnType<typeof vi.fn>>;
+  let api: Record<
+    'getStatement' | 'downloadStatementPdf' | 'downloadStatementXlsx' | 'sendStatement',
+    ReturnType<typeof vi.fn>
+  >;
   let canWrite: boolean;
   const originalCreate = URL.createObjectURL;
   const originalRevoke = URL.revokeObjectURL;
@@ -61,6 +66,8 @@ describe('CustomerStatementComponent', () => {
         { provide: NzMessageService, useValue: messageSpy },
         { provide: TranslateService, useValue: translateSpy },
         provideNzIcons(icons),
+        provideNzI18n(en_US),
+        provideNzDateFnsAdapter(),
       ],
     });
   });
@@ -90,7 +97,10 @@ describe('CustomerStatementComponent', () => {
     const { root } = await open('/statement/c-1');
     const text = root.textContent as string;
 
-    expect(api.getStatement).toHaveBeenCalledWith('c-1', expect.objectContaining({ to: expect.any(String) }));
+    expect(api.getStatement).toHaveBeenCalledWith(
+      'c-1',
+      expect.objectContaining({ to: expect.any(String) }),
+    );
     expect(text).toContain('Rossi SRL');
     expect(text).toContain('AR.OPENING_BALANCE');
     expect(text).toContain('AR.CLOSING_BALANCE');
@@ -113,28 +123,40 @@ describe('CustomerStatementComponent', () => {
 
     component.onRange([new Date(2026, 1, 1), new Date(2026, 1, 28)]);
 
-    expect(api.getStatement).toHaveBeenLastCalledWith('c-1', { from: '2026-02-01', to: '2026-02-28' });
+    expect(api.getStatement).toHaveBeenLastCalledWith('c-1', {
+      from: '2026-02-01',
+      to: '2026-02-28',
+    });
     // An incomplete range (cleared picker) changes nothing.
     component.onRange(null);
     expect(api.getStatement).toHaveBeenCalledTimes(2);
   });
 
   it('downloads the pdf and the excel file through the browser', async () => {
-    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => undefined);
+    const click = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(() => undefined);
     const { component } = await open('/statement/c-1');
 
     await component.download('pdf');
     await component.download('xlsx');
 
-    expect(api.downloadStatementPdf).toHaveBeenCalledWith('c-1', expect.objectContaining({ from: expect.any(String) }));
+    expect(api.downloadStatementPdf).toHaveBeenCalledWith(
+      'c-1',
+      expect.objectContaining({ from: expect.any(String) }),
+    );
     expect(api.downloadStatementXlsx).toHaveBeenCalledTimes(1);
     expect(click).toHaveBeenCalledTimes(2);
-    expect((click.mock.contexts[0] as HTMLAnchorElement).download).toMatch(/^statement-rossi-srl-.*\.pdf$/);
+    expect((click.mock.contexts[0] as HTMLAnchorElement).download).toMatch(
+      /^statement-rossi-srl-.*\.pdf$/,
+    );
     expect((click.mock.contexts[1] as HTMLAnchorElement).download).toMatch(/\.xlsx$/);
   });
 
   it('tells the user when a download fails', async () => {
-    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => undefined);
+    const click = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(() => undefined);
     const { component } = await open('/statement/c-1');
     api.downloadStatementPdf.mockReturnValueOnce(
       throwError(() => new HttpErrorResponse({ status: 500 })),
@@ -162,7 +184,9 @@ describe('CustomerStatementComponent', () => {
       recipient: 'office@rossi.example',
     });
     expect(component.sendOpen()).toBe(false);
-    expect(translateSpy.instant).toHaveBeenCalledWith('AR.SEND_QUEUED', { recipient: 'office@rossi.example' });
+    expect(translateSpy.instant).toHaveBeenCalledWith('AR.SEND_QUEUED', {
+      recipient: 'office@rossi.example',
+    });
     expect(messageSpy.success).toHaveBeenCalledWith('AR.SEND_QUEUED');
   });
 

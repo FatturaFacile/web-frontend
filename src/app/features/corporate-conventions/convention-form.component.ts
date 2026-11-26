@@ -1,5 +1,6 @@
 import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs';
 import {
   FormsModule,
   NonNullableFormBuilder,
@@ -729,6 +730,11 @@ export class ConventionFormComponent {
   protected readonly values = toSignal(this.form.valueChanges, {
     initialValue: this.form.getRawValue(),
   });
+  /** Validity as a signal: `form.valid` is not tracked, and the value stream can emit before the status is final. */
+  protected readonly formValid = toSignal(
+    this.form.statusChanges.pipe(map((status) => status === 'VALID')),
+    { initialValue: this.form.valid },
+  );
   protected readonly rules = signal<CcvDiscountRule[]>([emptyRule(10)]);
   protected readonly pasted = signal('');
   protected readonly localPreview = signal<LocalPreviewRow[]>([]);
@@ -744,7 +750,7 @@ export class ConventionFormComponent {
   });
   protected readonly canSubmit = computed(
     () =>
-      this.form.valid &&
+      this.formValid() &&
       this.rules().length > 0 &&
       this.problems().length === 0 &&
       this.invalidDomains().length === 0 &&

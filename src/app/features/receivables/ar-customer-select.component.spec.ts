@@ -93,7 +93,9 @@ describe('ArCustomerSelectComponent', () => {
 
     const ids = fixture.componentInstance.options().map((option) => option.id);
     expect(ids.filter((id) => id === 'c-1')).toHaveLength(1);
-    expect(fixture.componentInstance.options().find((option) => option.id === 'c-1')?.name).toBe('Rossi SRL');
+    expect(fixture.componentInstance.options().find((option) => option.id === 'c-1')?.name).toBe(
+      'Rossi SRL',
+    );
   });
 
   it('tells the parent which customer was picked, or none when it is cleared', async () => {

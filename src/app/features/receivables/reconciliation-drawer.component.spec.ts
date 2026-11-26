@@ -1,5 +1,7 @@
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideNzDateFnsAdapter } from 'ng-zorro-antd/core/time';
+import { en_US, provideNzI18n } from 'ng-zorro-antd/i18n';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { of, throwError } from 'rxjs';
@@ -28,7 +30,9 @@ describe('ReconciliationDrawerComponent', () => {
     api = {
       getUnreconciledPayments: vi.fn(() => of({ data: payments })),
       allocate: vi.fn(() =>
-        of({ data: { allocations: [], items: [item('1', { open_amount: '0.00', status: 'paid' })] } }),
+        of({
+          data: { allocations: [], items: [item('1', { open_amount: '0.00', status: 'paid' })] },
+        }),
       ),
     };
     TestBed.configureTestingModule({
@@ -37,6 +41,8 @@ describe('ReconciliationDrawerComponent', () => {
         { provide: NzMessageService, useValue: messageSpy },
         { provide: TranslateService, useValue: translateSpy },
         provideNzIcons(icons),
+        provideNzI18n(en_US),
+        provideNzDateFnsAdapter(),
       ],
     });
   });
@@ -104,7 +110,10 @@ describe('ReconciliationDrawerComponent', () => {
         () =>
           new HttpErrorResponse({
             status: 422,
-            error: { message: 'Invalid', errors: { amount: ['The amount exceeds what is open on the item.'] } },
+            error: {
+              message: 'Invalid',
+              errors: { amount: ['The amount exceeds what is open on the item.'] },
+            },
           }),
       ),
     );
@@ -133,9 +142,9 @@ describe('ReconciliationDrawerComponent', () => {
   it('formats the label of an unreconciled payment', async () => {
     await open();
 
-    expect(fixture.componentInstance.paymentLabel('BONIFICO 12', '2026-03-20', '400.00', 'EUR')).toBe(
-      'BONIFICO 12 · 2026-03-20 · 400.00 EUR',
-    );
+    expect(
+      fixture.componentInstance.paymentLabel('BONIFICO 12', '2026-03-20', '400.00', 'EUR'),
+    ).toBe('BONIFICO 12 · 2026-03-20 · 400.00 EUR');
     expect(fixture.componentInstance.paymentLabel(null, '2026-03-20', undefined, 'EUR')).toBe(
       '— · 2026-03-20 · EUR',
     );

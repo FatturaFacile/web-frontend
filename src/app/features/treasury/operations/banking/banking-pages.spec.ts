@@ -1,5 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
+import { provideNzIcons } from 'ng-zorro-antd/icon';
+import { icons } from '../../../../icons-provider';
+import { provideNzDateFnsAdapter } from 'ng-zorro-antd/core/time';
+import { en_US, provideNzI18n } from 'ng-zorro-antd/i18n';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
@@ -42,6 +46,9 @@ async function mount<T>(
   TestBed.resetTestingModule();
   await TestBed.configureTestingModule({
     providers: [
+      provideNzI18n(en_US),
+      provideNzIcons(icons),
+      provideNzDateFnsAdapter(),
       provideHttpClient(),
       provideRouter([]),
       { provide: TreasuryBankingApiService, useValue: banking },

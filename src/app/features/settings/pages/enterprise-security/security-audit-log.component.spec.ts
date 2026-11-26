@@ -1,5 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
+import { provideNzDateFnsAdapter } from 'ng-zorro-antd/core/time';
+import { en_US, provideNzI18n } from 'ng-zorro-antd/i18n';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { of, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -67,6 +69,8 @@ describe('SecurityAuditLogComponent', () => {
     TestBed.configureTestingModule({
       providers: [
         provideNzIcons(icons),
+        provideNzI18n(en_US),
+        provideNzDateFnsAdapter(),
         { provide: EnterpriseAuthApiService, useValue: api },
         { provide: SettingsApiService, useValue: settingsApi },
       ],
@@ -89,7 +93,7 @@ describe('SecurityAuditLogComponent', () => {
     expect(api.getSecurityAudit).toHaveBeenCalledWith({
       from: undefined,
       to: undefined,
-      user_id: undefined,
+      subject_user_id: undefined,
       event_type: undefined,
       status: undefined,
       auth_method: undefined,
@@ -134,7 +138,7 @@ describe('SecurityAuditLogComponent', () => {
     expect(api.getSecurityAudit).toHaveBeenLastCalledWith({
       from: '2026-11-01',
       to: '2026-11-30',
-      user_id: 'u1',
+      subject_user_id: 'u1',
       event_type: ['login_failed', 'login_succeeded'],
       status: 'failure',
       auth_method: 'sso_saml',
@@ -152,7 +156,7 @@ describe('SecurityAuditLogComponent', () => {
 
     expect(component['userId']()).toBeNull();
     expect(component['status']()).toBeNull();
-    expect(api.getSecurityAudit).toHaveBeenLastCalledWith(expect.objectContaining({ user_id: undefined, status: undefined, page: 1 }));
+    expect(api.getSecurityAudit).toHaveBeenLastCalledWith(expect.objectContaining({ subject_user_id: undefined, status: undefined, page: 1 }));
   });
 
   it('keeps the filters when the page changes and asks the server for that page', () => {

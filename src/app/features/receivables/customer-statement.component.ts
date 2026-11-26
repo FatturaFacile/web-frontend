@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, computed, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -65,38 +65,40 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       [title]="'AR.STATEMENT_TITLE' | translate"
       [subtitle]="'AR.STATEMENT_SUBTITLE' | translate"
     >
-      @if (customerId(); as id) {
-        <a nz-button [routerLink]="['/receivables/ledger', id]">{{ 'AR.LEDGER' | translate }}</a>
-        <button
-          nz-button
-          type="button"
-          [disabled]="!store.statement() || !store.periodIsValid()"
-          [nzLoading]="store.downloading() === 'pdf'"
-          (click)="download('pdf')"
-        >
-          {{ 'AR.DOWNLOAD_PDF' | translate }}
-        </button>
-        <button
-          nz-button
-          type="button"
-          [disabled]="!store.statement() || !store.periodIsValid()"
-          [nzLoading]="store.downloading() === 'xlsx'"
-          (click)="download('xlsx')"
-        >
-          {{ 'AR.DOWNLOAD_XLSX' | translate }}
-        </button>
-        @if (canWrite) {
+      <div class="header-actions">
+        @if (customerId(); as id) {
+          <a nz-button [routerLink]="['/receivables/ledger', id]">{{ 'AR.LEDGER' | translate }}</a>
           <button
             nz-button
-            nzType="primary"
             type="button"
             [disabled]="!store.statement() || !store.periodIsValid()"
-            (click)="openSend()"
+            [nzLoading]="store.downloading() === 'pdf'"
+            (click)="download('pdf')"
           >
-            {{ 'AR.SEND_EMAIL' | translate }}
+            {{ 'AR.DOWNLOAD_PDF' | translate }}
           </button>
+          <button
+            nz-button
+            type="button"
+            [disabled]="!store.statement() || !store.periodIsValid()"
+            [nzLoading]="store.downloading() === 'xlsx'"
+            (click)="download('xlsx')"
+          >
+            {{ 'AR.DOWNLOAD_XLSX' | translate }}
+          </button>
+          @if (canWrite) {
+            <button
+              nz-button
+              nzType="primary"
+              type="button"
+              [disabled]="!store.statement() || !store.periodIsValid()"
+              (click)="openSend()"
+            >
+              {{ 'AR.SEND_EMAIL' | translate }}
+            </button>
+          }
         }
-      }
+      </div>
     </app-page-header>
 
     <div class="toolbar">
@@ -120,7 +122,12 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         <nz-alert class="card" nzType="error" nzShowIcon [nzMessage]="error | translate"></nz-alert>
       }
       @if (!store.periodIsValid()) {
-        <nz-alert class="card" nzType="warning" nzShowIcon [nzMessage]="'AR.ERR_PERIOD' | translate"></nz-alert>
+        <nz-alert
+          class="card"
+          nzType="warning"
+          nzShowIcon
+          [nzMessage]="'AR.ERR_PERIOD' | translate"
+        ></nz-alert>
       }
 
       <nz-spin [nzSpinning]="store.loading()">
@@ -129,8 +136,8 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
           <nz-card class="card" [nzTitle]="statement.customer.name">
             <p class="muted">
-              {{ statement.tenant.name }} ·
-              {{ 'AR.PERIOD' | translate }}: {{ statement.period.from }} – {{ statement.period.to }} ·
+              {{ statement.tenant.name }} · {{ 'AR.PERIOD' | translate }}:
+              {{ statement.period.from }} – {{ statement.period.to }} ·
               {{ 'AR.AS_OF' | translate: { date: statement.as_of } }}
             </p>
 
@@ -236,9 +243,13 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                         <td class="num">{{ row.original_amount | money: money }}</td>
                         <td class="num">{{ row.open_amount | money: money }}</td>
                         <td>
-                          <nz-tag [nzColor]="color(row.status)">{{ 'AR.STATUS_' + row.status.toUpperCase() | translate }}</nz-tag>
+                          <nz-tag [nzColor]="color(row.status)">{{
+                            'AR.STATUS_' + row.status.toUpperCase() | translate
+                          }}</nz-tag>
                           @if (row.is_overdue) {
-                            <span class="negative">{{ 'AR.DAYS_PAST_DUE' | translate: { days: row.days_past_due } }}</span>
+                            <span class="negative">{{
+                              'AR.DAYS_PAST_DUE' | translate: { days: row.days_past_due }
+                            }}</span>
                           }
                         </td>
                       </tr>
@@ -264,7 +275,9 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 <tbody>
                   <tr>
                     @for (bucket of statement.aging.buckets; track bucket.key) {
-                      <td class="num">{{ (statement.aging.totals[bucket.key] ?? '0.00') | money: money }}</td>
+                      <td class="num">
+                        {{ statement.aging.totals[bucket.key] ?? '0.00' | money: money }}
+                      </td>
                     }
                     <td class="num">{{ statement.aging.total_open | money: money }}</td>
                   </tr>
@@ -314,7 +327,10 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
               (ngModelChange)="locale.set($event)"
             >
               @for (code of locales; track code) {
-                <nz-option [nzValue]="code" [nzLabel]="'AR.LOCALE_' + code.toUpperCase() | translate"></nz-option>
+                <nz-option
+                  [nzValue]="code"
+                  [nzLabel]="'AR.LOCALE_' + code.toUpperCase() | translate"
+                ></nz-option>
               }
             </nz-select>
           </div>
@@ -324,6 +340,7 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   `,
 })
 export class CustomerStatementComponent implements OnInit {
+  private readonly destroyRef = inject(DestroyRef);
   readonly store = inject(CustomerStatementStore);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -353,7 +370,7 @@ export class CustomerStatementComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.route.paramMap.pipe(takeUntilDestroyed()).subscribe((params) => {
+    this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const id = params.get('customerId');
       this.customerId.set(id);
       if (id) {
@@ -371,7 +388,9 @@ export class CustomerStatementComponent implements OnInit {
   }
 
   onCustomer(option: ArCustomerOption | null): void {
-    void this.router.navigate(option ? ['/receivables/statement', option.id] : ['/receivables/statement']);
+    void this.router.navigate(
+      option ? ['/receivables/statement', option.id] : ['/receivables/statement'],
+    );
   }
 
   onRange(dates: Date[] | null): void {
@@ -404,7 +423,9 @@ export class CustomerStatementComponent implements OnInit {
     const result = await this.store.send(this.recipient(), this.locale());
     if (result.ok && result.result) {
       this.sendOpen.set(false);
-      this.message.success(this.translate.instant('AR.SEND_QUEUED', { recipient: result.result.recipient }));
+      this.message.success(
+        this.translate.instant('AR.SEND_QUEUED', { recipient: result.result.recipient }),
+      );
     } else {
       this.message.error(result.message ?? this.translate.instant('AR.SEND_ERROR'));
     }

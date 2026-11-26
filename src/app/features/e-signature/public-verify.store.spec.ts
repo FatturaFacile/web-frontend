@@ -1,7 +1,8 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
+import { webcrypto } from 'node:crypto';
 import { of, throwError } from 'rxjs';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ElectronicSignatureApiService } from '@core';
 import { PublicVerifyStore } from './public-verify.store';
 
@@ -11,7 +12,13 @@ describe('PublicVerifyStore', () => {
   let api: Record<string, ReturnType<typeof vi.fn>>;
   let store: InstanceType<typeof PublicVerifyStore>;
 
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   beforeEach(() => {
+    // jsdom exposes no `crypto.subtle` (browsers do), so the spec provides Node's Web Crypto implementation.
+    vi.stubGlobal('crypto', webcrypto);
     api = {
       verifyByCode: vi.fn(() => of(FOUND)),
       verifyByHash: vi.fn(() => of(FOUND)),

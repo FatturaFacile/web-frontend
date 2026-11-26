@@ -32,6 +32,7 @@ import { RunMatchingModalComponent } from './run-matching-modal.component';
       [title]="'PAGE_TITLE.PROCUREMENT_INVOICE_MATCHING' | translate"
       [subtitle]="'invoiceMatching.page.workbenchSubtitle' | translate"
     >
+    <ng-container ngProjectAs="[header-actions]">
       <a nz-button routerLink="/procurement/invoice-matching/blocked" data-testid="open-blocked">{{
         'NAV.PROCUREMENT_INVOICE_MATCHING_BLOCKED' | translate
       }}</a>
@@ -50,6 +51,7 @@ import { RunMatchingModalComponent } from './run-matching-modal.component';
       >
         {{ 'invoiceMatching.button.runMatching' | translate }}
       </button>
+    </ng-container>
     </app-page-header>
 
     <section class="kpis" data-testid="kpis">

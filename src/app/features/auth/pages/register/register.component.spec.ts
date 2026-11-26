@@ -209,7 +209,7 @@ describe('RegisterComponent', () => {
     const root: HTMLElement = fixture.nativeElement;
 
     const requirements = root.querySelector('#password-requirements');
-    expect(requirements?.textContent).toContain('AUTH.PASSWORD_REQUIREMENTS');
+    expect(requirements?.textContent).toContain('security.password.rules.min_length');
     expect(root.querySelector('#password')?.getAttribute('aria-describedby')).toBe(
       'password-requirements',
     );

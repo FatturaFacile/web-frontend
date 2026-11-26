@@ -58,13 +58,13 @@ export const YearEndClosingStore = signalStore(
       glApi = inject(GeneralLedgerApiService),
       api = inject(GeneralLedgerPrimaNotaApiService),
     ) => {
-      const loadWorkflow = async (): Promise<void> => {
+      const loadWorkflow = async (keepError = false): Promise<void> => {
         const fiscalYearId = store.fiscalYearId();
         if (!fiscalYearId) {
           patchState(store, { workflow: null });
           return;
         }
-        patchState(store, { loading: true, error: null });
+        patchState(store, keepError ? { loading: true } : { loading: true, error: null });
         try {
           const res = await firstValueFrom(api.getClosingWorkflow(fiscalYearId, store.ledger()));
           patchState(store, { workflow: res.data, loading: false });
@@ -119,7 +119,7 @@ export const YearEndClosingStore = signalStore(
             return true;
           } catch (error) {
             patchState(store, { running: null, error });
-            await loadWorkflow();
+            await loadWorkflow(true);
             return false;
           }
         },

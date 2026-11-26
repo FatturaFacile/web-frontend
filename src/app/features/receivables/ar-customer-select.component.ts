@@ -93,7 +93,10 @@ export class ArCustomerSelectComponent {
   }
 
   private merge(contacts: readonly ContactResource[]): void {
-    const incoming = contacts.map((contact) => ({ id: contact.id, name: contactDisplayName(contact) }));
+    const incoming = contacts.map((contact) => ({
+      id: contact.id,
+      name: contactDisplayName(contact),
+    }));
     const known = new Map(this.options().map((option) => [option.id, option]));
     for (const option of incoming) {
       known.set(option.id, option);

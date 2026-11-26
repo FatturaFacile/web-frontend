@@ -24,7 +24,12 @@ describe('ReceivablesDashboardStore', () => {
     expect(api.getDashboard).toHaveBeenCalledWith(undefined);
     expect(store.loading()).toBe(false);
     expect(store.kpis()?.total_exposure).toBe('2500.00');
-    expect(store.buckets().map((bucket) => bucket.key)).toEqual(['current', '1_30', '31_60', '121_plus']);
+    expect(store.buckets().map((bucket) => bucket.key)).toEqual([
+      'current',
+      '1_30',
+      '31_60',
+      '121_plus',
+    ]);
     expect(store.availableCurrencies()).toEqual(['EUR', 'CHF']);
     expect(store.activeCurrency()).toBe('EUR');
     expect(store.hasData()).toBe(true);
