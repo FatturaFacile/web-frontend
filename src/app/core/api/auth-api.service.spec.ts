@@ -3,6 +3,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { AuthApiService, LoginPayload } from '@core/api/auth-api.service';
+import { LOCALLY_HANDLED_ERROR_STATUSES } from '@core/http/error-handling.context';
 import { environment } from '@env';
 import { TEST_API_ORIGIN, TEST_API_BASE_URL } from '../../../testing/api';
 import { TEST_PASSWORD } from '../../../testing/credentials';
@@ -405,5 +406,224 @@ describe('AuthApiService (Sanctum SPA Cookie Authentication)', () => {
     expect(req.request.withCredentials).toBe(true);
     expect(req.request.body).toEqual({ code: 'abc', state: 'xyz' });
     req.flush({ data: {} });
+  });
+
+  describe('second factor challenge', () => {
+    it('answers the challenge with the proofs and the remember device flag, handling the refusals locally', () => {
+      service
+        .twoFactorChallenge({ challenge_token: 'tok', email_code: '123456', remember_device: true, device_name: 'Laptop' })
+        .subscribe();
+
+      const req = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/two-factor-challenge`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.withCredentials).toBe(true);
+      expect(req.request.body).toEqual({ challenge_token: 'tok', email_code: '123456', remember_device: true, device_name: 'Laptop' });
+      expect(req.request.context.get(LOCALLY_HANDLED_ERROR_STATUSES)).toEqual([401, 403, 422, 423, 429]);
+      req.flush({ data: {} });
+    });
+
+    it('sends the security key assertion with its ceremony', () => {
+      service.twoFactorChallenge({ challenge_token: 'tok', webauthn: { ceremony_id: 'c1', credential: { id: 'x' } } }).subscribe();
+
+      const req = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/two-factor-challenge`);
+      expect(req.request.body.webauthn).toEqual({ ceremony_id: 'c1', credential: { id: 'x' } });
+      req.flush({ data: {} });
+    });
+
+    it('asks for an emailed sign-in code', () => {
+      let dispatch: unknown;
+      service.sendTwoFactorEmailCode('tok').subscribe((res) => (dispatch = res.data));
+
+      const req = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/two-factor/challenge/email`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ challenge_token: 'tok' });
+      expect(req.request.context.get(LOCALLY_HANDLED_ERROR_STATUSES)).toContain(429);
+      req.flush({ data: { expires_in: 600, resend_available_in: 60 } });
+      expect(dispatch).toEqual({ expires_in: 600, resend_available_in: 60 });
+    });
+
+    it('asks for the WebAuthn options of the challenge', () => {
+      service.twoFactorWebauthnOptions('tok').subscribe();
+
+      const req = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/two-factor/challenge/webauthn/options`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ challenge_token: 'tok' });
+      req.flush({ data: { ceremony_id: 'c1', options: {} } });
+    });
+
+    it('sends the remembered device token with the login', () => {
+      const payload: LoginPayload = { email: 'a@b.test', password: TEST_PASSWORD, trusted_device_token: 't'.repeat(64) };
+      service.login(payload).subscribe();
+
+      httpTesting.expectOne(`${TEST_API_ORIGIN}/sanctum/csrf-cookie`).flush('');
+      const req = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/login`);
+      expect(req.request.body.trusted_device_token).toBe('t'.repeat(64));
+      req.flush({ data: {} });
+    });
+  });
+
+  describe('email code factor', () => {
+    it('starts the enrolment with the password and confirms it with the code', () => {
+      service.enableEmailTwoFactor({ current_password: TEST_PASSWORD }).subscribe();
+      const enable = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/two-factor/email/enable`);
+      expect(enable.request.method).toBe('POST');
+      expect(enable.request.body).toEqual({ current_password: TEST_PASSWORD });
+      enable.flush({ data: { expires_in: 600, resend_available_in: 60 } });
+
+      service.confirmEmailTwoFactor({ code: '123456' }).subscribe();
+      const confirm = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/two-factor/email/confirm`);
+      expect(confirm.request.body).toEqual({ code: '123456' });
+      confirm.flush({ data: { recovery_codes: [], methods: ['email'] } });
+    });
+
+    it('emails a verification code for a sensitive change', () => {
+      service.sendEmailVerificationCode().subscribe();
+
+      const req = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/two-factor/email/send`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({});
+      req.flush({ data: { expires_in: 600, resend_available_in: 60 } });
+    });
+
+    it('turns the factor off with the password in the body of a DELETE', () => {
+      service.disableEmailTwoFactor({ current_password: TEST_PASSWORD }).subscribe();
+
+      const req = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/two-factor/email`);
+      expect(req.request.method).toBe('DELETE');
+      expect(req.request.body).toEqual({ current_password: TEST_PASSWORD });
+      req.flush({ data: { methods: ['totp'] } });
+    });
+
+    it('disables the authenticator with the emailed code as proof', () => {
+      service.disableTwoFactor({ current_password: TEST_PASSWORD, email_code: '654321' }).subscribe();
+
+      const req = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/two-factor/disable`);
+      expect(req.request.body).toEqual({ current_password: TEST_PASSWORD, email_code: '654321' });
+      req.flush({ data: {} });
+    });
+
+    it('changes the password with the emailed code as proof', () => {
+      service
+        .changePassword({ current_password: TEST_PASSWORD, password: 'n', password_confirmation: 'n', email_code: '111222' })
+        .subscribe();
+
+      const req = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/password`);
+      expect(req.request.method).toBe('PUT');
+      expect(req.request.body.email_code).toBe('111222');
+      req.flush({ data: {} });
+    });
+  });
+
+  describe('trusted devices', () => {
+    it('lists the devices with the days and the switch of the feature', () => {
+      let meta: unknown;
+      service.getTrustedDevices().subscribe((res) => (meta = res.meta));
+
+      const req = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/two-factor/trusted-devices`);
+      expect(req.request.method).toBe('GET');
+      req.flush({ data: [], meta: { days: 30, enabled: true } });
+      expect(meta).toEqual({ days: 30, enabled: true });
+    });
+
+    it('revokes one device and all of them', () => {
+      service.revokeTrustedDevice('d1').subscribe();
+      const one = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/two-factor/trusted-devices/d1`);
+      expect(one.request.method).toBe('DELETE');
+      one.flush({ data: null });
+
+      service.revokeAllTrustedDevices().subscribe();
+      const all = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/two-factor/trusted-devices`);
+      expect(all.request.method).toBe('DELETE');
+      all.flush({ data: { revoked: 2 } });
+    });
+  });
+
+  describe('password policy', () => {
+    it('checks a candidate password with the account and tenant', () => {
+      service.checkPassword({ password: TEST_PASSWORD, email: 'a@b.test', tenant_id: 't1' }).subscribe();
+
+      const req = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/password-policy/check`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ password: TEST_PASSWORD, email: 'a@b.test', tenant_id: 't1' });
+      req.flush({ data: { rules: [], acceptable: true, strength: 4 } });
+    });
+
+    it('reads the public rules of a tenant and the policy of the signed-in user', () => {
+      service.getPasswordPolicyRules('t1').subscribe();
+      const rules = httpTesting.expectOne((r) => r.url === `${TEST_API_BASE_URL}/auth/password-policy/rules`);
+      expect(rules.request.params.get('tenant_id')).toBe('t1');
+      rules.flush({ data: {} });
+
+      service.getPasswordPolicyRules().subscribe();
+      const anonymous = httpTesting.expectOne((r) => r.url === `${TEST_API_BASE_URL}/auth/password-policy/rules`);
+      expect(anonymous.request.params.has('tenant_id')).toBe(false);
+      anonymous.flush({ data: {} });
+
+      service.getPasswordPolicy().subscribe();
+      expect(httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/password-policy`).request.method).toBe('GET');
+    });
+  });
+
+  describe('SMS factor', () => {
+    it('asks for a sign-in code by SMS with the challenge token, handling the refusals locally', () => {
+      service.sendTwoFactorSmsCode('tok').subscribe();
+
+      const req = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/two-factor/challenge/sms`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ challenge_token: 'tok' });
+      expect(req.request.context.get(LOCALLY_HANDLED_ERROR_STATUSES)).toContain(429);
+      req.flush({ data: { expires_in: 600, resend_available_in: 60 } });
+    });
+
+    it('answers the challenge with the SMS code', () => {
+      service.twoFactorChallenge({ challenge_token: 'tok', sms_code: '123456' }).subscribe();
+
+      const req = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/two-factor-challenge`);
+      expect(req.request.body).toEqual({ challenge_token: 'tok', sms_code: '123456' });
+      req.flush({ data: {} });
+    });
+
+    it('starts the enrolment with the password and the phone, and confirms it with the code', () => {
+      service.enableSmsTwoFactor({ current_password: TEST_PASSWORD, phone: '+41791234567' }).subscribe();
+      const enable = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/two-factor/sms/enable`);
+      expect(enable.request.method).toBe('POST');
+      expect(enable.request.body).toEqual({ current_password: TEST_PASSWORD, phone: '+41791234567' });
+      enable.flush({ data: { phone: '+41*******67', expires_in: 600, resend_available_in: 60 } });
+
+      service.confirmSmsTwoFactor({ code: '123456' }).subscribe();
+      const confirm = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/two-factor/sms/confirm`);
+      expect(confirm.request.body).toEqual({ code: '123456' });
+      confirm.flush({ data: { recovery_codes: [], methods: ['sms'] } });
+    });
+
+    it('sends a verification code by SMS for a sensitive change', () => {
+      service.sendSmsVerificationCode().subscribe();
+
+      const req = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/two-factor/sms/send`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({});
+      req.flush({ data: { expires_in: 600, resend_available_in: 60 } });
+    });
+
+    it('turns the factor off with the password in the body of a DELETE', () => {
+      service.disableSmsTwoFactor({ current_password: TEST_PASSWORD }).subscribe();
+
+      const req = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/two-factor/sms`);
+      expect(req.request.method).toBe('DELETE');
+      expect(req.request.body).toEqual({ current_password: TEST_PASSWORD });
+      req.flush({ data: { methods: [] } });
+    });
+
+    it('accepts the SMS code as proof to disable the authenticator and to change the password', () => {
+      service.disableTwoFactor({ current_password: TEST_PASSWORD, sms_code: '111111' }).subscribe();
+      const disable = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/two-factor/disable`);
+      expect(disable.request.body.sms_code).toBe('111111');
+      disable.flush({ data: {} });
+
+      service.changePassword({ current_password: TEST_PASSWORD, password: 'n', password_confirmation: 'n', sms_code: '222222' }).subscribe();
+      const change = httpTesting.expectOne(`${TEST_API_BASE_URL}/auth/password`);
+      expect(change.request.body.sms_code).toBe('222222');
+      change.flush({ data: {} });
+    });
   });
 });

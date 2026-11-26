@@ -48,6 +48,10 @@ export interface UserResource {
   roles?: string[];
   is_active: boolean;
   suspended?: boolean;
+  /** True while the account is locked after too many failed sign-ins. */
+  locked?: boolean;
+  locked_until?: string | null;
+  failed_attempts?: number;
   /** Raw permissions of the membership (`deny:crm`, `crm.read`, `gl.*`). */
   permissions?: string[];
   modules?: MemberModuleLevels;

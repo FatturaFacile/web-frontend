@@ -4,19 +4,19 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter, Router } from '@angular/router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { of, throwError } from 'rxjs';
-import { AUTH_PROBLEM, AuthApiService, AuthStore, SsoLoginService } from '@core';
+import { AuthApiService, AuthStore, SsoLoginService } from '@core';
 import { SsoCompleteComponent } from './sso-complete.component';
 
 const CODE = 'c'.repeat(64);
 
 describe('SsoCompleteComponent', () => {
   const exchangeSsoCode = vi.fn();
-  const twoFactorChallenge = vi.fn();
   const consumeSignInCode = vi.fn();
   const consumeOidcParams = vi.fn();
   const completeOidcSso = vi.fn();
   const takeReturnUrl = vi.fn();
   const login = vi.fn();
+  const setupRequired = vi.fn();
 
   function create() {
     TestBed.configureTestingModule({
@@ -25,11 +25,12 @@ describe('SsoCompleteComponent', () => {
         provideRouter([]),
         provideHttpClient(),
         provideHttpClientTesting(),
-        { provide: AuthApiService, useValue: { exchangeSsoCode, completeOidcSso, twoFactorChallenge } },
+        { provide: AuthApiService, useValue: { exchangeSsoCode, completeOidcSso } },
         { provide: SsoLoginService, useValue: { consumeSignInCode, consumeOidcParams, takeReturnUrl } },
       ],
     });
     vi.spyOn(TestBed.inject(AuthStore), 'login').mockImplementation(login);
+    vi.spyOn(TestBed.inject(AuthStore), 'setTwoFactorSetupRequired').mockImplementation(setupRequired);
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
     const fixture = TestBed.createComponent(SsoCompleteComponent);
     fixture.detectChanges();
@@ -41,7 +42,7 @@ describe('SsoCompleteComponent', () => {
   }
 
   beforeEach(() => {
-    [exchangeSsoCode, completeOidcSso, twoFactorChallenge, consumeSignInCode, consumeOidcParams, takeReturnUrl, login].forEach((m) =>
+    [exchangeSsoCode, completeOidcSso, consumeSignInCode, consumeOidcParams, takeReturnUrl, login, setupRequired].forEach((m) =>
       m.mockReset(),
     );
     consumeSignInCode.mockReturnValue(CODE);
@@ -135,50 +136,49 @@ describe('SsoCompleteComponent', () => {
 
   it('asks for the second factor when the API requires it, then signs in', () => {
     exchangeSsoCode.mockReturnValue(
-      of({ data: { two_factor_required: true, challenge_token: 'challenge-1' } }),
+      of({
+        data: {
+          two_factor_required: true,
+          challenge_token: 'challenge-1',
+          methods: ['webauthn', 'recovery_code'],
+          default_method: 'webauthn',
+          trusted_devices_enabled: true,
+        },
+      }),
     );
-    twoFactorChallenge.mockReturnValue(of({ data: { tenant_id: 'tenant-2', user: { id: 'u2' } } }));
 
     const { component, navigate } = create();
 
     expect(component['state']()).toBe('challenge');
+    expect(component['challengeToken']()).toBe('challenge-1');
+    expect(component['challengeMethods']()).toEqual(['webauthn', 'recovery_code']);
+    expect(component['challengeDefaultMethod']()).toBe('webauthn');
+    expect(component['challengeTrustedDevices']()).toBe(true);
     expect(login).not.toHaveBeenCalled();
 
-    component['challengeForm'].setValue({ code: ' 123456 ', recoveryCode: '' });
-    component['onChallengeSubmit']();
+    component['completeLogin']({ tenant_id: 'tenant-2', user: { id: 'u2' } as never });
 
-    expect(twoFactorChallenge).toHaveBeenCalledWith({
-      challenge_token: 'challenge-1',
-      code: '123456',
-      recovery_code: undefined,
-    });
     expect(login).toHaveBeenCalledWith('tenant-2', { id: 'u2' });
     expect(navigate).toHaveBeenCalledWith('/sales/invoices', { replaceUrl: true });
   });
 
-  it('keeps the challenge open on a wrong code and fails on an expired challenge', () => {
+  it('fails the sign-in with the message when the challenge restarts', () => {
     exchangeSsoCode.mockReturnValue(
       of({ data: { two_factor_required: true, challenge_token: 'challenge-1' } }),
     );
     const { component } = create();
-    component['challengeForm'].setValue({ code: '000000', recoveryCode: '' });
 
-    twoFactorChallenge.mockReturnValue(failure(422, AUTH_PROBLEM.TwoFactorCodeInvalid));
-    component['onChallengeSubmit']();
-    expect(component['state']()).toBe('challenge');
-    expect(component['errorMessage']()).toBeTruthy();
+    component['onChallengeRestart']('The verification expired.');
 
-    twoFactorChallenge.mockReturnValue(failure(401, AUTH_PROBLEM.TwoFactorChallengeInvalid));
-    component['onChallengeSubmit']();
     expect(component['state']()).toBe('failed');
+    expect(component['errorMessage']()).toBe('The verification expired.');
   });
 
-  it('opens the two-factor setup when the policy requires it', () => {
+  it('flags the mandatory second factor enrolment instead of opening a modal', () => {
     exchangeSsoCode.mockReturnValue(of({ data: { tenant_id: 't', two_factor_setup_required: true } }));
+    const { navigate } = create();
 
-    const { component, navigate } = create();
-
-    expect(component['showTwoFactorSetup']()).toBe(true);
-    expect(navigate).not.toHaveBeenCalled();
+    expect(setupRequired).toHaveBeenCalledWith(true);
+    expect(navigate).toHaveBeenCalled();
   });
 });

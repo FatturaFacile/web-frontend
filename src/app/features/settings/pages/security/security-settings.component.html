@@ -3,13 +3,13 @@
 <div class="security-container">
   <app-passkeys-card class="section-card" />
 
-  <!-- 2FA SECTION -->
+  <!-- 2FA SECTION (authenticator app) -->
   <nz-card [nzTitle]="'SECURITY.TWO_FACTOR_CARD' | translate" [nzLoading]="isLoading2FA()" class="section-card">
     @if (twoFactorStatus(); as status) {
       <div class="status-overview">
         <div class="status-indicator">
           <span class="status-label">{{ 'SECURITY.CURRENT_STATUS' | translate }}</span>
-          @if (status.enabled) {
+          @if (status.totp_enabled ?? status.enabled) {
             <nz-tag nzColor="success"><i nz-icon nzType="check-circle"></i> {{ 'SECURITY.STATUS_ACTIVE' | translate }}</nz-tag>
           } @else {
             <nz-tag nzColor="default"><i nz-icon nzType="close-circle"></i> {{ 'SECURITY.STATUS_INACTIVE' | translate }}</nz-tag>
@@ -26,7 +26,7 @@
           ></nz-alert>
         }
 
-        @if (status.enabled) {
+        @if (status.totp_enabled ?? status.enabled) {
           <div class="active-details">
             <p>
               {{ 'SECURITY.ACTIVE_SINCE' | translate: { date: (status.confirmed_at | date: 'dd/MM/yyyy HH:mm') ?? '-' } }}
@@ -45,6 +45,14 @@
             </div>
           </div>
         } @else {
+          @if (status.enabled) {
+            <p>{{ 'SECURITY.RECOVERY_CODES_LEFT' | translate: { count: status.remaining_recovery_codes } }}</p>
+            <div class="actions-row">
+              <button nz-button nzType="default" (click)="openRegenerateModal()">
+                <i nz-icon nzType="sync"></i> {{ 'SECURITY.REGENERATE_CODES' | translate }}
+              </button>
+            </div>
+          }
           <div class="inactive-details">
             <p>{{ 'SECURITY.INACTIVE_BODY' | translate }}</p>
             <button nz-button nzType="primary" (click)="showSetupModal.set(true)">
@@ -55,6 +63,15 @@
       </div>
     }
   </nz-card>
+
+  <!-- EMAIL CODE -->
+  <app-email-otp-card class="section-card" [status]="twoFactorStatus()" (changed)="loadTwoFactorStatus()" />
+
+  <!-- SMS CODE -->
+  <app-sms-otp-card class="section-card" [status]="twoFactorStatus()" (changed)="loadTwoFactorStatus()" />
+
+  <!-- TRUSTED DEVICES -->
+  <app-trusted-devices-card class="section-card" (changed)="loadTwoFactorStatus()" />
 
   <!-- ACTIVE SESSIONS SECTION -->
   <nz-card
@@ -103,7 +120,7 @@
               }
             </td>
             <td>
-              <span class="user-agent-text">{{ session.user_agent || '-' }}</span>
+              <span class="user-agent-text" [attr.title]="session.user_agent || null">{{ deviceLabel(session) }}</span>
             </td>
             <td>
               <code>{{ session.ip_address || '-' }}</code>
@@ -167,7 +184,7 @@
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
-        <nz-form-label [nzRequired]="isSecondFactorRequired('recoveryCode')" nzFor="disable-code">{{ 'SECURITY.APP_CODE' | translate }}</nz-form-label>
+        <nz-form-label [nzRequired]="isSecondFactorRequired('recoveryCode', 'emailCode', 'smsCode')" nzFor="disable-code">{{ 'SECURITY.APP_CODE' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="secondFactorError(disableForm.controls.code)">
           <input
             nz-input
@@ -180,7 +197,7 @@
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
-        <nz-form-label [nzRequired]="isSecondFactorRequired('code')" nzFor="disable-recovery-code">{{ 'SECURITY.OR_RECOVERY_CODE' | translate }}</nz-form-label>
+        <nz-form-label [nzRequired]="isSecondFactorRequired('code', 'emailCode', 'smsCode')" nzFor="disable-recovery-code">{{ 'SECURITY.OR_RECOVERY_CODE' | translate }}</nz-form-label>
         <nz-form-control [nzErrorTip]="secondFactorError(disableForm.controls.recoveryCode)">
           <input
             nz-input
@@ -192,6 +209,42 @@
           />
         </nz-form-control>
       </nz-form-item>
+      @if (twoFactorStatus()?.email_enabled) {
+        <nz-form-item>
+          <nz-form-label [nzRequired]="isSecondFactorRequired('code', 'recoveryCode', 'smsCode')" nzFor="disable-email-code">{{ 'auth.mfa.method.email' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="secondFactorError(disableForm.controls.emailCode)">
+            <input
+              nz-input
+              id="disable-email-code"
+              type="text"
+              formControlName="emailCode"
+              autocomplete="one-time-code"
+              [placeholder]="'SECURITY.APP_CODE_PLACEHOLDER' | translate"
+            />
+          </nz-form-control>
+          <button nz-button nzType="link" type="button" data-testid="disable-send-email-code" [nzLoading]="isSendingEmailCode()" (click)="sendEmailProofCode()">
+            {{ (emailCodeSent() ? 'auth.mfa.challenge.resend' : 'auth.mfa.challenge.send_code') | translate }}
+          </button>
+        </nz-form-item>
+      }
+      @if (twoFactorStatus()?.sms_enabled) {
+        <nz-form-item>
+          <nz-form-label [nzRequired]="isSecondFactorRequired('code', 'recoveryCode', 'emailCode')" nzFor="disable-sms-code">{{ 'auth.mfa.method.sms' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="secondFactorError(disableForm.controls.smsCode)">
+            <input
+              nz-input
+              id="disable-sms-code"
+              type="text"
+              formControlName="smsCode"
+              autocomplete="one-time-code"
+              [placeholder]="'SECURITY.APP_CODE_PLACEHOLDER' | translate"
+            />
+          </nz-form-control>
+          <button nz-button nzType="link" type="button" data-testid="disable-send-sms-code" [nzLoading]="isSendingSmsCode()" (click)="sendSmsProofCode()">
+            {{ (smsCodeSent() ? 'auth.mfa.challenge.resend' : 'auth.mfa.challenge.send_code') | translate }}
+          </button>
+        </nz-form-item>
+      }
     </form>
   </ng-container>
 </nz-modal>

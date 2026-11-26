@@ -16,7 +16,9 @@ import { environment } from '@env';
 import { TranslatePipe } from '@shared';
 import { AuthFooterComponent } from '../../components/auth-footer.component';
 import { AuthToolbarComponent } from '../../components/auth-toolbar.component';
-import { passwordPolicy, passwordsMatch, passwordStrength, STRENGTH_KEYS } from '../../password-rules';
+import { passwordPolicy, passwordsMatch } from '../../password-rules';
+import { PasswordStrengthComponent } from '../../components/password-strength/password-strength.component';
+
 
 @Component({
   selector: 'app-register',
@@ -34,6 +36,7 @@ import { passwordPolicy, passwordsMatch, passwordStrength, STRENGTH_KEYS } from 
     NzSelectModule,
     AuthFooterComponent,
     AuthToolbarComponent,
+    PasswordStrengthComponent,
     TranslatePipe,
   ],
   templateUrl: './register.component.html',
@@ -67,7 +70,7 @@ export class RegisterComponent {
     { validators: passwordsMatch },
   );
 
-  private readonly password = toSignal(this.form.controls.password.valueChanges, {
+  protected readonly password = toSignal(this.form.controls.password.valueChanges, {
     initialValue: '',
   });
 
@@ -76,9 +79,6 @@ export class RegisterComponent {
   });
 
   protected readonly taxIdPlaceholder = computed(() => TAX_ID_PLACEHOLDERS[this.country()]);
-  protected readonly strength = computed(() => passwordStrength(this.password()));
-  protected readonly strengthKey = computed(() => STRENGTH_KEYS[this.strength()]);
-  protected readonly strengthLevels = [1, 2, 3, 4];
 
   protected onSubmit(): void {
     if (this.form.invalid) {

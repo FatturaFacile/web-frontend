@@ -18,8 +18,6 @@ import { ToastHostComponent } from '@shared/ui/toast/toast-host.component';
 import { GlobalSearchComponent } from '@shared/components/global-search/global-search.component';
 import { CopilotDrawerComponent } from '@features/copilot/copilot-drawer.component';
 import { SignatureRequestHostComponent } from './features/e-signature/signature-request-host.component';
-// Only used inside a @defer block of the template: the compiler moves it into a lazy chunk.
-import { TwoFactorSetupModalComponent } from './features/auth/components/two-factor-setup-modal/two-factor-setup-modal.component';
 
 /** True when the deepest active route is a customer-facing page (`data.publicPage`). */
 function isPublicPage(root: ActivatedRouteSnapshot): boolean {
@@ -45,7 +43,6 @@ function isPublicPage(root: ActivatedRouteSnapshot): boolean {
     BreadcrumbComponent,
     GlobalSearchComponent,
     CopilotDrawerComponent,
-    TwoFactorSetupModalComponent,
     ToastHostComponent,
     SpotlightTourOverlayComponent,
     ContextualHelpDrawerComponent,
@@ -91,9 +88,5 @@ export class AppComponent implements OnInit {
         },
       });
     }
-  }
-
-  onGlobal2FASetupCompleted(): void {
-    this.authStore.setTwoFactorSetupRequired(false);
   }
 }

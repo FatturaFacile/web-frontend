@@ -24,6 +24,8 @@ const VALID = {
 
 describe('RegisterComponent', () => {
   const register = vi.fn();
+  const getPasswordPolicyRules = vi.fn(() => of({ success: true, message: '', data: { rules: ['min_length'], min_length: 10, history_count: 0 } }));
+  const checkPassword = vi.fn(() => of({ success: true, message: '', data: { rules: [], acceptable: true, strength: 4 } }));
 
   function create() {
     const fixture = TestBed.createComponent(RegisterComponent);
@@ -39,9 +41,19 @@ describe('RegisterComponent', () => {
         provideRouter([]),
         provideHttpClient(),
         provideHttpClientTesting(),
-        { provide: AuthApiService, useValue: { register } },
+        { provide: AuthApiService, useValue: { register, getPasswordPolicyRules, checkPassword } },
       ],
     });
+  });
+
+  it('shows the live strength and policy checklist under the password', () => {
+    const fixture = TestBed.createComponent(RegisterComponent);
+    fixture.detectChanges();
+
+    const meter = (fixture.nativeElement as HTMLElement).querySelector('app-password-strength');
+    expect(meter).not.toBeNull();
+    expect(meter?.id).toBe('password-requirements');
+    expect(getPasswordPolicyRules).toHaveBeenCalled();
   });
 
   it('shows and hides each password field on its own', () => {

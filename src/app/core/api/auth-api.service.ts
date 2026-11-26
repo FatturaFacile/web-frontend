@@ -5,18 +5,32 @@ import { map, Observable, switchMap } from 'rxjs';
 import {
   ApiResponse,
   ConfirmedPasswordPayload,
+  ConfirmEmailTwoFactorResponse,
   ConfirmTwoFactorPayload,
   ConfirmTwoFactorResponse,
   DisableTwoFactorPayload,
+  EmailCodeDispatch,
+  EnableSmsTwoFactorPayload,
+  PasswordCheckPayload,
+  PasswordCheckResult,
+  PasswordPolicyRules,
   RecoveryCodesResponse,
+  RevokedTrustedDevices,
+  SmsCodeDispatch,
   RevokeOtherSessionsResponse,
   TokenSessionItem,
+  TrustedDevice,
+  TrustedDevicesResponse,
   TwoFactorChallengePayload,
   TwoFactorEnableResponse,
+  TwoFactorMethod,
+  TwoFactorMethodsResponse,
   TwoFactorStatus,
+  TwoFactorWebauthnOptions,
   WebSessionItem,
 } from '../models';
 import { getCsrfCookieUrl } from '../auth/csrf.utils';
+import { handleErrorsLocally } from '../http/error-handling.context';
 import type { UserProfile } from '../auth/auth.store';
 
 export interface LoginPayload {
@@ -24,6 +38,8 @@ export interface LoginPayload {
   password: string;
   tenant_id?: string | null;
   remember?: boolean;
+  /** "Remember this device" token of an earlier challenge: when valid, the second factor is skipped. */
+  trusted_device_token?: string;
 }
 
 /**
@@ -52,6 +68,18 @@ export interface LoginResult {
   two_factor_required?: boolean;
   challenge_token?: string;
   expires_in?: number;
+  /** Factors the user can answer the challenge with. */
+  methods?: TwoFactorMethod[];
+  default_method?: TwoFactorMethod | null;
+  /** True when the API already emailed a code (email is the only non-recovery factor). */
+  email_code_sent?: boolean;
+  sms_code_sent?: boolean;
+  trusted_devices_enabled?: boolean;
+  /** Days a remembered device skips the second factor, when the API reports it. */
+  trusted_device_days?: number;
+  /** Only after a challenge answered with `remember_device`: store it, never show it. */
+  trusted_device_token?: string;
+  trusted_device?: Pick<TrustedDevice, 'id' | 'label' | 'expires_at'>;
 }
 
 /** Countries a company can register in: the values of `SupportedCountry` in the API. */
@@ -93,6 +121,10 @@ export interface ChangePasswordPayload {
   password_confirmation: string;
   code?: string;
   recovery_code?: string;
+  /** Alternative proof: the code emailed by `POST /auth/two-factor/email/send`. */
+  email_code?: string;
+  /** Alternative proof: the code sent by `POST /auth/two-factor/sms/send`. */
+  sms_code?: string;
 }
 
 /** RFC 7807 `type` of the authentication problems that need their own message. */
@@ -110,6 +142,9 @@ export const AUTH_PROBLEM = {
   TwoFactorCodeInvalid: 'urn:fatturafacile:problem:two-factor-code-invalid',
   TwoFactorSetupRequired: 'urn:fatturafacile:problem:two-factor-setup-required',
 } as const;
+
+/** Statuses of the challenge calls that the login screen renders inline (no global toast, no sign-out). */
+const CHALLENGE_LOCAL_ERRORS = handleErrorsLocally(401, 403, 422, 423, 429);
 
 export function authProblemOf(err: unknown): string | null {
   if (err instanceof HttpErrorResponse && typeof err.error === 'object' && err.error !== null) {
@@ -238,6 +273,150 @@ export class AuthApiService {
     return this.http.post<ApiResponse<LoginResult>>(
       `${this.base}/auth/two-factor-challenge`,
       payload,
+      { withCredentials: true, context: CHALLENGE_LOCAL_ERRORS }
+    );
+  }
+
+  /** Emails a new sign-in code for the challenge; 429 carries `Retry-After` when asked too soon. */
+  sendTwoFactorEmailCode(challengeToken: string): Observable<ApiResponse<EmailCodeDispatch>> {
+    return this.http.post<ApiResponse<EmailCodeDispatch>>(
+      `${this.base}/auth/two-factor/challenge/email`,
+      { challenge_token: challengeToken },
+      { withCredentials: true, context: CHALLENGE_LOCAL_ERRORS }
+    );
+  }
+
+  /** Sends a sign-in code by SMS for the challenge; 429 carries `Retry-After` when asked too soon. */
+  sendTwoFactorSmsCode(challengeToken: string): Observable<ApiResponse<EmailCodeDispatch>> {
+    return this.http.post<ApiResponse<EmailCodeDispatch>>(
+      `${this.base}/auth/two-factor/challenge/sms`,
+      { challenge_token: challengeToken },
+      { withCredentials: true, context: CHALLENGE_LOCAL_ERRORS }
+    );
+  }
+
+  /** WebAuthn request options (and the ceremony id to send back) for a security key at the challenge. */
+  twoFactorWebauthnOptions(challengeToken: string): Observable<ApiResponse<TwoFactorWebauthnOptions>> {
+    return this.http.post<ApiResponse<TwoFactorWebauthnOptions>>(
+      `${this.base}/auth/two-factor/challenge/webauthn/options`,
+      { challenge_token: challengeToken },
+      { withCredentials: true, context: CHALLENGE_LOCAL_ERRORS }
+    );
+  }
+
+  /** Starts the email code factor: checks the password and emails the first code. */
+  enableEmailTwoFactor(payload: ConfirmedPasswordPayload): Observable<ApiResponse<EmailCodeDispatch>> {
+    return this.http.post<ApiResponse<EmailCodeDispatch>>(
+      `${this.base}/auth/two-factor/email/enable`,
+      payload,
+      { withCredentials: true }
+    );
+  }
+
+  /** Confirms the email code factor; `recovery_codes` is empty unless this is the first factor of the user. */
+  confirmEmailTwoFactor(payload: ConfirmTwoFactorPayload): Observable<ApiResponse<ConfirmEmailTwoFactorResponse>> {
+    return this.http.post<ApiResponse<ConfirmEmailTwoFactorResponse>>(
+      `${this.base}/auth/two-factor/email/confirm`,
+      payload,
+      { withCredentials: true }
+    );
+  }
+
+  /** Starts the SMS factor: checks the password and sends the first code to the phone (E.164). */
+  enableSmsTwoFactor(payload: EnableSmsTwoFactorPayload): Observable<ApiResponse<SmsCodeDispatch>> {
+    return this.http.post<ApiResponse<SmsCodeDispatch>>(
+      `${this.base}/auth/two-factor/sms/enable`,
+      payload,
+      { withCredentials: true }
+    );
+  }
+
+  /** Confirms the SMS factor; `recovery_codes` is empty unless this is the first factor of the user. */
+  confirmSmsTwoFactor(payload: ConfirmTwoFactorPayload): Observable<ApiResponse<ConfirmEmailTwoFactorResponse>> {
+    return this.http.post<ApiResponse<ConfirmEmailTwoFactorResponse>>(
+      `${this.base}/auth/two-factor/sms/confirm`,
+      payload,
+      { withCredentials: true }
+    );
+  }
+
+  /** Sends a verification code by SMS that proves the user for a sensitive change (disable, password change). */
+  sendSmsVerificationCode(): Observable<ApiResponse<EmailCodeDispatch>> {
+    return this.http.post<ApiResponse<EmailCodeDispatch>>(
+      `${this.base}/auth/two-factor/sms/send`,
+      {},
+      { withCredentials: true }
+    );
+  }
+
+  /** Turns the SMS factor off; 403 `mfa_cannot_be_disabled` when it is the last factor the tenant requires. */
+  disableSmsTwoFactor(payload: ConfirmedPasswordPayload): Observable<ApiResponse<TwoFactorMethodsResponse>> {
+    return this.http.delete<ApiResponse<TwoFactorMethodsResponse>>(
+      `${this.base}/auth/two-factor/sms`,
+      { withCredentials: true, body: payload }
+    );
+  }
+
+  /** Emails a verification code that proves the user for a sensitive change (disable, password change). */
+  sendEmailVerificationCode(): Observable<ApiResponse<EmailCodeDispatch>> {
+    return this.http.post<ApiResponse<EmailCodeDispatch>>(
+      `${this.base}/auth/two-factor/email/send`,
+      {},
+      { withCredentials: true }
+    );
+  }
+
+  /** Turns the email code factor off; 403 `mfa_cannot_be_disabled` when it is the last factor the tenant requires. */
+  disableEmailTwoFactor(payload: ConfirmedPasswordPayload): Observable<ApiResponse<TwoFactorMethodsResponse>> {
+    return this.http.delete<ApiResponse<TwoFactorMethodsResponse>>(
+      `${this.base}/auth/two-factor/email`,
+      { withCredentials: true, body: payload }
+    );
+  }
+
+  /** Devices that skip the second factor; `meta` tells for how many days and whether the feature is on. */
+  getTrustedDevices(): Observable<TrustedDevicesResponse> {
+    return this.http.get<TrustedDevicesResponse>(
+      `${this.base}/auth/two-factor/trusted-devices`,
+      { withCredentials: true }
+    );
+  }
+
+  revokeTrustedDevice(id: string): Observable<ApiResponse<null>> {
+    return this.http.delete<ApiResponse<null>>(
+      `${this.base}/auth/two-factor/trusted-devices/${id}`,
+      { withCredentials: true }
+    );
+  }
+
+  revokeAllTrustedDevices(): Observable<ApiResponse<RevokedTrustedDevices>> {
+    return this.http.delete<ApiResponse<RevokedTrustedDevices>>(
+      `${this.base}/auth/two-factor/trusted-devices`,
+      { withCredentials: true }
+    );
+  }
+
+  /** Live check of a candidate password against the policy (public, throttled): rules, acceptability and strength 0-4. */
+  checkPassword(payload: PasswordCheckPayload): Observable<ApiResponse<PasswordCheckResult>> {
+    return this.http.post<ApiResponse<PasswordCheckResult>>(
+      `${this.base}/auth/password-policy/check`,
+      payload,
+      { withCredentials: true, context: handleErrorsLocally(422, 429) }
+    );
+  }
+
+  /** Rules of the policy that applies before sign-in (public); `tenantId` selects the tenant policy. */
+  getPasswordPolicyRules(tenantId?: string | null): Observable<ApiResponse<PasswordPolicyRules>> {
+    return this.http.get<ApiResponse<PasswordPolicyRules>>(
+      `${this.base}/auth/password-policy/rules`,
+      { withCredentials: true, params: tenantId ? { tenant_id: tenantId } : {} }
+    );
+  }
+
+  /** Strictest policy that applies to the signed-in user. */
+  getPasswordPolicy(): Observable<ApiResponse<PasswordPolicyRules>> {
+    return this.http.get<ApiResponse<PasswordPolicyRules>>(
+      `${this.base}/auth/password-policy`,
       { withCredentials: true }
     );
   }

@@ -34,6 +34,7 @@ describe('SecuritySettingsComponent', () => {
                 },
               }),
             ),
+            getTrustedDevices: vi.fn(() => of({ success: true, message: '', data: [], meta: { days: 30, enabled: true } })),
             getSessions: vi.fn(() =>
               of({
                 success: true,

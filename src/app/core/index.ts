@@ -5,6 +5,7 @@ export * from './auth/permissions.service';
 export * from './auth/customs-permissions';
 export * from './auth/auth.interceptor';
 export * from './auth/token-storage.service';
+export * from './auth/trusted-device.storage';
 export * from './auth/csrf.utils';
 export * from './auth/sso-login.service';
 export * from './api/auth-api.service';

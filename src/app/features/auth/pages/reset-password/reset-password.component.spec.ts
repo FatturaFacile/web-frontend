@@ -11,6 +11,8 @@ import { TEST_PASSWORD } from '../../../../../testing/credentials';
 describe('ResetPasswordComponent', () => {
   const validateResetToken = vi.fn();
   const resetPassword = vi.fn();
+  const getPasswordPolicyRules = vi.fn(() => of({ success: true, message: '', data: { rules: ['min_length'], min_length: 10, history_count: 0 } }));
+  const checkPassword = vi.fn(() => of({ success: true, message: '', data: { rules: [], acceptable: true, strength: 4 } }));
 
   function create(token: string | null) {
     TestBed.configureTestingModule({
@@ -19,7 +21,7 @@ describe('ResetPasswordComponent', () => {
         provideRouter([]),
         provideHttpClient(),
         provideHttpClientTesting(),
-        { provide: AuthApiService, useValue: { validateResetToken, resetPassword } },
+        { provide: AuthApiService, useValue: { validateResetToken, resetPassword, getPasswordPolicyRules, checkPassword } },
         {
           provide: ActivatedRoute,
           useValue: { snapshot: { queryParamMap: convertToParamMap(token ? { token } : {}) } },

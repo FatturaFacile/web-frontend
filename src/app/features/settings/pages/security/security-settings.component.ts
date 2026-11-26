@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { DatePipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AbstractControl, NonNullableFormBuilder, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
@@ -22,16 +23,22 @@ import {
   UserSession,
 } from '@core';
 import { ModalActionsDirective, PageHeaderComponent, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { EmailOtpCardComponent } from './email-otp-card.component';
 import { PasskeysCardComponent } from './passkeys-card.component';
+import { SmsOtpCardComponent } from './sms-otp-card.component';
+import { TrustedDevicesCardComponent } from './trusted-devices-card.component';
+import { userAgentLabel } from './user-agent.util';
 import { TwoFactorSetupModalComponent } from '../../../auth/components/two-factor-setup-modal/two-factor-setup-modal.component';
 
-/** Mirrors `required_without:<other>`: the control is required while the sibling is blank. */
-function requiredWithout(other: string): ValidatorFn {
+/** Mirrors `required_without_all:<others>`: the control is required while every sibling is blank. */
+function requiredWithout(...others: string[]): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
-    const siblingValue = String(control.parent?.get(other)?.value ?? '').trim();
-    return String(control.value ?? '').trim() === '' && siblingValue === '' ? { required: true } : null;
+    const siblingsBlank = others.every((other) => String(control.parent?.get(other)?.value ?? '').trim() === '');
+    return String(control.value ?? '').trim() === '' && siblingsBlank ? { required: true } : null;
   };
 }
+
+type SecondFactorField = 'code' | 'recoveryCode' | 'emailCode' | 'smsCode';
 
 @Component({
   selector: 'app-security-settings',
@@ -53,7 +60,10 @@ function requiredWithout(other: string): ValidatorFn {
     NzInputModule,
     NzIconModule,
     PageHeaderComponent,
+    EmailOtpCardComponent,
     PasskeysCardComponent,
+    SmsOtpCardComponent,
+    TrustedDevicesCardComponent,
     TranslatePipe,
     TwoFactorSetupModalComponent,
   ],
@@ -81,26 +91,44 @@ export class SecuritySettingsComponent implements OnInit {
 
   protected readonly disableForm = this.fb.group({
     currentPassword: this.fb.control('', [Validators.required]),
-    code: this.fb.control('', [requiredWithout('recoveryCode'), Validators.maxLength(16)]),
-    recoveryCode: this.fb.control('', [requiredWithout('code'), Validators.maxLength(32)]),
+    code: this.fb.control('', [requiredWithout('recoveryCode', 'emailCode', 'smsCode'), Validators.maxLength(16)]),
+    recoveryCode: this.fb.control('', [requiredWithout('code', 'emailCode', 'smsCode'), Validators.maxLength(32)]),
+    emailCode: this.fb.control('', [requiredWithout('code', 'recoveryCode', 'smsCode'), Validators.maxLength(16)]),
+    smsCode: this.fb.control('', [requiredWithout('code', 'recoveryCode', 'emailCode'), Validators.maxLength(16)]),
   });
 
   protected readonly passwordConfirmForm = this.fb.group({
     currentPassword: this.fb.control('', [Validators.required]),
   });
 
+  protected readonly isSendingEmailCode = signal(false);
+  protected readonly emailCodeSent = signal(false);
+  protected readonly isSendingSmsCode = signal(false);
+  protected readonly smsCodeSent = signal(false);
   protected readonly newRecoveryCodes = signal<string[]>([]);
   protected readonly showCodesDialog = signal(false);
 
   constructor() {
-    const { code, recoveryCode } = this.disableForm.controls;
-    code.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => recoveryCode.updateValueAndValidity({ emitEvent: false }));
-    recoveryCode.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => code.updateValueAndValidity({ emitEvent: false }));
+    // Each proof is required only while the others are blank: re-validate the siblings when one changes.
+    const controls = this.disableForm.controls;
+    const fields: SecondFactorField[] = ['code', 'recoveryCode', 'emailCode', 'smsCode'];
+    for (const field of fields) {
+      controls[field].valueChanges.pipe(takeUntilDestroyed()).subscribe(() => {
+        for (const other of fields.filter((name) => name !== field)) {
+          controls[other].updateValueAndValidity({ emitEvent: false });
+        }
+      });
+    }
   }
 
-  /** The code fields are required only while the other one is blank (API: required_without). */
-  protected isSecondFactorRequired(other: 'code' | 'recoveryCode'): boolean {
-    return this.disableForm.controls[other].value.trim() === '';
+  /** The proof fields are required only while all the others are blank (API: required_without_all). */
+  protected isSecondFactorRequired(...others: SecondFactorField[]): boolean {
+    return others.every((other) => this.disableForm.controls[other].value.trim() === '');
+  }
+
+  /** Short device description of a session ("Chrome / Windows"); the full User-Agent is the tooltip. */
+  protected deviceLabel(session: UserSession): string {
+    return userAgentLabel(session.user_agent);
   }
 
   protected secondFactorError(control: AbstractControl | null): string {
@@ -144,6 +172,8 @@ export class SecuritySettingsComponent implements OnInit {
 
   openDisableModal(): void {
     this.disableForm.reset();
+    this.emailCodeSent.set(false);
+    this.smsCodeSent.set(false);
     this.showDisableModal.set(true);
   }
 
@@ -153,12 +183,14 @@ export class SecuritySettingsComponent implements OnInit {
       return;
     }
 
-    const { currentPassword, code, recoveryCode } = this.disableForm.getRawValue();
+    const { currentPassword, code, recoveryCode, emailCode, smsCode } = this.disableForm.getRawValue();
     this.authApi
       .disableTwoFactor({
         current_password: currentPassword,
         code: code.trim() || undefined,
         recovery_code: recoveryCode.trim() || undefined,
+        email_code: emailCode.trim() || undefined,
+        sms_code: smsCode.trim() || undefined,
       })
       .subscribe({
         next: (res) => {
@@ -173,6 +205,50 @@ export class SecuritySettingsComponent implements OnInit {
           );
         },
       });
+  }
+
+  /** Emails a code that proves the user for the change, as an alternative to the authenticator or a recovery code. */
+  sendEmailProofCode(): void {
+    this.isSendingEmailCode.set(true);
+    this.authApi.sendEmailVerificationCode().subscribe({
+      next: () => {
+        this.isSendingEmailCode.set(false);
+        this.emailCodeSent.set(true);
+        this.message.success(this.i18n.translate('auth.mfa.challenge.code_sent_generic'));
+      },
+      error: (err: unknown) => {
+        this.isSendingEmailCode.set(false);
+        const seconds =
+          err instanceof HttpErrorResponse && err.status === 429 ? Number(err.headers?.get('Retry-After')) || 60 : null;
+        this.message.error(
+          seconds !== null
+            ? this.i18n.translate('auth.mfa.error.too_many_codes', { seconds })
+            : this.i18n.translate('ERRORS.GENERIC', { status: err instanceof HttpErrorResponse ? err.status : 0 }),
+        );
+      },
+    });
+  }
+
+  /** Sends a code by SMS that proves the user for the change, as another alternative proof. */
+  sendSmsProofCode(): void {
+    this.isSendingSmsCode.set(true);
+    this.authApi.sendSmsVerificationCode().subscribe({
+      next: () => {
+        this.isSendingSmsCode.set(false);
+        this.smsCodeSent.set(true);
+        this.message.success(this.i18n.translate('auth.mfa.challenge.sms_sent'));
+      },
+      error: (err: unknown) => {
+        this.isSendingSmsCode.set(false);
+        const seconds =
+          err instanceof HttpErrorResponse && err.status === 429 ? Number(err.headers?.get('Retry-After')) || 60 : null;
+        this.message.error(
+          seconds !== null
+            ? this.i18n.translate('auth.mfa.error.too_many_codes', { seconds })
+            : this.i18n.translate('auth.mfa.error.sms_unavailable'),
+        );
+      },
+    });
   }
 
   openRegenerateModal(): void {

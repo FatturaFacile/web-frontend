@@ -99,6 +99,10 @@ export const tenantAuthInterceptor: HttpInterceptorFn = (req, next) => {
         const isAuthEndpoint =
           req.url.endsWith('/auth/login') ||
           req.url.endsWith('/auth/profile') ||
+          // A refused second factor is answered inline by the login screen: it is not an expired session.
+          req.url.endsWith('/auth/two-factor-challenge') ||
+          req.url.endsWith('/auth/2fa/challenge') ||
+          req.url.includes('/auth/two-factor/challenge/') ||
           req.url.includes('/sanctum/csrf-cookie') ||
           // The reception kiosk authenticates with its own key and secret: a refused kiosk must not end the staff session.
           req.url.includes('/visitor-kiosk/') ||

@@ -3,6 +3,8 @@
  * Mirrors the FormRequests of `routes/enterprise_auth.php` (the API is the contract).
  */
 
+import type { ApiResponse } from './api.models';
+
 export type TwoFactorRequirement = 'none' | 'all' | 'roles';
 
 export interface SecurityPolicy {
@@ -11,12 +13,18 @@ export interface SecurityPolicy {
     require_mixed_case: boolean;
     require_numbers: boolean;
     require_symbols: boolean;
+    /** Rejects passwords found in known data breaches (Have I Been Pwned range lookup). */
+    check_breached: boolean;
     history_count: number;
     max_age_days: number | null;
   };
   lockout: {
     max_attempts: number;
     minutes: number;
+    /** Doubles the lock time at every consecutive lock, up to `max_minutes`. */
+    backoff: boolean;
+    /** Upper bound of the progressive lock; never lower than `minutes`. */
+    max_minutes: number;
   };
   session: {
     idle_timeout_minutes: number | null;
@@ -145,6 +153,8 @@ export interface UpsertSamlProviderPayload {
 }
 
 export interface ScimTokenStatus {
+  /** Provisioning counters and the last error of the identity provider. */
+  sync?: ScimSyncStatus;
   configured: boolean;
   token_hint: string | null;
   created_at: string | null;
@@ -159,4 +169,114 @@ export interface ScimTokenRotation extends ScimTokenStatus {
 
 export interface RotateScimTokenPayload {
   expires_in_days?: number | null;
+}
+
+export type ScimResource = 'user' | 'group';
+export type ScimOperation = 'create' | 'replace' | 'patch' | 'delete';
+export type ScimLogStatus = 'success' | 'failure';
+
+export interface ScimSyncError {
+  message: string;
+  resource: string | null;
+  operation: string | null;
+  at: string | null;
+}
+
+/** Provisioning counters of the identity provider, part of `GET settings/security/scim`. */
+export interface ScimSyncStatus {
+  last_sync_at: string | null;
+  last_status: ScimLogStatus | null;
+  users_provisioned: number;
+  groups_provisioned: number;
+  last_error: ScimSyncError | null;
+}
+
+export interface ScimGroupMapping {
+  id: string;
+  group_name: string;
+  role: string;
+  /** Null until the identity provider has sent the group. */
+  member_count: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ScimGroupMappingsResponse extends ApiResponse<ScimGroupMapping[]> {
+  meta: { roles: string[] };
+}
+
+export interface UpsertScimGroupMappingPayload {
+  group_name: string;
+  role: string;
+}
+
+export interface ScimProvisioningLog {
+  id: string;
+  resource: ScimResource;
+  operation: ScimOperation;
+  status: ScimLogStatus;
+  resource_id: string | null;
+  resource_name: string | null;
+  error: string | null;
+  occurred_at: string;
+}
+
+export interface ScimLogFilters {
+  resource?: ScimResource;
+  status?: ScimLogStatus;
+  operation?: ScimOperation;
+  page?: number;
+  per_page?: number;
+}
+
+export type SecurityAuditStatus = 'success' | 'failure';
+export type SecurityAuditAuthMethod = 'password' | 'sso' | 'sso_saml' | 'sso_oidc' | 'passkey';
+
+export interface SecurityAuditEvent {
+  id: string;
+  occurred_at: string;
+  tenant_id: string | null;
+  user_id: string | null;
+  actor_user_id: string | null;
+  user: { id: string; name: string; email: string } | null;
+  event_type: string;
+  category: string;
+  /** Dictionary key of the event label (`security.audit.event.<event_type>`). */
+  translation_key: string;
+  status: SecurityAuditStatus;
+  ip_address: string | null;
+  user_agent: string | null;
+  auth_method: string | null;
+  mfa_method: string | null;
+  reason: string | null;
+}
+
+export interface SecurityAuditEventType {
+  event_type: string;
+  translation_key: string;
+  category: string;
+  status: SecurityAuditStatus | null;
+}
+
+export interface SecurityAuditFilters {
+  from?: string;
+  to?: string;
+  user_id?: string;
+  /** Sent as a comma separated list. */
+  event_type?: string[];
+  status?: SecurityAuditStatus;
+  auth_method?: SecurityAuditAuthMethod;
+  page?: number;
+  per_page?: number;
+}
+
+export interface SecurityPageMeta {
+  current_page: number;
+  per_page: number;
+  total: number;
+  last_page: number;
+}
+
+export interface SecurityPagedResponse<T> extends ApiResponse<T[]> {
+  meta: SecurityPageMeta;
 }

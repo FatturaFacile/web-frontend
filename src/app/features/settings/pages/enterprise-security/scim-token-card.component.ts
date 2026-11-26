@@ -14,6 +14,7 @@ import { environment } from '@env';
 import { EnterpriseAuthApiService, ScimTokenStatus, TranslateService } from '@core';
 import { TranslatePipe } from '@shared';
 import { enterpriseErrorText } from './enterprise-security.util';
+import { ScimSyncStatusComponent } from './scim-sync-status.component';
 
 /**
  * SCIM 2.0 provisioning of the tenant: token status, rotation and revocation. The plain token is returned once by the
@@ -21,7 +22,7 @@ import { enterpriseErrorText } from './enterprise-security.util';
  */
 @Component({
   selector: 'app-scim-token-card',
-  imports: [DatePipe, FormsModule, NzAlertModule, NzButtonModule, NzCardModule, NzDescriptionsModule, NzInputModule, NzInputNumberModule, NzPopconfirmModule, NzTagModule, TranslatePipe],
+  imports: [DatePipe, FormsModule, NzAlertModule, NzButtonModule, NzCardModule, NzDescriptionsModule, NzInputModule, NzInputNumberModule, NzPopconfirmModule, NzTagModule, ScimSyncStatusComponent, TranslatePipe],
   template: `
     <nz-card [nzTitle]="'ENT_AUTH.SCIM_TITLE' | translate" [nzLoading]="loading()">
       <p>{{ 'ENT_AUTH.SCIM_INTRO' | translate }}</p>
@@ -52,6 +53,7 @@ import { enterpriseErrorText } from './enterprise-security.util';
           <nz-descriptions-item [nzTitle]="'ENT_AUTH.SCIM_EXPIRES_AT' | translate">{{ current.expires_at ? (current.expires_at | date: 'short') : '-' }}</nz-descriptions-item>
           <nz-descriptions-item [nzTitle]="'ENT_AUTH.SCIM_BASE_URL' | translate"><code>{{ scimBaseUrl }}</code></nz-descriptions-item>
         </nz-descriptions>
+        <app-scim-sync-status [sync]="current.sync" />
       }
 
       <div class="rotate">

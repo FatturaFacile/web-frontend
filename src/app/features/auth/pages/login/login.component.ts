@@ -16,6 +16,9 @@ import {
   AuthApiService,
   authProblemOf,
   AuthStore,
+  clearTrustedDeviceToken,
+  DEFAULT_TRUSTED_DEVICE_DAYS,
+  getTrustedDeviceToken,
   SupportedLanguage,
   I18nService,
   IamApiService,
@@ -23,6 +26,7 @@ import {
   LoginResult,
   PasskeyUnavailableError,
   SsoLoginService,
+  TwoFactorMethod,
   WebAuthnService,
 } from '@core';
 import { TranslatePipe } from '@shared';
@@ -32,7 +36,7 @@ import { environment } from '@env';
 import { firstValueFrom } from 'rxjs';
 import { purgeLegacyTokenKeys } from '@core/auth/token-storage.service';
 import { ResendVerificationComponent } from '../../components/resend-verification.component';
-import { TwoFactorSetupModalComponent } from '../../components/two-factor-setup-modal/two-factor-setup-modal.component';
+import { TwoFactorChallengeComponent } from '../../components/two-factor-challenge/two-factor-challenge.component';
 
 const DEFAULT_RETURN_URL = '/sales/invoices';
 
@@ -55,7 +59,7 @@ const DEMO_CREDENTIALS = { email: 'admin@demo-group.com', password: 'Password123
     NzAlertModule,
     NzIconModule,
     ResendVerificationComponent,
-    TwoFactorSetupModalComponent,
+    TwoFactorChallengeComponent,
     TranslatePipe,
   ],
   templateUrl: './login.component.html',
@@ -88,8 +92,12 @@ export class LoginComponent {
   // 2FA Challenge & Setup State
   protected readonly isChallengeStep = signal(false);
   protected readonly challengeToken = signal('');
-  protected readonly useRecoveryCode = signal(false);
-  protected readonly showTwoFactorSetup = signal(false);
+  protected readonly challengeMethods = signal<readonly TwoFactorMethod[] | null>(null);
+  protected readonly challengeDefaultMethod = signal<TwoFactorMethod | null>(null);
+  protected readonly challengeEmailSent = signal(false);
+  protected readonly challengeSmsSent = signal(false);
+  protected readonly challengeTrustedDevices = signal(false);
+  protected readonly challengeTrustedDays = signal(DEFAULT_TRUSTED_DEVICE_DAYS);
 
   protected readonly loginForm = this.fb.group({
     email: this.fb.control(environment.demoMode ? DEMO_CREDENTIALS.email : '', [
@@ -101,11 +109,6 @@ export class LoginComponent {
       Validators.minLength(6),
     ]),
     remember: this.fb.control(false),
-  });
-
-  protected readonly challengeForm = this.fb.group({
-    code: this.fb.control(''),
-    recoveryCode: this.fb.control(''),
   });
 
   constructor() {
@@ -127,14 +130,35 @@ export class LoginComponent {
     this.needsVerification.set(false);
     this.isSubmitting.set(true);
 
-    this.authApi.login({ email, password, remember: remember ?? false, tenant_id: '' }).subscribe({
+    // A device remembered after an earlier challenge skips the second factor while the token is valid.
+    const trustedDeviceToken = getTrustedDeviceToken(email);
+
+    this.authApi
+      .login({
+        email,
+        password,
+        remember: remember ?? false,
+        tenant_id: '',
+        ...(trustedDeviceToken ? { trusted_device_token: trustedDeviceToken } : {}),
+      })
+      .subscribe({
       next: (res) => {
         this.isSubmitting.set(false);
         const data = res?.data;
 
         // Two-factor authentication required
         if (data?.two_factor_required && data.challenge_token) {
+          if (trustedDeviceToken) {
+            // The API did not accept the remembered device (expired or revoked): forget it.
+            clearTrustedDeviceToken(email);
+          }
           this.challengeToken.set(data.challenge_token);
+          this.challengeMethods.set(data.methods ?? null);
+          this.challengeDefaultMethod.set(data.default_method ?? null);
+          this.challengeEmailSent.set(data.email_code_sent ?? false);
+          this.challengeSmsSent.set(data.sms_code_sent ?? false);
+          this.challengeTrustedDevices.set(data.trusted_devices_enabled ?? false);
+          this.challengeTrustedDays.set(data.trusted_device_days ?? DEFAULT_TRUSTED_DEVICE_DAYS);
           this.isChallengeStep.set(true);
           return;
         }
@@ -214,66 +238,20 @@ export class LoginComponent {
       });
   }
 
-  protected canSubmitChallenge(): boolean {
-    const { code, recoveryCode } = this.challengeForm.getRawValue();
-
-    return this.useRecoveryCode() ? !!recoveryCode.trim() : !!code.trim();
+  /** The challenge component signed the user in: finish like the password login does. */
+  protected onChallengeSucceeded(data: LoginResult): void {
+    this.processSuccessfulLogin(data);
   }
 
-  protected onChallengeSubmit(): void {
-    const isRecovery = this.useRecoveryCode();
-    const { code, recoveryCode } = this.challengeForm.getRawValue();
-
-    if (isRecovery && !recoveryCode.trim()) {
-      this.errorMessage.set(this.i18n.translate('TWO_FACTOR.RECOVERY_CODE_INVALID'));
-      return;
-    }
-    if (!isRecovery && !code.trim()) {
-      this.errorMessage.set(this.i18n.translate('TWO_FACTOR.CODE_REQUIRED'));
-      return;
-    }
-
-    this.isSubmitting.set(true);
-    this.errorMessage.set(null);
-
-    this.authApi
-      .twoFactorChallenge({
-        challenge_token: this.challengeToken(),
-        code: isRecovery ? undefined : code.trim(),
-        recovery_code: isRecovery ? recoveryCode.trim() : undefined,
-      })
-      .subscribe({
-        next: (res) => {
-          this.isSubmitting.set(false);
-          this.processSuccessfulLogin(res.data);
-        },
-        error: (err: unknown) => {
-          this.isSubmitting.set(false);
-          if (authProblemOf(err) === AUTH_PROBLEM.TwoFactorCodeInvalid) {
-            this.errorMessage.set(this.i18n.translate('TWO_FACTOR.CODE_INVALID'));
-            return;
-          }
-          if (authProblemOf(err) === AUTH_PROBLEM.TwoFactorChallengeInvalid) {
-            this.errorMessage.set(this.i18n.translate('TWO_FACTOR.CHALLENGE_EXPIRED'));
-            this.cancelChallenge();
-            return;
-          }
-          this.handleError(err);
-        },
-      });
-  }
-
-  protected cancelChallenge(): void {
+  /** The challenge cannot go on (expired, locked, too many attempts) or the user went back: show the password step. */
+  protected onChallengeRestart(message: string | null): void {
     this.isChallengeStep.set(false);
     this.challengeToken.set('');
-    this.challengeForm.reset();
-    this.useRecoveryCode.set(false);
-    this.errorMessage.set(null);
-  }
-
-  protected onTwoFactorSetupCompleted(): void {
-    this.showTwoFactorSetup.set(false);
-    void this.router.navigateByUrl(this.resolveReturnUrl());
+    this.challengeMethods.set(null);
+    this.challengeDefaultMethod.set(null);
+    this.challengeEmailSent.set(false);
+    this.challengeSmsSent.set(false);
+    this.errorMessage.set(message);
   }
 
   private processSuccessfulLogin(data?: LoginResult): void {
@@ -288,10 +266,10 @@ export class LoginComponent {
 
     this.authStore.login(activeTenantId ?? undefined, data?.user ?? null);
 
-    // If 2FA setup is required by tenant policy or user status
+    // The tenant policy requires a second factor the user has not set up: the route guard sends every navigation to the
+    // enrolment page until it is done.
     if (data?.two_factor_setup_required) {
-      this.showTwoFactorSetup.set(true);
-      return;
+      this.authStore.setTwoFactorSetupRequired(true);
     }
 
     void this.router.navigateByUrl(this.resolveReturnUrl());
@@ -312,9 +290,14 @@ export class LoginComponent {
       this.errorMessage.set(apiMessage ?? this.i18n.translate('AUTH.INVALID_CREDENTIALS'));
       return;
     }
+    if (err instanceof HttpErrorResponse && err.status === 423) {
+      this.errorMessage.set(this.i18n.translate('auth.mfa.error.account_locked'));
+      return;
+    }
     if (err instanceof HttpErrorResponse && err.status === 403) {
       if (authProblemOf(err) === AUTH_PROBLEM.TwoFactorSetupRequired) {
-        this.showTwoFactorSetup.set(true);
+        this.authStore.setTwoFactorSetupRequired(true);
+        void this.router.navigateByUrl(this.resolveReturnUrl());
         return;
       }
       this.errorMessage.set(this.forbiddenMessage(err));

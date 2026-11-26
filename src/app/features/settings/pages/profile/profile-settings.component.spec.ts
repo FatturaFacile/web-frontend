@@ -11,19 +11,27 @@ import { TEST_PASSWORD } from '../../../../../testing/credentials';
 describe('ProfileSettingsComponent', () => {
   const getTwoFactorStatus = vi.fn();
   const changePassword = vi.fn();
+  const sendEmailVerificationCode = vi.fn();
+  const sendSmsVerificationCode = vi.fn();
+  const getPasswordPolicyRules = vi.fn();
+  const checkPassword = vi.fn();
   const logout = vi.fn();
   const newPassword = `${TEST_PASSWORD}N`;
 
-  function create(twoFactorEnabled = false) {
-    getTwoFactorStatus.mockReturnValue(of({ success: true, data: { enabled: twoFactorEnabled } }));
+  function create(twoFactorEnabled = false, status: Record<string, unknown> = {}) {
+    getTwoFactorStatus.mockReturnValue(of({ success: true, data: { enabled: twoFactorEnabled, ...status } }));
+    getPasswordPolicyRules.mockReturnValue(of({ success: true, message: '', data: { rules: ['min_length'], min_length: 12, history_count: 0 } }));
     TestBed.configureTestingModule({
       imports: [ProfileSettingsComponent],
       providers: [
         provideRouter([]),
         provideHttpClient(),
         provideHttpClientTesting(),
-        { provide: AuthApiService, useValue: { getTwoFactorStatus, changePassword } },
-        { provide: AuthStore, useValue: { logout } },
+        {
+          provide: AuthApiService,
+          useValue: { getTwoFactorStatus, changePassword, sendEmailVerificationCode, sendSmsVerificationCode, getPasswordPolicyRules, checkPassword },
+        },
+        { provide: AuthStore, useValue: { logout, user: () => ({ id: 'u1', email: 'anna@acme.example' }), activeTenantId: () => 'tenant-1' } },
       ],
     });
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
@@ -39,6 +47,8 @@ describe('ProfileSettingsComponent', () => {
       password_confirmation: newPassword,
       code: '',
       recovery_code: '',
+      email_code: '',
+      sms_code: '',
       ...extra,
     });
   }
@@ -53,6 +63,8 @@ describe('ProfileSettingsComponent', () => {
     getTwoFactorStatus.mockReset();
     changePassword.mockReset();
     logout.mockReset();
+    sendEmailVerificationCode.mockReset();
+    checkPassword.mockReset();
   });
 
   it('does not submit an incomplete form or a confirmation that differs', () => {
@@ -160,5 +172,95 @@ describe('ProfileSettingsComponent', () => {
     expect(typeOf('password')).toBe('text');
     expect(typeOf('password_confirmation')).toBe('password');
     expect(toggles[1].getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('asks the emailed code when the email code is the only factor, and sends it', () => {
+    changePassword.mockReturnValue(of({ success: true }));
+    sendEmailVerificationCode.mockReturnValue(of({ success: true, data: { expires_in: 600, resend_available_in: 60 } }));
+    const { component, fixture } = create(true, { email_enabled: true, totp_enabled: false });
+    fixture.detectChanges();
+    const root: HTMLElement = fixture.nativeElement;
+
+    expect(root.querySelector('#email_code')).not.toBeNull();
+    expect(root.querySelector('#code')).toBeNull();
+
+    component['sendEmailCode']();
+    expect(sendEmailVerificationCode).toHaveBeenCalledTimes(1);
+    expect(component['emailCodeSent']()).toBe(true);
+
+    fill(component);
+    component['onSubmit']();
+    expect(changePassword).not.toHaveBeenCalled();
+
+    component['form'].controls.email_code.setValue(' 654321 ');
+    component['onSubmit']();
+    const payload = changePassword.mock.calls.at(-1)?.[0];
+    expect(payload.email_code).toBe('654321');
+    expect(payload).not.toHaveProperty('code');
+    expect(payload).not.toHaveProperty('recovery_code');
+  });
+
+  it('lets the user switch between the authenticator and the emailed code when both are on', () => {
+    const { component, fixture } = create(true, { email_enabled: true, totp_enabled: true });
+    fixture.detectChanges();
+    const root: HTMLElement = fixture.nativeElement;
+
+    expect(root.querySelector('#code')).not.toBeNull();
+    expect(root.querySelector('[data-testid="toggle-email-code"]')).not.toBeNull();
+
+    component['toggleEmailCode']();
+    fixture.detectChanges();
+    expect(root.querySelector('#email_code')).not.toBeNull();
+    expect(root.querySelector('#code')).toBeNull();
+
+    component['toggleEmailCode']();
+    fixture.detectChanges();
+    expect(root.querySelector('#code')).not.toBeNull();
+  });
+
+  it('shows the live strength of the new password', () => {
+    const { fixture } = create();
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).querySelector('app-password-strength')).not.toBeNull();
+    expect(getPasswordPolicyRules).toHaveBeenCalledWith('tenant-1');
+  });
+
+  it('asks the SMS code when the SMS is the only factor, and sends it', () => {
+    changePassword.mockReturnValue(of({ success: true }));
+    sendSmsVerificationCode.mockReturnValue(of({ success: true, data: { expires_in: 600, resend_available_in: 60 } }));
+    const { component, fixture } = create(true, { sms_enabled: true, totp_enabled: false, email_enabled: false });
+    fixture.detectChanges();
+    const root: HTMLElement = fixture.nativeElement;
+
+    expect(root.querySelector('#sms_code')).not.toBeNull();
+    expect(root.querySelector('#code')).toBeNull();
+
+    component['sendSmsCode']();
+    expect(sendSmsVerificationCode).toHaveBeenCalledTimes(1);
+    expect(component['smsCodeSent']()).toBe(true);
+
+    fill(component);
+    component['onSubmit']();
+    expect(changePassword).not.toHaveBeenCalled();
+
+    component['form'].controls.sms_code.setValue(' 778899 ');
+    component['onSubmit']();
+    const payload = changePassword.mock.calls.at(-1)?.[0];
+    expect(payload.sms_code).toBe('778899');
+    expect(payload).not.toHaveProperty('code');
+    expect(payload).not.toHaveProperty('email_code');
+  });
+
+  it('lets the user switch between the authenticator and the SMS code when both are on', () => {
+    const { component, fixture } = create(true, { sms_enabled: true, totp_enabled: true });
+    fixture.detectChanges();
+    const root: HTMLElement = fixture.nativeElement;
+
+    expect(root.querySelector('[data-testid="toggle-sms-code"]')).not.toBeNull();
+    component['toggleSmsCode']();
+    fixture.detectChanges();
+    expect(root.querySelector('#sms_code')).not.toBeNull();
+    expect(root.querySelector('#code')).toBeNull();
   });
 });

@@ -105,17 +105,11 @@
                 <nz-icon [nzType]="passwordVisible() ? 'eye-invisible' : 'eye'" />
               </button>
             </nz-input-wrapper>
-            <small id="password-requirements" class="password-requirements">{{
-              "AUTH.PASSWORD_REQUIREMENTS" | translate
-            }}</small>
-            <div class="strength" aria-hidden="true">
-              @for (level of strengthLevels; track level) {
-                <span [class.on]="strength() >= level"></span>
-              }
-            </div>
-            @if (strength() > 0) {
-              <small class="strength-label" aria-live="polite">{{ strengthKey() | translate }}</small>
-            }
+            <app-password-strength
+              id="password-requirements"
+              [password]="password()"
+              [email]="form.controls.email.value"
+            />
           </nz-form-control>
         </nz-form-item>
 

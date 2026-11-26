@@ -47,6 +47,27 @@ describe('Auth Guards (Cookie-Based Laravel Sanctum)', () => {
       expect(authApiMock.me).not.toHaveBeenCalled();
     });
 
+    it('redirects to the enrolment page while a required second factor is not set up', () => {
+      authStore.login();
+      authStore.setTwoFactorSetupRequired(true);
+
+      const result = TestBed.runInInjectionContext(() => authGuard(dummyRoute, dummyState));
+
+      expect(result).toBeInstanceOf(UrlTree);
+      expect((result as UrlTree).toString()).toBe('/two-factor-setup?returnUrl=%2Fdashboard');
+    });
+
+    it('lets the enrolment page itself open while the second factor is required', () => {
+      authStore.login();
+      authStore.setTwoFactorSetupRequired(true);
+
+      const result = TestBed.runInInjectionContext(() =>
+        authGuard(dummyRoute, { url: '/two-factor-setup?returnUrl=%2Fdashboard' } as RouterStateSnapshot),
+      );
+
+      expect(result).toBe(true);
+    });
+
     it('should verify session cookie via authApi.me() and allow when valid', () => {
       const mockProfile = {
         id: 'usr-001',
