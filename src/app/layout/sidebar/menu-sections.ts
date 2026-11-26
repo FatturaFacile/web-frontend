@@ -3540,6 +3540,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             module: 'audit_trail',
           },
           {
+            key: 'settings.audit.nav',
+            route: '/settings/audit',
+            icon: 'fa-solid fa-link',
+            module: 'audit_trail',
+          },
+          {
             key: 'DATA_SOVEREIGNTY.NAV',
             route: '/data-sovereignty',
             icon: 'fa-solid fa-globe-europe',

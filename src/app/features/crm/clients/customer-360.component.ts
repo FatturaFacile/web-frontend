@@ -27,7 +27,7 @@ import { Customer360InteractionsComponent } from './customer-360/customer-360-in
 import { Customer360LifecycleComponent } from './customer-360/customer-360-lifecycle.component';
 import { Customer360PersonsComponent } from './customer-360/customer-360-persons.component';
 import { CustomerDunningComponent } from '../../debt-collection/customer-dunning.component';
-import { EntityAuditTimelineComponent } from '../../security/audit-trail/entity-audit-timeline.component';
+import { RecordHistoryTabComponent } from '../../settings/pages/audit/record-history-tab.component';
 
 interface TimelineEntry {
   kind: string;
@@ -52,7 +52,7 @@ interface TimelineEntry {
     NzTagModule,
     NzTimelineModule,
     PageHeaderComponent,
-    EntityAuditTimelineComponent,
+    RecordHistoryTabComponent,
     CustomerDunningComponent,
     Customer360AddressesComponent,
     Customer360ConsentsComponent,
@@ -270,7 +270,7 @@ interface TimelineEntry {
       }
 
       <nz-card class="c360-card">
-        <app-entity-audit-timeline entityType="Contact" [entityId]="id" />
+        <app-record-history-tab resourceType="Contact" [resourceId]="id" />
       </nz-card>
     }
   `,

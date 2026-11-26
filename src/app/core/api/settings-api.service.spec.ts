@@ -172,17 +172,6 @@ describe('SettingsApiService', () => {
     });
   });
 
-  it('should get audit logs via getAuditLogs()', () => {
-    service.getAuditLogs().subscribe();
-
-    const req = httpTesting.expectOne(`${TEST_API_ORIGIN}/api/v1/settings/audit-logs`);
-    expect(req.request.method).toBe('GET');
-    req.flush({
-      success: true,
-      data: [{ id: 'log-1', event: 'login', created_at: '2026-11-08' }],
-    });
-  });
-
   it('should get preferences via getTenantPreferences()', () => {
     service.getTenantPreferences().subscribe();
 

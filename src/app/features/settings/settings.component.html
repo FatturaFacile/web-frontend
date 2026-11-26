@@ -175,7 +175,7 @@
           <nz-icon nzType="sync" /> {{ 'settings.messages.ratesSynced' | translate }}
         </button>
       </div>
-      <app-base-table [grid]="auditGrid" [columns]="auditColumns()" [scroll]="{ x: '1000px' }" [exportFileName]="'audit-log'" />
+      <app-audit-log-page />
     </nz-tab>
 
     <!-- TAB 6: FISCALE (issue #286), loaded when first opened -->
@@ -220,4 +220,3 @@
   </nz-tag>
 </ng-template>
 
-<ng-template #auditUserTpl let-row>{{ row.user?.name ?? '-' }}</ng-template>

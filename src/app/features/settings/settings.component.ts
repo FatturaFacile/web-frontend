@@ -11,13 +11,13 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import {
-  AuditLogResource,
   BranchResource,
   FetchGridModel,
   RoleResource,
   SettingsApiService,
   UserResource,
 } from '@core';
+import { AuditLogPageComponent } from './pages/audit/audit-log-page.component';
 import { BaseTableComponent, IconActionDirective, PageHeaderComponent, TableColumnDef, TranslatePipe } from '@shared';
 import { TranslateService } from '@core';
 import { FiscalSettingsComponent } from './components/fiscal-settings.component';
@@ -41,6 +41,7 @@ import { FiscalSettingsComponent } from './components/fiscal-settings.component'
     PageHeaderComponent,
     TranslatePipe,
     FiscalSettingsComponent,
+    AuditLogPageComponent,
   ],
   templateUrl: './settings.component.html',
 })
@@ -55,7 +56,6 @@ export class SettingsComponent implements OnInit {
   protected isSyncingRates = signal(false);
 
   protected readonly branchGrid = new FetchGridModel<BranchResource>((query) => this.api.getBranches(query));
-  protected readonly auditGrid = new FetchGridModel<AuditLogResource>((query) => this.api.getAuditLogs(query));
   protected readonly users = signal<UserResource[]>([]);
   protected readonly roles = signal<RoleResource[]>([]);
 
@@ -65,7 +65,6 @@ export class SettingsComponent implements OnInit {
   private readonly dateTpl = viewChild<TemplateRef<unknown>>('dateTpl');
   private readonly activeTpl = viewChild<TemplateRef<unknown>>('activeTpl');
   private readonly primaryTpl = viewChild<TemplateRef<unknown>>('primaryTpl');
-  private readonly auditUserTpl = viewChild<TemplateRef<unknown>>('auditUserTpl');
 
   protected readonly tenantForm = this.fb.group({
     name: this.fb.control<string>('Rossi Impianti S.r.l.', [Validators.required, Validators.maxLength(255)]),
@@ -115,26 +114,6 @@ export class SettingsComponent implements OnInit {
   readonly roleColumns = computed<TableColumnDef<RoleResource>[]>(() => [
     { key: 'name', header: 'COLUMNS.NOME_RUOLO', width: '200px', sortable: true },
     { key: 'description', header: 'COLUMNS.DESCRIZIONE', width: '320px' },
-  ]);
-
-  readonly auditColumns = computed<TableColumnDef<AuditLogResource>[]>(() => [
-    {
-      key: 'event_timestamp',
-      header: 'COLUMNS.DATA_AND_ORA',
-      width: '160px',
-      customCellTemplate: this.dateTpl(),
-    },
-    {
-      key: 'user',
-      serverKey: 'user.name',
-      header: 'COLUMNS.UTENTE',
-      width: '160px',
-      valueGetter: (row) => row.user?.name,
-      customCellTemplate: this.auditUserTpl(),
-    },
-    { key: 'action', header: 'COLUMNS.AZIONE_EVENTO', width: '160px' },
-    { key: 'module_code', header: 'COLUMNS.MODULO', width: '180px' },
-    { key: 'ip_address', header: 'COLUMNS.INDIRIZZO_IP', width: '140px' },
   ]);
 
   ngOnInit(): void {

@@ -62,22 +62,6 @@ describe('SettingsComponent', () => {
         ],
       }),
     ),
-    getAuditLogs: vi.fn().mockReturnValue(
-      of({
-        data: [
-          {
-            id: 'log-1',
-            event_timestamp: '2026-11-08T10:00:00Z',
-            user: { id: 'u-1', name: 'Admin User' },
-            action: 'LOGIN',
-            event: 'LOGIN',
-            module_code: 'auth',
-            ip_address: '127.0.0.1',
-          },
-        ],
-        meta: { total: 1, current_page: 1, last_page: 1, per_page: 10 },
-      }),
-    ),
     syncExchangeRates: vi.fn().mockReturnValue(of({ data: { synced_count: 5 } })),
   };
 
@@ -117,7 +101,6 @@ describe('SettingsComponent', () => {
     expect(mockSettingsApi.getBranches).toHaveBeenCalled();
     expect(mockSettingsApi.getTenantUsers).toHaveBeenCalled();
     expect(mockSettingsApi.getSystemRoles).toHaveBeenCalled();
-    expect(mockSettingsApi.getAuditLogs).toHaveBeenCalled();
   });
 
   it('submits valid tenant form and displays success notification', () => {
