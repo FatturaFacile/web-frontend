@@ -668,6 +668,28 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
     write: FINANCE,
     grants: { read: ['swiss_vat.*'], write: ['swiss_vat.*'] },
   },
+  data_migration: {
+    read: FINANCE_READERS,
+    write: FINANCE,
+    grants: {
+      read: [
+        'data_migration.read',
+        'data_migration.view',
+        'data_migration.write',
+        'data_migration.manage',
+        'data_migration.execute',
+        'data_migration.rollback',
+        'data_migration.*',
+      ],
+      write: [
+        'data_migration.write',
+        'data_migration.manage',
+        'data_migration.execute',
+        'data_migration.rollback',
+        'data_migration.*',
+      ],
+    },
+  },
 };
 
 /** Members with these roles can never write, on any route. */
