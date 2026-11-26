@@ -18,13 +18,16 @@ import {
 import { PageHeaderComponent, TranslatePipe } from '@shared';
 import { AlertRulesComponent } from './alert-rules.component';
 import { DeliveryLogComponent } from './delivery-log.component';
+import { ScheduledErpReportComponent } from './scheduled-erp-report.component';
 
 /** Per-channel switches and delivery frequency of each notification category, plus the do-not-disturb settings. */
 @Component({
   selector: 'app-notification-preferences',
-  imports: [AlertRulesComponent, DeliveryLogComponent, FormsModule, PageHeaderComponent, TranslatePipe, NzButtonModule, NzCardModule, NzSwitchModule, NzTableModule],
+  imports: [AlertRulesComponent, DeliveryLogComponent, ScheduledErpReportComponent, FormsModule, PageHeaderComponent, TranslatePipe, NzButtonModule, NzCardModule, NzSwitchModule, NzTableModule],
   template: `
     <app-page-header [title]="'PLATFORM.NOTIFICATION_PREFERENCES' | translate" [subtitle]="'PLATFORM.NOTIFICATION_PREFERENCES_SUBTITLE' | translate"></app-page-header>
+
+    <app-scheduled-erp-report />
 
     <nz-card>
       @if (state(); as current) {

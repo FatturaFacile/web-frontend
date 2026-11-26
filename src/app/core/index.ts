@@ -209,3 +209,5 @@ export * from './api/intercompany-api.service';
 export * from './api/industrial-laundry-api.service';
 export * from './api/van-selling-api.service';
 export * from './api/sales-bounded-context-api.service';
+export * from './api/scheduled-report-api.service';
+export * from './models/scheduled-report.model';
