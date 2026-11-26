@@ -145,6 +145,23 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'product-catalog',
+    canActivate: [
+      authGuard,
+      menuEnabledGuard,
+      featureFlagGuard('product_catalog'),
+      moduleGuard('product_catalog'),
+    ],
+    data: {
+      breadcrumb: 'NAV.PRODUCT_CATALOG',
+      title: 'PAGE_TITLE.PRODUCT_CATALOG',
+    },
+    loadChildren: () =>
+      import('./features/product-catalog/product-catalog.routes').then(
+        (m) => m.PRODUCT_CATALOG_ROUTES,
+      ),
+  },
+  {
     // Public landing page of a convention (Mod 358): no auth guard, the slug selects the convention, no application shell.
     path: 'convenzioni/:slug',
     data: { publicPage: true, title: 'corporateConventions.landing.title' },

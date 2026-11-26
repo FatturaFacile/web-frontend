@@ -397,6 +397,15 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
       write: ['corporate_conventions.write', 'corporate_conventions.bill', 'corporate_conventions.*'],
     },
   },
+  // Product catalog (Mod 052): every member reads; stock, purchasing, sales and finance roles maintain the catalog.
+  product_catalog: {
+    read: ANY_MEMBER,
+    write: ['owner', 'admin', 'accountant', 'warehouse', 'purchasing', 'sales', 'sales_manager', 'member'],
+    grants: {
+      read: ['product_catalog.read', 'product_catalog.write', 'product_catalog.*'],
+      write: ['product_catalog.write', 'product_catalog.*'],
+    },
+  },
   corporate_conventions_finance: {
     read: FINANCE_READERS,
     write: FINANCE,
