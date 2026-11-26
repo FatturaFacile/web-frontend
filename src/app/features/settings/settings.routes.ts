@@ -138,6 +138,13 @@ export const SETTINGS_ROUTES: Routes = [
     loadComponent: () => import('./pages/access/matrix.component').then((m) => m.AccessMatrixComponent),
   },
   {
+    path: 'audit',
+    canActivate: [moduleGuard('audit_trail', 'read')],
+    data: { breadcrumb: 'settings.audit.title', titleKey: 'settings.audit.title' },
+    loadComponent: () =>
+      import('./pages/audit/audit-log-page.component').then((m) => m.AuditLogPageComponent),
+  },
+  {
     path: 'access/audit',
     canActivate: [moduleGuard('system', 'read')],
     data: { breadcrumb: 'access.audit.title', title: 'access.audit.title' },

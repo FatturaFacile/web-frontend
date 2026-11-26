@@ -22,7 +22,7 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { Observable } from 'rxjs';
 import { reportHttpError } from '../../../hr/shared/hr-http.util';
-import { EntityAuditTimelineComponent } from '../../../security/audit-trail/entity-audit-timeline.component';
+import { RecordHistoryTabComponent } from '../audit/record-history-tab.component';
 import { AccessNavComponent } from '../access/access-nav.component';
 import { reportAccessError } from '../access/access-ui.util';
 import { PlanLimitsComponent } from '../access/plan-limits.component';
@@ -36,7 +36,7 @@ import { MemberAccessFormComponent } from './member-access-form.component';
   selector: 'app-tenant-users',
   imports: [
     AccessNavComponent,
-    EntityAuditTimelineComponent,
+    RecordHistoryTabComponent,
     MemberAccessFormComponent,
     NzButtonModule,
     NzCardModule,
@@ -181,7 +181,7 @@ import { MemberAccessFormComponent } from './member-access-form.component';
     >
       <ng-container *nzDrawerContent>
         @if (history(); as current) {
-          <app-entity-audit-timeline entityType="User" [entityId]="current.id" />
+          <app-record-history-tab resourceType="User" [resourceId]="current.id" />
         }
       </ng-container>
     </nz-drawer>

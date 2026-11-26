@@ -6,7 +6,6 @@ import { toHttpParams } from '../http/laravel-http.utils';
 import {
   AccessOptions,
   ApiResponse,
-  AuditLogResource,
   BranchResource,
   PaginatedResponse,
   QueryFilterParams,
@@ -70,12 +69,6 @@ export class SettingsApiService {
 
   getSystemRoles(): Observable<ApiResponse<RoleResource[]>> {
     return this.http.get<ApiResponse<RoleResource[]>>(`${this.base}/roles`);
-  }
-
-  getAuditLogs(params?: QueryFilterParams & { module?: string; action?: string }): Observable<PaginatedResponse<AuditLogResource>> {
-    return this.http.get<PaginatedResponse<AuditLogResource>>(`${this.base}/audit-logs`, {
-      params: params ? toHttpParams(params) : undefined,
-    });
   }
 
   getTenantPreferences(): Observable<ApiResponse<TenantPreferences>> {
