@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "packageManager": "pnpm@12.18.0",
+  "packageManager": "pnpm@12.23.0",
   "engines": {
     "node": ">=22.0.0",
     "pnpm": ">=10.0.0"
@@ -48,7 +48,7 @@
     "echarts": "^6.1.0",
     "exceljs": "^4.4.0",
     "laravel-echo": "^2.6.3",
-    "ng-zorro-antd": "^22.2.0",
+    "ng-zorro-antd": "^22.2.1",
     "pdfjs-dist": "^6.5.438",
     "pusher-js": "^8.6.0",
     "rxjs": "~7.8.2",
@@ -62,13 +62,13 @@
     "@angular/language-service": "22.3.0",
     "@angular/localize": "^22.3.0",
     "@angular/platform-browser-dynamic": "22.3.0",
-    "@axe-core/playwright": "^4.14.0",
+    "@axe-core/playwright": "^4.14.1",
     "@playwright/test": "^1.65.1",
-    "@storybook/addon-a11y": "^10.6.7",
-    "@storybook/addon-docs": "^10.6.7",
-    "@storybook/angular": "^10.6.7",
-    "@types/node": "^26.6.6",
-    "@vitest/coverage-v8": "5.1.1",
+    "@storybook/addon-a11y": "^10.6.9",
+    "@storybook/addon-docs": "^10.6.9",
+    "@storybook/angular": "^10.6.9",
+    "@types/node": "^26.6.11",
+    "@vitest/coverage-v8": "5.1.2",
     "angular-eslint": "^22.8.0",
     "axe-core": "^4.14.1",
     "eslint": "^10.15.0",
@@ -77,10 +77,10 @@
     "only-allow": "^1.2.2",
     "openapi-typescript": "^7.13.0",
     "prettier": "^3.10.1",
-    "storybook": "^10.6.7",
+    "storybook": "^10.6.9",
     "typescript": "6.0.3",
-    "typescript-eslint": "^8.73.0",
-    "vitest": "^5.1.1"
+    "typescript-eslint": "^8.74.0",
+    "vitest": "^5.1.2"
   },
   "overrides": {
     "typescript": "$typescript"

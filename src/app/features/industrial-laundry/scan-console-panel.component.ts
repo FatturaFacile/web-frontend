@@ -71,7 +71,7 @@ import { RabcConsoleStore } from './rabc-console.store';
         </label>
         <label class="field" for="ilr-scan-direction">
           <span>{{ 'industrialLaundry.field.direction' | translate }}</span>
-          <nz-select id="ilr-scan-direction" [ngModel]="direction()" (ngModelChange)="direction.set($event)">
+          <nz-select id="ilr-scan-direction" nzId="ilr-scan-direction" [ngModel]="direction()" (ngModelChange)="direction.set($event)">
             @for (item of directions; track item) {
               <nz-option [nzValue]="item" [nzLabel]="'industrialLaundry.scanDirection.' + item | translate"></nz-option>
             }
@@ -79,7 +79,7 @@ import { RabcConsoleStore } from './rabc-console.store';
         </label>
         <label class="field wide" for="ilr-scan-customer">
           <span>{{ 'industrialLaundry.field.customer' | translate }}</span>
-          <nz-select id="ilr-scan-customer" nzAllowClear nzShowSearch [ngModel]="customerId()" (ngModelChange)="customerId.set($event)">
+          <nz-select id="ilr-scan-customer" nzId="ilr-scan-customer" nzAllowClear nzShowSearch [ngModel]="customerId()" (ngModelChange)="customerId.set($event)">
             @for (customer of store.customers(); track customer.id) {
               <nz-option [nzValue]="customer.id" [nzLabel]="customer.name"></nz-option>
             }
@@ -112,7 +112,7 @@ import { RabcConsoleStore } from './rabc-console.store';
       </label>
       <p class="hint">{{ 'industrialLaundry.hint.reads' | translate }} ({{ readsCount() }})</p>
 
-      <label nz-checkbox [ngModel]="generateDdt()" (ngModelChange)="generateDdt.set($event)">
+      <label nz-checkbox for="ilr-scan-gen-ddt" nzId="ilr-scan-gen-ddt" [ngModel]="generateDdt()" (ngModelChange)="generateDdt.set($event)">
         {{ 'industrialLaundry.field.generateDdt' | translate }}
       </label>
       <div class="toolbar">

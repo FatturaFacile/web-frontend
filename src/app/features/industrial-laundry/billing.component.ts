@@ -61,7 +61,7 @@ import { IlrOutcome, previousMonthRange } from './industrial-laundry.util';
       <div class="form-grid">
         <label class="field wide" for="ilr-bill-contract">
           <span>{{ 'industrialLaundry.field.contract' | translate }}</span>
-          <nz-select id="ilr-bill-contract" nzShowSearch [ngModel]="contractId()" (ngModelChange)="contractId.set($event); store.clearPreview()">
+          <nz-select id="ilr-bill-contract" nzId="ilr-bill-contract" nzShowSearch [ngModel]="contractId()" (ngModelChange)="contractId.set($event); store.clearPreview()">
             @for (contract of store.contracts(); track contract.id) {
               <nz-option [nzValue]="contract.id" [nzLabel]="contract.code + ' · ' + (contract.customer?.name ?? '')"></nz-option>
             }
@@ -76,7 +76,7 @@ import { IlrOutcome, previousMonthRange } from './industrial-laundry.util';
           <input nz-input id="ilr-bill-end" type="date" [ngModel]="end()" (ngModelChange)="end.set($event); store.clearPreview()" />
         </label>
       </div>
-      <label nz-checkbox [ngModel]="createInvoice()" (ngModelChange)="createInvoice.set($event)">
+      <label nz-checkbox for="ilr-bill-create-inv" nzId="ilr-bill-create-inv" [ngModel]="createInvoice()" (ngModelChange)="createInvoice.set($event)">
         {{ 'industrialLaundry.field.createInvoice' | translate }}
       </label>
       <div class="toolbar">

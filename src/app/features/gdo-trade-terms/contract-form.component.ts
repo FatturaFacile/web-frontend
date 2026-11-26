@@ -78,7 +78,7 @@ import { cascadeDiscount, currentYear, GdtOutcome, percentText } from './gdo-tra
         </label>
       </div>
 
-      <label nz-checkbox formControlName="include_child_contacts">
+      <label nz-checkbox for="gdt-c-child-contacts" nzId="gdt-c-child-contacts" formControlName="include_child_contacts">
         {{ 'gdoTradeTerms.field.includeChildContacts' | translate }}
       </label>
 

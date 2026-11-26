@@ -57,6 +57,7 @@ import { PpeMonitorStore } from './ppe-monitor.store';
         <span>{{ 'industrialLaundry.field.customer' | translate }}</span>
         <nz-select
           id="ilr-ppe-customer"
+          nzId="ilr-ppe-customer"
           nzAllowClear
           nzShowSearch
           [ngModel]="store.customerId()"
@@ -68,7 +69,7 @@ import { PpeMonitorStore } from './ppe-monitor.store';
           }
         </nz-select>
       </label>
-      <label nz-checkbox [ngModel]="store.limitReachedOnly()" (ngModelChange)="store.setFilters({ limitReachedOnly: $event })">
+      <label nz-checkbox for="ilr-ppe-limit-only" nzId="ilr-ppe-limit-only" [ngModel]="store.limitReachedOnly()" (ngModelChange)="store.setFilters({ limitReachedOnly: $event })">
         {{ 'industrialLaundry.field.limitReachedOnly' | translate }}
       </label>
     </div>

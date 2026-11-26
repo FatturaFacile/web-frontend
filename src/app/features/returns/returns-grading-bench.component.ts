@@ -191,9 +191,9 @@ import { apiErrorText } from './returns.util';
           </div>
 
           <div class="form-row">
-            <label nz-checkbox formControlName="package_intact">{{ 'RETURNS_RL.CHECKLIST_PACKAGE_INTACT' | translate }}</label>
-            <label nz-checkbox formControlName="accessories_complete">{{ 'RETURNS_RL.CHECKLIST_ACCESSORIES_COMPLETE' | translate }}</label>
-            <label nz-checkbox formControlName="functional_test_passed">{{ 'RETURNS_RL.CHECKLIST_FUNCTIONAL_TEST' | translate }}</label>
+            <label nz-checkbox for="ret-grd-pkg-intact" nzId="ret-grd-pkg-intact" formControlName="package_intact">{{ 'RETURNS_RL.CHECKLIST_PACKAGE_INTACT' | translate }}</label>
+            <label nz-checkbox for="ret-grd-acc-complete" nzId="ret-grd-acc-complete" formControlName="accessories_complete">{{ 'RETURNS_RL.CHECKLIST_ACCESSORIES_COMPLETE' | translate }}</label>
+            <label nz-checkbox for="ret-grd-func-test" nzId="ret-grd-func-test" formControlName="functional_test_passed">{{ 'RETURNS_RL.CHECKLIST_FUNCTIONAL_TEST' | translate }}</label>
           </div>
 
           <nz-form-item style="margin-top: 12px;">

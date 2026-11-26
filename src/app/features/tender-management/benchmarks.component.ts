@@ -69,7 +69,7 @@ import { jurisdictionBadge, jurisdictionColor } from './tender-management.util';
           }
         </nz-select>
       </label>
-      <label nz-checkbox [ngModel]="!!store.filters().winners_only" (ngModelChange)="store.setFilters({ winners_only: $event })">
+      <label nz-checkbox for="tnd-bm-winners-only" nzId="tnd-bm-winners-only" [ngModel]="!!store.filters().winners_only" (ngModelChange)="store.setFilters({ winners_only: $event })">
         {{ 'tenderManagement.filter.winnersOnly' | translate }}
       </label>
       <button nz-button type="button" (click)="apply()">{{ 'tenderManagement.action.search' | translate }}</button>
@@ -200,7 +200,7 @@ import { jurisdictionBadge, jurisdictionColor } from './tender-management.util';
           <input nz-input id="tnd-bf-econ" type="number" min="0" step="0.01" formControlName="economic_score" />
           <label for="tnd-bf-source">{{ 'tenderManagement.field.source' | translate }}</label>
           <input nz-input id="tnd-bf-source" formControlName="source" maxlength="120" />
-          <label nz-checkbox formControlName="is_winner">{{ 'tenderManagement.stats.winner' | translate }}</label>
+          <label nz-checkbox for="tnd-bf-is-winner" nzId="tnd-bf-is-winner" formControlName="is_winner">{{ 'tenderManagement.stats.winner' | translate }}</label>
         </form>
       </ng-container>
     </nz-modal>

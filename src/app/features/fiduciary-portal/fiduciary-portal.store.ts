@@ -108,7 +108,7 @@ export const FiduciaryPortalStore = signalStore(
     },
 
     async switchClient(tenantId: string): Promise<void> {
-      authStore.selectTenant(tenantId);
+      authStore.switchTenant(tenantId);
       await this.init();
     },
 

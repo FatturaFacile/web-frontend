@@ -125,7 +125,7 @@ import { ScopeFieldsComponent } from './scope-fields.component';
             </label>
           </div>
           <p class="muted">{{ 'gdoTradeTerms.hint.scaleWindow' | translate }}</p>
-          <label nz-checkbox formControlName="is_active">{{ 'gdoTradeTerms.field.active' | translate }}</label>
+          <label nz-checkbox for="gdt-s-active" nzId="gdt-s-active" formControlName="is_active">{{ 'gdoTradeTerms.field.active' | translate }}</label>
 
           <div class="section-title">{{ 'gdoTradeTerms.section.scope' | translate }}</div>
           <app-gdt-scope-fields

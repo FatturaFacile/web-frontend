@@ -183,7 +183,7 @@ import { GdtOutcome } from './gdo-trade-terms.util';
           <input nz-input id="gdt-dp-postal" maxlength="20" formControlName="postal_code" />
           <label for="gdt-dp-country">{{ 'gdoTradeTerms.field.country' | translate }}</label>
           <input nz-input id="gdt-dp-country" maxlength="2" formControlName="country" />
-          <label nz-checkbox formControlName="is_active">{{ 'gdoTradeTerms.field.active' | translate }}</label>
+          <label nz-checkbox for="gdt-dp-active" nzId="gdt-dp-active" formControlName="is_active">{{ 'gdoTradeTerms.field.active' | translate }}</label>
         </form>
       </ng-container>
     </nz-modal>

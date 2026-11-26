@@ -101,7 +101,7 @@ import { apiErrorText, todayIso } from './returns.util';
 
         @if (res.art26_one_year_exceeded) {
           <div style="margin-top: 12px;">
-            <label nz-checkbox [ngModel]="applyN22()" (ngModelChange)="applyN22.set($event)">
+            <label nz-checkbox for="ret-cn-apply-n22" nzId="ret-cn-apply-n22" [ngModel]="applyN22()" (ngModelChange)="applyN22.set($event)">
               {{ 'RETURNS_RL.APPLY_N2_2' | translate }}
             </label>
           </div>

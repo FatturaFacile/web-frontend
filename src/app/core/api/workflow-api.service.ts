@@ -23,7 +23,6 @@ import {
   WorkflowSimulationResult,
   WorkflowSubjectType,
   WorkflowTimelineEntry,
-  WorkflowAuditVerification,
   WorkflowCreateDelegationRequest,
   WorkflowDefinitionParams,
   WorkflowDefinitionResource,

@@ -85,7 +85,7 @@ import { apiErrorText } from './plm.util';
         </nz-form-item>
 
         <div class="toolbar">
-          <label nz-checkbox formControlName="auto_create_missing_parts">{{ 'PLM.CAD_AUTO_CREATE' | translate }}</label>
+          <label nz-checkbox for="plm-cad-auto-create" nzId="plm-cad-auto-create" formControlName="auto_create_missing_parts">{{ 'PLM.CAD_AUTO_CREATE' | translate }}</label>
           <span class="spacer"></span>
           <button nz-button nzType="primary" type="button" [disabled]="form.invalid" [nzLoading]="loading()" (click)="runImport()">
             {{ 'PLM.CAD_RUN_IMPORT' | translate }}
