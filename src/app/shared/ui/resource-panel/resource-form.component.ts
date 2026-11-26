@@ -10,7 +10,8 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
-import { applyServerErrors, ResourceRow } from '@core';
+import { applyServerErrors } from '@core/http/laravel-http.utils';
+import { ResourceRow } from '@core/models/resource.model';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzInputModule } from 'ng-zorro-antd/input';

@@ -1,5 +1,4 @@
 import { AfterViewInit, Directive, ElementRef, inject, OnDestroy } from '@angular/core';
-import { exportXlsx } from '../utils/export-xlsx';
 
 /**
  * Adds a toolbar above every `<nz-table appGridExport>`:
@@ -203,6 +202,7 @@ export class GridExportDirective implements AfterViewInit, OnDestroy {
       header: h.title,
       values: rows.map((row) => toValue(row.children.item(h.index) as HTMLElement | null)),
     }));
+    const { exportXlsx } = await import('../utils/export-xlsx');
     await exportXlsx(columns, 'export');
   }
 }

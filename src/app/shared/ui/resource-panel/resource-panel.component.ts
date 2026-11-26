@@ -1,13 +1,10 @@
 import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import {
-  PermissionsService,
-  ResourceApiService,
-  ResourceRow,
-  SignatureRequestService,
-  unwrapResponse,
-} from '@core';
+import { ResourceApiService, unwrapResponse } from '@core/api/resource-api.service';
+import { PermissionsService } from '@core/auth/permissions.service';
+import { ResourceRow } from '@core/models/resource.model';
+import { SignatureRequestService } from '@core/services/signature-request.service';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzIconModule } from 'ng-zorro-antd/icon';

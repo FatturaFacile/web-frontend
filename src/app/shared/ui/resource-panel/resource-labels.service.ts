@@ -1,5 +1,5 @@
 import { inject, Service } from '@angular/core';
-import { I18nService } from '@core';
+import { I18nService } from '@core/i18n/i18n.service';
 import { humanize } from './resource-panel.utils';
 
 /** Translation helpers of the resource panels, reactive to language changes when read in a template. */

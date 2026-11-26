@@ -1,5 +1,5 @@
 import { Component, computed, inject } from '@angular/core';
-import { TranslatePipe } from '@shared';
+import { TranslatePipe } from '@shared/pipes/translate.pipe';
 import { SpotlightTourEngineService } from './spotlight-tour-engine.service';
 
 const POPOVER_W = 320;

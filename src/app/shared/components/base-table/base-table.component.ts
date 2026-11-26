@@ -24,7 +24,6 @@ import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzSkeletonModule } from 'ng-zorro-antd/skeleton';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
-import { exportXlsx } from '../../utils/export-xlsx';
 import { I18nService } from '@core/i18n/i18n.service';
 import { buildGridRows, GRID_EMPTY, GridModel, GridRow, GridValue } from '@core/state/grid.model';
 import {
@@ -393,6 +392,7 @@ export class BaseTableComponent<TItem extends object = object> {
     const columns = this.visibleColumns().filter((c) => c.exportable !== false);
     const grid = this.grid();
     const rows = grid ? await firstValueFrom(grid.loadAllRows()) : this.displayData();
+    const { exportXlsx } = await import('../../utils/export-xlsx');
     await exportXlsx(
       columns.map((col) => ({
         header: this.i18n.translate(col.header),

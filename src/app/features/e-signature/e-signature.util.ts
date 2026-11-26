@@ -21,7 +21,7 @@ import {
   EsigSignatureBox,
   EsigTemplate,
   EsigTemplatePayload,
-} from '@core';
+} from '@core/models/electronic-signature.model';
 
 /** Module key of the access map (`MODULE_ACCESS`): follow and start signature requests. */
 export const ESIG_MODULE = 'electronic_signature';
