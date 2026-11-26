@@ -142,6 +142,7 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/settings/ai',
   '/ecommerce-integrations',
   '/data-migration',
+  '/fiduciary-portal',
   '/exports',
   '/logistics/consignment',
   '/logistics/delivery-notes',
