@@ -1,5 +1,6 @@
 import { inject, Service } from '@angular/core';
-import { ResourceApiService, ResourceRow } from '@core';
+import { ResourceApiService } from '@core/api/resource-api.service';
+import { ResourceRow } from '@core/models/resource.model';
 import { catchError, map, Observable, of, shareReplay } from 'rxjs';
 import { ResourceLookupName } from './resource-panel.types';
 import { getByPath } from './resource-panel.utils';

@@ -12,8 +12,8 @@ import {
 } from '@angular/core';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
-import { EsigSignatureBox } from '@core';
-import { TranslatePipe } from '@shared';
+import { EsigSignatureBox } from '@core/models/electronic-signature.model';
+import { TranslatePipe } from '@shared/pipes/translate.pipe';
 import { DocumentPageRenderer } from '../ocr-inbox/document-page-renderer.service';
 import { moveBox } from './e-signature.util';
 

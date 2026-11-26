@@ -32,11 +32,19 @@
     </nz-layout>
   </nz-layout>
   <app-global-search />
-  <app-copilot-drawer />
-  <app-contextual-help-drawer />
-  <app-signature-request-host />
+  @defer (when copilot.isOpen()) {
+    <app-copilot-drawer />
+  }
+  @defer (when academy.helpOpen()) {
+    <app-contextual-help-drawer />
+  }
+  @defer (when signatureRequest.request() !== null) {
+    <app-signature-request-host />
+  }
 }
 
 <app-toast-host />
-<app-spotlight-tour-overlay />
+@defer (when tour.active()) {
+  <app-spotlight-tour-overlay />
+}
 

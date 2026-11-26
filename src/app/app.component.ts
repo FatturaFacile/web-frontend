@@ -14,10 +14,14 @@ import { HeaderComponent, SidebarComponent, BreadcrumbComponent } from './layout
 import { TranslatePipe } from '@shared/pipes/translate.pipe';
 import { SpotlightTourOverlayComponent } from './features/academy/spotlight-tour-overlay.component';
 import { ContextualHelpDrawerComponent } from './features/academy/contextual-help-drawer.component';
+import { AcademyStore } from './features/academy/academy.store';
+import { SpotlightTourEngineService } from './features/academy/spotlight-tour-engine.service';
 import { ToastHostComponent } from '@shared/ui/toast/toast-host.component';
 import { GlobalSearchComponent } from '@shared/components/global-search/global-search.component';
 import { CopilotDrawerComponent } from '@features/copilot/copilot-drawer.component';
+import { CopilotStore } from '@features/copilot/copilot.store';
 import { SignatureRequestHostComponent } from './features/e-signature/signature-request-host.component';
+import { SignatureRequestService } from '@core/services/signature-request.service';
 
 /** True when the deepest active route is a customer-facing page (`data.publicPage`). */
 function isPublicPage(root: ActivatedRouteSnapshot): boolean {
@@ -50,14 +54,28 @@ function isPublicPage(root: ActivatedRouteSnapshot): boolean {
     TranslatePipe,
   ],
   templateUrl: './app.component.html',
+  host: { '(document:keydown)': 'onGlobalKeydown($event)' },
 })
 export class AppComponent implements OnInit {
   readonly appStore = inject(AppStore);
   readonly authStore = inject(AuthStore);
+  readonly copilot = inject(CopilotStore);
+  readonly academy = inject(AcademyStore);
+  readonly tour = inject(SpotlightTourEngineService);
+  readonly signatureRequest = inject(SignatureRequestService);
   private readonly authApi = inject(AuthApiService, { optional: true });
   private readonly displayPreferences = inject(DisplayPreferencesService, { optional: true });
   private readonly router = inject(Router);
   private readonly i18n = inject(I18nService);
+
+  onGlobalKeydown(event: KeyboardEvent): void {
+    if ((event.ctrlKey || event.metaKey) && !event.shiftKey && event.key.toLowerCase() === 'k') {
+      if (!this.copilot.isOpen()) {
+        event.preventDefault();
+        this.copilot.open();
+      }
+    }
+  }
 
   /** Swiss and Italian tenants get the regional dictionary of their language (it-CH, de-CH, fr-CH, it-IT). */
   private readonly regionSync = effect(() => this.i18n.setRegion(regionOfCountry(this.authStore.activeJurisdiction())));

@@ -20,11 +20,12 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzStepsModule } from 'ng-zorro-antd/steps';
 import { NzTagModule } from 'ng-zorro-antd/tag';
+import { ElectronicSignatureApiService } from '@core/api/electronic-signature-api.service';
+import { TranslateService } from '@core/i18n/i18n.service';
 import {
   ESIG_JURISDICTIONS,
   ESIG_LEVELS,
   ESIG_ROLES,
-  ElectronicSignatureApiService,
   EsigAuthMethod,
   EsigEnvelopePayload,
   EsigJurisdiction,
@@ -34,9 +35,9 @@ import {
   EsigRoutingMode,
   EsigSignableType,
   EsigSignatureBox,
-  TranslateService,
-} from '@core';
-import { RadioControlDirective, TranslatePipe } from '@shared';
+} from '@core/models/electronic-signature.model';
+import { RadioControlDirective } from '@shared/directives/radio-control.directive';
+import { TranslatePipe } from '@shared/pipes/translate.pipe';
 import {
   authMethodsFor,
   boxAt,

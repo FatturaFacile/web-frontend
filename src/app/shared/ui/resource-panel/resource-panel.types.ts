@@ -3,7 +3,7 @@
  * and toolbar actions, all bound to REST paths relative to `environment.apiBaseUrl`.
  * Path placeholders such as `{id}` are resolved from the row, then from the panel scope.
  */
-import { ResourceHttpMethod, ResourceRow } from '@core';
+import { ResourceHttpMethod, ResourceRow } from '@core/models/resource.model';
 
 export type { ResourceHttpMethod, ResourceRow };
 

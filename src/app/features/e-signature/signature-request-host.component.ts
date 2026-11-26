@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { SignatureRequestService } from '@core';
+import { SignatureRequestService } from '@core/services/signature-request.service';
 import { SendForSignatureDrawerComponent } from './send-for-signature-drawer.component';
 
 /** Mounted once in the application shell: shows the send-for-signature wizard for whatever page asked for it. */
@@ -8,16 +8,18 @@ import { SendForSignatureDrawerComponent } from './send-for-signature-drawer.com
   imports: [SendForSignatureDrawerComponent],
   template: `
     @if (service.request(); as request) {
-      <app-send-for-signature-drawer
-        [open]="true"
-        [signableType]="request.signableType"
-        [signableId]="request.signableId"
-        [documentLabel]="request.label"
-        [amount]="request.amount"
-        [currency]="request.currency"
-        (closed)="service.close()"
-        (created)="onCreated()"
-      ></app-send-for-signature-drawer>
+      @defer (when service.request() !== null) {
+        <app-send-for-signature-drawer
+          [open]="true"
+          [signableType]="request.signableType"
+          [signableId]="request.signableId"
+          [documentLabel]="request.label"
+          [amount]="request.amount"
+          [currency]="request.currency"
+          (closed)="service.close()"
+          (created)="onCreated()"
+        ></app-send-for-signature-drawer>
+      }
     }
   `,
 })

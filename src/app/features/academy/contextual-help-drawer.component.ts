@@ -1,7 +1,7 @@
 import { Component, effect, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { NzDrawerModule } from 'ng-zorro-antd/drawer';
-import { TranslatePipe } from '@shared';
+import { TranslatePipe } from '@shared/pipes/translate.pipe';
 import { AcademyStore } from './academy.store';
 import { parseMarkdown } from './academy.utils';
 
