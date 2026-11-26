@@ -8,6 +8,7 @@ import {
   nextNodeKey,
   NODE_HEIGHT,
   NODE_WIDTH,
+  PALETTE_NODE_TYPES,
   publishProblems,
 } from './workflow-designer.util';
 
@@ -67,5 +68,11 @@ describe('workflow designer util', () => {
     const nodes = [node('s', 'start'), node('a', 'approval'), node('e', 'end'), node('x', 'notification')];
     expect(publishProblems(nodes, [link('1', 's', 'a'), link('2', 'a', 'e')])).toEqual(['workflows.designer.problem.disconnected']);
     expect(publishProblems(nodes.slice(0, 3), [link('1', 's', 'a'), link('2', 'a', 'e')])).toEqual([]);
+  });
+
+  it('offers the parallel split and join in the palette with their own keys', () => {
+    expect(PALETTE_NODE_TYPES).toContain('parallel_split');
+    expect(PALETTE_NODE_TYPES).toContain('parallel_join');
+    expect(nextNodeKey('parallel_split', [{ node_key: 'parallel_split_1' }])).toBe('parallel_split_2');
   });
 });

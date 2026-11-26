@@ -1,4 +1,4 @@
-export type WorkflowNodeType = 'start' | 'approval' | 'condition' | 'notification' | 'end';
+export type WorkflowNodeType = 'start' | 'approval' | 'condition' | 'parallel_split' | 'parallel_join' | 'notification' | 'end';
 
 export type WorkflowInstanceStatus = 'pending' | 'approved' | 'rejected' | 'cancelled';
 

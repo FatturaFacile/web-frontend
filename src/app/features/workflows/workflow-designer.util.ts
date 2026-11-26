@@ -6,7 +6,7 @@ const GRID_X = 220;
 const ORIGIN_X = 40;
 const ORIGIN_Y = 80;
 
-export const PALETTE_NODE_TYPES: readonly WorkflowNodeType[] = ['approval', 'condition', 'notification', 'end'];
+export const PALETTE_NODE_TYPES: readonly WorkflowNodeType[] = ['approval', 'condition', 'parallel_split', 'parallel_join', 'notification', 'end'];
 
 export interface Point {
   x: number;
