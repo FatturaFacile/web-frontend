@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors } from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -11,6 +11,14 @@ import { NzSwitchModule } from 'ng-zorro-antd/switch';
 import { EnterpriseAuthApiService, SecurityPolicy, TranslateService, TwoFactorRequirement, UpdateSecurityPolicyPayload } from '@core';
 import { TranslatePipe } from '@shared';
 import { enterpriseErrorText } from './enterprise-security.util';
+
+/** Mirrors the API rule `max_minutes >= minutes`: the progressive lock never ends before the base lock. */
+export function maxNotBelowBase(group: AbstractControl): ValidationErrors | null {
+  const backoff = group.get('backoff')?.value === true;
+  const minutes = Number(group.get('minutes')?.value ?? 0);
+  const max = Number(group.get('max_minutes')?.value ?? 0);
+  return backoff && max < minutes ? { maxBelowBase: true } : null;
+}
 
 /** The per-tenant security policy: password rules, lockout, sessions, second factor requirement and SSO-only mode. */
 @Component({
@@ -35,6 +43,8 @@ import { enterpriseErrorText } from './enterprise-security.util';
               <label for="security-policy-form-require-mixed-case" class="switch-row"><nz-switch nzId="security-policy-form-require-mixed-case" formControlName="require_mixed_case"></nz-switch> {{ 'ENT_AUTH.POLICY_MIXED_CASE' | translate }}</label>
               <label for="security-policy-form-require-numbers" class="switch-row"><nz-switch nzId="security-policy-form-require-numbers" formControlName="require_numbers"></nz-switch> {{ 'ENT_AUTH.POLICY_NUMBERS' | translate }}</label>
               <label for="security-policy-form-require-symbols" class="switch-row"><nz-switch nzId="security-policy-form-require-symbols" formControlName="require_symbols"></nz-switch> {{ 'ENT_AUTH.POLICY_SYMBOLS' | translate }}</label>
+              <label for="security-policy-form-check-breached" class="switch-row"><nz-switch nzId="security-policy-form-check-breached" formControlName="check_breached"></nz-switch> {{ 'security.password.breached.enabled' | translate }}</label>
+              <p class="muted" data-testid="breached-help">{{ 'security.password.breached.help' | translate }}</p>
             </nz-form-control>
           </nz-form-item>
           <nz-form-item>
@@ -66,6 +76,23 @@ import { enterpriseErrorText } from './enterprise-security.util';
               <nz-input-number id="lockout-minutes" formControlName="minutes" [nzMin]="1" [nzMax]="1440"></nz-input-number>
             </nz-form-control>
           </nz-form-item>
+          <nz-form-item>
+            <nz-form-control [nzExtra]="'security.lockout.backoff.help' | translate">
+              <label for="security-policy-form-lockout-backoff" class="switch-row"><nz-switch nzId="security-policy-form-lockout-backoff" formControlName="backoff"></nz-switch> {{ 'security.lockout.backoff.enabled' | translate }}</label>
+            </nz-form-control>
+          </nz-form-item>
+          @if (form.controls.lockout.controls.backoff.value) {
+            <nz-form-item>
+              <nz-form-label nzFor="lockout-max-minutes">{{ 'security.lockout.backoff.max_minutes' | translate }}</nz-form-label>
+              <nz-form-control
+                [nzValidateStatus]="form.controls.lockout.hasError('maxBelowBase') ? 'error' : ''"
+                [nzErrorTip]="'security.lockout.backoff.max_minutes_help' | translate"
+                [nzExtra]="'security.lockout.backoff.max_minutes_help' | translate"
+              >
+                <nz-input-number id="lockout-max-minutes" formControlName="max_minutes" [nzMin]="1" [nzMax]="10080"></nz-input-number>
+              </nz-form-control>
+            </nz-form-item>
+          }
         </div>
       </nz-card>
 
@@ -144,13 +171,19 @@ export class SecurityPolicyFormComponent implements OnInit {
       require_mixed_case: this.fb.nonNullable.control(false),
       require_numbers: this.fb.nonNullable.control(false),
       require_symbols: this.fb.nonNullable.control(false),
+      check_breached: this.fb.nonNullable.control(false),
       history_count: this.fb.control<number | null>(0),
       max_age_days: this.fb.control<number | null>(null),
     }),
-    lockout: this.fb.group({
-      max_attempts: this.fb.control<number | null>(0),
-      minutes: this.fb.control<number | null>(15),
-    }),
+    lockout: this.fb.group(
+      {
+        max_attempts: this.fb.control<number | null>(0),
+        minutes: this.fb.control<number | null>(15),
+        backoff: this.fb.nonNullable.control(false),
+        max_minutes: this.fb.control<number | null>(1440),
+      },
+      { validators: maxNotBelowBase },
+    ),
     session: this.fb.group({
       idle_timeout_minutes: this.fb.control<number | null>(null),
       max_concurrent_sessions: this.fb.control<number | null>(null),
@@ -181,6 +214,10 @@ export class SecurityPolicyFormComponent implements OnInit {
   }
 
   save(): void {
+    if (this.form.controls.lockout.hasError('maxBelowBase')) {
+      this.form.controls.lockout.markAllAsTouched();
+      return;
+    }
     this.saving.set(true);
     this.errorText.set(null);
     this.api.updatePolicy(this.payload()).subscribe({
@@ -206,12 +243,15 @@ export class SecurityPolicyFormComponent implements OnInit {
         require_mixed_case: value.password.require_mixed_case,
         require_numbers: value.password.require_numbers,
         require_symbols: value.password.require_symbols,
+        check_breached: value.password.check_breached,
         history_count: value.password.history_count ?? undefined,
         max_age_days: value.password.max_age_days,
       },
       lockout: {
         max_attempts: value.lockout.max_attempts ?? undefined,
         minutes: value.lockout.minutes ?? undefined,
+        backoff: value.lockout.backoff,
+        max_minutes: value.lockout.max_minutes ?? undefined,
       },
       session: value.session,
       two_factor: { require_for: twoFactor.require_for, roles: twoFactor.require_for === 'roles' ? twoFactor.roles : [] },

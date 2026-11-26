@@ -53,6 +53,16 @@ export const routes: Routes = [
       ),
   },
   {
+    // Interstitial of a tenant that requires a second factor: the auth guard sends every other route here until it is enrolled.
+    path: 'two-factor-setup',
+    canActivate: [authGuard],
+    data: { title: 'TWO_FACTOR.SETUP_TITLE', publicPage: true },
+    loadComponent: () =>
+      import('./features/auth/pages/two-factor-required/two-factor-required.component').then(
+        (m) => m.TwoFactorRequiredComponent,
+      ),
+  },
+  {
     path: 'register',
     pathMatch: 'full',
     canActivate: [guestGuard],

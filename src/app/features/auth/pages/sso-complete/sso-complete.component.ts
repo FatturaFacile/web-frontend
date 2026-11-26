@@ -1,26 +1,23 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
-import { NzFormModule } from 'ng-zorro-antd/form';
-import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import {
-  AUTH_PROBLEM,
   AuthApiService,
-  authProblemOf,
   AuthStore,
+  DEFAULT_TRUSTED_DEVICE_DAYS,
   I18nService,
   LoginResult,
   SsoLoginService,
+  TwoFactorMethod,
 } from '@core';
 import { purgeLegacyTokenKeys } from '@core/auth/token-storage.service';
 import { TranslatePipe } from '@shared';
 import { LanguageSelectorComponent } from '../../components/language-selector.component';
-import { TwoFactorSetupModalComponent } from '../../components/two-factor-setup-modal/two-factor-setup-modal.component';
+import { TwoFactorChallengeComponent } from '../../components/two-factor-challenge/two-factor-challenge.component';
 
 type CompleteState = 'loading' | 'challenge' | 'failed';
 
@@ -36,16 +33,13 @@ const DEFAULT_RETURN_URL = '/sales/invoices';
   selector: 'app-sso-complete',
   styleUrl: './sso-complete.component.scss',
   imports: [
-    ReactiveFormsModule,
     RouterLink,
     NzAlertModule,
     NzButtonModule,
     NzCardModule,
-    NzFormModule,
-    NzInputModule,
     NzSpinModule,
     LanguageSelectorComponent,
-    TwoFactorSetupModalComponent,
+    TwoFactorChallengeComponent,
     TranslatePipe,
   ],
   template: `
@@ -76,82 +70,26 @@ const DEFAULT_RETURN_URL = '/sales/invoices';
                 }}</a>
               }
               @case ('challenge') {
-                <h2>{{ 'TWO_FACTOR.CHALLENGE_TITLE' | translate }}</h2>
-                <p>{{ 'TWO_FACTOR.CHALLENGE_SUBTITLE' | translate }}</p>
-                @if (errorMessage(); as message) {
-                  <nz-alert class="login-alert" nzType="error" nzShowIcon [nzMessage]="message" />
-                }
-                <form nz-form nzLayout="vertical" [formGroup]="challengeForm" (ngSubmit)="onChallengeSubmit()">
-                  @if (!useRecoveryCode()) {
-                    <nz-form-item>
-                      <nz-form-label nzRequired nzFor="sso-challenge-code">{{
-                        'TWO_FACTOR.APP_CODE' | translate
-                      }}</nz-form-label>
-                      <nz-form-control>
-                        <input
-                          nz-input
-                          id="sso-challenge-code"
-                          type="text"
-                          inputmode="numeric"
-                          formControlName="code"
-                          placeholder="123456"
-                          maxlength="16"
-                          nzSize="large"
-                          autocomplete="one-time-code"
-                        />
-                      </nz-form-control>
-                    </nz-form-item>
-                  } @else {
-                    <nz-form-item>
-                      <nz-form-label nzRequired nzFor="sso-challenge-recovery">{{
-                        'TWO_FACTOR.RECOVERY_CODE' | translate
-                      }}</nz-form-label>
-                      <nz-form-control>
-                        <input
-                          nz-input
-                          id="sso-challenge-recovery"
-                          type="text"
-                          formControlName="recoveryCode"
-                          autocomplete="off"
-                          maxlength="32"
-                          nzSize="large"
-                        />
-                      </nz-form-control>
-                    </nz-form-item>
-                  }
-                  <button nz-button nzType="link" type="button" (click)="useRecoveryCode.set(!useRecoveryCode())">
-                    {{
-                      (useRecoveryCode() ? 'TWO_FACTOR.USE_APP_CODE' : 'TWO_FACTOR.USE_RECOVERY_CODE') | translate
-                    }}
-                  </button>
-                  <button
-                    nz-button
-                    nzType="primary"
-                    nzSize="large"
-                    nzBlock
-                    type="submit"
-                    [nzLoading]="isSubmitting()"
-                    [disabled]="!canSubmitChallenge()"
-                  >
-                    {{ 'TWO_FACTOR.CHALLENGE_SUBMIT' | translate }}
-                  </button>
-                  <a nz-button nzBlock routerLink="/login">{{ 'AUTH.BACK_TO_LOGIN' | translate }}</a>
-                </form>
+                <app-two-factor-challenge
+                  [challengeToken]="challengeToken()"
+                  [methods]="challengeMethods()"
+                  [defaultMethod]="challengeDefaultMethod()"
+                  [emailCodeSent]="challengeEmailSent()"
+                  [trustedDevicesEnabled]="challengeTrustedDevices()"
+                  [trustedDeviceDays]="challengeTrustedDays()"
+                  (succeeded)="completeLogin($event)"
+                  (restart)="onChallengeRestart($event)"
+                />
               }
             }
           </div>
         </nz-card>
       </div>
 
-      <app-two-factor-setup-modal
-        [(isVisible)]="showTwoFactorSetup"
-        (completed)="onTwoFactorSetupCompleted()"
-      />
     </main>
   `,
 })
 export class SsoCompleteComponent implements OnInit {
-  private readonly fb = inject(NonNullableFormBuilder);
   private readonly authApi = inject(AuthApiService);
   private readonly authStore = inject(AuthStore);
   private readonly sso = inject(SsoLoginService);
@@ -160,16 +98,13 @@ export class SsoCompleteComponent implements OnInit {
 
   protected readonly state = signal<CompleteState>('loading');
   protected readonly errorMessage = signal<string | null>(null);
-  protected readonly isSubmitting = signal(false);
-  protected readonly useRecoveryCode = signal(false);
-  protected readonly showTwoFactorSetup = signal(false);
+  protected readonly challengeToken = signal('');
+  protected readonly challengeMethods = signal<readonly TwoFactorMethod[] | null>(null);
+  protected readonly challengeDefaultMethod = signal<TwoFactorMethod | null>(null);
+  protected readonly challengeEmailSent = signal(false);
+  protected readonly challengeTrustedDevices = signal(false);
+  protected readonly challengeTrustedDays = signal(DEFAULT_TRUSTED_DEVICE_DAYS);
 
-  protected readonly challengeForm = this.fb.group({
-    code: this.fb.control(''),
-    recoveryCode: this.fb.control(''),
-  });
-
-  private challengeToken = '';
   private returnUrl: string | null = null;
 
   ngOnInit(): void {
@@ -194,7 +129,12 @@ export class SsoCompleteComponent implements OnInit {
       next: (res) => {
         const data = res?.data;
         if (data?.two_factor_required && data.challenge_token) {
-          this.challengeToken = data.challenge_token;
+          this.challengeToken.set(data.challenge_token);
+          this.challengeMethods.set(data.methods ?? null);
+          this.challengeDefaultMethod.set(data.default_method ?? null);
+          this.challengeEmailSent.set(data.email_code_sent ?? false);
+          this.challengeTrustedDevices.set(data.trusted_devices_enabled ?? false);
+          this.challengeTrustedDays.set(data.trusted_device_days ?? DEFAULT_TRUSTED_DEVICE_DAYS);
           this.state.set('challenge');
           return;
         }
@@ -204,57 +144,13 @@ export class SsoCompleteComponent implements OnInit {
     });
   }
 
-  protected canSubmitChallenge(): boolean {
-    const { code, recoveryCode } = this.challengeForm.getRawValue();
-
-    return this.useRecoveryCode() ? !!recoveryCode.trim() : !!code.trim();
+  /** The challenge cannot go on (expired, locked, too many attempts) or the user went back: the sign-in must restart. */
+  protected onChallengeRestart(message: string | null): void {
+    this.state.set('failed');
+    this.errorMessage.set(message ?? this.i18n.translate('auth.mfa.challenge.expired'));
   }
 
-  protected onChallengeSubmit(): void {
-    const isRecovery = this.useRecoveryCode();
-    const { code, recoveryCode } = this.challengeForm.getRawValue();
-
-    if (isRecovery ? !recoveryCode.trim() : !code.trim()) {
-      this.errorMessage.set(
-        this.i18n.translate(isRecovery ? 'TWO_FACTOR.RECOVERY_CODE_INVALID' : 'TWO_FACTOR.CODE_REQUIRED'),
-      );
-      return;
-    }
-
-    this.isSubmitting.set(true);
-    this.errorMessage.set(null);
-
-    this.authApi
-      .twoFactorChallenge({
-        challenge_token: this.challengeToken,
-        code: isRecovery ? undefined : code.trim(),
-        recovery_code: isRecovery ? recoveryCode.trim() : undefined,
-      })
-      .subscribe({
-        next: (res) => {
-          this.isSubmitting.set(false);
-          this.completeLogin(res.data);
-        },
-        error: (err: unknown) => {
-          this.isSubmitting.set(false);
-          const problem = authProblemOf(err);
-          if (problem === AUTH_PROBLEM.TwoFactorCodeInvalid) {
-            this.errorMessage.set(this.i18n.translate('TWO_FACTOR.CODE_INVALID'));
-          } else if (problem === AUTH_PROBLEM.TwoFactorChallengeInvalid) {
-            this.fail('TWO_FACTOR.CHALLENGE_EXPIRED');
-          } else {
-            this.failFromError(err);
-          }
-        },
-      });
-  }
-
-  protected onTwoFactorSetupCompleted(): void {
-    this.showTwoFactorSetup.set(false);
-    void this.router.navigateByUrl(this.returnUrl ?? DEFAULT_RETURN_URL, { replaceUrl: true });
-  }
-
-  private completeLogin(data?: LoginResult): void {
+  protected completeLogin(data?: LoginResult): void {
     // Cookie-only authentication: remove any bearer token an older version left in the browser.
     purgeLegacyTokenKeys();
 
@@ -266,9 +162,10 @@ export class SsoCompleteComponent implements OnInit {
 
     this.authStore.login(activeTenantId ?? undefined, data?.user ?? null);
 
+    // The tenant policy requires a second factor the user has not set up: the route guard sends the navigation to the
+    // enrolment page until it is done.
     if (data?.two_factor_setup_required) {
-      this.showTwoFactorSetup.set(true);
-      return;
+      this.authStore.setTwoFactorSetupRequired(true);
     }
     void this.router.navigateByUrl(this.returnUrl ?? DEFAULT_RETURN_URL, { replaceUrl: true });
   }

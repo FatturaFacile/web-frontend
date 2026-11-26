@@ -19,7 +19,9 @@ import {
   isValidationError,
 } from '@core';
 import { IconActionDirective, PageHeaderComponent, TranslatePipe } from '@shared';
-import { passwordsMatch, passwordStrength, STRENGTH_KEYS } from '../../../auth/password-rules';
+import { passwordsMatch } from '../../../auth/password-rules';
+import { PasswordStrengthComponent } from '../../../auth/components/password-strength/password-strength.component';
+
 
 type PasswordField = 'current' | 'password' | 'confirmation';
 
@@ -40,6 +42,7 @@ type PasswordField = 'current' | 'password' | 'confirmation';
     NzIconModule,
     NzInputModule,
     PageHeaderComponent,
+    PasswordStrengthComponent,
     TranslatePipe,
   ],
   templateUrl: './profile-settings.component.html',
@@ -52,6 +55,11 @@ export class ProfileSettingsComponent implements OnInit {
 
   protected readonly twoFactorEnabled = signal(false);
   protected readonly useRecoveryCode = signal(false);
+  protected readonly useEmailCode = signal(false);
+  protected readonly emailFactorEnabled = signal(false);
+  protected readonly authenticatorEnabled = signal(true);
+  protected readonly isSendingEmailCode = signal(false);
+  protected readonly emailCodeSent = signal(false);
   protected readonly isSubmitting = signal(false);
   protected readonly isLocked = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
@@ -68,22 +76,26 @@ export class ProfileSettingsComponent implements OnInit {
       password_confirmation: this.fb.control('', [Validators.required]),
       code: this.fb.control(''),
       recovery_code: this.fb.control(''),
+      email_code: this.fb.control(''),
     },
     { validators: passwordsMatch },
   );
 
-  private readonly password = toSignal(this.form.controls.password.valueChanges, {
+  protected readonly password = toSignal(this.form.controls.password.valueChanges, {
     initialValue: '',
   });
 
-  protected readonly strength = computed(() => passwordStrength(this.password()));
-  protected readonly strengthKey = computed(() => STRENGTH_KEYS[this.strength()]);
-  protected readonly strengthLevels = [1, 2, 3, 4];
+  protected readonly userEmail = computed(() => this.authStore.user()?.email ?? null);
+  protected readonly tenantId = computed(() => this.authStore.activeTenantId() || null);
 
   ngOnInit(): void {
     this.authApi.getTwoFactorStatus().subscribe({
       next: (res) => {
         this.twoFactorEnabled.set(res.data?.enabled ?? false);
+        this.emailFactorEnabled.set(res.data?.email_enabled ?? false);
+        this.authenticatorEnabled.set(res.data?.totp_enabled ?? !(res.data?.email_enabled ?? false));
+        // With the email code as the only factor there is no authenticator code to ask for.
+        this.useEmailCode.set(this.emailFactorEnabled() && !this.authenticatorEnabled());
         this.syncSecondFactorValidators();
       },
       // Without the status the form still works: the server asks the code if it is needed.
@@ -101,9 +113,33 @@ export class ProfileSettingsComponent implements OnInit {
 
   protected toggleRecoveryCode(): void {
     this.useRecoveryCode.set(!this.useRecoveryCode());
+    this.useEmailCode.set(false);
     this.form.controls.code.reset('');
     this.form.controls.recovery_code.reset('');
+    this.form.controls.email_code.reset('');
     this.syncSecondFactorValidators();
+  }
+
+  /** Switches between the authenticator code and the code emailed to the user. */
+  protected toggleEmailCode(): void {
+    this.useEmailCode.set(!this.useEmailCode());
+    this.useRecoveryCode.set(false);
+    this.form.controls.code.reset('');
+    this.form.controls.recovery_code.reset('');
+    this.form.controls.email_code.reset('');
+    this.syncSecondFactorValidators();
+  }
+
+  /** Emails the code that proves the user for the password change. */
+  protected sendEmailCode(): void {
+    this.isSendingEmailCode.set(true);
+    this.authApi.sendEmailVerificationCode().subscribe({
+      next: () => {
+        this.isSendingEmailCode.set(false);
+        this.emailCodeSent.set(true);
+      },
+      error: () => this.isSendingEmailCode.set(false),
+    });
   }
 
   protected onSubmit(): void {
@@ -145,11 +181,13 @@ export class ProfileSettingsComponent implements OnInit {
   }
 
   private payload(): ChangePasswordPayload {
-    const { current_password, password, password_confirmation, code, recovery_code } = this.form.getRawValue();
+    const { current_password, password, password_confirmation, code, recovery_code, email_code } = this.form.getRawValue();
     const payload: ChangePasswordPayload = { current_password, password, password_confirmation };
 
     if (this.twoFactorEnabled()) {
-      if (this.useRecoveryCode()) {
+      if (this.useEmailCode()) {
+        payload.email_code = email_code.trim();
+      } else if (this.useRecoveryCode()) {
         payload.recovery_code = recovery_code.trim();
       } else {
         payload.code = code.trim();
@@ -159,18 +197,22 @@ export class ProfileSettingsComponent implements OnInit {
   }
 
   private syncSecondFactorValidators(): void {
-    const { code, recovery_code } = this.form.controls;
+    const { code, recovery_code, email_code } = this.form.controls;
     const required = [Validators.required];
-    code.setValidators(this.twoFactorEnabled() && !this.useRecoveryCode() ? [...required, Validators.maxLength(16)] : []);
-    recovery_code.setValidators(this.twoFactorEnabled() && this.useRecoveryCode() ? [...required, Validators.maxLength(32)] : []);
+    const enabled = this.twoFactorEnabled();
+    const emailMode = this.useEmailCode();
+    code.setValidators(enabled && !emailMode && !this.useRecoveryCode() ? [...required, Validators.maxLength(16)] : []);
+    recovery_code.setValidators(enabled && !emailMode && this.useRecoveryCode() ? [...required, Validators.maxLength(32)] : []);
+    email_code.setValidators(enabled && emailMode ? [...required, Validators.maxLength(16)] : []);
     code.updateValueAndValidity();
     recovery_code.updateValueAndValidity();
+    email_code.updateValueAndValidity();
   }
 
   /** The status may be stale: if the server asks a second factor, the field appears. */
   private revealSecondFactorIfAsked(err: unknown): void {
     const errors = (err as HttpErrorResponse).error?.errors ?? {};
-    if (!this.twoFactorEnabled() && ('code' in errors || 'recovery_code' in errors)) {
+    if (!this.twoFactorEnabled() && ('code' in errors || 'recovery_code' in errors || 'email_code' in errors)) {
       this.twoFactorEnabled.set(true);
       this.syncSecondFactorValidators();
     }

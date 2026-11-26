@@ -10,14 +10,14 @@ import { EnterpriseSecurityComponent } from './enterprise-security.component';
 import { blankToNull, enterpriseErrorText, formatRoleMapping, parseCertificates, parseRoleMapping } from './enterprise-security.util';
 import { SamlProviderFormComponent } from './saml-provider-form.component';
 import { ScimTokenCardComponent } from './scim-token-card.component';
-import { SecurityPolicyFormComponent } from './security-policy-form.component';
+import { maxNotBelowBase, SecurityPolicyFormComponent } from './security-policy-form.component';
 import { SsoProviderFormComponent } from './sso-provider-form.component';
 
 const envelope = <T>(data: T) => ({ success: true, message: '', data });
 
 const policy: SecurityPolicy = {
-  password: { min_length: 12, require_mixed_case: true, require_numbers: true, require_symbols: false, history_count: 3, max_age_days: null },
-  lockout: { max_attempts: 5, minutes: 15 },
+  password: { min_length: 12, require_mixed_case: true, require_numbers: true, require_symbols: false, check_breached: true, history_count: 3, max_age_days: null },
+  lockout: { max_attempts: 5, minutes: 15, backoff: true, max_minutes: 240 },
   session: { idle_timeout_minutes: null, max_concurrent_sessions: 3 },
   two_factor: { require_for: 'roles', roles: ['admin'] },
   sso_only: false,
@@ -131,6 +131,40 @@ describe('enterprise security components', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('nz-tabs')).not.toBeNull();
+  });
+
+  it('sends the breached password check and the lockout backoff with the policy', () => {
+    api.updatePolicy.mockReturnValue(of(envelope(policy)));
+    const fixture = TestBed.createComponent(SecurityPolicyFormComponent);
+    fixture.detectChanges();
+
+    const payload = fixture.componentInstance.payload();
+    expect(payload.password?.check_breached).toBe(true);
+    expect(payload.lockout).toEqual({ max_attempts: 5, minutes: 15, backoff: true, max_minutes: 240 });
+
+    fixture.componentInstance.form.controls.password.controls.check_breached.setValue(false);
+    fixture.componentInstance.form.controls.lockout.controls.backoff.setValue(false);
+    const changed = fixture.componentInstance.payload();
+    expect(changed.password?.check_breached).toBe(false);
+    expect(changed.lockout?.backoff).toBe(false);
+  });
+
+  it('refuses a progressive lock that ends before the base lock', () => {
+    api.updatePolicy.mockReturnValue(of(envelope(policy)));
+    const fixture = TestBed.createComponent(SecurityPolicyFormComponent);
+    fixture.detectChanges();
+    const lockout = fixture.componentInstance.form.controls.lockout;
+
+    lockout.patchValue({ minutes: 60, max_minutes: 30, backoff: true });
+    expect(maxNotBelowBase(lockout)).toEqual({ maxBelowBase: true });
+
+    fixture.componentInstance.save();
+    expect(api.updatePolicy).not.toHaveBeenCalled();
+
+    lockout.patchValue({ max_minutes: 60 });
+    expect(maxNotBelowBase(lockout)).toBeNull();
+    lockout.patchValue({ backoff: false, max_minutes: 1 });
+    expect(maxNotBelowBase(lockout)).toBeNull();
   });
 
   it('loads the policy into the form and saves only what the API contract accepts', () => {

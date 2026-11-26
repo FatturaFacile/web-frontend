@@ -47,6 +47,7 @@ describe('errorInterceptor (RFC 7807 Problem Details)', () => {
   });
 
   it('triggers twoFactorSetupRequired when 403 problem is two-factor-setup-required', () => {
+    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
     http.get('/api/v1/crm/contacts').subscribe({
       error: () => undefined,
     });
@@ -66,6 +67,33 @@ describe('errorInterceptor (RFC 7807 Problem Details)', () => {
     expect(messageService.warning).toHaveBeenCalledWith(
       'Devi configurare il 2FA per accedere.'
     );
+    expect(navigate).toHaveBeenCalledWith(['/two-factor-setup'], expect.anything());
+  });
+
+  it('does not end the session when a second factor challenge call is refused', () => {
+    const logout = vi.spyOn(authStore, 'logout');
+    vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    http.post('/api/v1/auth/two-factor/challenge/email', {}).subscribe({ error: () => undefined });
+    httpTesting
+      .expectOne('/api/v1/auth/two-factor/challenge/email')
+      .flush({ title: 'Unauthenticated', status: 401 }, { status: 401, statusText: 'Unauthorized' });
+
+    expect(logout).not.toHaveBeenCalled();
+    expect(messageService.warning).not.toHaveBeenCalled();
+  });
+
+  it('logs out cleanly when a revoked session answers 401', () => {
+    const logout = vi.spyOn(authStore, 'logout');
+    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    http.get('/api/v1/crm/contacts').subscribe({ error: () => undefined });
+    httpTesting
+      .expectOne('/api/v1/crm/contacts')
+      .flush({ title: 'Unauthenticated', status: 401 }, { status: 401, statusText: 'Unauthorized' });
+
+    expect(logout).toHaveBeenCalledTimes(1);
+    expect(navigate).toHaveBeenCalledWith(['/login'], expect.anything());
   });
 
   it('keeps the session when the family portal refuses a guardian token', () => {

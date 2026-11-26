@@ -5,7 +5,9 @@ import {
   AccessOptions,
   AuthStore,
   CustomRole,
+  EnterpriseAuthApiService,
   I18nService,
+  IamApiService,
   PermissionsService,
   SaveTenantMemberPayload,
   SettingsApiService,
@@ -16,11 +18,11 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { NzModalModule } from 'ng-zorro-antd/modal';
+import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
-import { Observable } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
 import { reportHttpError } from '../../../hr/shared/hr-http.util';
 import { EntityAuditTimelineComponent } from '../../../security/audit-trail/entity-audit-timeline.component';
 import { AccessNavComponent } from '../access/access-nav.component';
@@ -95,6 +97,11 @@ import { MemberAccessFormComponent } from './member-access-form.component';
                 @if (member.suspended) {
                   <nz-tag nzColor="orange">{{ 'memberAccess.suspended' | translate }}</nz-tag>
                 }
+                @if (member.locked) {
+                  <nz-tag nzColor="red" data-test="member-locked" [attr.title]="lockedDetail(member)">
+                    {{ 'security.lockout.locked_badge' | translate }}
+                  </nz-tag>
+                }
               </td>
               <td>{{ member.email }}</td>
               <td>
@@ -107,7 +114,15 @@ import { MemberAccessFormComponent } from './member-access-form.component';
                     {{ 'AUDIT.TIMELINE.TITLE' | translate }}
                   </button>
                 }
+                @if (member.locked) {
+                  <button nz-button nzSize="small" type="button" data-test="unlock-member" (click)="confirmUnlock(member)">
+                    {{ 'security.lockout.unlock' | translate }}
+                  </button>
+                }
                 @if (member.id !== currentUserId()) {
+                  <button nz-button nzSize="small" type="button" data-test="revoke-member-sessions" (click)="confirmRevokeSessions(member)">
+                    {{ 'security.sessions.revoke_user' | translate }}
+                  </button>
                   <button nz-button nzSize="small" type="button" data-test="edit-member" (click)="openEdit(member)">
                     {{ 'memberAccess.edit' | translate }}
                   </button>
@@ -194,6 +209,9 @@ export class TenantUsersComponent implements OnInit {
   private readonly message = inject(NzMessageService);
   private readonly i18n = inject(I18nService);
   private readonly permissions = inject(PermissionsService);
+  private readonly enterpriseAuth = inject(EnterpriseAuthApiService);
+  private readonly iam = inject(IamApiService);
+  private readonly modals = inject(NzModalService);
 
   /** The member whose audit history is open (the audit trail keeps the lifecycle of every user). */
   protected readonly history = signal<UserResource | null>(null);
@@ -247,6 +265,59 @@ export class TenantUsersComponent implements OnInit {
     return entries.length === 0
       ? this.i18n.translate('memberAccess.followsRole')
       : entries.map(([module, level]) => `${module}: ${this.i18n.translate('memberAccess.levels.' + level)}`).join(', ');
+  }
+
+  /** Tooltip of the locked badge: until when the account is locked and how many sign-ins failed. */
+  protected lockedDetail(member: UserResource): string | null {
+    const parts: string[] = [];
+    if (member.locked_until) {
+      const time = new Date(member.locked_until).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+      parts.push(this.i18n.translate('security.lockout.locked_until', { time }));
+    }
+    if (member.failed_attempts) {
+      parts.push(this.i18n.translate('security.lockout.failed_attempts', { count: member.failed_attempts }));
+    }
+    return parts.length > 0 ? parts.join(' - ') : null;
+  }
+
+  /** Asks to confirm, then lifts the lockout of the member (owners and administrators). */
+  protected confirmUnlock(member: UserResource): void {
+    this.modals.confirm({
+      nzTitle: this.i18n.translate('security.lockout.unlock_title'),
+      nzContent: this.i18n.translate('security.lockout.unlock_body', { name: member.name }),
+      nzOkText: this.i18n.translate('security.lockout.unlock_confirm'),
+      nzCancelText: this.i18n.translate('COMMON.CANCEL'),
+      nzOnOk: () =>
+        firstValueFrom(this.enterpriseAuth.unlockUser(member.id))
+          .then(() => {
+            this.message.success(this.i18n.translate('security.lockout.unlock_success'));
+            this.reload();
+          })
+          .catch(() => {
+            this.message.error(this.i18n.translate('security.lockout.unlock_error'));
+          }),
+    });
+  }
+
+  /** Signs the member out everywhere (browser sessions and API tokens). */
+  protected confirmRevokeSessions(member: UserResource): void {
+    this.modals.confirm({
+      nzTitle: this.i18n.translate('security.sessions.revoke_user_confirm', { name: member.name }),
+      nzOkText: this.i18n.translate('security.sessions.revoke_user'),
+      nzCancelText: this.i18n.translate('COMMON.CANCEL'),
+      nzOkDanger: true,
+      nzOnOk: () =>
+        firstValueFrom(this.iam.revokeUserSessions(member.id))
+          .then((res) => {
+            this.message.success(
+              this.i18n.translate('security.sessions.revoked_user', {
+                sessions: res.data?.sessions ?? 0,
+                tokens: res.data?.tokens ?? 0,
+              }),
+            );
+          })
+          .catch((err: unknown) => reportAccessError(err, this.message, this.i18n)),
+    });
   }
 
   protected openAdd(): void {

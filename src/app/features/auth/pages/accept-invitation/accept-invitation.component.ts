@@ -13,7 +13,9 @@ import { AccessApiService, applyServerErrors, AuthStore, InvitationPreview, isVa
 import { TranslatePipe } from '@shared';
 import { AuthFooterComponent } from '../../components/auth-footer.component';
 import { AuthToolbarComponent } from '../../components/auth-toolbar.component';
-import { passwordsMatch, passwordStrength, STRENGTH_KEYS } from '../../password-rules';
+import { passwordsMatch } from '../../password-rules';
+import { PasswordStrengthComponent } from '../../components/password-strength/password-strength.component';
+
 
 type InvitationState = 'loading' | 'ready' | 'invalid' | 'accepted' | 'failed';
 
@@ -35,6 +37,7 @@ type InvitationState = 'loading' | 'ready' | 'invalid' | 'accepted' | 'failed';
     NzSpinModule,
     AuthFooterComponent,
     AuthToolbarComponent,
+    PasswordStrengthComponent,
     TranslatePipe,
   ],
   template: `
@@ -146,12 +149,7 @@ type InvitationState = 'loading' | 'ready' | 'invalid' | 'accepted' | 'failed';
                       autocomplete="new-password"
                       aria-describedby="password-requirements"
                     />
-                    <small id="password-requirements" class="password-requirements">{{
-                      'AUTH.PASSWORD_REQUIREMENTS' | translate
-                    }}</small>
-                    @if (strength() > 0) {
-                      <small class="strength-label" aria-live="polite">{{ strengthKey() | translate }}</small>
-                    }
+                    <app-password-strength id="password-requirements" [password]="password()" [email]="invitation()?.email ?? null" />
                   </nz-form-control>
                   <ng-template #passwordError let-control>
                     @if (control.hasError('serverError')) {
@@ -236,9 +234,7 @@ export class AcceptInvitationComponent implements OnInit {
     { validators: passwordsMatch },
   );
 
-  private readonly password = toSignal(this.form.controls.password.valueChanges, { initialValue: '' });
-  protected readonly strength = computed(() => passwordStrength(this.password()));
-  protected readonly strengthKey = computed(() => STRENGTH_KEYS[this.strength()]);
+  protected readonly password = toSignal(this.form.controls.password.valueChanges, { initialValue: '' });
 
   ngOnInit(): void {
     const token = this.route.snapshot.queryParamMap.get('token');

@@ -62,17 +62,12 @@
               <nz-icon [nzType]="isVisible('password') ? 'eye-invisible' : 'eye'" />
             </button>
           </nz-input-wrapper>
-          <small id="password-requirements" class="password-requirements">{{
-            'AUTH.PASSWORD_REQUIREMENTS' | translate
-          }}</small>
-          <div class="strength" aria-hidden="true">
-            @for (level of strengthLevels; track level) {
-              <span [class.on]="strength() >= level"></span>
-            }
-          </div>
-          @if (strength() > 0) {
-            <small class="strength-label" aria-live="polite">{{ strengthKey() | translate }}</small>
-          }
+          <app-password-strength
+            id="password-requirements"
+            [password]="password()"
+            [email]="userEmail()"
+            [tenantId]="tenantId()"
+          />
         </nz-form-control>
       </nz-form-item>
 
@@ -105,7 +100,24 @@
 
       @if (twoFactorEnabled()) {
         <p class="section-hint">{{ 'PROFILE.TWO_FACTOR_HINT' | translate }}</p>
-        @if (useRecoveryCode()) {
+        @if (useEmailCode()) {
+          <nz-form-item>
+            <nz-form-label nzRequired nzFor="email_code">{{ 'auth.mfa.method.email' | translate }}</nz-form-label>
+            <nz-form-control [nzErrorTip]="fieldError">
+              <input
+                nz-input
+                id="email_code"
+                formControlName="email_code"
+                inputmode="numeric"
+                autocomplete="one-time-code"
+                maxlength="16"
+              />
+            </nz-form-control>
+            <button nz-button nzType="link" type="button" data-testid="send-email-code" [nzLoading]="isSendingEmailCode()" (click)="sendEmailCode()">
+              {{ (emailCodeSent() ? 'auth.mfa.challenge.resend' : 'auth.mfa.challenge.send_code') | translate }}
+            </button>
+          </nz-form-item>
+        } @else if (useRecoveryCode()) {
           <nz-form-item>
             <nz-form-label nzRequired nzFor="recovery_code">{{ 'PROFILE.RECOVERY_CODE' | translate }}</nz-form-label>
             <nz-form-control [nzErrorTip]="fieldError">
@@ -130,6 +142,11 @@
         <button nz-button nzType="link" type="button" class="factor-switch" (click)="toggleRecoveryCode()">
           {{ (useRecoveryCode() ? 'PROFILE.USE_APP_CODE' : 'PROFILE.USE_RECOVERY_CODE') | translate }}
         </button>
+        @if (emailFactorEnabled() && authenticatorEnabled()) {
+          <button nz-button nzType="link" type="button" class="factor-switch" data-testid="toggle-email-code" (click)="toggleEmailCode()">
+            {{ (useEmailCode() ? 'PROFILE.USE_APP_CODE' : 'auth.mfa.method.email') | translate }}
+          </button>
+        }
       }
 
       <button

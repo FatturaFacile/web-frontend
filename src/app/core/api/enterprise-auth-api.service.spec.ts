@@ -89,4 +89,74 @@ describe('EnterpriseAuthApiService', () => {
     service.revokeScimToken().subscribe();
     expect(httpMock.expectOne(`${base}/scim/token`).request.method).toBe('DELETE');
   });
+
+  it('manages the SCIM group mappings', () => {
+    service.getScimGroupMappings().subscribe();
+    expect(httpMock.expectOne(`${base}/scim/group-mappings`).request.method).toBe('GET');
+
+    service.upsertScimGroupMapping({ group_name: 'Finance', role: 'accountant' }).subscribe();
+    const put = httpMock.expectOne(`${base}/scim/group-mappings`);
+    expect(put.request.method).toBe('PUT');
+    expect(put.request.body).toEqual({ group_name: 'Finance', role: 'accountant' });
+    put.flush(ok);
+
+    service.deleteScimGroupMapping('m1').subscribe();
+    expect(httpMock.expectOne(`${base}/scim/group-mappings/m1`).request.method).toBe('DELETE');
+  });
+
+  it('reads the SCIM logs with the filters and the page, dropping the empty ones', () => {
+    service.getScimLogs({ resource: 'user', status: 'failure', operation: undefined, page: 2, per_page: 10 }).subscribe();
+
+    const req = httpMock.expectOne((r) => r.url === `${base}/scim/logs`);
+    expect(req.request.params.get('resource')).toBe('user');
+    expect(req.request.params.get('status')).toBe('failure');
+    expect(req.request.params.get('page')).toBe('2');
+    expect(req.request.params.has('operation')).toBe(false);
+    req.flush(ok);
+  });
+
+  it('reads the security audit with the filters, joining the event types', () => {
+    service
+      .getSecurityAudit({
+        from: '2026-11-01',
+        to: '2026-11-30',
+        user_id: 'u1',
+        event_type: ['login_failed', 'login_succeeded'],
+        status: 'failure',
+        auth_method: 'passkey',
+        page: 3,
+        per_page: 50,
+      })
+      .subscribe();
+
+    const req = httpMock.expectOne((r) => r.url === `${base}/audit`);
+    expect(req.request.method).toBe('GET');
+    expect(req.request.params.get('event_type')).toBe('login_failed,login_succeeded');
+    expect(req.request.params.get('from')).toBe('2026-11-01');
+    expect(req.request.params.get('auth_method')).toBe('passkey');
+    expect(req.request.params.get('per_page')).toBe('50');
+    req.flush(ok);
+  });
+
+  it('omits an empty event type list from the audit query', () => {
+    service.getSecurityAudit({ event_type: [] }).subscribe();
+
+    const req = httpMock.expectOne((r) => r.url === `${base}/audit`);
+    expect(req.request.params.has('event_type')).toBe(false);
+    req.flush(ok);
+  });
+
+  it('reads the audit event types', () => {
+    service.getSecurityAuditEventTypes().subscribe();
+
+    expect(httpMock.expectOne(`${base}/audit/event-types`).request.method).toBe('GET');
+  });
+
+  it('unlocks a member', () => {
+    service.unlockUser('u1').subscribe();
+
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/settings/users/u1/unlock`);
+    expect(req.request.method).toBe('POST');
+    req.flush(ok);
+  });
 });

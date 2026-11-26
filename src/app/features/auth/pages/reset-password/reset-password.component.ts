@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -14,7 +14,9 @@ import { applyServerErrors, AUTH_PROBLEM, AuthApiService, authProblemOf, isValid
 import { TranslatePipe } from '@shared';
 import { AuthFooterComponent } from '../../components/auth-footer.component';
 import { AuthToolbarComponent } from '../../components/auth-toolbar.component';
-import { passwordsMatch, passwordStrength, STRENGTH_KEYS } from '../../password-rules';
+import { passwordsMatch } from '../../password-rules';
+import { PasswordStrengthComponent } from '../../components/password-strength/password-strength.component';
+
 
 type ResetState = 'loading' | 'ready' | 'expired' | 'invalid' | 'locked' | 'failed';
 
@@ -37,6 +39,7 @@ type ResetState = 'loading' | 'ready' | 'expired' | 'invalid' | 'locked' | 'fail
     NzSpinModule,
     AuthFooterComponent,
     AuthToolbarComponent,
+    PasswordStrengthComponent,
     TranslatePipe,
   ],
   template: `
@@ -112,17 +115,7 @@ type ResetState = 'loading' | 'ready' | 'expired' | 'invalid' | 'locked' | 'fail
                       <nz-icon [nzType]="passwordVisible() ? 'eye-invisible' : 'eye'" />
                     </button>
                   </nz-input-wrapper>
-                  <small id="password-requirements" class="password-requirements">{{
-                    'AUTH.PASSWORD_REQUIREMENTS' | translate
-                  }}</small>
-                  <div class="strength" aria-hidden="true">
-                    @for (level of strengthLevels; track level) {
-                      <span [class.on]="strength() >= level"></span>
-                    }
-                  </div>
-                  @if (strength() > 0) {
-                    <small class="strength-label" aria-live="polite">{{ strengthKey() | translate }}</small>
-                  }
+                  <app-password-strength id="password-requirements" [password]="password()" />
                 </nz-form-control>
                 <ng-template #passwordError let-control>
                   @if (control.hasError('serverError')) {
@@ -212,13 +205,10 @@ export class ResetPasswordComponent implements OnInit {
     { validators: passwordsMatch },
   );
 
-  private readonly password = toSignal(this.form.controls.password.valueChanges, {
+  protected readonly password = toSignal(this.form.controls.password.valueChanges, {
     initialValue: '',
   });
 
-  protected readonly strength = computed(() => passwordStrength(this.password()));
-  protected readonly strengthKey = computed(() => STRENGTH_KEYS[this.strength()]);
-  protected readonly strengthLevels = [1, 2, 3, 4];
 
   ngOnInit(): void {
     const token = this.route.snapshot.queryParamMap.get('token');

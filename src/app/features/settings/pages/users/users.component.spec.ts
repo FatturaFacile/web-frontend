@@ -2,10 +2,11 @@ import { provideRouter } from '@angular/router';
 import { TestBed } from '@angular/core/testing';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzModalService } from 'ng-zorro-antd/modal';
 import { of, throwError } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { AccessApiService, AuthStore, PermissionsService, SettingsApiService } from '@core';
+import { AccessApiService, AuthStore, EnterpriseAuthApiService, IamApiService, PermissionsService, SettingsApiService } from '@core';
 import { icons } from '../../../../icons-provider';
 import { TenantUsersComponent } from './users.component';
 
@@ -14,6 +15,17 @@ const members = [
   { id: 'u2', name: 'Bruno Member', email: 'bruno@example.test', role: 'member', is_active: true, modules: { crm: 'blocked' } },
   { id: 'u3', name: 'Carla Suspended', email: 'carla@example.test', role: 'member', is_active: true, suspended: true, modules: {} },
   { id: 'u4', name: 'Dario Custom', email: 'dario@example.test', role: 'accountant', custom_role_id: 'r1', is_active: true, modules: {} },
+  {
+    id: 'u5',
+    name: 'Elena Locked',
+    email: 'elena@example.test',
+    role: 'member',
+    is_active: true,
+    locked: true,
+    locked_until: '2026-11-26T10:30:00Z',
+    failed_attempts: 5,
+    modules: {},
+  },
 ];
 const limits = { plan_code: 'starter', max_users: 5, active_users: 4, pending_invitations: 1, max_custom_roles: 2, custom_roles: 1 };
 const roles = { roles: [{ id: 'r1', key: 'bookkeeper', name: 'Bookkeeper', description: null, base_role: 'accountant', modules: {}, members: 1 }], base_roles: [], modules: [], levels: [] };
@@ -28,6 +40,9 @@ interface Page {
   customModules(member: (typeof members)[number]): string;
   suspend(member: (typeof members)[number]): void;
   reactivate(member: (typeof members)[number]): void;
+  confirmUnlock(member: (typeof members)[number]): void;
+  confirmRevokeSessions(member: (typeof members)[number]): void;
+  lockedDetail(member: (typeof members)[number]): string | null;
   memberRoleLabel(member: (typeof members)[number]): string;
 }
 
@@ -41,6 +56,9 @@ describe('TenantUsersComponent', () => {
   };
   const accessApi = { getRoles: vi.fn(), getLimits: vi.fn(), suspendMember: vi.fn(), reactivateMember: vi.fn() };
   const message = { success: vi.fn(), error: vi.fn() };
+  const enterpriseAuth = { unlockUser: vi.fn() };
+  const iam = { revokeUserSessions: vi.fn() };
+  const confirm = vi.fn();
 
   function setup(platformAdmin = false): { page: Page; fixture: ReturnType<typeof TestBed.createComponent<TenantUsersComponent>> } {
     TestBed.resetTestingModule();
@@ -51,6 +69,9 @@ describe('TenantUsersComponent', () => {
         { provide: SettingsApiService, useValue: api },
         { provide: AccessApiService, useValue: accessApi },
         { provide: NzMessageService, useValue: message },
+        { provide: EnterpriseAuthApiService, useValue: enterpriseAuth },
+        { provide: IamApiService, useValue: iam },
+        { provide: NzModalService, useValue: { confirm } },
         { provide: AuthStore, useValue: { user: () => ({ id: 'me', is_platform_admin: platformAdmin }) } },
         // The audit history button needs the audit trail permission: these tests are about the member list itself.
         { provide: PermissionsService, useValue: { canRead: () => false, canWrite: () => false } },
@@ -73,7 +94,7 @@ describe('TenantUsersComponent', () => {
     const { fixture } = setup();
     const rows = fixture.nativeElement.querySelectorAll('[data-test="member-row"]');
 
-    expect(rows.length).toBe(4);
+    expect(rows.length).toBe(5);
     expect(rows[0].querySelector('[data-test="edit-member"]')).toBeNull();
     expect(rows[1].querySelector('[data-test="edit-member"]')).not.toBeNull();
     expect(rows[1].querySelector('[data-test="remove-member"]')).not.toBeNull();
@@ -195,5 +216,58 @@ describe('TenantUsersComponent', () => {
     page.save({ email: 'new@example.test', role: 'member' });
 
     expect(message.error).toHaveBeenCalledWith('Plan limit reached: The subscription plan allows at most 5 users.');
+  });
+
+  it('shows a locked badge and the unlock action only for a locked member', () => {
+    const { fixture } = setup();
+    const rows = fixture.nativeElement.querySelectorAll('[data-test="member-row"]');
+
+    expect(rows[4].querySelector('[data-test="member-locked"]')).not.toBeNull();
+    expect(rows[4].querySelector('[data-test="unlock-member"]')).not.toBeNull();
+    expect(rows[1].querySelector('[data-test="member-locked"]')).toBeNull();
+    expect(rows[1].querySelector('[data-test="unlock-member"]')).toBeNull();
+  });
+
+  it('describes the lock with the failed attempts', () => {
+    const { page } = setup();
+
+    expect(page.lockedDetail(members[4])).toContain('5');
+    expect(page.lockedDetail(members[1])).toBeNull();
+  });
+
+  it('asks for confirmation, unlocks the member and reloads the list', async () => {
+    enterpriseAuth.unlockUser.mockReturnValue(of({ success: true, message: '', data: null }));
+    const { page } = setup();
+
+    page.confirmUnlock(members[4]);
+    expect(enterpriseAuth.unlockUser).not.toHaveBeenCalled();
+    const options = confirm.mock.calls[0][0] as { nzOnOk: () => Promise<void>; nzContent: string };
+    await options.nzOnOk();
+
+    expect(enterpriseAuth.unlockUser).toHaveBeenCalledWith('u5');
+    expect(message.success).toHaveBeenCalled();
+    expect(api.getTenantUsers).toHaveBeenCalledTimes(2);
+  });
+
+  it('reports a failed unlock', async () => {
+    enterpriseAuth.unlockUser.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 403 })));
+    const { page } = setup();
+
+    page.confirmUnlock(members[4]);
+    await (confirm.mock.calls[0][0] as { nzOnOk: () => Promise<void> }).nzOnOk();
+
+    expect(message.error).toHaveBeenCalled();
+    expect(api.getTenantUsers).toHaveBeenCalledTimes(1);
+  });
+
+  it('revokes every session of a member after confirmation', async () => {
+    iam.revokeUserSessions.mockReturnValue(of({ success: true, message: '', data: { sessions: 2, tokens: 1 } }));
+    const { page } = setup();
+
+    page.confirmRevokeSessions(members[1]);
+    await (confirm.mock.calls[0][0] as { nzOnOk: () => Promise<void> }).nzOnOk();
+
+    expect(iam.revokeUserSessions).toHaveBeenCalledWith('u2');
+    expect(message.success).toHaveBeenCalled();
   });
 });

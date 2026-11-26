@@ -4,7 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, provideRouter, Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { AuthApiService, AuthStore, SsoLoginService } from '@core';
+import { AuthApiService, AuthStore, getTrustedDeviceToken, SsoLoginService, storeTrustedDeviceToken } from '@core';
 import { TEST_PASSWORD } from '../../../../../testing/credentials';
 import { LoginComponent } from './login.component';
 
@@ -12,6 +12,7 @@ describe('LoginComponent', () => {
   const login = vi.fn();
   const twoFactorChallenge = vi.fn();
   const storeLogin = vi.fn();
+  const setTwoFactorSetupRequired = vi.fn();
   let returnUrl: string | null = null;
 
   function create() {
@@ -30,7 +31,7 @@ describe('LoginComponent', () => {
       ],
     });
     TestBed.overrideProvider(AuthStore, {
-      useValue: { login: storeLogin, setLocale: vi.fn() },
+      useValue: { login: storeLogin, setLocale: vi.fn(), setTwoFactorSetupRequired },
     });
     const fixture = TestBed.createComponent(LoginComponent);
     fixture.detectChanges();
@@ -42,6 +43,8 @@ describe('LoginComponent', () => {
     login.mockReset();
     twoFactorChallenge.mockReset();
     storeLogin.mockReset();
+    setTwoFactorSetupRequired.mockReset();
+    window.localStorage.clear();
     returnUrl = null;
   });
 
@@ -125,30 +128,92 @@ describe('LoginComponent', () => {
     expect(component['isSubmitting']()).toBe(false);
   });
 
-  it('does not submit an empty second-factor code', () => {
+  it('keeps the factors the API offers for the challenge step', () => {
+    login.mockReturnValue(
+      of({
+        data: {
+          two_factor_required: true,
+          challenge_token: 'tok',
+          methods: ['email', 'recovery_code'],
+          default_method: 'email',
+          email_code_sent: true,
+          trusted_devices_enabled: true,
+        },
+      }),
+    );
     const { component } = create();
-    component['isChallengeStep'].set(true);
+    component['loginForm'].setValue({ email: 'anna@acme.example', password: TEST_PASSWORD, remember: false });
 
-    component['onChallengeSubmit']();
+    component['onSubmit']();
 
-    expect(twoFactorChallenge).not.toHaveBeenCalled();
-    expect(component['errorMessage']()).not.toBeNull();
+    expect(component['challengeMethods']()).toEqual(['email', 'recovery_code']);
+    expect(component['challengeDefaultMethod']()).toBe('email');
+    expect(component['challengeEmailSent']()).toBe(true);
+    expect(component['challengeTrustedDevices']()).toBe(true);
   });
 
-  it('completes the sign-in with a valid second-factor code', () => {
-    twoFactorChallenge.mockReturnValue(of({ data: { tenant_id: 't-2' } }));
+  it('sends the remembered device token of the account and forgets it when the challenge is still required', () => {
+    storeTrustedDeviceToken('anna@acme.example', 't'.repeat(64));
+    login.mockReturnValue(of({ data: { two_factor_required: true, challenge_token: 'tok' } }));
+    const { component } = create();
+    component['loginForm'].setValue({ email: 'anna@acme.example', password: TEST_PASSWORD, remember: false });
+
+    component['onSubmit']();
+
+    expect(login).toHaveBeenCalledWith(expect.objectContaining({ trusted_device_token: 't'.repeat(64) }));
+    expect(getTrustedDeviceToken('anna@acme.example')).toBeNull();
+  });
+
+  it('does not send a device token when none is remembered', () => {
+    login.mockReturnValue(of({ data: { tenant_id: 't-1' } }));
+    const { component } = create();
+    component['loginForm'].setValue({ email: 'nobody@acme.example', password: TEST_PASSWORD, remember: false });
+
+    component['onSubmit']();
+
+    expect(login.mock.calls[0][0]).not.toHaveProperty('trusted_device_token');
+  });
+
+  it('completes the sign-in when the challenge succeeds', () => {
     const { component, navigate } = create();
-    component['challengeToken'].set('tok');
-    component['challengeForm'].controls.code.setValue(' 123456 ');
+    component['isChallengeStep'].set(true);
 
-    component['onChallengeSubmit']();
+    component['onChallengeSucceeded']({ tenant_id: 't-2' });
 
-    expect(twoFactorChallenge).toHaveBeenCalledWith({
-      challenge_token: 'tok',
-      code: '123456',
-      recovery_code: undefined,
-    });
     expect(storeLogin).toHaveBeenCalledWith('t-2', null);
     expect(navigate).toHaveBeenCalled();
+  });
+
+  it('goes back to the password step with the message when the challenge restarts', () => {
+    const { component } = create();
+    component['isChallengeStep'].set(true);
+    component['challengeToken'].set('tok');
+
+    component['onChallengeRestart']('expired');
+
+    expect(component['isChallengeStep']()).toBe(false);
+    expect(component['challengeToken']()).toBe('');
+    expect(component['errorMessage']()).toBe('expired');
+  });
+
+  it('flags the mandatory second factor enrolment after the login', () => {
+    login.mockReturnValue(of({ data: { tenant_id: 't-1', two_factor_setup_required: true } }));
+    const { component, navigate } = create();
+    component['loginForm'].setValue({ email: 'anna@acme.example', password: TEST_PASSWORD, remember: false });
+
+    component['onSubmit']();
+
+    expect(setTwoFactorSetupRequired).toHaveBeenCalledWith(true);
+    expect(navigate).toHaveBeenCalled();
+  });
+
+  it('shows the lock message on a locked account', () => {
+    login.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 423 })));
+    const { component } = create();
+    component['loginForm'].setValue({ email: 'anna@acme.example', password: TEST_PASSWORD, remember: false });
+
+    component['onSubmit']();
+
+    expect(component['errorMessage']()).not.toBeNull();
   });
 });

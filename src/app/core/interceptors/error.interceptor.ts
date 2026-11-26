@@ -3,6 +3,7 @@ import { inject, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { catchError, throwError } from 'rxjs';
+import { TWO_FACTOR_SETUP_PATH } from '../auth/auth.guard';
 import { AuthStore } from '../auth/auth.store';
 import { I18nService } from '../i18n';
 import { isLocallyHandled } from '../http/error-handling.context';
@@ -48,6 +49,9 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         const isAuthCheck =
           req.url.endsWith('/auth/login') ||
           req.url.endsWith('/auth/two-factor-challenge') ||
+          req.url.endsWith('/auth/2fa/challenge') ||
+          req.url.includes('/auth/two-factor/challenge/') ||
+          req.url.includes('/auth/password-policy/') ||
           req.url.endsWith('/auth/profile') ||
           req.url.endsWith('/auth/register') ||
           req.url.endsWith('/auth/verify-email') ||
@@ -93,8 +97,15 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           message.warning(i18n.translate('ERRORS.SESSION_EXPIRED'));
         } else if (err.status === 403) {
           if (body?.type === 'urn:fatturafacile:problem:two-factor-setup-required') {
+            // The auth guard sends every navigation to the enrolment page while the flag is set; leave the current
+            // (blocked) page for it right away.
             authStore.setTwoFactorSetupRequired(true);
             message.warning(detailOrMessage || i18n.translate('ERRORS.TWO_FACTOR_SETUP_REQUIRED'));
+            if (!router.url.startsWith(TWO_FACTOR_SETUP_PATH)) {
+              router
+                .navigate([TWO_FACTOR_SETUP_PATH], { queryParams: { returnUrl: router.url } })
+                .catch(() => false);
+            }
           } else {
             message.error(
               detailOrMessage || i18n.translate('ERRORS.FORBIDDEN_MODULE')

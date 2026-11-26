@@ -7,6 +7,9 @@ import { PermissionsService } from './permissions.service';
 import { AccessMode } from './permissions';
 import { loadFullProfileIfNeeded } from './profile-loader';
 
+/** Page that blocks the app until the second factor the tenant requires is enrolled. */
+export const TWO_FACTOR_SETUP_PATH = '/two-factor-setup';
+
 /**
  * Requires an authenticated session; otherwise redirects to `/login?returnUrl=<current url>`.
  * In cookie-based Laravel Sanctum authentication:
@@ -14,6 +17,8 @@ import { loadFullProfileIfNeeded } from './profile-loader';
  * 2. If not, queries `GET /auth/profile` with browser session cookies to verify if an active session exists.
  * 3. On success, populates the user in `AuthStore` and permits route activation.
  * 4. On failure, redirects to `/login` preserving the return URL.
+ * While the tenant requires a second factor the user has not enrolled (`twoFactorSetupRequired`), every route except the
+ * enrolment page redirects to it, so the app never loads half-protected.
  */
 export const authGuard: CanActivateFn = (_route, state) => {
   const authStore = inject(AuthStore);
@@ -21,6 +26,9 @@ export const authGuard: CanActivateFn = (_route, state) => {
   const authApi = inject(AuthApiService);
 
   if (authStore.isAuthenticated()) {
+    if (authStore.twoFactorSetupRequired() && !state.url.startsWith(TWO_FACTOR_SETUP_PATH)) {
+      return router.createUrlTree([TWO_FACTOR_SETUP_PATH], { queryParams: { returnUrl: state.url } });
+    }
     const profile = loadFullProfileIfNeeded();
     return profile ? profile.pipe(map(() => true)) : true;
   }

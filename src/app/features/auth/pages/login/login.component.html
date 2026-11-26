@@ -195,100 +195,22 @@
         </p>
       }
 
-      <!-- TWO FACTOR CHALLENGE FORM -->
+      <!-- TWO FACTOR CHALLENGE -->
       @if (isChallengeStep()) {
-        <div class="challenge-section">
-          <div class="challenge-header">
-            <nz-icon nzType="safety-certificate" class="challenge-icon" />
-            <h2>{{ 'TWO_FACTOR.CHALLENGE_TITLE' | translate }}</h2>
-            <p class="challenge-subtitle">{{ 'TWO_FACTOR.CHALLENGE_SUBTITLE' | translate }}</p>
-          </div>
-
-          <form nz-form nzLayout="vertical" [formGroup]="challengeForm" (ngSubmit)="onChallengeSubmit()">
-            @if (!useRecoveryCode()) {
-              <nz-form-item>
-                <nz-form-label nzRequired nzFor="challenge-code">{{ 'TWO_FACTOR.APP_CODE' | translate }}</nz-form-label>
-                <nz-form-control [nzErrorTip]="'TWO_FACTOR.CODE_REQUIRED' | translate">
-                  <nz-input-wrapper>
-                    <nz-icon nzInputPrefix nzType="mobile" />
-                    <input
-                      nz-input
-                      id="challenge-code"
-                      type="text"
-                      inputmode="numeric"
-                      formControlName="code"
-                      placeholder="123456"
-                      maxlength="16"
-                      nzSize="large"
-                      autocomplete="one-time-code"
-                    />
-                  </nz-input-wrapper>
-                </nz-form-control>
-              </nz-form-item>
-            } @else {
-              <nz-form-item>
-                <nz-form-label nzRequired nzFor="challenge-recovery-code">{{ 'TWO_FACTOR.RECOVERY_CODE' | translate }}
-                </nz-form-label>
-                <nz-form-control [nzErrorTip]="'TWO_FACTOR.RECOVERY_CODE_REQUIRED' | translate">
-                  <nz-input-wrapper>
-                    <nz-icon nzInputPrefix nzType="key" />
-                    <input
-                      nz-input
-                      id="challenge-recovery-code"
-                      type="text"
-                      formControlName="recoveryCode"
-                      autocomplete="off"
-                      [placeholder]="'TWO_FACTOR.RECOVERY_CODE' | translate"
-                      maxlength="32"
-                      nzSize="large"
-                    />
-                  </nz-input-wrapper>
-                </nz-form-control>
-              </nz-form-item>
-            }
-
-            <div class="challenge-toggle-row">
-              <button
-                nz-button
-                nzType="link"
-                type="button"
-                (click)="useRecoveryCode.set(!useRecoveryCode())"
-              >
-                {{ (useRecoveryCode() ? 'TWO_FACTOR.USE_APP_CODE' : 'TWO_FACTOR.USE_RECOVERY_CODE') | translate }}
-              </button>
-            </div>
-
-            <button
-              nz-button
-              nzType="primary"
-              nzSize="large"
-              nzBlock
-              type="submit"
-              [nzLoading]="isSubmitting()"
-              [disabled]="!canSubmitChallenge()"
-            >
-              {{ 'TWO_FACTOR.CHALLENGE_Submit' | translate }}
-            </button>
-
-            <button
-              nz-button
-              nzType="default"
-              nzBlock
-              type="button"
-              class="cancel-challenge-btn"
-              (click)="cancelChallenge()"
-            >
-              {{ 'AUTH.BACK_TO_LOGIN' | translate }}
-            </button>
-          </form>
-        </div>
+        <app-two-factor-challenge
+          [challengeToken]="challengeToken()"
+          [methods]="challengeMethods()"
+          [defaultMethod]="challengeDefaultMethod()"
+          [emailCodeSent]="challengeEmailSent()"
+          [trustedDevicesEnabled]="challengeTrustedDevices()"
+          [trustedDeviceDays]="challengeTrustedDays()"
+          [email]="loginForm.controls.email.value"
+          (succeeded)="onChallengeSucceeded($event)"
+          (restart)="onChallengeRestart($event)"
+        />
       }
     </nz-card>
     <app-auth-footer />
   </div>
 
-  <app-two-factor-setup-modal
-    [(isVisible)]="showTwoFactorSetup"
-    (completed)="onTwoFactorSetupCompleted()"
-  />
 </main>

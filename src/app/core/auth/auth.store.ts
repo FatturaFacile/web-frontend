@@ -27,6 +27,8 @@ export interface UserProfile {
   readonly permissions?: string[];
   readonly is_platform_admin?: boolean;
   readonly two_factor_enabled?: boolean;
+  /** Active second factors of the user (`totp`, `email`, `webauthn`, `recovery_code`), as the login answer reports them. */
+  readonly two_factor_methods?: readonly string[];
   readonly locale?: string;
   readonly active_tenant?: {
     readonly id: string;
