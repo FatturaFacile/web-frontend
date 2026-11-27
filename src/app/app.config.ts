@@ -1,5 +1,6 @@
 import {
   ApplicationConfig,
+  ErrorHandler,
   inject,
   isDevMode,
   LOCALE_ID,
@@ -29,6 +30,8 @@ import { tenantAuthInterceptor } from '@core/interceptors/tenant-auth.intercepto
 import { I18nService, PageTitleStrategy } from '@core/i18n';
 import { DisplayPreferencesService, ThemeService } from '@core/theme';
 import { PwaUpdateService } from '@core/pwa';
+import { TelemetryErrorHandler } from '@core/telemetry/telemetry-error-handler';
+import { TelemetryService } from '@core/telemetry/telemetry.service';
 import { routes } from './app.routes';
 import { icons } from './icons-provider';
 import { provideServiceWorker } from '@angular/service-worker';
@@ -41,6 +44,7 @@ registerLocaleData(fr);
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
+    { provide: ErrorHandler, useClass: TelemetryErrorHandler },
     // Angular's DatePipe/DecimalPipe are pure and inject LOCALE_ID once, so the id is resolved
     // from the persisted language at bootstrap. Runtime switches are handled by the signal-aware
     // app pipes (appCurrency, appDecimal, appDate, money).
@@ -80,6 +84,11 @@ export const appConfig: ApplicationConfig = {
     }),
     provideAppInitializer(() => {
       inject(PwaUpdateService).start();
+    }),
+    provideAppInitializer(() => {
+      // After bootstrap and off the critical path: the SDK is a lazy chunk and a failure to load it is swallowed.
+      const telemetry = inject(TelemetryService);
+      setTimeout(() => void telemetry.start(), 0);
     }),
     provideServiceWorker('ngsw-worker.js', {
       enabled: !isDevMode(),

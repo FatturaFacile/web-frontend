@@ -1,5 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Component } from '@angular/core';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter, Router } from '@angular/router';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { describe, beforeEach, it, expect } from 'vitest';
@@ -28,6 +30,8 @@ describe('AppComponent', () => {
           { path: 'rma-estimate/:token', data: { publicPage: true }, component: PublicStubComponent },
           { path: 'private', component: PrivateStubComponent },
         ]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
         provideNzIcons(icons),
         I18nService,
         AppStore,

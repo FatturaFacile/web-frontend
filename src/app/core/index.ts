@@ -141,6 +141,8 @@ export * from './api/passenger-transport-api.service';
 export * from './api/customer-satisfaction-api.service';
 export * from './api/subcontracting-api.service';
 export * from './api/down-payments-api.service';
+export * from './api/observability-api.service';
+export * from './telemetry';
 export * from './api/swiss-ebill-api.service';
 export * from './api/foreign-vat-refund-api.service';
 export * from './api/audit-ledger-api.service';

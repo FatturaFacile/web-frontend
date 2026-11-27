@@ -55,6 +55,10 @@ function loadEnv(names) {
     'TERMS_URL',
     'PRIVACY_URL',
     'APP_VERSION',
+    'OTEL_ENABLED',
+    'OTEL_EXPORTER_OTLP_ENDPOINT',
+    'OTEL_TRACES_SAMPLER_ARG',
+    'OTEL_SERVICE_NAME',
   ])) {
     if (process.env[key]) {
       merged[key] = process.env[key];
@@ -119,6 +123,15 @@ const ngArgs = [
   `NG_APP_PRIVACY_URL=${JSON.stringify(env.PRIVACY_URL ?? '')}`,
   '--define',
   `NG_APP_VERSION=${JSON.stringify(appVersion)}`,
+  // Browser telemetry (OpenTelemetry): off unless OTEL_ENABLED=true and an OTLP/HTTP endpoint is given.
+  '--define',
+  `NG_APP_OTEL_ENABLED=${env.OTEL_ENABLED === 'true'}`,
+  '--define',
+  `NG_APP_OTEL_ENDPOINT=${JSON.stringify(env.OTEL_EXPORTER_OTLP_ENDPOINT ?? '')}`,
+  '--define',
+  `NG_APP_OTEL_SAMPLE_RATIO=${JSON.stringify(env.OTEL_TRACES_SAMPLER_ARG ?? '0.1')}`,
+  '--define',
+  `NG_APP_OTEL_SERVICE_NAME=${JSON.stringify(env.OTEL_SERVICE_NAME ?? 'fatturafacile-web')}`,
 ];
 const result = spawnSync(process.execPath, ngArgs, {
   cwd: root,

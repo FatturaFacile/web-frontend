@@ -116,6 +116,9 @@ export class SidebarComponent {
             if (item.children) {
               const filteredChildren = item.children.filter((child) => {
                 const childModule = child.module ?? item.module;
+                if (child.platformAdmin && this.authStore.user()?.is_platform_admin !== true) {
+                  return false;
+                }
                 if (child.permission && !this.authStore.can(child.permission)) {
                   return false;
                 }

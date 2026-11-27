@@ -20,6 +20,7 @@ import {
   SwissQrBillData,
 } from '../models';
 import { toHttpParams } from '../http/laravel-http.utils';
+import { TelemetryService } from '../telemetry/telemetry.service';
 
 export interface RecordPaymentPayload {
   amount: number;
@@ -32,6 +33,7 @@ export interface RecordPaymentPayload {
 @Service()
 export class InvoiceApiService {
   private readonly http = inject(HttpClient);
+  private readonly telemetry = inject(TelemetryService);
   private readonly base = environment.apiBaseUrl;
   private readonly url = `${this.base}/sales/invoices`;
 
@@ -46,15 +48,21 @@ export class InvoiceApiService {
   }
 
   create(payload: CreateInvoicePayload): Observable<ApiResponse<InvoiceResource>> {
-    return this.http.post<ApiResponse<InvoiceResource>>(this.url, payload);
+    return this.telemetry.traceStream(
+      'invoice.create',
+      this.http.post<ApiResponse<InvoiceResource>>(this.url, payload),
+    );
   }
 
   /** PDF stream of the invoice (`inline` renders it in the browser). */
   downloadPdf(id: string, inline = true): Observable<Blob> {
-    return this.http.get(`${this.base}/documents/invoice/${id}/pdf`, {
-      params: toHttpParams({ inline }),
-      responseType: 'blob',
-    });
+    return this.telemetry.traceStream(
+      'invoice.pdf',
+      this.http.get(`${this.base}/documents/invoice/${id}/pdf`, {
+        params: toHttpParams({ inline }),
+        responseType: 'blob',
+      }),
+    );
   }
 
   sendByEmail(id: string, payload: SendDocumentEmailPayload = {}): Observable<ApiResponse<unknown>> {
@@ -68,13 +76,20 @@ export class InvoiceApiService {
 
   // SDI Electronic Invoicing
   sendToSdi(id: string): Observable<ApiResponse<unknown>> {
-    return this.http.post<ApiResponse<unknown>>(`${this.url}/${id}/send-sdi`, {});
+    return this.telemetry.traceStream(
+      'invoice.send_sdi',
+      this.http.post<ApiResponse<unknown>>(`${this.url}/${id}/send-sdi`, {}),
+    );
   }
 
   sendSdiBulk(invoiceIds: string[]): Observable<ApiResponse<BulkSdiResult>> {
-    return this.http.post<ApiResponse<BulkSdiResult>>(`${this.url}/send-sdi-bulk`, {
-      invoice_ids: invoiceIds,
-    });
+    return this.telemetry.traceStream(
+      'invoice.send_sdi_bulk',
+      this.http.post<ApiResponse<BulkSdiResult>>(`${this.url}/send-sdi-bulk`, {
+        invoice_ids: invoiceIds,
+      }),
+      { 'app.invoice_count': invoiceIds.length },
+    );
   }
 
   generateSdiXml(id: string): Observable<ApiResponse<{ xml_url?: string; status: string }>> {

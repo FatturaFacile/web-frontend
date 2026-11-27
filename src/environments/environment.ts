@@ -6,6 +6,10 @@ declare const NG_APP_DEMO_MODE: boolean | undefined;
 declare const NG_APP_TERMS_URL: string | undefined;
 declare const NG_APP_PRIVACY_URL: string | undefined;
 declare const NG_APP_VERSION: string | undefined;
+declare const NG_APP_OTEL_ENABLED: boolean | undefined;
+declare const NG_APP_OTEL_ENDPOINT: string | undefined;
+declare const NG_APP_OTEL_SAMPLE_RATIO: string | undefined;
+declare const NG_APP_OTEL_SERVICE_NAME: string | undefined;
 
 export const environment = {
   demoMode: typeof NG_APP_DEMO_MODE === 'undefined' ? false : NG_APP_DEMO_MODE,
@@ -13,4 +17,12 @@ export const environment = {
   termsUrl: typeof NG_APP_TERMS_URL === 'undefined' ? '' : NG_APP_TERMS_URL,
   appVersion: typeof NG_APP_VERSION === 'undefined' ? 'dev' : NG_APP_VERSION,
   privacyUrl: typeof NG_APP_PRIVACY_URL === 'undefined' ? '' : NG_APP_PRIVACY_URL,
+  /** Browser tracing (OpenTelemetry): disabled unless the build enables it and names an OTLP/HTTP endpoint. */
+  telemetry: {
+    enabled: typeof NG_APP_OTEL_ENABLED === 'undefined' ? false : NG_APP_OTEL_ENABLED,
+    endpoint: typeof NG_APP_OTEL_ENDPOINT === 'undefined' ? '' : NG_APP_OTEL_ENDPOINT,
+    sampleRatio: typeof NG_APP_OTEL_SAMPLE_RATIO === 'undefined' ? '0.1' : NG_APP_OTEL_SAMPLE_RATIO,
+    serviceName:
+      typeof NG_APP_OTEL_SERVICE_NAME === 'undefined' ? 'fatturafacile-web' : NG_APP_OTEL_SERVICE_NAME,
+  },
 };

@@ -258,6 +258,8 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/distribution/channels',
   '/distribution/atp',
   '/down-payments/chains',
+  '/observability/connectors',
+  '/observability/profiler',
   '/subcontracting/dashboard',
   '/subcontracting/orders',
   '/subcontracting/register',
