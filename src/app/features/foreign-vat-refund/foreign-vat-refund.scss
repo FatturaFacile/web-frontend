@@ -1,0 +1,173 @@
+.feedback {
+  margin-bottom: 16px;
+}
+
+.hint {
+  opacity: 0.7;
+}
+
+.muted {
+  opacity: 0.5;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.hidden-input {
+  display: none;
+}
+
+.section-title {
+  margin: 24px 0 12px;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 16px;
+
+  .field {
+    min-width: 160px;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+
+  &.switch {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px 16px;
+}
+
+.panel {
+  border: 1px solid var(--ant-color-border-secondary, #f0f0f0);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  background: var(--ant-color-bg-container, #fff);
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.kpi {
+  border: 1px solid var(--ant-color-border-secondary, #f0f0f0);
+  border-radius: 8px;
+  padding: 16px;
+  background: var(--ant-color-bg-container, #fff);
+
+  .kpi-title {
+    opacity: 0.7;
+    margin-bottom: 8px;
+  }
+
+  .kpi-value {
+    font-size: 22px;
+    font-weight: 600;
+  }
+}
+
+.monitor-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.monitor-card {
+  .monitor-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .amount {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 8px 0;
+  }
+
+  .quarters {
+    margin: 12px 0;
+  }
+
+  .quarter {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    align-items: center;
+    column-gap: 8px;
+
+    .hint {
+      grid-column: 2;
+    }
+  }
+
+  .deadline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 12px;
+  }
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.category-select {
+  min-width: 200px;
+}
+
+.claim-steps {
+  margin-bottom: 16px;
+}
+
+.detail-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.fvr-badge {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+}

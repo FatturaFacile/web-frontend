@@ -808,6 +808,23 @@ export const routes: Routes = [
       import('./features/swiss-ebill/swiss-ebill.routes').then((m) => m.SWISS_EBILL_ROUTES),
   },
   {
+    path: 'foreign-vat-refund',
+    canActivate: [
+      authGuard,
+      menuEnabledGuard,
+      featureFlagGuard('foreign_vat_refund'),
+      moduleGuard('foreign_vat_refund'),
+    ],
+    data: {
+      breadcrumb: 'NAV.FOREIGN_VAT_REFUND',
+      title: 'PAGE_TITLE.FOREIGN_VAT_DASHBOARD',
+    },
+    loadChildren: () =>
+      import('./features/foreign-vat-refund/foreign-vat-refund.routes').then(
+        (m) => m.FOREIGN_VAT_REFUND_ROUTES,
+      ),
+  },
+  {
     path: 'franchise-network',
     canActivate: [
       authGuard,
