@@ -795,6 +795,21 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'distribution',
+    canActivate: [
+      authGuard,
+      menuEnabledGuard,
+      featureFlagGuard('distribution'),
+      moduleGuard('distribution'),
+    ],
+    data: {
+      breadcrumb: 'NAV.DISTRIBUTION',
+      title: 'PAGE_TITLE.DISTRIBUTION_OVERVIEW',
+    },
+    loadChildren: () =>
+      import('./features/distribution/distribution.routes').then((m) => m.DISTRIBUTION_ROUTES),
+  },
+  {
     path: 'signatures',
     canActivate: [
       authGuard,

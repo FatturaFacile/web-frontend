@@ -1513,6 +1513,73 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         ],
       },
       {
+        key: 'NAV.DISTRIBUTION',
+        icon: 'fa-solid fa-truck-ramp-box',
+        module: 'distribution',
+        children: [
+          {
+            key: 'NAV.DISTRIBUTION_OVERVIEW',
+            route: '/distribution/overview',
+            icon: 'fa-solid fa-gauge-high',
+            module: 'distribution',
+          },
+          {
+            key: 'NAV.DISTRIBUTION_NETWORK',
+            route: '/distribution/network',
+            icon: 'fa-solid fa-diagram-project',
+            module: 'distribution',
+          },
+          {
+            key: 'NAV.DISTRIBUTION_TRANSFERS',
+            route: '/distribution/transfers',
+            icon: 'fa-solid fa-truck-ramp-box',
+            module: 'distribution',
+          },
+          {
+            key: 'NAV.DISTRIBUTION_IN_TRANSIT',
+            route: '/distribution/in-transit',
+            icon: 'fa-solid fa-truck-fast',
+            module: 'distribution',
+          },
+          {
+            key: 'NAV.DISTRIBUTION_REPLENISHMENT',
+            route: '/distribution/replenishment',
+            icon: 'fa-solid fa-rotate',
+            module: 'distribution',
+          },
+          {
+            key: 'NAV.DISTRIBUTION_PROPOSALS',
+            route: '/distribution/proposals',
+            icon: 'fa-solid fa-list-check',
+            module: 'distribution',
+          },
+          {
+            key: 'NAV.DISTRIBUTION_DRP',
+            route: '/distribution/drp',
+            icon: 'fa-solid fa-table-cells',
+            module: 'distribution',
+          },
+          {
+            key: 'NAV.DISTRIBUTION_CONSIGNMENT',
+            route: '/distribution/consignment',
+            icon: 'fa-solid fa-handshake',
+            module: 'distribution',
+          },
+          {
+            key: 'NAV.DISTRIBUTION_CHANNELS',
+            route: '/distribution/channels',
+            icon: 'fa-solid fa-shop',
+            module: 'distribution',
+          },
+          {
+            key: 'NAV.DISTRIBUTION_ATP',
+            route: '/distribution/atp',
+            icon: 'fa-solid fa-boxes-packing',
+            module: 'distribution',
+          },
+        ],
+      },
+      {
         key: 'NAV.FRANCHISE_NETWORK',
         icon: 'fa-solid fa-store',
         module: 'franchise_network',

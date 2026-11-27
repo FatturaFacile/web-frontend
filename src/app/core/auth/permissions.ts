@@ -334,6 +334,15 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
       write: ['passenger_transport.bill', 'passenger_transport.*'],
     },
   },
+  // Distribution, multi-warehouse and transfers (DRP, Issue #271): every member reads; the warehouse and purchasing roles plan and move stock.
+  distribution: {
+    read: ANY_MEMBER,
+    write: ['owner', 'admin', 'warehouse', 'purchasing', 'operations_manager', 'member'],
+    grants: {
+      read: ['distribution.read', 'distribution.write', 'distribution.*'],
+      write: ['distribution.write', 'distribution.*'],
+    },
+  },
   // Franchise network governance (Mod 244): every member reads; the franchise director governs the network (agreements, formulas,
   // pushes, billing), the area manager runs the store audits, the franchisee owner and manager use the portal of their own store.
   franchise_network: {
