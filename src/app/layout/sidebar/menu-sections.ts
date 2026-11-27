@@ -1747,6 +1747,37 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         ],
       },
       {
+        key: 'NAV.FOREIGN_VAT_REFUND',
+        icon: 'fa-solid fa-earth-europe',
+        module: 'foreign_vat_refund',
+        children: [
+          {
+            key: 'NAV.FOREIGN_VAT_DASHBOARD',
+            route: '/foreign-vat-refund/dashboard',
+            icon: 'fa-solid fa-chart-line',
+            module: 'foreign_vat_refund',
+          },
+          {
+            key: 'NAV.FOREIGN_VAT_LEDGER',
+            route: '/foreign-vat-refund/ledger',
+            icon: 'fa-solid fa-book',
+            module: 'foreign_vat_refund',
+          },
+          {
+            key: 'NAV.FOREIGN_VAT_CLAIMS',
+            route: '/foreign-vat-refund/claims',
+            icon: 'fa-solid fa-folder-open',
+            module: 'foreign_vat_refund',
+          },
+          {
+            key: 'NAV.FOREIGN_VAT_CONFIG',
+            route: '/foreign-vat-refund/configuration',
+            icon: 'fa-solid fa-sliders',
+            module: 'foreign_vat_refund',
+          },
+        ],
+      },
+      {
         key: 'NAV.CORPORATE_CONVENTIONS',
         icon: 'fa-solid fa-handshake',
         module: 'corporate_conventions',

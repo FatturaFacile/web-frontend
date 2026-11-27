@@ -26,6 +26,8 @@ import {
   ExmViolation,
 } from '@core';
 import { TranslatePipe } from '@shared';
+import { countryOfVatNumber } from '../foreign-vat-refund/foreign-vat-refund.util';
+import { ForeignVatSplitBadgeComponent } from '../foreign-vat-refund/foreign-vat-split-badge.component';
 import { today, toNumber } from './expense-management.util';
 import { ViolationBadgesComponent } from './violation-badges.component';
 
@@ -49,6 +51,7 @@ export interface LinePrefill {
     NzInputModule,
     NzSelectModule,
     NzSwitchModule,
+    ForeignVatSplitBadgeComponent,
     ReactiveFormsModule,
     TranslatePipe,
     ViolationBadgesComponent,
@@ -150,6 +153,12 @@ export interface LinePrefill {
           />
         </div>
       </div>
+
+      <app-foreign-vat-split-badge
+        [country]="foreignVatCountry()"
+        [vatAmount]="foreignVatAmount()"
+        [description]="foreignVatDescription()"
+      />
 
       <label for="exm-line-method">{{ 'expenseManagement.field.paymentMethod' | translate }}</label>
       <nz-select nzId="exm-line-method" formControlName="payment_method">
@@ -267,6 +276,17 @@ export class LineFormComponent {
 
   protected readonly outOfPocket = computed(
     () => this.value().payment_method === 'employee_out_of_pocket',
+  );
+
+  /** Country of the VAT number of the merchant: the badge shows how a foreign VAT is split for the refund. */
+  protected readonly foreignVatCountry = computed(() =>
+    countryOfVatNumber(this.value().merchant_tax_id),
+  );
+
+  protected readonly foreignVatAmount = computed(() => toNumber(this.value().vat_amount));
+
+  protected readonly foreignVatDescription = computed(
+    () => `${this.value().description ?? ''} ${this.value().merchant_name ?? ''}`.trim(),
   );
 
   protected readonly foreignCurrency = computed(

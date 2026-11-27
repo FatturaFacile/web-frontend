@@ -18,6 +18,7 @@ import {
   isCreditNote,
   paymentStatusColor,
 } from './supplier-invoice-detail.helpers';
+import { ForeignVatSplitBadgeComponent } from '../../foreign-vat-refund/foreign-vat-split-badge.component';
 import { SupplierInvoiceDetailStore } from './supplier-invoice-detail.store';
 
 /**
@@ -32,6 +33,7 @@ import { SupplierInvoiceDetailStore } from './supplier-invoice-detail.store';
     DateFormatPipe,
     DecimalPipe,
     DocumentFlowDrawerComponent,
+    ForeignVatSplitBadgeComponent,
     MoneyPipe,
     PageHeaderComponent,
     RouterLink,
@@ -159,6 +161,11 @@ import { SupplierInvoiceDetailStore } from './supplier-invoice-detail.store';
             {{ (invoice.reverse_charge ? 'srm.invoice.yes' : 'srm.invoice.no') | translate }}
           </nz-descriptions-item>
         </nz-descriptions>
+        <app-foreign-vat-split-badge
+          [country]="invoice.supplier_country ?? null"
+          [vatAmount]="foreignVatAmount(invoice.total_tax)"
+          [description]="invoice.supplier_name ?? null"
+        />
 
         <nz-tabs class="tabs">
           <nz-tab [nzTitle]="'srm.invoice.tab.lines' | translate">
@@ -309,6 +316,11 @@ export class SupplierInvoiceDetailPageComponent {
         this.store.load(id);
       }
     });
+  }
+
+  /** VAT of the invoice as a number for the foreign VAT badge. */
+  protected foreignVatAmount(tax: string | null | undefined): number {
+    return tax === null || tax === undefined || tax === '' ? 0 : Math.abs(Number(tax));
   }
 
   protected documentType(code: string | null | undefined): string {

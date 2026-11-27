@@ -367,6 +367,15 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
       write: ['swiss_ebill.write', 'swiss_ebill.*'],
     },
   },
+  // Foreign VAT refund (Mod 227): finance roles work on the ledger, claims and mandates; purchasing and operations managers read.
+  foreign_vat_refund: {
+    read: [...FINANCE_READERS, 'procurement_manager', 'operations_manager'],
+    write: FINANCE,
+    grants: {
+      read: ['foreign_vat_refund.read', 'foreign_vat_refund.write', 'foreign_vat_refund.*'],
+      write: ['foreign_vat_refund.write', 'foreign_vat_refund.*'],
+    },
+  },
   passenger_transport_finance: {
     read: FINANCE_READERS,
     write: FINANCE,
