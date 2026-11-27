@@ -404,6 +404,22 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
       write: ['foreign_vat_refund.write', 'foreign_vat_refund.*'],
     },
   },
+  // Green space maintenance (Mod 126): operations, service and crew roles work on sites, contracts, routes, diary and slips.
+  green_care: {
+    read: [
+      ...FINANCE_READERS,
+      'operations_manager',
+      'service_manager',
+      'technician',
+      'project_manager',
+      'member',
+    ],
+    write: [...FINANCE, 'operations_manager', 'service_manager', 'technician', 'member'],
+    grants: {
+      read: ['green_care.read', 'green_care.write', 'green_care.*'],
+      write: ['green_care.write', 'green_care.*'],
+    },
+  },
   passenger_transport_finance: {
     read: FINANCE_READERS,
     write: FINANCE,
@@ -774,6 +790,26 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
         'data_migration.execute',
         'data_migration.rollback',
         'data_migration.*',
+      ],
+    },
+  },
+  esterometro: {
+    read: FINANCE_READERS,
+    write: FINANCE,
+    grants: {
+      read: [
+        'esterometro.read',
+        'esterometro.view',
+        'esterometro.write',
+        'esterometro.manage',
+        'esterometro.send',
+        'esterometro.*',
+      ],
+      write: [
+        'esterometro.write',
+        'esterometro.manage',
+        'esterometro.send',
+        'esterometro.*',
       ],
     },
   },

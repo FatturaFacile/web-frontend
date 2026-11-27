@@ -616,6 +616,15 @@ export const routes: Routes = [
       import('./features/italian-vat/italian-vat.routes').then((m) => m.ITALIAN_VAT_ROUTES),
   },
   {
+    path: 'esterometro',
+    canActivate: [authGuard, menuEnabledGuard, moduleGuard('esterometro', 'read')],
+    data: { breadcrumb: 'NAV.ESTEROMETRO', title: 'ESTEROMETRO.TITLE' },
+    loadComponent: () =>
+      import('./features/esterometro/esterometro-workspace.component').then(
+        (m) => m.EsterometroWorkspaceComponent,
+      ),
+  },
+  {
     path: 'swiss-vat',
     canActivate: [
       authGuard,
@@ -838,6 +847,15 @@ export const routes: Routes = [
       import('./features/foreign-vat-refund/foreign-vat-refund.routes').then(
         (m) => m.FOREIGN_VAT_REFUND_ROUTES,
       ),
+  },
+  {
+    path: 'green-care',
+    canActivate: [authGuard, menuEnabledGuard, featureFlagGuard('green_care'), moduleGuard('green_care')],
+    data: {
+      breadcrumb: 'NAV.GREEN_CARE',
+      title: 'PAGE_TITLE.GREEN_CARE_DASHBOARD',
+    },
+    loadChildren: () => import('./features/green-care/green-care.routes').then((m) => m.GREEN_CARE_ROUTES),
   },
   {
     path: 'franchise-network',

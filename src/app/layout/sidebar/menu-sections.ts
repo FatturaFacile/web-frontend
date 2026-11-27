@@ -795,6 +795,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             icon: 'fa-solid fa-file-pdf',
             module: 'italian_vat',
           },
+          {
+            key: 'NAV.ESTEROMETRO',
+            route: '/italian-vat/esterometro',
+            icon: 'fa-solid fa-file-invoice',
+            module: 'esterometro',
+          },
         ],
       },
       {
@@ -1782,6 +1788,55 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             route: '/foreign-vat-refund/configuration',
             icon: 'fa-solid fa-sliders',
             module: 'foreign_vat_refund',
+          },
+        ],
+      },
+      {
+        key: 'NAV.GREEN_CARE',
+        icon: 'fa-solid fa-seedling',
+        module: 'green_care',
+        children: [
+          {
+            key: 'NAV.GREEN_CARE_DASHBOARD',
+            route: '/green-care/dashboard',
+            icon: 'fa-solid fa-chart-line',
+            module: 'green_care',
+          },
+          {
+            key: 'NAV.GREEN_CARE_SITES',
+            route: '/green-care/sites',
+            icon: 'fa-solid fa-tree',
+            module: 'green_care',
+          },
+          {
+            key: 'NAV.GREEN_CARE_CONTRACTS',
+            route: '/green-care/contracts',
+            icon: 'fa-solid fa-file-contract',
+            module: 'green_care',
+          },
+          {
+            key: 'NAV.GREEN_CARE_PLANNER',
+            route: '/green-care/planner',
+            icon: 'fa-solid fa-route',
+            module: 'green_care',
+          },
+          {
+            key: 'NAV.GREEN_CARE_CREWS',
+            route: '/green-care/crews',
+            icon: 'fa-solid fa-people-group',
+            module: 'green_care',
+          },
+          {
+            key: 'NAV.GREEN_CARE_TREATMENTS',
+            route: '/green-care/treatments',
+            icon: 'fa-solid fa-flask',
+            module: 'green_care',
+          },
+          {
+            key: 'NAV.GREEN_CARE_WASTE',
+            route: '/green-care/waste',
+            icon: 'fa-solid fa-recycle',
+            module: 'green_care',
           },
         ],
       },
