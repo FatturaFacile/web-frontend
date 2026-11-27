@@ -40,6 +40,10 @@ const REPRESENTATIVE_RESPONSIVE_ROUTES = [
   '/settings/corporate-group',
 ] as const;
 
+// The shell bootstrap blocks on the initial translations fetched from the (remote, shared) API with retry/backoff,
+// so a cold dev server plus a slow API easily exceeds 15s on CI. Allow a realistic budget before failing.
+const SHELL_BOOT_TIMEOUT_MS = 90_000;
+
 const RAW_KEY_REGEX = /\b[A-Z][A-Z0-9_]{2,}(?:\.[A-Z0-9_]{2,}){1,}\b/;
 const FORBIDDEN_TEXT_PATTERNS = [
   /coming soon/i,
@@ -260,7 +264,7 @@ async function navigateInSpa(page: Page, targetRoute: string): Promise<void> {
   const hasSidebar = await page.locator('app-sidebar').count();
   if (hasSidebar === 0) {
     await page.goto(targetRoute, { waitUntil: 'domcontentloaded' });
-    await page.locator('app-sidebar').waitFor({ state: 'attached', timeout: 15_000 });
+    await page.locator('app-sidebar').waitFor({ state: 'attached', timeout: SHELL_BOOT_TIMEOUT_MS });
   } else {
     await page.evaluate((url) => {
       window.history.pushState({}, '', url);
@@ -326,7 +330,7 @@ test.describe('Part 1: Automated Layout, Responsive & Visual Integrity Crawler',
     }
 
     await page.goto('/docs/intro', { waitUntil: 'domcontentloaded' });
-    await page.locator('app-sidebar').waitFor({ state: 'attached', timeout: 15_000 });
+    await page.locator('app-sidebar').waitFor({ state: 'attached', timeout: SHELL_BOOT_TIMEOUT_MS });
     await expect(page).not.toHaveURL(/\/docs\/intro/);
   });
 
@@ -354,7 +358,7 @@ test.describe('Part 1: Automated Layout, Responsive & Visual Integrity Crawler',
       });
 
       await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
-      await page.locator('app-sidebar').waitFor({ state: 'attached', timeout: 15_000 });
+      await page.locator('app-sidebar').waitFor({ state: 'attached', timeout: SHELL_BOOT_TIMEOUT_MS });
       await expect(page.locator('html')).toHaveAttribute('data-brand', /teal|indigo|purple|amber/);
       await expect(page.locator('html')).toHaveAttribute('data-theme', /light|dark/);
 
@@ -391,7 +395,7 @@ test.describe('Part 1: Automated Layout, Responsive & Visual Integrity Crawler',
 
     await page.setViewportSize({ width: VIEWPORTS[0].width, height: VIEWPORTS[0].height });
     await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
-    await page.locator('app-sidebar').waitFor({ state: 'attached', timeout: 15_000 });
+    await page.locator('app-sidebar').waitFor({ state: 'attached', timeout: SHELL_BOOT_TIMEOUT_MS });
 
     for (const vp of VIEWPORTS) {
       await page.setViewportSize({ width: vp.width, height: vp.height });
@@ -419,7 +423,7 @@ test.describe('Part 1: Automated Layout, Responsive & Visual Integrity Crawler',
     await setupLiveAuthenticatedSession(page);
 
     await page.goto('/crm/clients', { waitUntil: 'domcontentloaded' });
-    await page.locator('app-sidebar').waitFor({ state: 'attached', timeout: 15_000 });
+    await page.locator('app-sidebar').waitFor({ state: 'attached', timeout: SHELL_BOOT_TIMEOUT_MS });
 
     for (const lang of ['it', 'en', 'de', 'fr'] as const) {
       await page.evaluate((l) => {
