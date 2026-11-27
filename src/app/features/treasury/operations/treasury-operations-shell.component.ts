@@ -35,6 +35,8 @@ export class TreasuryOperationsShellComponent {
     { path: 'payment-proposals', labelKey: 'TR.NAV_PROPOSALS' },
     { path: 'iso20022-import', labelKey: 'TR.NAV_ISO20022' },
     { path: 'reconciliation-workbench', labelKey: 'TR.NAV_WORKBENCH' },
+    { path: 'iso-upload', labelKey: 'treasuryIso.nav.upload' },
+    { path: 'reconciliation-exceptions', labelKey: 'treasuryIso.nav.exceptions' },
     { path: 'payment-run', labelKey: 'TR.NAV_PAYMENT_RUN' },
     { path: 'payment-flows', labelKey: 'tbk.nav.paymentFlows' },
     { path: 'f24', labelKey: 'tbk.nav.f24' },

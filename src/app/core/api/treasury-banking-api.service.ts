@@ -16,6 +16,7 @@ import {
   OpenBankingConnection,
   OpenBankingStatus,
   OpenBankingSyncRun,
+  PaymentFlowBatch,
   PaymentFlowInfo,
   PaymentFlowPayload,
   ReconciliationProposal,
@@ -51,8 +52,8 @@ export class TreasuryBankingApiService {
 
   createPaymentFlowBatch(
     payload: PaymentFlowPayload,
-  ): Observable<ApiResponse<{ id: string; batch_reference: string; status: string }>> {
-    return this.http.post<ApiResponse<{ id: string; batch_reference: string; status: string }>>(
+  ): Observable<ApiResponse<PaymentFlowBatch>> {
+    return this.http.post<ApiResponse<PaymentFlowBatch>>(
       `${this.base}/payment-flows/batches`,
       payload,
     );

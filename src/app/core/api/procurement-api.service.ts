@@ -151,6 +151,7 @@ export class ProcurementApiService {
     supplier_id?: string;
     document_type?: string;
     payment_status?: string;
+    search?: string;
   }): Observable<PaginatedResponse<SupplierInvoice>> {
     return this.http.get<PaginatedResponse<SupplierInvoice>>(`${this.purchasesUrl}/supplier-invoices`, {
       params: filters ? toHttpParams(filters) : undefined,

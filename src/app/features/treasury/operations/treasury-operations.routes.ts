@@ -29,6 +29,15 @@ export const TREASURY_OPERATIONS_ROUTES: Routes = [
           import('./iso20022/tr-reconciliation-workbench.component').then((m) => m.TrReconciliationWorkbenchComponent),
       },
       {
+        path: 'iso-upload',
+        loadComponent: () => import('./banking/tr-iso-upload.component').then((m) => m.TrIsoUploadComponent),
+      },
+      {
+        path: 'reconciliation-exceptions',
+        loadComponent: () =>
+          import('./banking/tr-reconciliation-exceptions.component').then((m) => m.TrReconciliationExceptionsComponent),
+      },
+      {
         path: 'payment-run',
         loadComponent: () => import('./iso20022/tr-payment-run.component').then((m) => m.TrPaymentRunComponent),
       },

@@ -13,6 +13,11 @@ import {
 } from '../models';
 import {
   Iso20022ImportSummary,
+  IsoUploadOptions,
+  IsoUploadResult,
+  LineInvoiceMatchPayload,
+  ReconciliationExceptionFilters,
+  ReconciliationExceptionPage,
   ManualTransactionMatchPayload,
   Pain001ExportPayload,
   Pain001ExportResult,
@@ -72,6 +77,32 @@ export class BankingApiService {
     body.append('file', file, file.name);
     body.append('auto_reconcile', autoReconcile ? '1' : '0');
     return this.http.post<ApiResponse<Iso20022ImportSummary>>(`${this.base}/iso20022/import`, body);
+  }
+
+  /** Uploads one camt.053, camt.054 or pain.002 file: the API detects the message type from the XML. */
+  uploadIso20022(file: File, options: IsoUploadOptions = {}): Observable<ApiResponse<IsoUploadResult>> {
+    const body = new FormData();
+    body.append('file', file, file.name);
+    body.append('auto_reconcile', options.autoReconcile === false ? '0' : '1');
+    if (options.paymentBatchId) {
+      body.append('payment_batch_id', options.paymentBatchId);
+    }
+    return this.http.post<ApiResponse<IsoUploadResult>>(`${this.base}/iso20022/upload`, body);
+  }
+
+  /** Bank lines the automatic reconciliation left open, with the count of every exception code. */
+  getReconciliationExceptions(filters: ReconciliationExceptionFilters = {}): Observable<ReconciliationExceptionPage> {
+    return this.http.get<ReconciliationExceptionPage>(`${this.base}/reconciliation/exceptions`, {
+      params: toHttpParams({ ...filters }),
+    });
+  }
+
+  /** Settles a line against an open customer or supplier invoice, optionally writing off or keeping the difference. */
+  assignLineToInvoice(lineId: string, payload: LineInvoiceMatchPayload): Observable<ApiResponse<BankStatementLine>> {
+    return this.http.post<ApiResponse<BankStatementLine>>(
+      `${this.base}/statements/lines/${lineId}/manual-match`,
+      payload,
+    );
   }
 
   getReconciliationTransactions(

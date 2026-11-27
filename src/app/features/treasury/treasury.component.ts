@@ -34,7 +34,13 @@ import {
 } from '@core';
 import { BaseTableComponent, IconActionDirective, ModalActionsDirective, MoneyPipe, PageHeaderComponent, TableColumnDef, TranslatePipe } from '@shared';
 import { ibanValidator } from '@shared/utils/iban-validator';
-import { validationTipKey } from '@shared/utils/validation-tip';
+import {
+  besrIdValidator,
+  isoValidationKey,
+  moneyAmountValidator,
+  qrIbanValidator,
+  qrIidValidator,
+} from './operations/banking/iso-reconciliation.util';
 
 @Component({
   selector: 'app-treasury',
@@ -123,6 +129,12 @@ export class TreasuryComponent implements OnInit {
     bic_swift: this.fb.control('', [Validators.pattern(/^([A-Za-z]{6}[A-Za-z0-9]{2}([A-Za-z0-9]{3})?)?$/)]),
     account_type: this.fb.control('checking'),
     opening_balance: this.fb.control(0),
+    qr_iban: this.fb.control('', [qrIbanValidator]),
+    qr_iid: this.fb.control('', [qrIidValidator]),
+    besr_id: this.fb.control('', [besrIdValidator]),
+    preferred_pain_version: this.fb.control<'03' | '09' | null>(null),
+    reconciliation_tolerance: this.fb.control<number | null>(null, [moneyAmountValidator]),
+    reconciliation_max_fee: this.fb.control<number | null>(null, [moneyAmountValidator]),
   });
 
   readonly batchForm = this.fb.group({
@@ -137,7 +149,7 @@ export class TreasuryComponent implements OnInit {
 
   /** Translation key of the error shown under a form control of the account and payment batch forms. */
   protected errorKey(control: AbstractControl | null): string {
-    return validationTipKey(control) || 'COMMON.VALIDATION.INVALID_VALUE';
+    return isoValidationKey(control) || 'COMMON.VALIDATION.INVALID_VALUE';
   }
 
   private readonly dateTpl = viewChild<TemplateRef<unknown>>('dateTpl');
@@ -313,6 +325,12 @@ export class TreasuryComponent implements OnInit {
       bic_swift: '',
       account_type: 'checking',
       opening_balance: 0,
+      qr_iban: '',
+      qr_iid: '',
+      besr_id: '',
+      preferred_pain_version: null,
+      reconciliation_tolerance: null,
+      reconciliation_max_fee: null,
     });
     this.accountModalVisible.set(true);
   }
@@ -323,7 +341,13 @@ export class TreasuryComponent implements OnInit {
       return;
     }
 
-    const payload: CreateBankAccountPayload = this.accountForm.getRawValue();
+    const raw = this.accountForm.getRawValue();
+    const payload: CreateBankAccountPayload = {
+      ...raw,
+      qr_iban: raw.qr_iban.replace(/[s-]/g, '').toUpperCase() || null,
+      qr_iid: raw.qr_iid || null,
+      besr_id: raw.besr_id || null,
+    };
     this.treasuryApi.createBankAccount(payload).subscribe({
       next: () => {
         this.accountModalVisible.set(false);

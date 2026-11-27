@@ -52,6 +52,12 @@ export interface BankAccountResource {
   credit_line_limit?: number | null;
   is_default?: boolean | null;
   is_active: boolean;
+  qr_iban?: string | null;
+  qr_iid?: string | null;
+  besr_id?: string | null;
+  preferred_pain_version?: '03' | '09' | null;
+  reconciliation_tolerance?: number | string | null;
+  reconciliation_max_fee?: number | string | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -68,6 +74,12 @@ export interface CreateBankAccountPayload {
   overdraft_limit?: number | null;
   is_default?: boolean | null;
   is_active?: boolean;
+  qr_iban?: string | null;
+  qr_iid?: string | null;
+  besr_id?: string | null;
+  preferred_pain_version?: '03' | '09' | null;
+  reconciliation_tolerance?: number | null;
+  reconciliation_max_fee?: number | null;
 }
 
 export interface BankTransactionResource {
@@ -91,6 +103,8 @@ export interface ManualMatchPayload {
 
 export interface CategorizePayload {
   category: string;
+  ledger_account_code?: string | null;
+  notes?: string | null;
 }
 
 export type PaymentMethodType =
@@ -112,7 +126,12 @@ export interface PaymentBatchLine {
   currency?: string | null;
   remittance_reference?: string | null;
   invoice_id?: string | null;
+  end_to_end_id?: string | null;
   status?: string;
+  /** ISO 20022 reason code of a rejection reported by the bank (pain.002). */
+  error_code?: string | null;
+  /** Additional information of the rejection. */
+  error_message?: string | null;
 }
 
 export interface PaymentBatchResource {
@@ -125,6 +144,8 @@ export interface PaymentBatchResource {
   total_amount: number;
   item_count: number;
   status: PaymentBatchStatus;
+  category_purpose?: 'SALA' | 'SUPP' | 'TAXS' | 'PENS' | 'BONU' | 'TRAD' | null;
+  charge_bearer?: 'SLEV' | 'SHAR' | 'DEBT' | 'CRED' | null;
   lines: PaymentBatchLine[];
   created_at?: string;
 }
