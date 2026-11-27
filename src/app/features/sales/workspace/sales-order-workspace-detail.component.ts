@@ -17,6 +17,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzTimelineModule } from 'ng-zorro-antd/timeline';
 import { AuthStore, BillingApiService, CustomerCreditProfile, I18nService } from '@core';
 import { PageHeaderComponent, TranslatePipe } from '@shared';
+import { DownPaymentChainComponent } from '../../down-payments/down-payment-chain.component';
 import { apiErrorText, CREDIT_MANAGER_ROLES, hasAnyRole } from '../cycle/shared/sales-api-helpers';
 import { SalesLookupsService } from '../cycle/shared/sales-lookups.service';
 import { statusColor, statusKey } from '../cycle/shared/sales-status';
@@ -74,6 +75,7 @@ const ATP_DEBOUNCE_MS = 400;
     NzTagModule,
     NzTimelineModule,
     CreateDdtDrawerComponent,
+    DownPaymentChainComponent,
     OrderCreditBannerComponent,
     PageHeaderComponent,
     TranslatePipe,
@@ -367,6 +369,14 @@ const ATP_DEBOUNCE_MS = 400;
             </nz-timeline>
           </nz-card>
         }
+      </nz-tab>
+
+      <nz-tab [nzTitle]="'down_payments.tab.title' | translate" [nzDisabled]="!order()">
+        <ng-template nzTabContent>
+          @if (order(); as o) {
+            <app-down-payment-chain [sourceType]="'sales_order'" [sourceId]="o.id" [sourceLabel]="o.order_number" />
+          }
+        </ng-template>
       </nz-tab>
     </nz-tabs>
 

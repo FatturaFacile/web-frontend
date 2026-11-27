@@ -84,6 +84,9 @@
       </nz-descriptions>
       <app-document-lines-view [lines]="q.items ?? []" [currency]="q.currency" />
 
+      <h4 class="down-payments-title">{{ 'down_payments.tab.title' | translate }}</h4>
+      <app-down-payment-chain [sourceType]="'quote'" [sourceId]="q.id" [sourceLabel]="q.quote_number" />
+
       <div class="actions">
         <a nz-button type="button" data-test="open-cpq" [routerLink]="['/sales/cycle/quotes', q.id, 'cpq']">
           <nz-icon nzType="calculator" /> {{ 'CPQ.BUILDER.TITLE' | translate }}
