@@ -793,6 +793,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             icon: 'fa-solid fa-file-pdf',
             module: 'italian_vat',
           },
+          {
+            key: 'NAV.ESTEROMETRO',
+            route: '/italian-vat/esterometro',
+            icon: 'fa-solid fa-file-invoice',
+            module: 'esterometro',
+          },
         ],
       },
       {

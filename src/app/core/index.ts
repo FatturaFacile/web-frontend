@@ -220,3 +220,5 @@ export * from './api/van-selling-api.service';
 export * from './api/sales-bounded-context-api.service';
 export * from './api/scheduled-report-api.service';
 export * from './models/scheduled-report.model';
+export * from './api/esterometro-api.service';
+export * from './models/esterometro.model';

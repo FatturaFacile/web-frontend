@@ -40,6 +40,14 @@ export const ITALIAN_VAT_ROUTES: Routes = [
         loadComponent: () =>
           import('./italian-vat-cu.component').then((m) => m.ItalianVatCuComponent),
       },
+      {
+        path: 'esterometro',
+        data: { breadcrumb: 'NAV.ESTEROMETRO', title: 'ESTEROMETRO.TITLE' },
+        loadComponent: () =>
+          import('../esterometro/esterometro-workspace.component').then(
+            (m) => m.EsterometroWorkspaceComponent,
+          ),
+      },
     ],
   },
 ];

@@ -171,3 +171,4 @@ export * from './intercompany.model';
 export * from './industrial-laundry.model';
 export * from './van-selling.model';
 export * from './sales-bounded-context.model';
+export * from './esterometro.model';

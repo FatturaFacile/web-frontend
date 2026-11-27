@@ -616,6 +616,15 @@ export const routes: Routes = [
       import('./features/italian-vat/italian-vat.routes').then((m) => m.ITALIAN_VAT_ROUTES),
   },
   {
+    path: 'esterometro',
+    canActivate: [authGuard, menuEnabledGuard, moduleGuard('esterometro', 'read')],
+    data: { breadcrumb: 'NAV.ESTEROMETRO', title: 'ESTEROMETRO.TITLE' },
+    loadComponent: () =>
+      import('./features/esterometro/esterometro-workspace.component').then(
+        (m) => m.EsterometroWorkspaceComponent,
+      ),
+  },
+  {
     path: 'swiss-vat',
     canActivate: [
       authGuard,
