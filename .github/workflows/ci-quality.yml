@@ -1,5 +1,8 @@
 name: Frontend Quality & Merge Gates
 
+# Lint, build, unit tests (coverage gate) and Playwright run once, in ci.yml (also called by deploy-dev.yml).
+# This workflow keeps the dependency security audit, including the weekly scheduled report.
+
 on:
   pull_request:
     branches: [main, master, develop, dev]
@@ -24,71 +27,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  frontend-quality-and-unit:
-    name: Frontend Lint, Strict Build & Vitest Coverage Gate
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Codebase
-        uses: actions/checkout@v7
-
-      - name: Setup Node.js 22
-        uses: actions/setup-node@v7
-        with:
-          node-version: 22
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v6
-
-      - name: Install Node Dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Run ESLint
-        run: pnpm run lint
-
-      - name: Run Angular Strict Production Build
-        run: pnpm run build
-
-      - name: Run Vitest Unit & Component Tests with Coverage Gate (>=70%)
-        run: pnpm run test:ci
-
-  e2e-critical-flows:
-    name: Playwright Critical E2E Test Suite
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Codebase
-        uses: actions/checkout@v7
-
-      - name: Setup Node.js 22
-        uses: actions/setup-node@v7
-        with:
-          node-version: 22
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v6
-
-      - name: Install Node Dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Generate local HTTPS certificate
-        run: >-
-          openssl req -x509 -newkey rsa:2048 -nodes -days 1 -subj "/CN=localhost"
-          -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
-          -keyout certs/localhost.key -out certs/localhost.crt
-
-      - name: Install Playwright Browsers with System Dependencies
-        run: pnpm exec playwright install --with-deps chromium
-
-      - name: Run Playwright E2E Tests
-        run: pnpm exec playwright test e2e/inventory.spec.ts e2e/invoicing.spec.ts e2e/payments.spec.ts e2e/layout-full-audit.spec.ts --project=chromium
-
-      - name: Upload Playwright Report on Failure
-        if: failure()
-        uses: actions/upload-artifact@v7
-        with:
-          name: playwright-report
-          path: playwright-report/
-          retention-days: 15
-
   security-audit:
     name: NPM Dependency Security Audit
     runs-on: ubuntu-latest

@@ -4,6 +4,17 @@ import { resolve } from 'node:path';
 
 const shards = Number.parseInt(process.env.VITEST_SHARDS ?? '4', 10);
 const maxWorkers = process.env.VITEST_MAX_WORKERS ?? '1';
+// CI runs one shard per matrix job (--shard-only=N) and a final job that only merges the reports (--merge-only):
+// with no flag the script runs every shard in sequence and merges them, as before.
+const args = process.argv.slice(2);
+const mergeOnly = args.includes('--merge-only');
+const shardOnlyArg = args.find((arg) => arg.startsWith('--shard-only='));
+const shardOnly = shardOnlyArg ? Number.parseInt(shardOnlyArg.split('=')[1], 10) : null;
+const shardsToRun = mergeOnly
+  ? []
+  : shardOnly !== null
+    ? [shardOnly]
+    : Array.from({ length: shards }, (_, idx) => idx + 1);
 const thresholds = {
   lines: 70,
   functions: 60,
@@ -14,7 +25,7 @@ const thresholds = {
 const coverageRoot = resolve('coverage');
 const vitestEntry = resolve('node_modules/vitest/vitest.mjs');
 
-for (let i = 1; i <= shards; i += 1) {
+for (const i of shardsToRun) {
   const shardDir = resolve(coverageRoot, `shard-${i}`);
   rmSync(shardDir, { recursive: true, force: true });
 }
@@ -24,7 +35,7 @@ const nodeOptions = existingNodeOptions.includes('--max-old-space-size')
   ? existingNodeOptions
   : `${existingNodeOptions} --max-old-space-size=4096`.trim();
 
-for (let i = 1; i <= shards; i += 1) {
+for (const i of shardsToRun) {
   console.log(`\n=== Running Vitest shard ${i}/${shards} (maxWorkers=${maxWorkers}) ===`);
   const shardDir = `coverage/shard-${i}`;
   const result = spawnSync(
@@ -61,6 +72,11 @@ for (let i = 1; i <= shards; i += 1) {
     console.error(`Vitest shard ${i}/${shards} failed with exit code ${result.status ?? 1}.`);
     process.exit(result.status ?? 1);
   }
+}
+
+if (shardOnly !== null) {
+  console.log(`\nShard ${shardOnly}/${shards} done: coverage report in coverage/shard-${shardOnly}.`);
+  process.exit(0);
 }
 
 const merged = {};
