@@ -1,0 +1,283 @@
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  margin-bottom: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  min-width: 160px;
+  gap: 4px;
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.kpi {
+  border: 1px solid var(--ant-color-border-secondary, #f0f0f0);
+  border-radius: 8px;
+  padding: 16px;
+  background: var(--ant-color-bg-container, #fff);
+
+  .kpi-label {
+    opacity: 0.7;
+    font-size: 13px;
+  }
+
+  .kpi-value {
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &.warn .kpi-value {
+    color: #d48806;
+  }
+
+  &.alert .kpi-value {
+    color: #cf1322;
+  }
+}
+
+.feedback {
+  margin-bottom: 12px;
+}
+
+.num {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.muted {
+  display: block;
+  font-weight: normal;
+  opacity: 0.65;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.form-grid .field {
+  min-width: 0;
+}
+
+.section-title {
+  margin: 20px 0 8px;
+  font-weight: 600;
+}
+
+.row-actions {
+  white-space: nowrap;
+
+  button + button {
+    margin-left: 6px;
+  }
+}
+
+.actions-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 16px;
+}
+
+.notice {
+  margin-bottom: 12px;
+}
+
+.chain-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  align-items: center;
+  margin-bottom: 16px;
+
+  .spacer {
+    flex: 1;
+  }
+}
+
+/* Contract total split into held deposits, invoiced advances and residual balance */
+.progress-bar {
+  display: flex;
+  height: 22px;
+  overflow: hidden;
+  border-radius: 6px;
+  background: var(--ant-color-fill-tertiary, #f0f0f0);
+
+  .segment {
+    min-width: 0;
+    transition: width 0.2s ease;
+  }
+
+  .deposits {
+    background: #722ed1;
+  }
+
+  .advances {
+    background: #1677ff;
+  }
+
+  .residual {
+    background: #faad14;
+  }
+}
+
+.progress-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  margin: 8px 0 16px;
+  font-size: 13px;
+
+  .dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    margin-right: 6px;
+    border-radius: 50%;
+  }
+
+  .deposits {
+    background: #722ed1;
+  }
+
+  .advances {
+    background: #1677ff;
+  }
+
+  .residual {
+    background: #faad14;
+  }
+}
+
+.timeline-scroll {
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.timeline {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    position: relative;
+    flex: 0 0 190px;
+    border: 1px solid var(--ant-color-border-secondary, #f0f0f0);
+    border-radius: 8px;
+    padding: 10px 12px;
+    background: var(--ant-color-bg-container, #fff);
+  }
+
+  li + li::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: -12px;
+    width: 12px;
+    border-top: 2px solid var(--ant-color-border, #d9d9d9);
+  }
+
+  .step {
+    font-weight: 600;
+  }
+}
+
+.preview-box {
+  border: 1px dashed var(--ant-color-border, #d9d9d9);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 12px 0;
+
+  dl {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 4px 16px;
+    margin: 0;
+  }
+
+  dd {
+    margin: 0;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .total {
+    font-weight: 600;
+  }
+}
+
+.check {
+  &.ok {
+    color: #389e0d;
+  }
+
+  &.ko {
+    color: #cf1322;
+    font-weight: 600;
+  }
+}
+
+.negative {
+  color: #cf1322;
+}
+
+.milestone-row {
+  display: grid;
+  grid-template-columns: minmax(150px, 2fr) minmax(150px, 2fr) minmax(130px, 1.5fr) minmax(
+      100px,
+      1fr
+    ) minmax(160px, 2fr) minmax(130px, 1.5fr) auto;
+  gap: 8px;
+  align-items: end;
+  margin-bottom: 8px;
+}
+
+.choice-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin: 8px 0 16px;
+}
+
+.choice {
+  border: 1px solid var(--ant-color-border, #d9d9d9);
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+
+  &.selected {
+    border-color: #1677ff;
+    box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.15);
+  }
+
+  .choice-title {
+    font-weight: 600;
+  }
+}
+
+.wizard-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.matrix-scroll {
+  overflow-x: auto;
+}
