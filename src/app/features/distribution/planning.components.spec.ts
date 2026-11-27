@@ -25,7 +25,7 @@ const proposal = (id: string, status: string, type = 'replenishment') => ({
   transfer_order_id: null,
   calculation: {
     policy: 'min_max',
-    trigger_reason: 'Below the reorder point',
+    trigger_reason: 'below_reorder_point',
     on_hand: 4,
     in_transit_inbound: 0,
     reserved: 1,
@@ -34,7 +34,10 @@ const proposal = (id: string, status: string, type = 'replenishment') => ({
     max_stock: 30,
     projected_demand: 12,
     net_position: -3,
-    steps: [{ label: 'Rounded to the carton', value: 24 }],
+    steps: [
+      { label: 'on_hand', value: 4 },
+      { label: 'rounded_quantity', value: 24 },
+    ],
   },
   generated_at: '2028-03-01T08:00:00Z',
   warehouse: ref('POS'),
@@ -134,7 +137,9 @@ describe('ProposalsComponent', () => {
     const labels = component.calcRows().map((row) => row.label);
     expect(labels).toContain('distribution.calc.onHand');
     expect(labels).toContain('distribution.calc.projectedDemand');
-    expect(labels).toContain('Rounded to the carton');
+    expect(labels).toContain('distribution.calc.step.rounded_quantity');
+    // The engine steps that repeat the stock position rows are not listed twice.
+    expect(labels).not.toContain('distribution.calc.step.on_hand');
   });
 });
 

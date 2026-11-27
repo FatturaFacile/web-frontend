@@ -32,6 +32,17 @@ import {
 import { ProposalsStore } from './proposals.store';
 
 /** Workbench of replenishment and balancing proposals: calculation drawer, quantity adjustment and bulk approval into transfers. */
+/** Engine steps already shown as the stock position rows of the calculation. */
+const POSITION_STEPS: ReadonlySet<string> = new Set([
+  'on_hand',
+  'in_transit_inbound',
+  'projected_demand',
+  'net_position',
+  'safety_stock',
+  'reorder_point',
+  'max_stock',
+]);
+
 @Component({
   selector: 'app-dst-proposals',
   imports: [
@@ -344,7 +355,9 @@ import { ProposalsStore } from './proposals.store';
             <nz-alert
               nzType="info"
               nzShowIcon
-              [nzMessage]="proposal.calculation.trigger_reason"
+              [nzMessage]="
+                'distribution.calc.reason.' + proposal.calculation.trigger_reason | translate
+              "
             ></nz-alert>
           }
           <nz-table #steps nzSize="small" [nzData]="calcRows()" [nzShowPagination]="false">
@@ -415,7 +428,12 @@ export class ProposalsComponent implements OnInit {
           label: this.i18n.instant(`distribution.calc.${key}`),
           value: formatQuantity(value),
         })),
-      ...calc.steps.map((step) => ({ label: step.label, value: String(step.value) })),
+      ...calc.steps
+        .filter((step) => !POSITION_STEPS.has(step.label))
+        .map((step) => ({
+          label: this.i18n.instant(`distribution.calc.step.${step.label}`),
+          value: formatQuantity(step.value),
+        })),
     ];
   });
 
