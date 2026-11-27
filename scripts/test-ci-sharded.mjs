@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node
 import { resolve } from 'node:path';
 
 const shards = Number.parseInt(process.env.VITEST_SHARDS ?? '4', 10);
-const maxWorkers = process.env.VITEST_MAX_WORKERS ?? '2';
+const maxWorkers = process.env.VITEST_MAX_WORKERS ?? '1';
 const thresholds = {
   lines: 70,
   functions: 60,
