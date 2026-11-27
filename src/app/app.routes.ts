@@ -778,6 +778,21 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'swiss-ebill',
+    canActivate: [
+      authGuard,
+      menuEnabledGuard,
+      featureFlagGuard('swiss_ebill'),
+      moduleGuard('swiss_ebill'),
+    ],
+    data: {
+      breadcrumb: 'NAV.SWISS_EBILL',
+      title: 'PAGE_TITLE.SWISS_EBILL_DASHBOARD',
+    },
+    loadChildren: () =>
+      import('./features/swiss-ebill/swiss-ebill.routes').then((m) => m.SWISS_EBILL_ROUTES),
+  },
+  {
     path: 'franchise-network',
     canActivate: [
       authGuard,

@@ -150,6 +150,7 @@ export * from './gdo-trade-terms.model';
 export * from './statutory-financials.model';
 export * from './passenger-transport.model';
 export * from './customer-satisfaction.model';
+export * from './swiss-ebill.model';
 export * from './audit-ledger.model';
 export * from './franchise-network.model';
 export * from './corporate-conventions.model';

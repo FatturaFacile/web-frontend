@@ -1,3 +1,4 @@
+import { EbillChannelType, EbillParticipantStatus } from './swiss-ebill.model';
 import { QueryFilterParams } from './api.models';
 import { HierarchyType } from './customer-360.model';
 
@@ -29,6 +30,12 @@ export interface ContactResource {
   vat_number: string | null;
   fiscal_code: string | null;
   uid_number: string | null;
+  /** Swiss eBill enrollment (Mod 025), read-only: changed through the participant directory. */
+  ebill_recipient_id?: string | null;
+  ebill_status?: EbillParticipantStatus;
+  ebill_channel_type?: EbillChannelType | null;
+  ebill_verified_at?: string | null;
+  ebill_opt_in_preferred?: boolean;
   eori_number?: string | null;
   default_incoterm?: string | null;
   sdi_code: string | null;

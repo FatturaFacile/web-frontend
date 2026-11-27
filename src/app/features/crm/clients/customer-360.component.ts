@@ -3,6 +3,9 @@ import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import {
+  EbillChannelType,
+  EbillCustomerData,
+  EbillParticipantStatus,
   I18nService,
   isFeatureFlagEnabled,
   OpenItem,
@@ -26,6 +29,9 @@ import { Customer360HierarchyComponent } from './customer-360/customer-360-hiera
 import { Customer360InteractionsComponent } from './customer-360/customer-360-interactions.component';
 import { Customer360LifecycleComponent } from './customer-360/customer-360-lifecycle.component';
 import { Customer360PersonsComponent } from './customer-360/customer-360-persons.component';
+import { EbillBadgeComponent } from '../../swiss-ebill/ebill-badge.component';
+import { EbillCustomerCardComponent } from '../../swiss-ebill/ebill-customer-card.component';
+import { SWISS_EBILL_MODULE } from '../../swiss-ebill/swiss-ebill.util';
 import { CustomerDunningComponent } from '../../debt-collection/customer-dunning.component';
 import { RecordHistoryTabComponent } from '../../settings/pages/audit/record-history-tab.component';
 
@@ -42,6 +48,8 @@ interface TimelineEntry {
   selector: 'app-crm-customer-360',
   imports: [
     DatePipe,
+    EbillBadgeComponent,
+    EbillCustomerCardComponent,
     RouterLink,
     NzButtonModule,
     NzCardModule,
@@ -64,6 +72,9 @@ interface TimelineEntry {
   template: `
     <app-page-header [title]="name()" [subtitle]="label('CRM.CUSTOMER360.SUBTITLE')" />
     <a nz-button nzType="link" routerLink="/crm/clients">{{ label('CRM.CUSTOMER360.BACK') }}</a>
+    @if (showEbill && !loading()) {
+      <app-ebill-badge [participant]="ebill().ebill_status" [channel]="ebill().ebill_channel_type" />
+    }
 
     @if (loading()) {
       <nz-skeleton [nzActive]="true" />
@@ -99,6 +110,15 @@ interface TimelineEntry {
           }}</nz-descriptions-item>
         </nz-descriptions>
       </nz-card>
+
+      @if (showEbill) {
+        <app-ebill-customer-card
+          class="c360-card"
+          [customerId]="id"
+          [customer]="ebill()"
+          (updated)="contact.set({ ...contact(), ...$event })"
+        />
+      }
 
       <nz-card [nzTitle]="label('CRM.CUSTOMER360.OPEN_ITEMS')" class="c360-card">
         @for (item of openItems(); track item.invoice_id) {
@@ -294,6 +314,8 @@ export class Customer360Component {
   protected readonly showDunning =
     inject(PermissionsService).canRead('debt_collection') &&
     isFeatureFlagEnabled('debt_collection');
+  /** The eBill card shows to members who may read the Swiss eBill module. */
+  protected readonly showEbill = inject(PermissionsService).canRead(SWISS_EBILL_MODULE);
   private readonly destroyRef = inject(DestroyRef);
   protected readonly id = inject(ActivatedRoute).snapshot.paramMap.get('id') ?? '';
 
@@ -316,6 +338,18 @@ export class Customer360Component {
     () => (this.receivables()['open_items'] ?? []) as OpenItem[],
   );
   protected readonly name = computed(() => this.str(this.contact()['name']) || '…');
+  /** The eBill columns of the customer, as the overview delivered them. */
+  protected readonly ebill = computed<EbillCustomerData>(() => {
+    const c = this.contact();
+    return {
+      id: this.id,
+      ebill_recipient_id: this.str(c['ebill_recipient_id']) || null,
+      ebill_status: (this.str(c['ebill_status']) || 'unknown') as EbillParticipantStatus,
+      ebill_channel_type: (this.str(c['ebill_channel_type']) || null) as EbillChannelType | null,
+      ebill_verified_at: this.str(c['ebill_verified_at']) || null,
+      ebill_opt_in_preferred: c['ebill_opt_in_preferred'] === true,
+    };
+  });
   protected readonly taxId = computed(() => {
     const c = this.contact();
     return this.str(c['vat_number']) || this.str(c['fiscal_code']) || this.str(c['uid_number']);

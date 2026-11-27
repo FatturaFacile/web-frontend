@@ -247,6 +247,8 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/customer-satisfaction/recovery',
   '/customer-satisfaction/templates',
   '/customer-satisfaction/dispatches',
+  '/swiss-ebill/dashboard',
+  '/swiss-ebill/settings',
   '/franchise-network/command',
   '/franchise-network/stores',
   '/franchise-network/agreements',

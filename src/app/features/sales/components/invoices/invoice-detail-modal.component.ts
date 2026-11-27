@@ -7,7 +7,9 @@ import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { catchError, map, of } from 'rxjs';
-import { AuthStore, CatalogApiService, DocumentEmailRecord, InvoiceApiService, InvoiceDetailResource } from '@core';
+import { AuthStore, CatalogApiService, DocumentEmailRecord, InvoiceApiService, InvoiceDetailResource, PermissionsService } from '@core';
+import { EbillInvoicePanelComponent } from '../../../swiss-ebill/ebill-invoice-panel.component';
+import { SWISS_EBILL_MODULE } from '../../../swiss-ebill/swiss-ebill.util';
 import { IconActionDirective, ModalActionsDirective, MoneyPipe, TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
 import { RecordHistoryTabComponent } from '../../../settings/pages/audit/record-history-tab.component';
 import { CrossBorderReadinessComponent } from '../../../customs/cross-border/cross-border-readiness.component';
@@ -36,6 +38,7 @@ import { InvoiceOriginDeclarationComponent, isCrossBorderInvoice } from './invoi
     InvoiceOriginDeclarationComponent,
     CrossBorderReadinessComponent,
     RecordHistoryTabComponent,
+    EbillInvoicePanelComponent,
   ],
   template: `
     <nz-modal appModalActions
@@ -123,6 +126,10 @@ import { InvoiceOriginDeclarationComponent, isCrossBorderInvoice } from './invoi
             <app-cross-border-readiness [invoiceId]="inv.id" />
             <app-invoice-origin-declaration [invoice]="inv" />
           }
+          @if (showEbill && inv.status !== 'draft') {
+            <h4 class="emails-title">{{ 'NAV.SWISS_EBILL' | translate }}</h4>
+            <app-ebill-invoice-panel [invoiceId]="inv.id" />
+          }
           <h4 class="emails-title">{{ 'SALES.INVOICES.DETAIL.EMAILS' | translate }}</h4>
           <nz-table appGridExport #emailTable [nzData]="emails()" [nzFrontPagination]="false" nzSize="small" [nzLoading]="emailsLoading()">
             <thead>
@@ -162,6 +169,8 @@ export class InvoiceDetailModalComponent {
   private readonly authStore = inject(AuthStore);
   private readonly catalogApi = inject(CatalogApiService);
   private readonly invoiceApi = inject(InvoiceApiService);
+  /** The eBill block shows to members who may read the Swiss eBill module. */
+  protected readonly showEbill = inject(PermissionsService).canRead(SWISS_EBILL_MODULE);
 
   readonly open = model(false);
   readonly invoice = input<InvoiceDetailResource | null>(null);
