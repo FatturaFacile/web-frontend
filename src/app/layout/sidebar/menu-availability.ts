@@ -366,6 +366,8 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/italian-vat/lipe',
   '/italian-vat/annual',
   '/italian-vat/cu',
+  '/italian-vat/esterometro',
+  '/esterometro',
   '/swiss-vat',
   '/swiss-vat/returns',
   '/swiss-vat/config',

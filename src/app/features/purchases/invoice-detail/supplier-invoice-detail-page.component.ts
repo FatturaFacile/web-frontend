@@ -19,6 +19,7 @@ import {
   paymentStatusColor,
 } from './supplier-invoice-detail.helpers';
 import { ForeignVatSplitBadgeComponent } from '../../foreign-vat-refund/foreign-vat-split-badge.component';
+import { SelfInvoiceClassificationBadgeComponent } from '../../esterometro/self-invoice-classification-badge.component';
 import { SupplierInvoiceDetailStore } from './supplier-invoice-detail.store';
 
 /**
@@ -34,6 +35,7 @@ import { SupplierInvoiceDetailStore } from './supplier-invoice-detail.store';
     DecimalPipe,
     DocumentFlowDrawerComponent,
     ForeignVatSplitBadgeComponent,
+    SelfInvoiceClassificationBadgeComponent,
     MoneyPipe,
     PageHeaderComponent,
     RouterLink,
@@ -166,6 +168,7 @@ import { SupplierInvoiceDetailStore } from './supplier-invoice-detail.store';
           [vatAmount]="foreignVatAmount(invoice.total_tax)"
           [description]="invoice.supplier_name ?? null"
         />
+        <app-self-invoice-classification-badge [passiveInvoiceId]="invoice.id" />
 
         <nz-tabs class="tabs">
           <nz-tab [nzTitle]="'srm.invoice.tab.lines' | translate">

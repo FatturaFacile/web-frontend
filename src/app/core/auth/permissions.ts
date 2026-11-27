@@ -777,6 +777,26 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
       ],
     },
   },
+  esterometro: {
+    read: FINANCE_READERS,
+    write: FINANCE,
+    grants: {
+      read: [
+        'esterometro.read',
+        'esterometro.view',
+        'esterometro.write',
+        'esterometro.manage',
+        'esterometro.send',
+        'esterometro.*',
+      ],
+      write: [
+        'esterometro.write',
+        'esterometro.manage',
+        'esterometro.send',
+        'esterometro.*',
+      ],
+    },
+  },
   fiduciary_portal: {
     read: [...FINANCE_READERS, 'finance_director'],
     write: [...FINANCE, 'external_fiduciary', 'finance_director'],
