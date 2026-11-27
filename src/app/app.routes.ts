@@ -991,6 +991,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'observability',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'NAV.OBSERVABILITY', title: 'PAGE_TITLE.CONNECTOR_STATUS' },
+    loadChildren: () =>
+      import('./features/observability/observability.routes').then((m) => m.OBSERVABILITY_ROUTES),
+  },
+  {
     path: 'security-center',
     canActivate: [authGuard, menuEnabledGuard, roleGuard([...SECURITY_CENTER_ROLES])],
     data: { breadcrumb: 'SECURITY_CENTER.TITLE', title: 'SECURITY_CENTER.TITLE' },

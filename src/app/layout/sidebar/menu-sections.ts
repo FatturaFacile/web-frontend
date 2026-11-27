@@ -18,6 +18,8 @@ export interface MenuItem {
     module?: string;
     permission?: string;
     roles?: readonly string[];
+    /** Only platform administrators (`is_platform_admin`) see the entry. */
+    platformAdmin?: boolean;
   }[];
 }
 
@@ -3639,6 +3641,23 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
   {
     key: 'NAV.SECTION_SYSTEM',
     items: [
+      {
+        key: 'NAV.OBSERVABILITY',
+        icon: 'fa-solid fa-heart-pulse',
+        children: [
+          {
+            key: 'NAV.CONNECTOR_STATUS',
+            route: '/observability/connectors',
+            icon: 'fa-solid fa-plug-circle-check',
+          },
+          {
+            key: 'NAV.OBSERVABILITY_PROFILER',
+            route: '/observability/profiler',
+            icon: 'fa-solid fa-gauge-high',
+            platformAdmin: true,
+          },
+        ],
+      },
       {
         key: 'SECURITY_CENTER.NAV.TITLE',
         icon: 'fa-solid fa-shield-halved',

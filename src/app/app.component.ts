@@ -10,6 +10,7 @@ import { regionOfCountry } from '@core/i18n/i18n.types';
 import { AppStore } from '@core/state/app.store';
 import { DisplayPreferencesService } from '@core/theme/display-preferences.service';
 import { ImpersonationBannerComponent } from '@core/iam/impersonation-banner.component';
+import { ConnectorStatusBannerComponent } from './features/observability/connector-status-banner.component';
 import { HeaderComponent, SidebarComponent, BreadcrumbComponent } from './layout';
 import { TranslatePipe } from '@shared/pipes/translate.pipe';
 import { SpotlightTourOverlayComponent } from './features/academy/spotlight-tour-overlay.component';
@@ -43,6 +44,7 @@ function isPublicPage(root: ActivatedRouteSnapshot): boolean {
     NzLayoutModule,
     HeaderComponent,
     ImpersonationBannerComponent,
+    ConnectorStatusBannerComponent,
     SidebarComponent,
     BreadcrumbComponent,
     GlobalSearchComponent,
