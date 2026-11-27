@@ -2,7 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuditHistoryItem, AuditLedgerApiService, TranslateService } from '@core';
 import { RecordHistoryTabComponent } from './record-history-tab.component';
 
@@ -46,12 +46,19 @@ describe('RecordHistoryTabComponent', () => {
           provide: TranslateService,
           useValue: {
             currentLanguage: signal('en'),
-            translate: (key: string) => key,
+            translate: (key: string, params?: Record<string, string | number>) => {
+              const base = key.startsWith('audit.actions.') ? `t:${key}` : key;
+              return params ? `${base}:${Object.values(params).join(',')}` : base;
+            },
             instant: (key: string) => key,
           },
         },
       ],
     });
+  });
+
+  afterEach(() => {
+    TestBed.resetTestingModule();
   });
 
   it('renders the history of the record as a timeline, newest first, with the changed fields', async () => {

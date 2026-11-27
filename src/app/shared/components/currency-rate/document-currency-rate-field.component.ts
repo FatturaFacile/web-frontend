@@ -114,7 +114,7 @@ type Resolution = { ok: true; data: ResolvedCurrencyRate } | { ok: false; error:
             inputmode="decimal"
             autocomplete="off"
             [value]="rate() ?? ''"
-            [readOnly]="readonly()"
+            [readonly]="readonly()"
             [attr.aria-invalid]="fieldError() !== null"
             [attr.aria-describedby]="id + '-help'"
             (input)="onRateInput($event)"

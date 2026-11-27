@@ -66,7 +66,7 @@ function dynamicKeys(): string[] {
 /** Every SRM key referenced by the feature files, the routes and the menu. */
 function collectedKeys(): string[] {
   const keys = new Set<string>(dynamicKeys());
-  const pattern = /srm\.[A-Za-z0-9_.]+|(?:NAV|PAGE_TITLE)\.PROCUREMENT_SRM[A-Z_]*/g;
+  const pattern = /(?<!\/)srm\.[A-Za-z0-9_.]+|(?:NAV|PAGE_TITLE)\.PROCUREMENT_SRM[A-Z_]*/g;
 
   const files = [
     ...[FEATURE_DIR, INVOICE_DETAIL_DIR].flatMap((dir) =>

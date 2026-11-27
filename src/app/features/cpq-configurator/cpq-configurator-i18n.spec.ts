@@ -10,7 +10,9 @@ import { CPQ_SYSTEM_VIOLATIONS } from './cpq-format';
 
 /** Prefixes the code completes with a value: derivedKeys() lists the full keys. */
 const DYNAMIC_PREFIXES = [
+  'CPQ_CONFIGURATOR.DRAWER',
   'CPQ_CONFIGURATOR.EFFECT',
+  'CPQ_CONFIGURATOR.ERR',
   'CPQ_CONFIGURATOR.FIELD',
   'CPQ_CONFIGURATOR.ISSUE',
   'CPQ_CONFIGURATOR.LAYER',

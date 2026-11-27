@@ -48,6 +48,7 @@ const DYNAMIC_PREFIXES = [
   'tenderManagement.enum.signatureStatus',
   'tenderManagement.enum.vaultDocType',
   'tenderManagement.enum.verificationStatus',
+  'tenderManagement.envelopeItem',
   'tenderManagement.error',
   'tenderManagement.matrix.categories',
   'tenderManagement.offer.reduction',

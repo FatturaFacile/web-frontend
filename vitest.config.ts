@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [angular()],
   test: {
     globals: true,
-    pool: 'forks',
+    pool: process.platform === 'linux' ? 'forks' : 'threads',
     // Playwright E2E specs live in tests/ and e2e/ and must not be run by Vitest
     // Agent worktrees under .claude/ hold full repo copies and must not be collected either
     exclude: [...configDefaults.exclude, 'tests/**', 'e2e/**', '.claude/**'],

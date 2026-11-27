@@ -4,7 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, provideRouter } from '@angular/router';
 import { I18nService, PermissionsService } from '@core';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { icons } from '../../../icons-provider';
 import { Customer360Component } from './customer-360.component';
 
@@ -26,6 +26,10 @@ describe('Customer360Component', () => {
       ],
     });
     http = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => {
+    TestBed.resetTestingModule();
   });
 
   it('shows the customer, its contracts and loads the repair history when an asset is opened', () => {
@@ -105,9 +109,9 @@ describe('Customer360Component', () => {
     fixture.detectChanges();
 
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('WO-9');
-    // The addresses, persons, hierarchy, consents and interaction sections load their own data.
+    // The addresses, persons, hierarchy, consents, interaction and audit history sections load their own data.
     http
-      .match((r) => /\/crm\/(contacts\/c1\/(addresses|persons|hierarchy|interactions)|consents|accounts)/.test(r.url))
+      .match((r) => /\/(crm\/(contacts\/c1\/(addresses|persons|hierarchy|interactions)|consents|accounts)|audit\/history\/Contact\/c1)/.test(r.url))
       .forEach((r) => r.error(new ProgressEvent('error')));
     http.verify();
   });

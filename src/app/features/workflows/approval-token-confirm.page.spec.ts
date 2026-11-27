@@ -2,9 +2,11 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, provideRouter } from '@angular/router';
+import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { of, throwError } from 'rxjs';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { AuthStore, WorkflowApiService, WorkflowRemoteApprovalPreview } from '@core';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { AuthStore, TranslateService, WorkflowApiService, WorkflowRemoteApprovalPreview } from '@core';
+import { icons } from '../../icons-provider';
 import { TEST_PASSWORD } from '../../../testing/credentials';
 import { ApprovalTokenConfirmPageComponent } from './approval-token-confirm.page';
 
@@ -35,6 +37,15 @@ describe('ApprovalTokenConfirmPageComponent', () => {
       imports: [ApprovalTokenConfirmPageComponent],
       providers: [
         provideRouter([]),
+        provideNzIcons(icons),
+        {
+          provide: TranslateService,
+          useValue: {
+            currentLanguage: signal('en'),
+            translate: (key: string) => key,
+            instant: (key: string) => key,
+          },
+        },
         { provide: WorkflowApiService, useValue: api },
         { provide: AuthStore, useValue: { isAuthenticated: authenticated } },
         {
@@ -60,6 +71,11 @@ describe('ApprovalTokenConfirmPageComponent', () => {
     authenticated.set(false);
     api.getRemoteApprovalPreview.mockReturnValue(of({ success: true, message: '', data: preview() }));
     api.confirmRemoteApproval.mockReturnValue(of({ message: 'ok', step_id: 's1', status: 'approved' }));
+  });
+
+  afterEach(() => {
+    fixture?.destroy();
+    TestBed.resetTestingModule();
   });
 
   it('rejects a link without token or with an unknown action', async () => {

@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { provideNzDateFnsAdapter } from 'ng-zorro-antd/core/time';
+import { en_US, provideNzI18n } from 'ng-zorro-antd/i18n';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import { icons } from '../../icons-provider';
@@ -82,6 +84,8 @@ describe('SettingsComponent', () => {
       imports: [SettingsComponent],
       providers: [
         provideNzIcons(icons),
+        provideNzI18n(en_US),
+        provideNzDateFnsAdapter(),
         { provide: SettingsApiService, useValue: mockSettingsApi },
         { provide: TranslateService, useValue: mockTranslate },
         { provide: I18nService, useValue: mockTranslate },
@@ -91,6 +95,11 @@ describe('SettingsComponent', () => {
 
     fixture = TestBed.createComponent(SettingsComponent);
     component = fixture.componentInstance;
+  });
+
+  afterEach(() => {
+    fixture?.destroy();
+    TestBed.resetTestingModule();
   });
 
   it('creates the component and loads initial tenant data', async () => {

@@ -15,7 +15,9 @@ function collectPlmKeys(): string[] {
     }
     const source = readFileSync(join(__dirname, file), 'utf8');
     for (const match of source.matchAll(/'((?:PLM|NAV|PAGE_TITLE)\.[A-Z0-9_]+)'/g)) {
-      keys.add(match[1]);
+      if (!match[1].endsWith('_')) {
+        keys.add(match[1]);
+      }
     }
   }
   return [...keys];

@@ -490,12 +490,14 @@ export class FxRevaluationWizardComponent implements OnInit {
       const response = await firstValueFrom(this.api.postRevaluation(current.id, this.postKey));
       this.alreadyPosted.set(false);
       this.run.set({ ...response.data, lines: response.data.lines ?? current.lines });
+      this.step.set(2);
       this.message.success(this.i18n.translate('FINANCE.FX_REVALUATION.MESSAGE.POSTED'));
       void this.loadHistory();
     } catch (error) {
       if (isCurrencyFailure(error, 409)) {
         // Somebody (or an earlier attempt with another key) already posted this revaluation: show its real state.
         this.alreadyPosted.set(true);
+        this.step.set(2);
         await this.refreshRun(current.id);
       } else {
         this.fail('FINANCE.FX_REVALUATION.ERROR.POST_FAILED', error);

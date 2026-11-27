@@ -1,5 +1,6 @@
+import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { GeneralLedgerApiService, ManufacturingApiService, ManufacturingProductionApiService, MfgOeeResult } from '@core';
+import { GeneralLedgerApiService, ManufacturingApiService, ManufacturingProductionApiService, MfgOeeResult, TranslateService } from '@core';
 import { provideNzDateFnsAdapter } from 'ng-zorro-antd/core/time';
 import { en_US, provideNzI18n } from 'ng-zorro-antd/i18n';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
@@ -22,12 +23,36 @@ async function settle(f: ComponentFixture<unknown>): Promise<void> {
   f.detectChanges();
 }
 
+async function settleFake(f: ComponentFixture<unknown>, ms = 0): Promise<void> {
+  f.detectChanges();
+  await vi.advanceTimersByTimeAsync(ms);
+  f.detectChanges();
+}
+
+function cleanupTestBed(f: ComponentFixture<unknown> | undefined): void {
+  f?.destroy();
+  document.querySelectorAll('.cdk-overlay-container').forEach((el) => {
+    el.innerHTML = '';
+  });
+  vi.useRealTimers();
+  TestBed.resetTestingModule();
+}
+
 function setup(api: Record<string, unknown>): void {
+  TestBed.resetTestingModule();
   TestBed.configureTestingModule({
     providers: [
       provideNzIcons(icons),
       provideNzI18n(en_US),
       provideNzDateFnsAdapter(),
+      {
+        provide: TranslateService,
+        useValue: {
+          currentLanguage: signal('en'),
+          translate: (key: string) => key,
+          instant: (key: string) => key,
+        },
+      },
       { provide: ManufacturingProductionApiService, useValue: api },
       { provide: GeneralLedgerApiService, useValue: { getCostCenters: () => page([{ id: 'cc1', code: 'CC1', name: 'Turning', is_active: true }]) } },
       { provide: ManufacturingApiService, useValue: { getMfgItems: () => page([{ id: 'item-1', item_code: 'FG-1', name: 'Shaft' }]) } },
@@ -60,6 +85,8 @@ describe('WorkCentersComponent', () => {
     fixture = TestBed.createComponent(WorkCentersComponent);
     await settle(fixture);
   });
+
+  afterEach(() => cleanupTestBed(fixture));
 
   it('shows the centres as a tree with the Industria 4.0 / Transizione 5.0 badges', () => {
     expect(q(fixture, 'center-WC1')).not.toBeNull();
@@ -121,6 +148,8 @@ describe('WorkingCalendarsComponent', () => {
     fixture = TestBed.createComponent(WorkingCalendarsComponent);
     await settle(fixture);
   });
+
+  afterEach(() => cleanupTestBed(fixture));
 
   it('previews the days of the selected calendar with their type', async () => {
     q(fixture, 'cal-STD')?.click();
@@ -199,14 +228,12 @@ describe('RoutingDesignerComponent', () => {
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'Date'] });
     setup(api);
     fixture = TestBed.createComponent(RoutingDesignerComponent);
-    await settle(fixture);
+    await settleFake(fixture);
     internals().open('r1');
-    await settle(fixture);
-    await vi.advanceTimersByTimeAsync(350);
-    await settle(fixture);
+    await settleFake(fixture, 350);
   });
 
-  afterEach(() => vi.useRealTimers());
+  afterEach(() => cleanupTestBed(fixture));
 
   it('loads the operations as an ordered flow and simulates the saved routing', () => {
     expect(qa(fixture, '[data-testid="flow"] li')).toHaveLength(2);
@@ -220,7 +247,7 @@ describe('RoutingDesignerComponent', () => {
     api.calculateRouting.mockClear();
     internals().setSim({ quantity: 50 });
     internals().setSim({ overlap: false });
-    await vi.advanceTimersByTimeAsync(350);
+    await settleFake(fixture, 350);
 
     expect(api.calculateRouting).toHaveBeenCalledTimes(1);
     expect(api.calculateRouting).toHaveBeenCalledWith('r1', expect.objectContaining({ quantity: 50, include_overlap: false }));
@@ -228,7 +255,7 @@ describe('RoutingDesignerComponent', () => {
 
   it('reorders operations and saves them with renumbered sequences', async () => {
     internals().move(0, 1);
-    await settle(fixture);
+    await settleFake(fixture);
     expect(internals().draft()?.operations.map((o) => o.operation_code)).toEqual(['OP20', 'OP10']);
     expect(q(fixture, 'sim-dirty')).not.toBeNull();
 
@@ -240,7 +267,7 @@ describe('RoutingDesignerComponent', () => {
 
   it('clones the routing as a new revision', async () => {
     internals().clone();
-    await settle(fixture);
+    await settleFake(fixture);
 
     expect(api.cloneRoutingRevision).toHaveBeenCalledWith('r1', undefined);
     expect(api.getRouting).toHaveBeenCalledTimes(1);
@@ -283,6 +310,8 @@ describe('OeeDashboardComponent', () => {
     fixture = TestBed.createComponent(OeeDashboardComponent);
     await settle(fixture);
   });
+
+  afterEach(() => cleanupTestBed(fixture));
 
   it('queries the summary and the time series of the first work centre', () => {
     expect(api.oeeSummary).toHaveBeenCalledWith(expect.objectContaining({ work_center_id: 'w1', granularity: 'daily' }));

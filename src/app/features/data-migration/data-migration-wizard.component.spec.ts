@@ -1,7 +1,6 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { I18nService } from '@core';
 import { environment } from '@env';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -13,7 +12,7 @@ describe('DataMigrationWizardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [DataMigrationWizardComponent, NoopAnimationsModule],
+      imports: [DataMigrationWizardComponent],
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -69,6 +68,8 @@ describe('DataMigrationWizardComponent', () => {
 
   afterEach(() => {
     httpMock.verify();
+    fixture?.destroy();
+    TestBed.resetTestingModule();
   });
 
   it('renders 5-step wizard and backend-seeded connector keys', () => {

@@ -1,8 +1,10 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideNzDateFnsAdapter } from 'ng-zorro-antd/core/time';
+import { en_US, provideNzI18n } from 'ng-zorro-antd/i18n';
 import { of, throwError } from 'rxjs';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuditEntry, AuditLedgerApiService, TranslateService } from '@core';
 import { AuditLogPageComponent } from './audit-log-page.component';
 
@@ -65,17 +67,23 @@ describe('AuditLogPageComponent', () => {
     api.integrity.mockReturnValue(of({ success: true, message: '', data: integrity }));
     TestBed.configureTestingModule({
       providers: [
+        provideNzI18n(en_US),
+        provideNzDateFnsAdapter(),
         { provide: AuditLedgerApiService, useValue: api },
         {
           provide: TranslateService,
           useValue: {
             currentLanguage: signal('en'),
-            translate: (key: string) => key,
+            translate: (key: string) => (key.startsWith('audit.actions.') ? `t:${key}` : key),
             instant: (key: string) => key,
           },
         },
       ],
     });
+  });
+
+  afterEach(() => {
+    TestBed.resetTestingModule();
   });
 
   it('lists the entries of the API with the translated action and the actor', async () => {
