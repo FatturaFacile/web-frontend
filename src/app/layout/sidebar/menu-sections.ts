@@ -1703,6 +1703,31 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         ],
       },
       {
+        key: 'NAV.SUBCONTRACTING',
+        icon: 'fa-solid fa-people-carry-box',
+        module: 'subcontracting',
+        children: [
+          {
+            key: 'NAV.SUBCONTRACTING_DASHBOARD',
+            route: '/subcontracting/dashboard',
+            icon: 'fa-solid fa-warehouse',
+            module: 'subcontracting',
+          },
+          {
+            key: 'NAV.SUBCONTRACTING_ORDERS',
+            route: '/subcontracting/orders',
+            icon: 'fa-solid fa-clipboard-list',
+            module: 'subcontracting',
+          },
+          {
+            key: 'NAV.SUBCONTRACTING_REGISTER',
+            route: '/subcontracting/register',
+            icon: 'fa-solid fa-book',
+            module: 'subcontracting',
+          },
+        ],
+      },
+      {
         key: 'NAV.CORPORATE_CONVENTIONS',
         icon: 'fa-solid fa-handshake',
         module: 'corporate_conventions',

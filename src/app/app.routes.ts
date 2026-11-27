@@ -778,6 +778,21 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'subcontracting',
+    canActivate: [
+      authGuard,
+      menuEnabledGuard,
+      featureFlagGuard('subcontracting'),
+      moduleGuard('subcontracting'),
+    ],
+    data: {
+      breadcrumb: 'NAV.SUBCONTRACTING',
+      title: 'PAGE_TITLE.SUBCONTRACTING_DASHBOARD',
+    },
+    loadChildren: () =>
+      import('./features/subcontracting/subcontracting.routes').then((m) => m.SUBCONTRACTING_ROUTES),
+  },
+  {
     path: 'franchise-network',
     canActivate: [
       authGuard,

@@ -326,6 +326,38 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
       write: ['customer_satisfaction.write', 'customer_satisfaction.*'],
     },
   },
+  // Subcontracting (Mod 065): finance reads and exports the Art. 53 register; production, procurement and operations plan, dispatch
+  // and receive. The fine-grained subcontracting.* permissions refine the actions (see SubcontractingPolicy in the API).
+  subcontracting: {
+    read: [
+      ...FINANCE_READERS,
+      'production',
+      'procurement_manager',
+      'operations_manager',
+      'sales_manager',
+      'technician',
+    ],
+    write: [...FINANCE, 'production', 'procurement_manager', 'operations_manager'],
+    grants: {
+      read: [
+        'subcontracting.view',
+        'subcontracting.read',
+        'subcontracting.write',
+        'subcontracting.create',
+        'subcontracting.dispatch',
+        'subcontracting.receive',
+        'subcontracting.ledger.export',
+        'subcontracting.*',
+      ],
+      write: [
+        'subcontracting.write',
+        'subcontracting.create',
+        'subcontracting.dispatch',
+        'subcontracting.receive',
+        'subcontracting.*',
+      ],
+    },
+  },
   passenger_transport_finance: {
     read: FINANCE_READERS,
     write: FINANCE,
