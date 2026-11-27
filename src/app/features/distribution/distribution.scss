@@ -1,0 +1,134 @@
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  margin-bottom: 16px;
+
+  .spacer {
+    flex: 1;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  min-width: 160px;
+  gap: 4px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  .actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.main-card {
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.feedback {
+  margin-bottom: 12px;
+}
+
+.num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.muted {
+  color: var(--ant-color-text-secondary, #6b7280);
+  display: block;
+}
+
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.line-grid {
+  display: grid;
+  grid-template-columns:
+    minmax(180px, 2fr) minmax(110px, 1fr) minmax(110px, 1fr) minmax(130px, 1fr)
+    auto;
+  gap: 8px;
+  align-items: end;
+  margin-bottom: 8px;
+}
+
+.availability {
+  font-size: 12px;
+  color: var(--ant-color-text-secondary, #6b7280);
+}
+
+/* The DRP matrix: one row per measure, one column per time bucket; a bucket under the safety stock is highlighted. */
+.drp-scroll {
+  overflow-x: auto;
+}
+
+.drp-table {
+  border-collapse: collapse;
+  min-width: 100%;
+
+  th,
+  td {
+    border: 1px solid var(--ant-color-border-secondary, #f0f0f0);
+    padding: 4px 8px;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  th[scope='row'] {
+    text-align: left;
+    position: sticky;
+    left: 0;
+    background: var(--ant-color-bg-container, #fff);
+  }
+
+  .stockout {
+    background: #fff1f0;
+    color: #cf1322;
+    font-weight: 600;
+  }
+
+  .release {
+    background: #e6f4ff;
+    font-weight: 600;
+  }
+}
+
+.atp-low {
+  color: #cf1322;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .toolbar .field {
+    min-width: 100%;
+  }
+
+  .line-grid {
+    grid-template-columns: 1fr;
+  }
+}
