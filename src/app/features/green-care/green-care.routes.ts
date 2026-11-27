@@ -4,6 +4,11 @@ import { Routes } from '@angular/router';
 export const GREEN_CARE_ROUTES: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
   {
+    path: 'crews',
+    data: { breadcrumb: 'NAV.GREEN_CARE_CREWS', title: 'PAGE_TITLE.GREEN_CARE_CREWS' },
+    loadComponent: () => import('./green-care-crews.component').then((m) => m.GreenCareCrewsComponent),
+  },
+  {
     path: 'dashboard',
     data: { breadcrumb: 'NAV.GREEN_CARE_DASHBOARD', title: 'PAGE_TITLE.GREEN_CARE_DASHBOARD' },
     loadComponent: () => import('./green-care-dashboard.component').then((m) => m.GreenCareDashboardComponent),

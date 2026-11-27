@@ -10,6 +10,7 @@ import {
   GcContractFilters,
   GcContractPayload,
   GcCrew,
+  GcCrewPayload,
   GcDashboard,
   GcEnvelope,
   GcInterventionPayload,
@@ -115,11 +116,11 @@ export class GreenCareApiService {
     return this.http.get<GcEnvelope<GcCrew[]>>(`${this.base}/crews`, { params: toHttpParams({ per_page: 100 }) });
   }
 
-  createCrew(payload: Partial<GcCrew>): Envelope<GcCrew> {
+  createCrew(payload: GcCrewPayload): Envelope<GcCrew> {
     return this.http.post<GcEnvelope<GcCrew>>(`${this.base}/crews`, payload);
   }
 
-  updateCrew(id: string, payload: Partial<GcCrew>): Envelope<GcCrew> {
+  updateCrew(id: string, payload: GcCrewPayload): Envelope<GcCrew> {
     return this.http.put<GcEnvelope<GcCrew>>(`${this.base}/crews/${id}`, payload);
   }
 

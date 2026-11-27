@@ -9,6 +9,7 @@ import {
   GcContractFilters,
   GcContractPayload,
   GcCrew,
+  GcCrewPayload,
   GcDashboard,
   GcInterventionPayload,
   GcLicense,
@@ -168,7 +169,7 @@ export const GreenCareCrewStore = signalStore(
         patchState(store, { crews: [], loaded: false });
       }
     },
-    saveCrew: (id: string | null, payload: Partial<GcCrew>): Promise<GcOutcome> =>
+    saveCrew: (id: string | null, payload: GcCrewPayload): Promise<GcOutcome> =>
       attempt(async () => {
         await firstValueFrom(id === null ? api.createCrew(payload) : api.updateCrew(id, payload));
         patchState(store, { crews: (await firstValueFrom(api.listCrews())).data, loaded: true });

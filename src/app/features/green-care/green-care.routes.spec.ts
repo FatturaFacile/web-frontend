@@ -5,6 +5,7 @@ describe('green care routes', () => {
   it('opens on the dashboard and declares every page with a breadcrumb, a title key and a lazy component', () => {
     expect(GREEN_CARE_ROUTES.map((route) => route.path)).toEqual([
       '',
+      'crews',
       'dashboard',
       'sites',
       'contracts',

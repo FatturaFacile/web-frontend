@@ -74,6 +74,7 @@ export const GC_ERROR_CODES = [
   'registration_number_invalid',
   'contract_not_active',
   'contract_not_billable',
+  'contract_invalid_transition',
   'nothing_to_bill',
   'stop_already_completed',
   'route_locked',
@@ -605,4 +606,17 @@ export interface GcWasteSummary {
   billable_cost: number;
   by_waste_code: { waste_code: string; kg: number; slips: number }[];
   by_facility: { compost_facility_id: string | null; name: string | null; kg: number; slips: number }[];
+}
+
+export interface GcCrewPayload {
+  name: string;
+  code: string | null;
+  default_vehicle_plate: string | null;
+  default_trailer_plate: string | null;
+  equipment: GcEquipment;
+  daily_capacity_minutes: number;
+  depot_latitude: number | null;
+  depot_longitude: number | null;
+  is_active: boolean;
+  members: { id?: string; name: string; role: string | null; hourly_rate: number | null }[];
 }

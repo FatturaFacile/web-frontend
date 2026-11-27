@@ -452,7 +452,7 @@ interface InterventionForm {
             @for (item of result.unassigned; track item.contract_id) {
               <div>
                 <strong>{{ item.site_name }}</strong>
-                <span class="hint"> · {{ item.reason }}</span>
+                <span class="hint"> · {{ 'greenCare.unassignedReason.' + item.reason | translate }}</span>
               </div>
             }
           }

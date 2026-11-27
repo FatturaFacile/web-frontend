@@ -271,6 +271,7 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/green-care/sites',
   '/green-care/contracts',
   '/green-care/planner',
+  '/green-care/crews',
   '/green-care/treatments',
   '/green-care/waste',
   '/franchise-network/command',

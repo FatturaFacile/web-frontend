@@ -1813,6 +1813,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             module: 'green_care',
           },
           {
+            key: 'NAV.GREEN_CARE_CREWS',
+            route: '/green-care/crews',
+            icon: 'fa-solid fa-people-group',
+            module: 'green_care',
+          },
+          {
             key: 'NAV.GREEN_CARE_TREATMENTS',
             route: '/green-care/treatments',
             icon: 'fa-solid fa-flask',
