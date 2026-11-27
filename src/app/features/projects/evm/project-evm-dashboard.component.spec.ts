@@ -1,9 +1,11 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting, TestRequest } from '@angular/common/http/testing';
-import { TestBed } from '@angular/core/testing';
+import { signal } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
+import { TranslateService } from '@core';
 import { BreakdownRow, WbsBreakdown } from './project-evm.models';
 import { ProjectEvmDashboardComponent } from './project-evm-dashboard.component';
 
@@ -74,6 +76,8 @@ function answer(request: TestRequest): void {
   }
 }
 
+let activeFixture: ComponentFixture<ProjectEvmDashboardComponent> | null = null;
+
 async function render() {
   TestBed.resetTestingModule();
   await TestBed.configureTestingModule({
@@ -83,10 +87,19 @@ async function render() {
       provideHttpClientTesting(),
       provideRouter([]),
       { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ id: 'p1' })) } },
+      {
+        provide: TranslateService,
+        useValue: {
+          currentLanguage: signal('en'),
+          translate: (key: string) => key,
+          instant: (key: string) => key,
+        },
+      },
     ],
   }).compileComponents();
 
   const fixture = TestBed.createComponent(ProjectEvmDashboardComponent);
+  activeFixture = fixture;
   const http = TestBed.inject(HttpTestingController);
   const urls: string[] = [];
 
@@ -107,6 +120,12 @@ async function render() {
 }
 
 describe('ProjectEvmDashboardComponent', () => {
+  afterEach(() => {
+    activeFixture?.destroy();
+    activeFixture = null;
+    TestBed.resetTestingModule();
+  });
+
   it('loads the breakdown, the waterfall and the S-curve of the project', async () => {
     const { urls } = await render();
 

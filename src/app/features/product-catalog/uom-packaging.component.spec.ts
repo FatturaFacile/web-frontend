@@ -142,7 +142,9 @@ describe('UomPackagingComponent', () => {
 
     expect(api['convert']).toHaveBeenCalledWith('tape', '48', 'BASE');
     const rows = Array.from(root.querySelectorAll('tr.conversion-row')).map((row) =>
-      row.textContent?.replace(/\s+/g, ' ').trim(),
+      Array.from(row.querySelectorAll('td'))
+        .map((cell) => cell.textContent?.trim() ?? '')
+        .join(' '),
     );
     expect(rows).toEqual(['BASE 48', 'PACK6 8', 'CARTON24 2']);
     expect(root.querySelector('.split')?.textContent).toContain('2 × CARTON24');

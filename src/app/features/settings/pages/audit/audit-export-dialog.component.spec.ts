@@ -1,6 +1,8 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { provideNzDateFnsAdapter } from 'ng-zorro-antd/core/time';
+import { en_US, provideNzI18n } from 'ng-zorro-antd/i18n';
 import { of, throwError } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuditExport, AuditLedgerApiService, TranslateService } from '@core';
@@ -53,6 +55,8 @@ describe('AuditExportDialogComponent', () => {
     Object.values(api).forEach((mock) => mock.mockReset());
     TestBed.configureTestingModule({
       providers: [
+        provideNzI18n(en_US),
+        provideNzDateFnsAdapter(),
         { provide: AuditLedgerApiService, useValue: api },
         {
           provide: TranslateService,
@@ -66,7 +70,10 @@ describe('AuditExportDialogComponent', () => {
     });
   });
 
-  afterEach(() => vi.useRealTimers());
+  afterEach(() => {
+    vi.useRealTimers();
+    document.querySelectorAll('.cdk-overlay-container').forEach((el) => (el.innerHTML = ''));
+  });
 
   it('cannot submit without a range or with a window over 366 days', () => {
     const { dialog } = setup();
@@ -100,7 +107,7 @@ describe('AuditExportDialogComponent', () => {
     expect(key.length).toBeGreaterThan(10);
     expect(api.getExport).toHaveBeenCalledWith('x1');
     expect(dialog.current()?.status).toBe('completed');
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('audit.export.status.completed');
+    expect(document.body.textContent).toContain('audit.export.status.completed');
   });
 
   it('keeps polling while the export is running', async () => {
