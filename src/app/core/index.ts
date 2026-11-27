@@ -140,6 +140,7 @@ export * from './api/statutory-financials-api.service';
 export * from './api/passenger-transport-api.service';
 export * from './api/customer-satisfaction-api.service';
 export * from './api/subcontracting-api.service';
+export * from './api/down-payments-api.service';
 export * from './api/swiss-ebill-api.service';
 export * from './api/audit-ledger-api.service';
 export * from './api/franchise-network-api.service';

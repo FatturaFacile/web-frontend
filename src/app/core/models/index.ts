@@ -151,6 +151,7 @@ export * from './statutory-financials.model';
 export * from './passenger-transport.model';
 export * from './customer-satisfaction.model';
 export * from './subcontracting.model';
+export * from './down-payments.model';
 export * from './swiss-ebill.model';
 export * from './audit-ledger.model';
 export * from './franchise-network.model';
