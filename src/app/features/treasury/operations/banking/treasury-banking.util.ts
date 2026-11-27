@@ -11,7 +11,12 @@ import {
 
 export const F24_SECTIONS: F24Section[] = ['erario', 'inps', 'regioni', 'imu', 'inail'];
 
-export const PAYMENT_FLOWS: PaymentFlowCode[] = ['ch_pain001_09', 'sepa_pain001_03', 'cbi_sepa_03'];
+export const PAYMENT_FLOWS: PaymentFlowCode[] = [
+  'ch_pain001_09',
+  'ch_pain001_03',
+  'sepa_pain001_03',
+  'cbi_sepa_03',
+];
 
 export const CSV_FIELDS: CsvField[] = [
   'booking_date',

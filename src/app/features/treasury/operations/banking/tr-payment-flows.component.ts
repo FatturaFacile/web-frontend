@@ -23,6 +23,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { TreasuryApiService } from '@core/api/treasury-api.service';
 import { TreasuryBankingApiService } from '@core/api/treasury-banking-api.service';
 import { BankAccountResource } from '@core/models/banking.model';
+import { CategoryPurpose, ChargeBearer } from '@core/models/iso20022.model';
 import {
   GeneratedPaymentFlow,
   PaymentFlowCode,
@@ -31,7 +32,13 @@ import {
   PaymentFlowPayload,
 } from '@core/models/treasury-banking.model';
 import { TranslatePipe, downloadBlob } from '@shared';
-import { PAYMENT_FLOWS, apiErrorMessages, toCents, toIsoDate } from './treasury-banking.util';
+import { CATEGORY_PURPOSES, CHARGE_BEARERS, splitApiErrors } from './iso-reconciliation.util';
+import {
+  PaymentLineFeedback,
+  TrPaymentLineStatusComponent,
+  feedbackFromBatchLines,
+} from './tr-payment-line-status.component';
+import { PAYMENT_FLOWS, toCents, toIsoDate } from './treasury-banking.util';
 
 const emptyLine = (): PaymentFlowLine => ({
   recipient_name: '',
@@ -64,6 +71,7 @@ const emptyLine = (): PaymentFlowLine => ({
     NzStepsModule,
     NzTableModule,
     NzTagModule,
+    TrPaymentLineStatusComponent,
     TranslatePipe,
   ],
   template: `
@@ -134,6 +142,41 @@ const emptyLine = (): PaymentFlowLine => ({
             >
               @for (code of currencies(); track code) {
                 <nz-option [nzValue]="code" [nzLabel]="code" />
+              }
+            </nz-select>
+          </label>
+        </div>
+      </div>
+
+      <div nz-row [nzGutter]="16">
+        <div nz-col [nzXs]="24" [nzMd]="8">
+          <label class="field" for="tbk-purpose">
+            <span>{{ 'treasuryIso.flows.categoryPurpose' | translate }}</span>
+            <nz-select
+              nzId="tbk-purpose"
+              nzAllowClear
+              [ngModel]="categoryPurpose()"
+              (ngModelChange)="categoryPurpose.set($event ?? null)"
+              data-testid="category-purpose"
+            >
+              @for (code of purposes; track code) {
+                <nz-option [nzValue]="code" [nzLabel]="code + ' · ' + ('treasuryIso.purpose.' + code | translate)" />
+              }
+            </nz-select>
+          </label>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="8">
+          <label class="field" for="tbk-bearer">
+            <span>{{ 'treasuryIso.flows.chargeBearer' | translate }}</span>
+            <nz-select
+              nzId="tbk-bearer"
+              nzAllowClear
+              [ngModel]="chargeBearer()"
+              (ngModelChange)="chargeBearer.set($event ?? null)"
+              data-testid="charge-bearer"
+            >
+              @for (code of bearers; track code) {
+                <nz-option [nzValue]="code" [nzLabel]="code + ' · ' + ('treasuryIso.bearer.' + code | translate)" />
               }
             </nz-select>
           </label>
@@ -232,6 +275,17 @@ const emptyLine = (): PaymentFlowLine => ({
                 </button>
               </td>
             </tr>
+            @if (lineErrors()[i]; as messages) {
+              <tr class="line-error" data-testid="line-errors">
+                <td colspan="6">
+                  <ul>
+                    @for (message of messages; track message) {
+                      <li>{{ message }}</li>
+                    }
+                  </ul>
+                </td>
+              </tr>
+            }
           }
         </tbody>
       </nz-table>
@@ -306,6 +360,12 @@ const emptyLine = (): PaymentFlowLine => ({
       />
     }
 
+    @if (batchFeedback().length > 0) {
+      <nz-card class="gap" [nzTitle]="'treasuryIso.flows.feedback' | translate" data-testid="batch-feedback">
+        <app-tr-payment-line-status [lines]="batchFeedback()" />
+      </nz-card>
+    }
+
     @if (generated(); as file) {
       <nz-card class="gap" [nzTitle]="'tbk.flows.generated' | translate" data-testid="generated">
         <div nz-row [nzGutter]="16">
@@ -367,6 +427,9 @@ const emptyLine = (): PaymentFlowLine => ({
     .add {
       margin-top: 12px;
     }
+    .line-error {
+      color: #cf1322;
+    }
     .total {
       margin-left: 16px;
     }
@@ -392,6 +455,8 @@ export class TrPaymentFlowsComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly flowCodes = PAYMENT_FLOWS;
+  protected readonly purposes = CATEGORY_PURPOSES;
+  protected readonly bearers = CHARGE_BEARERS;
   protected readonly flows = signal<PaymentFlowInfo[]>([]);
   protected readonly accounts = signal<BankAccountResource[]>([]);
   protected readonly flow = signal<PaymentFlowCode>('ch_pain001_09');
@@ -401,7 +466,12 @@ export class TrPaymentFlowsComponent implements OnInit {
   protected readonly cuc = signal('');
   protected readonly lines = signal<PaymentFlowLine[]>([emptyLine()]);
   protected readonly generated = signal<GeneratedPaymentFlow | null>(null);
+  protected readonly categoryPurpose = signal<CategoryPurpose | null>(null);
+  protected readonly chargeBearer = signal<ChargeBearer | null>(null);
   protected readonly errors = signal<string[]>([]);
+  /** 422 messages of one line (`lines.N.invoice_id`, `lines.N.end_to_end_id`), by line index. */
+  protected readonly lineErrors = signal<Record<number, string[]>>({});
+  protected readonly batchFeedback = signal<PaymentLineFeedback[]>([]);
   protected readonly loading = signal(false);
   protected readonly saving = signal(false);
   protected readonly createdBatch = signal<string | null>(null);
@@ -485,6 +555,7 @@ export class TrPaymentFlowsComponent implements OnInit {
 
     this.loading.set(true);
     this.errors.set([]);
+    this.lineErrors.set({});
     this.api
       .previewPaymentFlow(payload)
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -496,7 +567,7 @@ export class TrPaymentFlowsComponent implements OnInit {
         error: (error: unknown) => {
           this.loading.set(false);
           this.generated.set(null);
-          this.errors.set(apiErrorMessages(error));
+          this.showErrors(error);
         },
       });
   }
@@ -516,10 +587,11 @@ export class TrPaymentFlowsComponent implements OnInit {
         next: (res) => {
           this.saving.set(false);
           this.createdBatch.set(res.data.batch_reference ?? res.data.id);
+          this.batchFeedback.set(feedbackFromBatchLines(res.data.lines ?? []).filter((line) => line.reasonCode !== null));
         },
         error: (error: unknown) => {
           this.saving.set(false);
-          this.errors.set(apiErrorMessages(error));
+          this.showErrors(error);
         },
       });
   }
@@ -536,6 +608,15 @@ export class TrPaymentFlowsComponent implements OnInit {
     this.generated.set(null);
     this.createdBatch.set(null);
     this.errors.set([]);
+    this.lineErrors.set({});
+    this.batchFeedback.set([]);
+  }
+
+  private showErrors(error: unknown): void {
+    const { general, lines } = splitApiErrors(error);
+
+    this.errors.set(general);
+    this.lineErrors.set(lines);
   }
 
   private payload(): PaymentFlowPayload | null {
@@ -552,6 +633,8 @@ export class TrPaymentFlowsComponent implements OnInit {
       execution_date: toIsoDate(date),
       currency: this.currency(),
       cuc: this.info()?.requires_cuc ? this.cuc() : null,
+      category_purpose: this.categoryPurpose(),
+      charge_bearer: this.chargeBearer(),
       lines: this.lines().map((line) => ({
         ...line,
         recipient_bic: line.recipient_bic || null,

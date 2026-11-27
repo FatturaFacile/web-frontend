@@ -1,6 +1,8 @@
 /** Treasury banking workspace (#268): payment files, Modello F24, statement imports, open banking, smart reconciliation. */
 
-export type PaymentFlowCode = 'ch_pain001_09' | 'sepa_pain001_03' | 'cbi_sepa_03';
+import { PaymentBatchLine, PaymentBatchResource } from './banking.model';
+
+export type PaymentFlowCode = 'ch_pain001_09' | 'ch_pain001_03' | 'sepa_pain001_03' | 'cbi_sepa_03';
 
 export interface PaymentFlowInfo {
   flow: PaymentFlowCode;
@@ -19,6 +21,9 @@ export interface PaymentFlowLine {
   remittance_reference?: string | null;
   /** 27 digit QR reference (QRR) or ISO 11649 creditor reference (SCOR). */
   structured_creditor_ref?: string | null;
+  /** Supplier invoice paid by the line: the API refuses a second payment of the same invoice. */
+  invoice_id?: string | null;
+  end_to_end_id?: string | null;
 }
 
 export interface PaymentFlowPayload {
@@ -27,7 +32,16 @@ export interface PaymentFlowPayload {
   execution_date: string;
   currency?: string | null;
   cuc?: string | null;
+  category_purpose?: 'SALA' | 'SUPP' | 'TAXS' | 'PENS' | 'BONU' | 'TRAD' | null;
+  charge_bearer?: 'SLEV' | 'SHAR' | 'DEBT' | 'CRED' | null;
   lines: PaymentFlowLine[];
+}
+
+/** The draft batch stored from a payment flow, with its lines and their bank feedback once known. */
+export interface PaymentFlowBatch extends Pick<PaymentBatchResource, 'id' | 'batch_reference' | 'status'> {
+  category_purpose?: PaymentBatchResource['category_purpose'];
+  charge_bearer?: PaymentBatchResource['charge_bearer'];
+  lines?: PaymentBatchLine[];
 }
 
 export interface GeneratedPaymentFlow {

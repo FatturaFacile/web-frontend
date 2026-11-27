@@ -225,6 +225,57 @@
           </nz-form-control>
         </nz-form-item>
       </div>
+
+      <nz-divider [nzText]="'treasuryIso.bank.section' | translate" nzOrientation="left" />
+
+      <nz-form-item>
+        <nz-form-label>QR-IBAN</nz-form-label>
+        <nz-form-control [nzErrorTip]="errorKey(accountForm.controls.qr_iban) | translate">
+          <input nz-input formControlName="qr_iban" placeholder="CH44 3199 9123 0008 8901 2" data-testid="qr-iban" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <div class="form-row">
+        <nz-form-item>
+          <nz-form-label>QR-IID</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorKey(accountForm.controls.qr_iid) | translate">
+            <input nz-input formControlName="qr_iid" maxlength="5" inputmode="numeric" placeholder="31999" data-testid="qr-iid" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>BESR-ID</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorKey(accountForm.controls.besr_id) | translate">
+            <input nz-input formControlName="besr_id" maxlength="9" inputmode="numeric" data-testid="besr-id" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'treasuryIso.bank.painVersion' | translate }}</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="preferred_pain_version" nzAllowClear data-testid="pain-version">
+              <nz-option nzValue="03" nzLabel="pain.001.001.03" />
+              <nz-option nzValue="09" nzLabel="pain.001.001.09" />
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="form-row">
+        <nz-form-item>
+          <nz-form-label>{{ 'treasuryIso.bank.tolerance' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorKey(accountForm.controls.reconciliation_tolerance) | translate">
+            <nz-input-number class="w-full" formControlName="reconciliation_tolerance" [nzMin]="0" [nzStep]="0.05" [nzPrecision]="2" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>{{ 'treasuryIso.bank.maxFee' | translate }}</nz-form-label>
+          <nz-form-control [nzErrorTip]="errorKey(accountForm.controls.reconciliation_max_fee) | translate">
+            <nz-input-number class="w-full" formControlName="reconciliation_max_fee" [nzMin]="0" [nzStep]="0.05" [nzPrecision]="2" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
     </form>
   </ng-container>
 </nz-modal>
