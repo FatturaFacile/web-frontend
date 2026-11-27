@@ -840,6 +840,15 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'green-care',
+    canActivate: [authGuard, menuEnabledGuard, featureFlagGuard('green_care'), moduleGuard('green_care')],
+    data: {
+      breadcrumb: 'NAV.GREEN_CARE',
+      title: 'PAGE_TITLE.GREEN_CARE_DASHBOARD',
+    },
+    loadChildren: () => import('./features/green-care/green-care.routes').then((m) => m.GREEN_CARE_ROUTES),
+  },
+  {
     path: 'franchise-network',
     canActivate: [
       authGuard,
