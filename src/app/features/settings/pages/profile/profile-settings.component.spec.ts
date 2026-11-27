@@ -1,8 +1,8 @@
-import { TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter, Router } from '@angular/router';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { of, throwError } from 'rxjs';
 import { AUTH_PROBLEM, AuthApiService, AuthStore } from '@core';
 import { ProfileSettingsComponent } from './profile-settings.component';
@@ -17,6 +17,7 @@ describe('ProfileSettingsComponent', () => {
   const checkPassword = vi.fn();
   const logout = vi.fn();
   const newPassword = `${TEST_PASSWORD}N`;
+  let activeFixture: ComponentFixture<ProfileSettingsComponent> | null = null;
 
   function create(twoFactorEnabled = false, status: Record<string, unknown> = {}) {
     getTwoFactorStatus.mockReturnValue(of({ success: true, data: { enabled: twoFactorEnabled, ...status } }));
@@ -36,6 +37,7 @@ describe('ProfileSettingsComponent', () => {
     });
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     const fixture = TestBed.createComponent(ProfileSettingsComponent);
+    activeFixture = fixture;
     fixture.detectChanges();
     return { component: fixture.componentInstance, fixture, navigate };
   }
@@ -65,6 +67,13 @@ describe('ProfileSettingsComponent', () => {
     logout.mockReset();
     sendEmailVerificationCode.mockReset();
     checkPassword.mockReset();
+    checkPassword.mockReturnValue(of({ success: true, message: '', data: { valid: true, strength: 4, rules: [] } }));
+  });
+
+  afterEach(() => {
+    activeFixture?.destroy();
+    activeFixture = null;
+    TestBed.resetTestingModule();
   });
 
   it('does not submit an incomplete form or a confirmation that differs', () => {
