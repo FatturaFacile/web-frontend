@@ -358,6 +358,34 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
       ],
     },
   },
+  // Down-payment chains (Mod 203): sales plans and emits, finance resolves the deposits, settles and credits the advances.
+  // DownPaymentPolicy in the API adds the fine-grained down_payments.* permissions.
+  down_payments: {
+    read: [...FINANCE_READERS, 'sales', 'sales_manager'],
+    write: [...FINANCE, 'sales_manager'],
+    grants: {
+      read: [
+        'down_payments.view',
+        'down_payments.read',
+        'down_payments.write',
+        'down_payments.create',
+        'down_payments.emit',
+        'down_payments.deposit.resolve',
+        'down_payments.settle',
+        'down_payments.credit_note',
+        'down_payments.*',
+      ],
+      write: [
+        'down_payments.write',
+        'down_payments.create',
+        'down_payments.emit',
+        'down_payments.deposit.resolve',
+        'down_payments.settle',
+        'down_payments.credit_note',
+        'down_payments.*',
+      ],
+    },
+  },
   // Swiss eBill (Mod 025): finance reads and writes (settings, sending, recall); sales roles follow the delivery state of their invoices.
   swiss_ebill: {
     read: [...FINANCE_READERS, 'sales', 'sales_manager'],

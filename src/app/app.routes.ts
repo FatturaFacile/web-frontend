@@ -793,6 +793,21 @@ export const routes: Routes = [
       import('./features/subcontracting/subcontracting.routes').then((m) => m.SUBCONTRACTING_ROUTES),
   },
   {
+    path: 'down-payments',
+    canActivate: [
+      authGuard,
+      menuEnabledGuard,
+      featureFlagGuard('down_payments'),
+      moduleGuard('down_payments'),
+    ],
+    data: {
+      breadcrumb: 'NAV.DOWN_PAYMENTS',
+      title: 'PAGE_TITLE.DOWN_PAYMENTS_CHAINS',
+    },
+    loadChildren: () =>
+      import('./features/down-payments/down-payments.routes').then((m) => m.DOWN_PAYMENTS_ROUTES),
+  },
+  {
     path: 'swiss-ebill',
     canActivate: [
       authGuard,

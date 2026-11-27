@@ -66,6 +66,7 @@ export const PREMATURE_OPEN_ISSUE_MODULES: Readonly<
   van_sales_and_field_force: { issue: 479, routePrefix: '/van-selling' },
   customer_satisfaction: { issue: 491, routePrefix: '/customer-satisfaction' },
   subcontracting: { issue: 270, routePrefix: '/subcontracting' },
+  down_payments: { issue: 449, routePrefix: '/down-payments' },
   sales_bounded_context: { issue: 139, routePrefix: '/sales/omnichannel-pipeline' },
   franchise_network: { issue: 490, routePrefix: '/franchise-network' },
   corporate_conventions: { issue: 604, routePrefix: '/sales/corporate-conventions' },

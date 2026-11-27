@@ -312,6 +312,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             module: 'invoicing',
           },
           {
+            key: 'NAV.DOWN_PAYMENTS_CHAINS',
+            route: '/down-payments/chains',
+            icon: 'fa-solid fa-hand-holding-dollar',
+            module: 'down_payments',
+          },
+          {
             key: 'NAV.SC_PLANS',
             route: '/sales/billing/plans',
             icon: 'fa-solid fa-calendar-check',

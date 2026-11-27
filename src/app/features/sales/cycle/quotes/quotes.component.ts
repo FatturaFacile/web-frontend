@@ -29,6 +29,7 @@ import {
   TableColumnDef,
   TranslatePipe,
 } from '@shared';
+import { DownPaymentChainComponent } from '../../../down-payments/down-payment-chain.component';
 import { CycleQuotesFacade } from '../cycle.facades';
 import { DeliveryNoteFormModalComponent, DeliveryNoteSource } from '../shared/delivery-note-form-modal.component';
 import { DocumentFormModalComponent } from '../shared/document-form-modal.component';
@@ -67,6 +68,7 @@ const OPEN_STATUSES = ['draft', 'sent', 'accepted'];
     DeliveryNoteFormModalComponent,
     DocumentFormModalComponent,
     DocumentLinesViewComponent,
+    DownPaymentChainComponent,
     SignaturePadComponent,
   ],
   providers: [CycleQuotesFacade],
