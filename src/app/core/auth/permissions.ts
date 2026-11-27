@@ -358,6 +358,15 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
       ],
     },
   },
+  // Swiss eBill (Mod 025): finance reads and writes (settings, sending, recall); sales roles follow the delivery state of their invoices.
+  swiss_ebill: {
+    read: [...FINANCE_READERS, 'sales', 'sales_manager'],
+    write: [...FINANCE, 'sales_manager'],
+    grants: {
+      read: ['swiss_ebill.read', 'swiss_ebill.write', 'swiss_ebill.*'],
+      write: ['swiss_ebill.write', 'swiss_ebill.*'],
+    },
+  },
   passenger_transport_finance: {
     read: FINANCE_READERS,
     write: FINANCE,

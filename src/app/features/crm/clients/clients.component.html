@@ -26,6 +26,18 @@
     />
 
     <span class="spacer"></span>
+    @if (canWriteEbill) {
+      <button
+        nz-button
+        type="button"
+        data-test="ebill-bulk"
+        nz-popconfirm
+        [nzPopconfirmTitle]="'swissEbill.confirm.bulk.body' | translate"
+        (nzOnConfirm)="bulkVerifyEbill()"
+      >
+        {{ 'swissEbill.action.bulkVerify' | translate }}
+      </button>
+    }
     <button
       nz-button
       nzType="primary"
@@ -39,8 +51,15 @@
     [grid]="facade"
     [columns]="columns()"
     [actionsTemplate]="actionsTpl"
+    [selectable]="canWriteEbill"
+    [selectedItems]="ebillSelection()"
+    (selectionChange)="ebillSelection.set($event)"
     exportFileName="clienti"
   />
+
+  <ng-template #ebillTpl let-c>
+    <app-ebill-badge [participant]="c.ebill_status ?? 'unknown'" [channel]="c.ebill_channel_type" />
+  </ng-template>
 
   <!-- Cell Templates -->
   <ng-template #nameTpl let-c>

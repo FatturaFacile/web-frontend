@@ -18,6 +18,8 @@ import {
   ContactType,
   contactDisplayName,
   I18nService,
+  PermissionsService,
+  SwissEbillApiService,
 } from '@core';
 import {
   BaseTableComponent,
@@ -26,6 +28,8 @@ import {
   TranslatePipe,
   IconActionDirective,
 } from '@shared';
+import { EbillBadgeComponent } from '../../swiss-ebill/ebill-badge.component';
+import { failureOf, SWISS_EBILL_MODULE } from '../../swiss-ebill/swiss-ebill.util';
 import { ClientFacade } from '../services/client.facade';
 import { ClientFormDrawerComponent } from './client-form-drawer.component';
 
@@ -50,6 +54,7 @@ import { ClientFormDrawerComponent } from './client-form-drawer.component';
     PageHeaderComponent,
     TranslatePipe,
     ClientFormDrawerComponent,
+    EbillBadgeComponent,
   ],
   templateUrl: './clients.component.html',
 })
@@ -71,6 +76,9 @@ export class ClientsComponent {
     viewChild<TemplateRef<{ $implicit: ContactResource; value: unknown }>>('taxTpl');
   private readonly countryTpl =
     viewChild<TemplateRef<{ $implicit: ContactResource; value: unknown }>>('countryTpl');
+  private readonly ebillTpl =
+    viewChild<TemplateRef<{ $implicit: ContactResource; value: unknown }>>('ebillTpl');
+  private readonly ebillApi = inject(SwissEbillApiService);
 
   readonly columns = computed<TableColumnDef<ContactResource>[]>(() => [
     {
@@ -112,7 +120,31 @@ export class ClientsComponent {
       width: '100px',
       customCellTemplate: this.countryTpl(),
     },
+    {
+      key: 'ebill_status',
+      header: this.i18n.translate('NAV.SWISS_EBILL'),
+      width: '170px',
+      valueGetter: (c) => c.ebill_status ?? 'unknown',
+      customCellTemplate: this.ebillTpl(),
+    },
   ]);
+
+  /** Customers ticked for the bulk eBill verification. */
+  protected readonly ebillSelection = signal<ContactResource[]>([]);
+  protected readonly canWriteEbill = inject(PermissionsService).canWrite(SWISS_EBILL_MODULE);
+
+  /** Queues the directory check of the ticked customers (all customers when none is ticked). */
+  protected bulkVerifyEbill(): void {
+    const ids = this.ebillSelection().map((c) => c.id);
+    this.ebillApi.bulkVerifyCustomers(ids).subscribe({
+      next: () => {
+        this.message.success(this.i18n.translate('swissEbill.toast.bulkQueued'));
+        this.ebillSelection.set([]);
+      },
+      error: (error: unknown) =>
+        this.message.error(this.i18n.translate(failureOf(error).errorKey ?? 'swissEbill.error.unknown')),
+    });
+  }
 
   protected readonly typeOptions = computed(() => {
     this.i18n.currentLanguage();

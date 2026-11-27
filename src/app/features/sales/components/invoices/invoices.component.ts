@@ -40,6 +40,7 @@ import {
   PageHeaderComponent,
   TableColumnDef,
   TranslatePipe, GridExportDirective, GridSortPipe, GridFilterListPipe, GridFilterFnPipe } from '@shared';
+import { EbillBadgeComponent } from '../../../swiss-ebill/ebill-badge.component';
 import { InvoiceFacade } from '../../services/invoice.facade';
 import { InvoiceDetailModalComponent } from './invoice-detail-modal.component';
 import { InvoiceFormDrawerComponent } from './invoice-form-drawer.component';
@@ -96,6 +97,7 @@ const JURISDICTION_KEYS: { key: string; value: Jurisdiction }[] = [
     NzFormModule,
     NzQRCodeComponent,
     QrBillPreviewComponent,
+    EbillBadgeComponent,
     BaseTableComponent,
     PageHeaderComponent,
     TranslatePipe,
@@ -169,6 +171,8 @@ export class InvoicesComponent {
     viewChild<TemplateRef<{ $implicit: InvoiceResource; value: unknown }>>('statusTpl');
   private readonly jurisdictionTpl =
     viewChild<TemplateRef<{ $implicit: InvoiceResource; value: unknown }>>('jurisdictionTpl');
+  private readonly ebillTpl =
+    viewChild<TemplateRef<{ $implicit: InvoiceResource; value: unknown }>>('ebillTpl');
 
   readonly columns = computed<TableColumnDef<InvoiceResource>[]>(() => [
     {
@@ -228,6 +232,13 @@ export class InvoicesComponent {
       header: this.i18n.translate('SALES.INVOICES.COLUMNS.JURISDICTION'),
       width: '120px',
       customCellTemplate: this.jurisdictionTpl(),
+    },
+    {
+      key: 'ebill_status',
+      header: this.i18n.translate('NAV.SWISS_EBILL'),
+      width: '170px',
+      valueGetter: (inv) => inv.ebill_status ?? '',
+      customCellTemplate: this.ebillTpl(),
     },
   ]);
 

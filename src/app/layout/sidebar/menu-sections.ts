@@ -1728,6 +1728,25 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         ],
       },
       {
+        key: 'NAV.SWISS_EBILL',
+        icon: 'fa-solid fa-file-invoice',
+        module: 'swiss_ebill',
+        children: [
+          {
+            key: 'NAV.SWISS_EBILL_DASHBOARD',
+            route: '/swiss-ebill/dashboard',
+            icon: 'fa-solid fa-chart-line',
+            module: 'swiss_ebill',
+          },
+          {
+            key: 'NAV.SWISS_EBILL_SETTINGS',
+            route: '/swiss-ebill/settings',
+            icon: 'fa-solid fa-sliders',
+            module: 'swiss_ebill',
+          },
+        ],
+      },
+      {
         key: 'NAV.CORPORATE_CONVENTIONS',
         icon: 'fa-solid fa-handshake',
         module: 'corporate_conventions',

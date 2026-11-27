@@ -71,6 +71,10 @@
     <nz-tag [nzColor]="statusOf(inv).color">{{ statusOf(inv).key | translate }}</nz-tag>
   </ng-template>
 
+  <ng-template #ebillTpl let-inv>
+    <app-ebill-badge [status]="inv.ebill_status" />
+  </ng-template>
+
   <ng-template #jurisdictionTpl let-inv>
     <nz-tag>{{ "SALES.INVOICES.JURISDICTIONS." + jurisdictionOf(inv) | translate }}</nz-tag>
   </ng-template>

@@ -1,3 +1,4 @@
+import { EbillTransmissionStatus } from './swiss-ebill.model';
 import { QueryFilterParams } from './api.models';
 import { ContactResource } from './client.model';
 import { CustomsOriginType } from './customs-codes.model';
@@ -31,6 +32,10 @@ export interface InvoiceResource {
   jurisdiction?: Jurisdiction;
   invoice_type?: InvoiceType;
   payment_status?: PaymentStatus;
+  /** Swiss eBill transmission summary (Mod 025). */
+  ebill_status?: EbillTransmissionStatus | null;
+  ebill_transmission_id?: string | null;
+  ebill_last_event_at?: string | null;
   contact_id?: string;
   contact?: ContactResource | null;
   client?: ContactResource | null;
@@ -152,6 +157,10 @@ export interface CreateInvoicePayload {
 /** Query params of `GET /sales/invoices`. */
 export interface InvoiceFilterParams extends QueryFilterParams {
   payment_status?: PaymentStatus;
+  /** Swiss eBill transmission summary (Mod 025). */
+  ebill_status?: EbillTransmissionStatus | null;
+  ebill_transmission_id?: string | null;
+  ebill_last_event_at?: string | null;
   jurisdiction?: Jurisdiction;
 }
 

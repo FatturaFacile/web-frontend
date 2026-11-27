@@ -260,6 +260,8 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/subcontracting/dashboard',
   '/subcontracting/orders',
   '/subcontracting/register',
+  '/swiss-ebill/dashboard',
+  '/swiss-ebill/settings',
   '/franchise-network/command',
   '/franchise-network/stores',
   '/franchise-network/agreements',
