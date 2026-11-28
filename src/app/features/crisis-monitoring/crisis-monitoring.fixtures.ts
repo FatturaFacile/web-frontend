@@ -47,7 +47,7 @@ export const dashboard: CrisisDashboard = {
   ),
   ccii: {
     overall_status: 'yellow',
-    primary_triggers: ['crisisApi.indicator.negative_equity'],
+    primary_triggers: ['net_equity'],
     ateco: { code: '62.01', section: 'J', sector_label_key: 'crisisApi.ateco.J' },
     indicators: [
       {

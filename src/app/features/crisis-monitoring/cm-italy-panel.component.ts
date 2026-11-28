@@ -66,7 +66,7 @@ import {
         <p class="cm-note" data-testid="cm-triggers">
           {{ 'crisis.ccii.triggers' | translate }}:
           @for (trigger of dashboard.ccii.primary_triggers; track trigger) {
-            <nz-tag nzColor="error">{{ trigger | translate }}</nz-tag>
+            <nz-tag nzColor="error">{{ ('crisisApi.indicator.' + trigger) | translate }}</nz-tag>
           }
         </p>
       }
