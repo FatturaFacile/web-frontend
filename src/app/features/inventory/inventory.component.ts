@@ -10,6 +10,8 @@ import {
   Validators,
 } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
+import { TimeTravelContextService } from '@core/services/time-travel-context.service';
+import { TimeTravelPanelComponent } from '../time-travel/time-travel-panel.component';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
@@ -88,6 +90,7 @@ function differentFromSourceBin(control: AbstractControl): ValidationErrors | nu
   selector: 'app-inventory',
   styleUrl: './inventory.component.scss',
   imports: [
+    TimeTravelPanelComponent,
     GridExportDirective,
     GridSortPipe, GridFilterListPipe, GridFilterFnPipe,
     IconActionDirective,
@@ -122,6 +125,7 @@ function differentFromSourceBin(control: AbstractControl): ValidationErrors | nu
   templateUrl: './inventory.component.html',
 })
 export class InventoryComponent implements OnInit {
+  protected readonly timeTravel = inject(TimeTravelContextService);
   protected readonly authStore = inject(AuthStore);
   private readonly inventoryApi = inject(InventoryApiService);
   private readonly message = inject(NzMessageService);

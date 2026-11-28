@@ -119,6 +119,11 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/crm/suppliers',
   '/crm/territory-accounts',
   '/crm/territories',
+  '/bonded-warehouses/aeo',
+  '/bonded-warehouses/authorizations',
+  '/bonded-warehouses/dashboard',
+  '/bonded-warehouses/mrn-ledger',
+  '/bonded-warehouses/vat-register',
   '/customs/assessments',
   '/customs/foreign-trade',
   '/customs/free-trade-agreements',
@@ -221,6 +226,7 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/leave-management/holidays',
   '/leave-management/policies',
   '/liquidity-planning', // workspace and EBA report
+  '/crisis-monitoring', // executive dashboard, CCII, Art. 725 CO, stress test
   '/agent-commissions',
   '/agent-commissions/rules',
   '/agent-commissions/ledger',

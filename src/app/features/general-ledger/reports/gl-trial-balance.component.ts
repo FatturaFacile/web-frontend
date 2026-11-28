@@ -7,6 +7,8 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { I18nService, LEDGER_BOOK_CODES, LedgerBookCode } from '@core';
 import { MoneyPipe, TranslatePipe } from '@shared';
+import { TimeTravelPanelComponent } from '../../time-travel/time-travel-panel.component';
+import { TimeTravelContextService } from '@core/services/time-travel-context.service';
 import { GlErrorAlertComponent } from '../shared/gl-error-alert.component';
 import { GlLookupStore } from '../shared/gl-lookup.store';
 import { exportCsv, exportJson, printReport, trialBalanceTable } from './gl-report-export.util';
@@ -16,8 +18,10 @@ import { GlLedgerReportsStore, LedgerReportFilters } from './gl-ledger-reports.s
 @Component({
   selector: 'app-gl-trial-balance',
   styleUrl: './gl-trial-balance.component.scss',
-  imports: [FormsModule, NzButtonModule, NzInputModule, NzSelectModule, NzTableModule, NzTagModule, GlErrorAlertComponent, MoneyPipe, TranslatePipe],
+  imports: [FormsModule, NzButtonModule, NzInputModule, NzSelectModule, NzTableModule, NzTagModule, GlErrorAlertComponent, MoneyPipe, TimeTravelPanelComponent, TranslatePipe],
   template: `
+    <app-time-travel-panel domain="trial_balance" />
+    @if (!timeTravel.isActive()) {
     <app-gl-error-alert [error]="store.error()" />
     <div class="filters">
       <label for="tb-ledger">{{ 'GL.PN_BOOK' | translate }}</label>
@@ -144,9 +148,11 @@ import { GlLedgerReportsStore, LedgerReportFilters } from './gl-ledger-reports.s
         </tbody>
       </nz-table>
     }
+    }
   `,
 })
 export class GlTrialBalanceComponent {
+  protected readonly timeTravel = inject(TimeTravelContextService);
   protected readonly store = inject(GlLedgerReportsStore);
   protected readonly lookups = inject(GlLookupStore);
   private readonly i18n = inject(I18nService);

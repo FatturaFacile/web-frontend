@@ -612,6 +612,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         module: 'liquidity_planning',
       },
       {
+        key: 'NAV.CRISIS_MONITORING',
+        icon: 'fa-solid fa-triangle-exclamation',
+        route: '/crisis-monitoring',
+        module: 'crisis_monitoring',
+      },
+      {
         key: 'AI_FORECAST.NAV',
         icon: 'fa-solid fa-chart-line',
         route: '/ai-forecasting',
@@ -1813,6 +1819,43 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
             route: '/foreign-vat-refund/configuration',
             icon: 'fa-solid fa-sliders',
             module: 'foreign_vat_refund',
+          },
+        ],
+      },
+      {
+        key: 'NAV.BONDED_WAREHOUSES',
+        icon: 'fa-solid fa-warehouse',
+        module: 'bonded_warehouses',
+        children: [
+          {
+            key: 'NAV.BONDED_WAREHOUSES_DASHBOARD',
+            route: '/bonded-warehouses/dashboard',
+            icon: 'fa-solid fa-gauge-high',
+            module: 'bonded_warehouses',
+          },
+          {
+            key: 'NAV.BONDED_WAREHOUSES_MRN_LEDGER',
+            route: '/bonded-warehouses/mrn-ledger',
+            icon: 'fa-solid fa-book',
+            module: 'bonded_warehouses',
+          },
+          {
+            key: 'NAV.BONDED_WAREHOUSES_VAT_REGISTER',
+            route: '/bonded-warehouses/vat-register',
+            icon: 'fa-solid fa-file-invoice',
+            module: 'bonded_warehouses',
+          },
+          {
+            key: 'NAV.BONDED_WAREHOUSES_AEO',
+            route: '/bonded-warehouses/aeo',
+            icon: 'fa-solid fa-shield-halved',
+            module: 'bonded_warehouses',
+          },
+          {
+            key: 'NAV.BONDED_WAREHOUSES_AUTHORIZATIONS',
+            route: '/bonded-warehouses/authorizations',
+            icon: 'fa-solid fa-stamp',
+            module: 'bonded_warehouses',
           },
         ],
       },

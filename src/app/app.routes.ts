@@ -537,6 +537,15 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'crisis-monitoring',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'NAV.CRISIS_MONITORING', title: 'PAGE_TITLE.CRISIS_MONITORING' },
+    loadChildren: () =>
+      import('./features/crisis-monitoring/crisis-monitoring.routes').then(
+        (m) => m.CRISIS_MONITORING_ROUTES,
+      ),
+  },
+  {
     path: 'payables',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.PAYABLES', title: 'PAGE_TITLE.PAYABLES_ITEMS' },
@@ -864,6 +873,21 @@ export const routes: Routes = [
       import('./features/foreign-vat-refund/foreign-vat-refund.routes').then(
         (m) => m.FOREIGN_VAT_REFUND_ROUTES,
       ),
+  },
+  {
+    path: 'bonded-warehouses',
+    canActivate: [
+      authGuard,
+      menuEnabledGuard,
+      featureFlagGuard('bonded_warehouses'),
+      moduleGuard('bonded_warehouses'),
+    ],
+    data: {
+      breadcrumb: 'NAV.BONDED_WAREHOUSES',
+      title: 'PAGE_TITLE.BONDED_WAREHOUSES_DASHBOARD',
+    },
+    loadChildren: () =>
+      import('./features/bonded-warehouses/bonded-warehouses.routes').then((m) => m.BONDED_WAREHOUSES_ROUTES),
   },
   {
     path: 'green-care',

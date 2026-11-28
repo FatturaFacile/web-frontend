@@ -1,0 +1,177 @@
+:host {
+  display: block;
+}
+
+.cm-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.cm-toolbar-spacer {
+  flex: 1;
+}
+
+.cm-banner {
+  margin-bottom: 12px;
+}
+
+.cm-split {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) minmax(0, 2fr);
+  gap: 16px;
+  margin-top: 12px;
+}
+
+@media (max-width: 1100px) {
+  .cm-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.cm-gauge {
+  --cm-chart-height: 260px;
+}
+
+.cm-gauge-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.65);
+}
+
+.cm-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+  margin: 12px 0;
+}
+
+.cm-section {
+  margin-top: 16px;
+}
+
+.cm-kv {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 0;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 13px;
+}
+
+.cm-note {
+  margin: 6px 0;
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.65);
+}
+
+.cm-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.cm-muted {
+  opacity: 0.55;
+}
+
+.cm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.cm-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.cm-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  nz-input-number,
+  nz-select {
+    width: 100%;
+  }
+}
+
+.cm-checklist {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+
+  li {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+    padding: 4px 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+}
+
+.cm-stress-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) minmax(0, 2fr);
+  gap: 16px;
+}
+
+@media (max-width: 1100px) {
+  .cm-stress-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.cm-lever {
+  margin-bottom: 14px;
+
+  label {
+    display: block;
+    font-size: 12px;
+    margin-bottom: 2px;
+  }
+}
+
+.cm-lever-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cm-lever-slider {
+  flex: 1;
+}
+
+.cm-compare {
+  width: 100%;
+  border-collapse: collapse;
+
+  th,
+  td {
+    padding: 6px 8px;
+    border-bottom: 1px solid #f0f0f0;
+    text-align: left;
+  }
+
+  td.cm-num,
+  th.cm-num {
+    text-align: right;
+  }
+}
+
+.cm-negative {
+  color: #cf1322;
+}
+
+.cm-positive {
+  color: #389e0d;
+}
