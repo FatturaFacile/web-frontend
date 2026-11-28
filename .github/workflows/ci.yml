@@ -107,6 +107,7 @@ jobs:
           node scripts/test-ci-sharded.mjs --merge-only
 
   build:
+    needs: validate
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -129,6 +130,7 @@ jobs:
         run: pnpm run build --configuration production
 
   e2e:
+    needs: validate
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -212,6 +214,7 @@ jobs:
           retention-days: 15
 
   a11y:
+    needs: validate
     # Accessibility audit (axe, WCAG AA) of the pages covered by tests/accessibility*.spec.ts
     runs-on: ubuntu-latest
     steps:
@@ -253,6 +256,7 @@ jobs:
           retention-days: 15
 
   storybook:
+    needs: validate
     # The design system (Storybook) must keep building
     runs-on: ubuntu-latest
     steps:
