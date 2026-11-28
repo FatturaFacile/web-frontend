@@ -579,6 +579,8 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
   payables_approval: { read: FINANCE_READERS, write: MANAGERS },
   // Cash flow forecasting and liquidity planning (Mod 017): finance reads and plans, the crisis indicators are board matter.
   liquidity_planning: { read: FINANCE_READERS, write: FINANCE },
+  // Corporate crisis monitoring and DSCR (Mod 357): finance reads, computes and maintains the profile.
+  crisis_monitoring: { read: FINANCE_READERS, write: FINANCE },
   // Sales commissions and agent management (Mod 041): commissions are part of someone's pay. Owners, administrators,
   // accountants and sales managers read and maintain the conditions; the approval, invoicing and payment of a statement,
   // the fiscal parameters and the compliance exports are the `settle` ability, reserved to finance.

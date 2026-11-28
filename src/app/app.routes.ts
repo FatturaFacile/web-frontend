@@ -537,6 +537,15 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'crisis-monitoring',
+    canActivate: [authGuard, menuEnabledGuard],
+    data: { breadcrumb: 'NAV.CRISIS_MONITORING', title: 'PAGE_TITLE.CRISIS_MONITORING' },
+    loadChildren: () =>
+      import('./features/crisis-monitoring/crisis-monitoring.routes').then(
+        (m) => m.CRISIS_MONITORING_ROUTES,
+      ),
+  },
+  {
     path: 'payables',
     canActivate: [authGuard, menuEnabledGuard],
     data: { breadcrumb: 'NAV.PAYABLES', title: 'PAGE_TITLE.PAYABLES_ITEMS' },

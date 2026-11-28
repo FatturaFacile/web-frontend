@@ -168,6 +168,7 @@ export * from './leave-management.model';
 export * from './marketing-automation.model';
 export * from './debt-collection.model';
 export * from './liquidity-planning.model';
+export * from './crisis-monitoring.model';
 export * from './intercompany.model';
 export * from './industrial-laundry.model';
 export * from './van-selling.model';
