@@ -11,6 +11,8 @@ import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
 import { ApAgingBucket, ApExportFormat, TranslateService } from '@core';
 import { downloadBlob, MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
+import { TimeTravelPanelComponent } from '../time-travel/time-travel-panel.component';
+import { TimeTravelContextService } from '@core/services/time-travel-context.service';
 import { PayablesAgingStore } from './payables-aging.store';
 import { bucketLabelParts, fromIsoDate, toIsoDate } from './payables.util';
 
@@ -23,6 +25,7 @@ import { bucketLabelParts, fromIsoDate, toIsoDate } from './payables.util';
   styleUrl: './payables.scss',
   providers: [PayablesAgingStore],
   imports: [
+    TimeTravelPanelComponent,
     FormsModule,
     MoneyPipe,
     PageHeaderComponent,
@@ -64,6 +67,8 @@ import { bucketLabelParts, fromIsoDate, toIsoDate } from './payables.util';
     </ng-container>
     </app-page-header>
 
+    <app-time-travel-panel domain="aging" [filters]="{ partner_type: 'supplier' }" />
+    @if (!timeTravel.isActive()) {
     <div class="filters" role="search" [attr.aria-label]="'AP.FILTERS' | translate">
       <div class="field">
         <label for="ag-asof">{{ 'AP.AS_OF' | translate }}</label>
@@ -170,9 +175,11 @@ import { bucketLabelParts, fromIsoDate, toIsoDate } from './payables.util';
         }
       }
     </nz-spin>
+    }
   `,
 })
 export class PayablesAgingComponent implements OnInit {
+  protected readonly timeTravel = inject(TimeTravelContextService);
   readonly store = inject(PayablesAgingStore);
   private readonly message = inject(NzMessageService);
   private readonly translate = inject(TranslateService);

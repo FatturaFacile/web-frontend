@@ -9,6 +9,8 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { I18nService, LEDGER_BOOK_CODES, LedgerBookCode } from '@core';
 import { MoneyPipe, TranslatePipe } from '@shared';
+import { TimeTravelPanelComponent } from '../../time-travel/time-travel-panel.component';
+import { TimeTravelContextService } from '@core/services/time-travel-context.service';
 import { GlErrorAlertComponent } from '../shared/gl-error-alert.component';
 import { GlLookupStore } from '../shared/gl-lookup.store';
 import { accountLedgerTable, exportCsv, exportJson, printReport } from './gl-report-export.util';
@@ -29,9 +31,27 @@ import { GlLedgerReportsStore, LedgerReportFilters } from './gl-ledger-reports.s
     NzTagModule,
     GlErrorAlertComponent,
     MoneyPipe,
+    TimeTravelPanelComponent,
     TranslatePipe,
   ],
   template: `
+    @if (timeTravel.isActive()) {
+      <nz-select
+        class="account-select"
+        nzShowSearch
+        data-testid="tt-account-select"
+        [attr.aria-label]="'GL.COL_ACCOUNT' | translate"
+        [nzPlaceHolder]="'GL.COL_ACCOUNT' | translate"
+        [ngModel]="store.accountId()"
+        (ngModelChange)="store.setAccountId($event)"
+      >
+        @for (account of lookups.accounts(); track account.id) {
+          <nz-option [nzValue]="account.id" [nzLabel]="account.account_code + ' ' + account.name" />
+        }
+      </nz-select>
+    }
+    <app-time-travel-panel domain="account_ledger" [filters]="ledgerFilters()" />
+    @if (!timeTravel.isActive()) {
     <app-gl-error-alert [error]="store.error()" />
     <div class="filters">
       <nz-select
@@ -161,15 +181,21 @@ import { GlLedgerReportsStore, LedgerReportFilters } from './gl-ledger-reports.s
         </tbody>
       </nz-table>
     }
+    }
   `,
 })
 export class GlAccountLedgerComponent implements OnInit {
+  protected readonly timeTravel = inject(TimeTravelContextService);
   protected readonly store = inject(GlLedgerReportsStore);
   protected readonly lookups = inject(GlLookupStore);
   private readonly i18n = inject(I18nService);
 
   protected readonly books: readonly LedgerBookCode[] = LEDGER_BOOK_CODES;
   protected readonly filters = this.store.filters;
+  protected readonly ledgerFilters = computed(() => {
+    const accountId = this.store.accountId();
+    return accountId ? { account_id: accountId } : {};
+  });
 
   protected readonly transactionTotals = computed(() =>
     Object.entries(this.store.accountLedger()?.transaction_totals ?? {}).map(([key, value]) => ({ key, value: String(value) })),

@@ -173,4 +173,5 @@ export * from './industrial-laundry.model';
 export * from './van-selling.model';
 export * from './sales-bounded-context.model';
 export * from './observability.model';
+export * from './time-travel.model';
 export * from './esterometro.model';

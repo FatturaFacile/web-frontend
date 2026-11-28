@@ -28,6 +28,8 @@ import {
 } from '@core';
 import { MoneyPipe, PageHeaderComponent, TranslatePipe } from '@shared';
 import { ArCustomerOption, ArCustomerSelectComponent } from './ar-customer-select.component';
+import { TimeTravelPanelComponent } from '../time-travel/time-travel-panel.component';
+import { TimeTravelContextService } from '@core/services/time-travel-context.service';
 import { ReceivablesItemsStore } from './receivables-items.store';
 import { ReconciliationDrawerComponent } from './reconciliation-drawer.component';
 import {
@@ -57,6 +59,7 @@ function queryObject(map: ParamMap): Record<string, string> {
   providers: [ReceivablesItemsStore],
   imports: [
     ArCustomerSelectComponent,
+    TimeTravelPanelComponent,
     FormsModule,
     MoneyPipe,
     PageHeaderComponent,
@@ -98,6 +101,8 @@ function queryObject(map: ParamMap): Record<string, string> {
       </div>
     </app-page-header>
 
+    <app-time-travel-panel domain="aging" [filters]="{ partner_type: 'customer' }" />
+    @if (!timeTravel.isActive()) {
     <div class="filters" role="search" [attr.aria-label]="'AR.FILTERS' | translate">
       <div class="field">
         <span>{{ 'AR.CUSTOMER' | translate }}</span>
@@ -435,9 +440,11 @@ function queryObject(map: ParamMap): Record<string, string> {
         </div>
       </ng-container>
     </nz-modal>
+    }
   `,
 })
 export class ReceivablesItemsComponent implements OnInit {
+  protected readonly timeTravel = inject(TimeTravelContextService);
   private readonly destroyRef = inject(DestroyRef);
   readonly store = inject(ReceivablesItemsStore);
   private readonly route = inject(ActivatedRoute);
