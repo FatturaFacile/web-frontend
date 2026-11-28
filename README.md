@@ -111,8 +111,8 @@ Routes in [`src/app/app.routes.ts`](src/app/app.routes.ts) are protected by func
 
 | Technology                    | Exact Version | Description                                                                                    |
 | ----------------------------- | ------------- | ---------------------------------------------------------------------------------------------- |
-| **Angular**                   | `22.2.5`      | Core framework (`@angular/core`, `@angular/common`, `@angular/forms`, `@angular/router`, etc.) |
-| **Angular CDK / CLI / Build** | `22.2.6`      | Component Dev Kit, CLI tooling, and application builder (`@angular/build:application`)         |
+| **Angular**                   | `22.3.0`      | Core framework (`@angular/core`, `@angular/common`, `@angular/forms`, `@angular/router`, etc.) |
+| **Angular CDK / CLI / Build** | `22.3.0`      | Component Dev Kit, CLI tooling, and application builder (`@angular/build:application`)         |
 | **TypeScript**                | `6.0.3`       | Strongly-typed JavaScript with strict compilation flags and isolated modules                   |
 | **RxJS**                      | `~7.8.2`      | Reactive programming library used alongside Signals                                            |
 | **@ngrx/signals**             | `^22.0.1`     | Fine-grained, signal-based reactive state stores                                               |
@@ -121,7 +121,7 @@ Routes in [`src/app/app.routes.ts`](src/app/app.routes.ts) are protected by func
 
 | Library                     | Version     | Description                                                                                             |
 | --------------------------- | ----------- | ------------------------------------------------------------------------------------------------------- |
-| **NG-ZORRO (Ant Design)**   | `^22.2.0`   | Comprehensive enterprise UI component suite (`ng-zorro-antd`)                                           |
+| **NG-ZORRO (Ant Design)**   | `^22.2.1`   | Comprehensive enterprise UI component suite (`ng-zorro-antd`)                                           |
 | **Ant Design Icons**        | `^22.1.1`   | Official SVG icons for NG-ZORRO (`@ant-design/icons-angular`)                                           |
 | **FontAwesome Free**        | `^7.3.1`    | Global web font icons (`@fortawesome/fontawesome-free`)                                                 |
 | **Styling & Preprocessors** | Less & SCSS | Component-scoped SCSS and Less theme bundles (`theme.less` and `theme-dark.less` for dynamic dark mode) |
@@ -130,12 +130,12 @@ Routes in [`src/app/app.routes.ts`](src/app/app.routes.ts) are protected by func
 
 - **ExcelJS** (`^4.4.0`): Client-side spreadsheet generation and table export.
 - **OpenAPI TypeScript** (`^7.13.0`): Type-safe schema generator compiling backend OpenAPI schemas directly into TypeScript typings.
-- **Angular Service Worker** (`22.2.5`): PWA support configured via [`ngsw-config.json`](ngsw-config.json).
+- **Angular Service Worker** (`22.3.0`): PWA support configured via [`ngsw-config.json`](ngsw-config.json).
 
 ### Prerequisites
 
 - **Node.js**: `>=22.0.0`
-- **pnpm**: `>=10.0.0` (Project repository is locked to `pnpm@12.18.0` via `packageManager` and strictly guarded against `npm`/`yarn` with `only-allow pnpm`).
+- **pnpm**: `>=10.0.0` (Project repository is locked to `pnpm@12.23.0` via `packageManager` and strictly guarded against `npm`/`yarn` with `only-allow pnpm`).
 - **mkcert**: Required for generating trusted local HTTPS development certificates.
 
 ---
@@ -294,18 +294,6 @@ pnpm run build --configuration production,demo
 pnpm run watch
 ```
 
-### Sandboxed / Docker Agent Execution
-
-For containerized or sandboxed command execution:
-
-```bash
-# Run command inside local sandboxed runner
-pnpm run agent:sandbox -- <command>
-
-# Run command inside containerized Docker sandbox (.sandbox/Dockerfile)
-pnpm run agent:docker -- <command>
-```
-
 ---
 
 ## 7. Testing & Code Quality
@@ -318,7 +306,7 @@ Unit tests utilize **Vitest**, **AnalogJs Vite Angular Plugin**, and **jsdom** c
 # Run the complete unit test suite once
 pnpm test
 
-# Run tests with code coverage report (v8 coverage provider)
+# Run the sharded suite with coverage, as in CI (v8 coverage provider)
 pnpm run test:ci
 
 # Run an individual test file
@@ -356,6 +344,19 @@ pnpm run format:check
 pnpm run format
 ```
 
+### Accessibility, Storybook and Design Tokens
+
+```bash
+# Accessibility end-to-end checks (Playwright + axe)
+pnpm run e2e:a11y
+
+# Storybook for the shared components
+pnpm run storybook
+
+# Check that the design tokens are in sync (use tokens:build to regenerate)
+pnpm run tokens:check
+```
+
 ### API Contract Verification & Code Generation
 
 ```bash
@@ -369,9 +370,32 @@ pnpm run api:coverage
 pnpm run api:generate
 ```
 
+These commands read `../web-api/docs/api/openapi.json`, so clone [`web-api`](https://github.com/FatturaFacile/web-api) next to this repository.
+
 ---
 
-## 8. License
+## 8. CI/CD & Branching
+
+- `dev` is the default branch. Open pull requests against `dev`; they deploy automatically to the shared development environment once merged. `main` only receives pull requests from `dev` (the `main-source` workflow enforces it), and production is released from `main` with a tag `vX.Y.Z` and a published GitHub release.
+- `CI` (`ci.yml`): lint, unit tests in shards with a merged coverage gate. It runs on pull requests and on pushes to `main`.
+- `Frontend Quality & Merge Gates` (`ci-quality.yml`): dependency audit on pull requests and pushes to `main` and `dev`, plus a weekly audit report.
+- `E2E Layout & Full CRUD Verification` (`e2e-layout-crud.yml`): Playwright suites against a locally booted `web-api`, on `main` only.
+- `Deploy dev` (`deploy-dev.yml`): builds the `dev` configuration and deploys it on every push to `dev`.
+- `Deploy to Pages & Release Assets` (`deploy.yml`): when a GitHub release is published, builds the `production` and `demo` configurations, attaches archives and checksums to the release and publishes the demo to GitHub Pages.
+
+## 9. Related Repositories & Documentation
+
+| Repository                                                                            | Relation                                                              |
+| :------------------------------------------------------------------------------------ | :-------------------------------------------------------------------- |
+| [`web-api`](https://github.com/FatturaFacile/web-api)                                 | Backend API; its OpenAPI file is the contract used by `api:*` scripts |
+| [`web-frontend-inglorious`](https://github.com/FatturaFacile/web-frontend-inglorious) | Experimental lighter port of this client                              |
+| [`website`](https://github.com/FatturaFacile/website)                                 | Public website; links to the live demo                                |
+| [`database`](https://github.com/FatturaFacile/database)                               | Reference relational schema                                           |
+| [`FatturaFacile`](https://github.com/FatturaFacile/FatturaFacile)                     | Organization overview and repository map                              |
+
+More in [`docs/`](docs/) and in the project wiki: [FatturaFacile/FatturaFacile wiki](https://github.com/FatturaFacile/FatturaFacile/wiki).
+
+## 10. License
 
 This project is licensed under the terms of the [MIT License](LICENSE).  
 Copyright (c) 2026 FatturaFacile.
