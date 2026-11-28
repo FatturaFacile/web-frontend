@@ -665,6 +665,23 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'withholding-recipients',
+    canActivate: [
+      authGuard,
+      menuEnabledGuard,
+      featureFlagGuard('withholding_recipients'),
+      moduleGuard('withholding_recipients'),
+    ],
+    data: {
+      breadcrumb: 'NAV.WITHHOLDING_RECIPIENTS',
+      title: 'PAGE_TITLE.WITHHOLDING_RECIPIENTS_DASHBOARD',
+    },
+    loadChildren: () =>
+      import('./features/withholding-recipients/withholding-recipients.routes').then(
+        (m) => m.WITHHOLDING_RECIPIENTS_ROUTES,
+      ),
+  },
+  {
     path: 'expense-management',
     canActivate: [
       authGuard,

@@ -595,6 +595,34 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
       write: ['agent_commissions.write', 'agent_commissions.settle', 'agent_commissions.*'],
     },
   },
+  // Withholding taxes on commissions, royalties, occasional work and amateur sports (Mod 356): finance and HR read and
+  // maintain the registry and the declarations; posting, the F24 / UniEmens flows and the annual CU are the `settle`
+  // ability (owners, administrators and accountants).
+  withholding_recipients: {
+    read: ['owner', 'admin', 'accountant', 'accountant_readonly', 'hr_manager', 'hr'],
+    write: ['owner', 'admin', 'accountant', 'hr_manager', 'hr'],
+    grants: {
+      read: [
+        'withholding_recipients.read',
+        'withholding_recipients.write',
+        'withholding_recipients.settle',
+        'withholding_recipients.*',
+      ],
+      write: [
+        'withholding_recipients.write',
+        'withholding_recipients.settle',
+        'withholding_recipients.*',
+      ],
+    },
+  },
+  withholding_recipients_settle: {
+    read: FINANCE,
+    write: FINANCE,
+    grants: {
+      read: ['withholding_recipients.settle', 'withholding_recipients.*'],
+      write: ['withholding_recipients.settle', 'withholding_recipients.*'],
+    },
+  },
   // Dunning and debt collection (Mod 014): finance and sales managers read the proposals and the notices; sending, the
   // legal escalation (Betreibung dossier, messa in mora) and the settings are write abilities.
   debt_collection: {

@@ -73,6 +73,7 @@ export const PREMATURE_OPEN_ISSUE_MODULES: Readonly<
   product_catalog: { issue: 248, routePrefix: '/product-catalog' },
   distribution: { issue: 271, routePrefix: '/distribution' },
   green_care: { issue: 372, routePrefix: '/green-care' },
+  withholding_recipients: { issue: 602, routePrefix: '/withholding-recipients' },
 };
 
 /**

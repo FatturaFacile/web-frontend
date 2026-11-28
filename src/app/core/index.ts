@@ -134,6 +134,7 @@ export * from './api/shift-planning-api.service';
 export * from './api/resource-planning-api.service';
 export * from './api/payables-api.service';
 export * from './api/agent-commissions-api.service';
+export * from './api/withholding-recipients-api.service';
 export * from './api/expense-management-api.service';
 export * from './api/gdo-trade-terms-api.service';
 export * from './api/statutory-financials-api.service';

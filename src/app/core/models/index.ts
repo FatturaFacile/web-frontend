@@ -145,6 +145,7 @@ export * from './audit-trail.model';
 export * from './gap-views.model';
 export * from './payables.model';
 export * from './agent-commissions.model';
+export * from './withholding-recipients.model';
 export * from './expense-management.model';
 export * from './gdo-trade-terms.model';
 export * from './statutory-financials.model';

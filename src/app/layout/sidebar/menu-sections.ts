@@ -569,6 +569,31 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
           },
         ],
       },
+      {
+        key: 'NAV.WITHHOLDING_RECIPIENTS',
+        icon: 'fa-solid fa-percent',
+        module: 'withholding_recipients',
+        children: [
+          {
+            key: 'NAV.WITHHOLDING_RECIPIENTS_DASHBOARD',
+            route: '/withholding-recipients',
+            icon: 'fa-solid fa-gauge-high',
+            module: 'withholding_recipients',
+          },
+          {
+            key: 'NAV.WITHHOLDING_RECIPIENTS_SIMULATOR',
+            route: '/withholding-recipients/simulator',
+            icon: 'fa-solid fa-calculator',
+            module: 'withholding_recipients',
+          },
+          {
+            key: 'NAV.WITHHOLDING_RECIPIENTS_SETTLEMENTS',
+            route: '/withholding-recipients/settlements',
+            icon: 'fa-solid fa-file-export',
+            module: 'withholding_recipients',
+          },
+        ],
+      },
     ],
   },
   {
