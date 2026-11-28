@@ -124,7 +124,7 @@ import { SelfInvoiceFormModalComponent } from './self-invoice-form-modal.compone
         </div>
       }
 
-      <nz-tabset>
+      <nz-tabs>
         <nz-tab [nzTitle]="'ESTEROMETRO.TABS.WORKSPACE' | translate">
           <nz-card nzSize="small">
             <div class="esterometro-filters">
@@ -294,7 +294,7 @@ import { SelfInvoiceFormModalComponent } from './self-invoice-form-modal.compone
             </nz-card>
           }
         </nz-tab>
-      </nz-tabset>
+      </nz-tabs>
 
       <app-self-invoice-detail-drawer
         [visible]="store.selectedSelfInvoice() !== null"

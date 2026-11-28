@@ -587,6 +587,12 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         module: 'liquidity_planning',
       },
       {
+        key: 'NAV.CRISIS_MONITORING',
+        icon: 'fa-solid fa-triangle-exclamation',
+        route: '/crisis-monitoring',
+        module: 'crisis_monitoring',
+      },
+      {
         key: 'AI_FORECAST.NAV',
         icon: 'fa-solid fa-chart-line',
         route: '/ai-forecasting',

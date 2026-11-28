@@ -1,0 +1,255 @@
+import {
+  CrisisDashboard,
+  CrisisDscr,
+  CrisisLoan,
+  CrisisMetadata,
+  CrisisProfile,
+  CrisisRangruecktritt,
+  CrisisStressLite,
+  CrisisStressResult,
+  CrisisTimelineRow,
+} from '@core';
+
+const dscr = (value: string | null, status: CrisisDscr['status']): CrisisDscr => ({
+  value,
+  status,
+  applicable: value !== null,
+  numerator: '120000.00',
+  denominator: '100000.00',
+  label_key: 'crisisApi.dscr.label',
+});
+
+export const timelineRow = (month: string): CrisisTimelineRow => ({
+  month,
+  operating_inflows: '100000.00',
+  operating_outflows: '70000.00',
+  debt_service: '10000.00',
+  tax_social: '5000.00',
+  capex: '2000.00',
+  free_cash_flow: '13000.00',
+  closing_cash: '50000.00',
+  cumulative_cash_with_credit: '150000.00',
+  dscr_treasury: '1.30',
+  dscr_operating: '1.10',
+});
+
+export const dashboard: CrisisDashboard = {
+  as_of: '2026-11-28',
+  currency: 'EUR',
+  jurisdiction: 'IT',
+  overall_status: 'yellow',
+  dscr: {
+    treasury: { m6: dscr('1.30', 'green'), m12: dscr('1.10', 'yellow') },
+    operating: { m6: dscr('0.90', 'red'), m12: dscr(null, 'green') },
+  },
+  timeline: Array.from({ length: 12 }, (_, index) =>
+    timelineRow(`2026-${String(index + 1).padStart(2, '0')}-01`),
+  ),
+  ccii: {
+    overall_status: 'yellow',
+    primary_triggers: ['crisisApi.indicator.negative_equity'],
+    ateco: { code: '62.01', section: 'J', sector_label_key: 'crisisApi.ateco.J' },
+    indicators: [
+      {
+        code: 'dscr_6m',
+        label_key: 'crisisApi.indicator.dscr_6m',
+        description_key: 'crisisApi.indicator.dscr_6m.description',
+        kind: 'primary',
+        unit: 'ratio',
+        actual: '0.90',
+        threshold: '1.00',
+        comparison: 'min',
+        variance: '-0.10',
+        status: 'red',
+      },
+    ],
+    public_creditors: [
+      {
+        code: 'inps',
+        label_key: 'crisisApi.creditor.inps',
+        description_key: 'crisisApi.creditor.inps.description',
+        overdue_days: 95,
+        measured: '9000.00',
+        limit: '5000.00',
+        progress_percent: 100,
+        breached: true,
+        status: 'red',
+      },
+    ],
+    cnc: {
+      ratio: '3.50',
+      debt_to_restructure: '350000.00',
+      annual_free_cash_flow: '100000.00',
+      tier_code: 'tier_2',
+      tier_label_key: 'crisisApi.cnc.tier_2',
+      status: 'yellow',
+      checklist: [
+        { code: 'plan', label_key: 'crisisApi.cnc.check.plan', passed: true },
+        { code: 'cash', label_key: 'crisisApi.cnc.check.cash', passed: null },
+      ],
+    },
+  },
+  swiss: {
+    overall_status: 'green',
+    art725: {
+      status: 'green',
+      opening_cash: '50000.00',
+      committed_credit_lines: '100000.00',
+      min_cumulative_cash: '120000.00',
+      min_month: '2026-03-01',
+      first_negative_month: null,
+      runway_months: null,
+      coverage_6m: '2.10',
+      coverage_12m: '1.80',
+      plan: [
+        {
+          month: '2026-01-01',
+          inflows: '100000.00',
+          outflows: '70000.00',
+          net: '30000.00',
+          closing_cash: '80000.00',
+        },
+      ],
+    },
+    art725a: {
+      status: 'green',
+      configured: true,
+      net_assets: '300000.00',
+      share_capital: '100000.00',
+      statutory_reserves: '20000.00',
+      protected_capital: '120000.00',
+      required_net_assets: '60000.00',
+      coverage_ratio: '5.00',
+      meter_percent: 100,
+      capital_loss: false,
+    },
+    art725b: {
+      status: 'green',
+      basis: 'going_concern',
+      going_concern: {
+        assets: '500000.00',
+        liabilities: '200000.00',
+        net: '300000.00',
+        overindebted: false,
+      },
+      liquidation: {
+        assets: '300000.00',
+        liabilities: '200000.00',
+        net: '100000.00',
+        overindebted: false,
+      },
+      shortfall: '0.00',
+      subordinated_covered: '0.00',
+      remaining_shortfall: '0.00',
+      overindebted: false,
+      court_notification_required: false,
+    },
+    subordination: {
+      basis: 'going_concern',
+      horizon_months: 12,
+      shortfall: '0.00',
+      active_claims_covered: '0.00',
+      remaining_shortfall: '0.00',
+      assumed_rate: '4.00',
+      required_claim_amount: '0.00',
+      required_principal_amount: '0.00',
+      court_notification_required: false,
+    },
+  },
+};
+
+export const metadata: CrisisMetadata = {
+  ateco_sections: [{ section: 'J', label_key: 'crisisApi.ateco.J' }],
+  legal_forms: [{ code: 'corporation', label_key: 'crisisApi.legalForm.corporation' }],
+  jurisdictions: [{ code: 'IT', label_key: 'crisisApi.jurisdiction.IT' }],
+  dscr_bands: { red_below: '1.00', yellow_below: '1.20' },
+};
+
+export const profile: CrisisProfile = {
+  jurisdiction: 'IT',
+  ateco_code: '62.01',
+  ateco_section: 'J',
+  legal_form: 'corporation',
+  employees_count: 12,
+  share_capital: '100000.00',
+  statutory_reserves: '20000.00',
+  legal_minimum_capital: '50000.00',
+  prior_year_revenue: '1200000.00',
+  prior_year_inps_contributions: null,
+  available_credit_lines: '100000.00',
+  variable_debt_amount: null,
+  total_assets_override: null,
+  current_assets_override: null,
+  current_liabilities_override: null,
+  total_debt_override: null,
+  net_equity_override: null,
+  revenue_override: null,
+  financial_expenses_override: null,
+  cash_flow_override: null,
+  tax_social_debt_override: null,
+  payroll_overdue_30d_amount: null,
+  supplier_overdue_90d_amount: null,
+  inps_overdue_90d_amount: null,
+  inail_overdue_90d_amount: null,
+  vat_lipe_unpaid_amount: null,
+  ader_entrusted_amount: null,
+  assets_going_concern: null,
+  assets_liquidation: null,
+  total_liabilities_override: null,
+  going_concern_probable: true,
+};
+
+export const loans: CrisisLoan[] = [
+  {
+    id: 'loan-1',
+    creditor_name: 'Mario Rossi',
+    creditor_type: 'shareholder',
+    principal: '50000.00',
+    interest_rate: '4.00',
+    interest_treatment: 'deferred',
+    agreement_date: '2026-01-01',
+    effective_from: '2026-01-01',
+    deferral_end_date: null,
+    scope: 'principal_and_interest',
+    status: 'active',
+    notes: null,
+    claim_at_horizon: '52000.00',
+    accrued_interest: '2000.00',
+  },
+];
+
+export const requirement: CrisisRangruecktritt = {
+  basis: 'going_concern',
+  horizon_months: 12,
+  shortfall: '80000.00',
+  active_claims_covered: '30000.00',
+  remaining_shortfall: '50000.00',
+  assumed_rate: '4.00',
+  required_claim_amount: '50000.00',
+  required_principal_amount: '48076.92',
+  court_notification_required: true,
+};
+
+const lite = (status: 'green' | 'yellow' | 'red', value: string): CrisisStressLite => ({
+  dscr: {
+    treasury: { m6: dscr(value, status), m12: dscr(value, status) },
+    operating: { m6: dscr(value, status), m12: dscr(value, status) },
+  },
+  liquidity: { min_cumulative_cash: '10000.00', first_negative_month: null, liquidity_gap: '0.00' },
+  capital: { net_assets: '300000.00', coverage_ratio: '5.00', status: 'green' },
+  ccii_overall: status,
+  swiss_overall: status,
+});
+
+export const stressResult: CrisisStressResult = {
+  baseline: lite('green', '1.40'),
+  stressed: lite('red', '0.80'),
+  deltas: {
+    dscr_treasury_m6: '-0.60',
+    dscr_treasury_m12: '-0.60',
+    dscr_operating_m6: '-0.60',
+    dscr_operating_m12: '-0.60',
+    min_cumulative_cash: '-20000.00',
+    coverage_ratio: null,
+  },
+};

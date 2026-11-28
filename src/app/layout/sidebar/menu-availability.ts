@@ -221,6 +221,7 @@ export const TESTED_MENU_ROUTES: readonly string[] = [
   '/leave-management/holidays',
   '/leave-management/policies',
   '/liquidity-planning', // workspace and EBA report
+  '/crisis-monitoring', // executive dashboard, CCII, Art. 725 CO, stress test
   '/agent-commissions',
   '/agent-commissions/rules',
   '/agent-commissions/ledger',
