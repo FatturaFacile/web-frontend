@@ -7,6 +7,8 @@
   <nz-tabs [nzSelectedIndex]="selectedTabIndex()" (nzSelectedIndexChange)="onTabChange($event)">
     <!-- TAB 0: STOCK LEVELS & BALANCES -->
     <nz-tab [nzTitle]="'INVENTORY.TABS.STOCK_LEVELS' | translate">
+      <app-time-travel-panel domain="inventory" [whatIf]="true" />
+      @if (!timeTravel.isActive()) {
       <div class="metrics-grid">
         <nz-row [nzGutter]="16">
           <nz-col [nzSpan]="6">
@@ -140,6 +142,7 @@
           }
         </tbody>
       </nz-table>
+      }
     </nz-tab>
 
     <!-- TAB 1: STOCK MOVEMENTS & TRANSFERS -->
