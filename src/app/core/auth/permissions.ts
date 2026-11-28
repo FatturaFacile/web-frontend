@@ -395,6 +395,15 @@ export const MODULE_ACCESS: Readonly<Record<string, ModuleAccess>> = {
       write: ['swiss_ebill.write', 'swiss_ebill.*'],
     },
   },
+  // Bonded warehouses, IVA warehouses and AEO (Mod 353): the customs manager and finance roles write; warehouse and operations managers read.
+  bonded_warehouses: {
+    read: [...FINANCE_READERS, 'customs', 'warehouse', 'operations_manager'],
+    write: [...FINANCE, 'customs'],
+    grants: {
+      read: ['bonded_warehouses.read', 'bonded_warehouses.write', 'bonded_warehouses.*'],
+      write: ['bonded_warehouses.write', 'bonded_warehouses.*'],
+    },
+  },
   // Foreign VAT refund (Mod 227): finance roles work on the ledger, claims and mandates; purchasing and operations managers read.
   foreign_vat_refund: {
     read: [...FINANCE_READERS, 'procurement_manager', 'operations_manager'],
