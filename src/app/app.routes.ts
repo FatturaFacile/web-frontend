@@ -849,6 +849,21 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'bonded-warehouses',
+    canActivate: [
+      authGuard,
+      menuEnabledGuard,
+      featureFlagGuard('bonded_warehouses'),
+      moduleGuard('bonded_warehouses'),
+    ],
+    data: {
+      breadcrumb: 'NAV.BONDED_WAREHOUSES',
+      title: 'PAGE_TITLE.BONDED_WAREHOUSES_DASHBOARD',
+    },
+    loadChildren: () =>
+      import('./features/bonded-warehouses/bonded-warehouses.routes').then((m) => m.BONDED_WAREHOUSES_ROUTES),
+  },
+  {
     path: 'green-care',
     canActivate: [authGuard, menuEnabledGuard, featureFlagGuard('green_care'), moduleGuard('green_care')],
     data: {

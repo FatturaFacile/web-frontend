@@ -145,6 +145,7 @@ export * from './api/observability-api.service';
 export * from './telemetry';
 export * from './api/swiss-ebill-api.service';
 export * from './api/foreign-vat-refund-api.service';
+export * from './api/bonded-warehouses-api.service';
 export * from './api/green-care-api.service';
 export * from './api/audit-ledger-api.service';
 export * from './api/franchise-network-api.service';

@@ -154,6 +154,7 @@ export * from './subcontracting.model';
 export * from './down-payments.model';
 export * from './swiss-ebill.model';
 export * from './foreign-vat-refund.model';
+export * from './bonded-warehouses.model';
 export * from './green-care.model';
 export * from './audit-ledger.model';
 export * from './franchise-network.model';

@@ -1792,6 +1792,43 @@ export const MENU_SECTIONS: readonly MenuSection[] = [
         ],
       },
       {
+        key: 'NAV.BONDED_WAREHOUSES',
+        icon: 'fa-solid fa-warehouse',
+        module: 'bonded_warehouses',
+        children: [
+          {
+            key: 'NAV.BONDED_WAREHOUSES_DASHBOARD',
+            route: '/bonded-warehouses/dashboard',
+            icon: 'fa-solid fa-gauge-high',
+            module: 'bonded_warehouses',
+          },
+          {
+            key: 'NAV.BONDED_WAREHOUSES_MRN_LEDGER',
+            route: '/bonded-warehouses/mrn-ledger',
+            icon: 'fa-solid fa-book',
+            module: 'bonded_warehouses',
+          },
+          {
+            key: 'NAV.BONDED_WAREHOUSES_VAT_REGISTER',
+            route: '/bonded-warehouses/vat-register',
+            icon: 'fa-solid fa-file-invoice',
+            module: 'bonded_warehouses',
+          },
+          {
+            key: 'NAV.BONDED_WAREHOUSES_AEO',
+            route: '/bonded-warehouses/aeo',
+            icon: 'fa-solid fa-shield-halved',
+            module: 'bonded_warehouses',
+          },
+          {
+            key: 'NAV.BONDED_WAREHOUSES_AUTHORIZATIONS',
+            route: '/bonded-warehouses/authorizations',
+            icon: 'fa-solid fa-stamp',
+            module: 'bonded_warehouses',
+          },
+        ],
+      },
+      {
         key: 'NAV.GREEN_CARE',
         icon: 'fa-solid fa-seedling',
         module: 'green_care',
